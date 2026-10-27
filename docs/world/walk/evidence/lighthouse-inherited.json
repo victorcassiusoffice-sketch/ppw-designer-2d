@@ -1,0 +1,372 @@
+{
+  "scope": "Walk PR53 CI compared with merged PR51; this is not a standalone Site CI claim",
+  "baseline": {
+    "pr": 51,
+    "runId": 40229318359,
+    "headSha": "5a5f4a24281d118e80d3e54cd11f6233d6968f4b",
+    "mergeSha": "3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2",
+    "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40229318359"
+  },
+  "current": {
+    "pr": 53,
+    "runId": 40574840280,
+    "headSha": "4e8f5c5f3e246416f16464c8bbfd003f2561f687",
+    "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40574840280",
+    "conclusion": "failure"
+  },
+  "errors": {
+    "baselineCount": 22,
+    "currentCount": 22,
+    "added": [],
+    "removed": [],
+    "changedValues": []
+  },
+  "warnings": {
+    "baselineCount": 20,
+    "currentCount": 20,
+    "added": [],
+    "removed": [],
+    "changedValues": [
+      {
+        "route": "/demo?view=2d&pitch=1",
+        "id": "first-contentful-paint",
+        "baselineActual": 0.22,
+        "currentActual": 0.27,
+        "expected": 0.9
+      },
+      {
+        "route": "/demo?view=2d&pitch=1",
+        "id": "first-meaningful-paint",
+        "baselineActual": 0.22,
+        "currentActual": 0.27,
+        "expected": 0.9
+      },
+      {
+        "route": "/demo?view=2d&pitch=1",
+        "id": "largest-contentful-paint",
+        "baselineActual": 0.46,
+        "currentActual": 0.5,
+        "expected": 0.9
+      },
+      {
+        "route": "/demo?view=2d&pitch=1",
+        "id": "speed-index",
+        "baselineActual": 0.17,
+        "currentActual": 0.21,
+        "expected": 0.9
+      },
+      {
+        "route": "/demo?view=2d&pitch=1",
+        "id": "categories.performance",
+        "baselineActual": 0.4,
+        "currentActual": 0.42,
+        "expected": 0.75
+      },
+      {
+        "route": "/pitch/plumbing",
+        "id": "first-contentful-paint",
+        "baselineActual": 0.86,
+        "currentActual": 0.87,
+        "expected": 0.9
+      },
+      {
+        "route": "/pitch/plumbing",
+        "id": "first-meaningful-paint",
+        "baselineActual": 0.86,
+        "currentActual": 0.87,
+        "expected": 0.9
+      }
+    ]
+  },
+  "errorAssertions": [
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "csp-xss",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "installable-manifest",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "label-content-name-mismatch",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "maskable-icon",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "robots-txt",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "splash-screen",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "themed-omnibox",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "total-byte-weight",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "unused-css-rules",
+      "level": "error",
+      "assertion": "maxLength",
+      "expected": 0,
+      "actual": 2,
+      "operator": "<="
+    },
+    {
+      "route": "/demo?view=2d&pitch=1",
+      "id": "valid-source-maps",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "csp-xss",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "errors-in-console",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "installable-manifest",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "maskable-icon",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "prioritize-lcp-image",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "robots-txt",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "splash-screen",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "themed-omnibox",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "total-byte-weight",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "unsized-images",
+      "level": "error",
+      "assertion": "minScore",
+      "expected": 0.9,
+      "actual": 0.5,
+      "operator": ">="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "unused-css-rules",
+      "level": "error",
+      "assertion": "maxLength",
+      "expected": 0,
+      "actual": 2,
+      "operator": "<="
+    },
+    {
+      "route": "/pitch/plumbing",
+      "id": "uses-responsive-images",
+      "level": "error",
+      "assertion": "maxLength",
+      "expected": 0,
+      "actual": 1,
+      "operator": "<="
+    }
+  ],
+  "reports": {
+    "baseline": [
+      {
+        "route": "/demo?view=2d&pitch=1",
+        "lighthouseVersion": "11.4.0",
+        "performanceScore": 0.4,
+        "totalByteWeight": 1261081,
+        "consoleErrors": [],
+        "labelMismatch": [
+          {
+            "selector": "header.plan-topbar > div.plan-primary-row > div.plan-identity > button.inline-flex",
+            "snippet": "<button type=\"button\" data-testid=\"rooms-trigger\" class=\"inline-flex h-10 min-w-[40px] shrink-0 items-center justify-center gap-1.5…\" aria-label=\"Demo · Living room · 5 — Open rooms list\" aria-expanded=\"false\" style=\"justify-content: flex-start;\">"
+          }
+        ],
+        "walkRequests": []
+      },
+      {
+        "route": "/pitch/plumbing",
+        "lighthouseVersion": "11.4.0",
+        "performanceScore": 0.96,
+        "totalByteWeight": 576884,
+        "consoleErrors": [
+          {
+            "source": "network",
+            "description": "Failed to load resource: the server responded with a status of 401 ()",
+            "sourceLocation": {
+              "type": "source-location",
+              "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+              "urlProvider": "network",
+              "line": 0,
+              "column": 0
+            }
+          }
+        ],
+        "labelMismatch": [],
+        "walkRequests": []
+      }
+    ],
+    "current": [
+      {
+        "route": "/demo?view=2d&pitch=1",
+        "lighthouseVersion": "11.4.0",
+        "performanceScore": 0.42,
+        "totalByteWeight": 1261677,
+        "consoleErrors": [],
+        "labelMismatch": [
+          {
+            "selector": "header.plan-topbar > div.plan-primary-row > div.plan-identity > button.inline-flex",
+            "snippet": "<button type=\"button\" data-testid=\"rooms-trigger\" class=\"inline-flex h-10 min-w-[40px] shrink-0 items-center justify-center gap-1.5…\" aria-label=\"Demo · Living room · 5 — Open rooms list\" aria-expanded=\"false\" style=\"justify-content: flex-start;\">"
+          }
+        ],
+        "walkRequests": []
+      },
+      {
+        "route": "/pitch/plumbing",
+        "lighthouseVersion": "11.4.0",
+        "performanceScore": 0.96,
+        "totalByteWeight": 576867,
+        "consoleErrors": [
+          {
+            "source": "network",
+            "description": "Failed to load resource: the server responded with a status of 401 ()",
+            "sourceLocation": {
+              "type": "source-location",
+              "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+              "urlProvider": "network",
+              "line": 0,
+              "column": 0
+            }
+          }
+        ],
+        "labelMismatch": [],
+        "walkRequests": []
+      }
+    ]
+  },
+  "workflowAndConfigUnchanged": true,
+  "latestCi": {
+    "runId": 40574840355,
+    "headSha": "4e8f5c5f3e246416f16464c8bbfd003f2561f687",
+    "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40574840355",
+    "conclusion": "success",
+    "typechecks": [
+      "root",
+      "api",
+      "middleware"
+    ],
+    "testFilesPassed": 400,
+    "testsPassed": 4329
+  },
+  "interpretation": "CI green remains unmet. All 22 failing error assertions are inherited unchanged from merged PR51. Same 20 warning IDs; timings vary. Single-run results do not prove a performance improvement or regression."
+}

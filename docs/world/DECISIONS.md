@@ -40,4 +40,22 @@ All decisions below are dated **2026-10-27**. The first group records Victor's b
 | 2026-10-27 | Import Three animation implementation through a deferred source entry | A normal AnimationMixer import grew the early vendor bundle | Revalidate bundle graph if Three packaging changes |
 | 2026-10-27 | Guard earlier editor capture handlers while Walk owns focus; tag curved joinery leaves | Review reproduced Delete mutating a selected opening and an arched leaf staying visually closed | Retain read-only and arched-door regression fixtures on any modal/renderer change |
 
+| 2026-10-28 | Recompute and validate canonical Site geometry on saved input; whitelist bounded nested metadata | Review found forged redundant polygons and malformed public-source values could survive import; 1 mm consistency checks and bounded fields reject them | A versioned input migration and independent malformed-payload regression checks |
+| 2026-10-28 | Reject date-line wraps, spans above 500 m, self-touching boundaries and corner spacing below 1 cm before projection/querying | Prevent near-global Overpass boxes and ambiguous polygon measurements; supported limits are explicit | New geographic partitioning/topology support and independent fixtures |
+| 2026-10-28 | Keep original provider acquisition/database/period metadata and show actual Overpass outages as unavailable | Cached results must not appear newly fetched; three real-location runs encountered capacity errors/timeouts | Provider replacement or new successful evidence; never substitute invented zero counts |
+| 2026-10-28 | Bound streaming response bytes, pending provider work and total terrain deadline; retain Retry-After | Review found unbounded body reads and missing terrain throttle could exhaust prototype capacity | A separately designed distributed quota/cache service if wider demand requires it |
+
 Keep `CURRENT.md` and the scored `RUBRIC.md` consistent with the actual branch being reviewed. All failed final timing pairs remain evidence, not discarded warmups.
+
+
+## Integration decisions — 28 October 2026
+
+| Date | Choice | Reason | Cost to reverse |
+|---|---|---|---|
+| 2026-10-28 | Keep canonical Site persistence validation synchronous, disclose 4,350 gzip early bytes | Weakening validation or racing saved geometry is unsafe; literal zero-new-code gate remains unmet | Separate deferred validated Site hydration with migration and persistence regression work |
+| 2026-10-28 | Export five existing Three symbols, keep new implementations deferred | Avoided AnimationMixer/BVH implementation entering early vendor; aliases cost 45 raw/12 gzip bytes | Re-audit module exports after renderer upgrades |
+| 2026-10-28 | Use portrait FOV 95°, shoulder offset and hide actor when camera extremely close | Improves navigation framing while preserving swept camera collision; tight-room polish still needed | Camera tuning and physical-user regression checks |
+| 2026-10-28 | Preserve every failed first-picture pair and label preview release gates unmet | Fresh-browser measurements are slower; no warmup deletion or threshold changes | Actual performance corrections and a new fully retained paired run |
+| 2026-10-28 | Measure frame pacing again without screenshots, keep original data | Captures inside the movement interval can affect 1% lows | Use external capture hardware or equivalent non-interfering instrumentation |
+| 2026-10-28 | Retain inherited Lighthouse failures as release blockers | Same22 assertions already fail on merged PR51; unrelated PWA/CSP/plumbing changes exceed this feature build | A focused authorized repair with unchanged audit gates |
+| 2026-10-28 | Correct a test-only fetch mock signature | CI API config includes tests and exposed a zero-argument tuple inference missed by the narrower local check | No reversal needed; run exact CI configuration in later rounds |

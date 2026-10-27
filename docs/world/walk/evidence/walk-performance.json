@@ -1,0 +1,2262 @@
+{
+ "at": "2026-10-27T20:13:24.893Z",
+ "target": "walk",
+ "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app",
+ "note": "Fresh Chromium per viewport, native D3D11, no CPU/network throttle. Phone is desktop touch emulation390×844, not physical hardware. Movement sample excludes entry; runtime fps is up to1800 recent active-frame intervals after first10 frames, 1% low =1000/mean slowest1% intervals.",
+ "rows": [
+  {
+   "device": "desktop",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "httpErrors": [],
+   "failedRequests": [],
+   "beforeWalkResources": [
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/outfit-latin.woff2",
+     "start": 640.3000000715256,
+     "end": 1136.7000000476837,
+     "bytes": 32592
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/fraunces-600-latin.woff2",
+     "start": 640.4000000953674,
+     "end": 1127.7000000476837,
+     "bytes": 17472
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-router-DUymecSS.js",
+     "start": 640.6000000238419,
+     "end": 1251.3000000715256,
+     "bytes": 8718
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-react-CS4MHxMm.js",
+     "start": 640.6000000238419,
+     "end": 1250.9000000953674,
+     "bytes": 47583
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-twJIso0k.js",
+     "start": 640.7000000476837,
+     "end": 1016.6000000238419,
+     "bytes": 32465
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CO6GBvCf.css",
+     "start": 640.8000000715256,
+     "end": 1126.7000000476837,
+     "bytes": 15090
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/ThreeStage-DxzyxxIr.js",
+     "start": 1266.8000000715256,
+     "end": 1754.6000000238419,
+     "bytes": 34741
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-three-Dv4s8tq0.js",
+     "start": 1267,
+     "end": 1790.1000000238419,
+     "bytes": 197558
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServices-DAYI6Nbk.js",
+     "start": 1267,
+     "end": 1914.9000000953674,
+     "bytes": 52711
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/types-BR-OoGj9.js",
+     "start": 1267.1000000238419,
+     "end": 1645.2000000476837,
+     "bytes": 13462
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/merchantFurniture-ZuMdbwJD.js",
+     "start": 1267.1000000238419,
+     "end": 1668,
+     "bytes": 1694
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productImageSafety-CDXX3Z8N.js",
+     "start": 1267.1000000238419,
+     "end": 1783.5,
+     "bytes": 734
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServicesCatalog-gFhvLWEg.js",
+     "start": 1267.2000000476837,
+     "end": 1764.5,
+     "bytes": 2951
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/renderQualityStore-DxVj220a.js",
+     "start": 1267.2000000476837,
+     "end": 2013.8000000715256,
+     "bytes": 11525
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/middleware-BoNmX9tp.js",
+     "start": 1267.3000000715256,
+     "end": 1938.6000000238419,
+     "bytes": 1701
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productSurfaceLighting-BCYRGe4O.js",
+     "start": 1267.3000000715256,
+     "end": 2030.2000000476837,
+     "bytes": 14820
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildSkinStore-iroEKnso.js",
+     "start": 1267.5,
+     "end": 1854.7000000476837,
+     "bytes": 1044
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/serviceFixtureMeshes-GiGuMKiG.js",
+     "start": 1267.5,
+     "end": 1865,
+     "bytes": 2239
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/DemoDesignerPage-B3jRWA9I.js",
+     "start": 1272.8000000715256,
+     "end": 2031.3000000715256,
+     "bytes": 2787
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/designsApi-BpiEI4MT.js",
+     "start": 1272.9000000953674,
+     "end": 1981.8000000715256,
+     "bytes": 5816
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-u6bcEy_a.js",
+     "start": 1272.9000000953674,
+     "end": 2026.8000000715256,
+     "bytes": 326958
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/propertyStore-DcfWtZqY.js",
+     "start": 1272.9000000953674,
+     "end": 2071.7000000476837,
+     "bytes": 31829
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/showcaseSafety-DFBXsUeQ.js",
+     "start": 1273,
+     "end": 2079.4000000953674,
+     "bytes": 479
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/LocaleThemeControls-T6ArtPK6.js",
+     "start": 1273.2000000476837,
+     "end": 2072.4000000953674,
+     "bytes": 1655
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/downloadJson-DhXa1J4E.js",
+     "start": 1273.4000000953674,
+     "end": 2031.8000000715256,
+     "bytes": 576
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/RequireMerchant-Do98o4Fd.js",
+     "start": 1273.4000000953674,
+     "end": 2034.8000000715256,
+     "bytes": 2646
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/cartStore-Dyggz6eA.js",
+     "start": 1273.5,
+     "end": 2033.9000000953674,
+     "bytes": 5022
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/currency-24atDEM8.js",
+     "start": 1273.6000000238419,
+     "end": 2035.1000000238419,
+     "bytes": 625
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/quotedProducts-2NCXztC6.js",
+     "start": 1273.7000000476837,
+     "end": 2038.9000000953674,
+     "bytes": 692
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/CurrencySwitcher-BgYMeuf8.js",
+     "start": 1273.8000000715256,
+     "end": 2031.8000000715256,
+     "bytes": 1835
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-konva-CbK8OvmD.js",
+     "start": 1273.9000000953674,
+     "end": 2058.8000000715256,
+     "bytes": 92347
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/commission-BSjTNLTx.js",
+     "start": 1273.9000000953674,
+     "end": 2079.3000000715256,
+     "bytes": 352
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-Xhd2x0gp.css",
+     "start": 1274.1000000238419,
+     "end": 2078.8000000715256,
+     "bytes": 43044
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/embedMessages-BIa44F5a.js",
+     "start": 1274.3000000715256,
+     "end": 2031.9000000953674,
+     "bytes": 1016
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-variable.woff2",
+     "start": 1281.4000000953674,
+     "end": 2023.6000000238419,
+     "bytes": 352540
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/brand/olb/olb-mark.svg",
+     "start": 2103.3000000715256,
+     "end": 2470,
+     "bytes": 700
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/products?limit=100",
+     "start": 2156.2000000476837,
+     "end": 2957,
+     "bytes": 1802
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-variable-italic.woff2",
+     "start": 2788.7000000476837,
+     "end": 3328.600000023842,
+     "bytes": 388276
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/modelSnapshot-DxkgqUyV.js",
+     "start": 2848,
+     "end": 3204.4000000953674,
+     "bytes": 2776
+    }
+   ],
+   "chooserMs": 8958,
+   "entry": {
+    "mode": "third",
+    "door": null,
+    "blocked": false,
+    "locked": false,
+    "animation": "idle",
+    "position": [
+     4.3500000000000005,
+     0.001000000000000222,
+     1.65
+    ],
+    "camera": [
+     4.425087679008995,
+     1.6157994221750567,
+     1.5473498154884895
+    ],
+    "fps": 0,
+    "low1": 0,
+    "frames": 1,
+    "entryMs": 3834.8000000715256
+   },
+   "renderer": {
+    "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "width": 1280,
+    "height": 800
+   },
+   "samples": [
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       4.3500000000000005,
+       0.0004999999999999965,
+       1.65
+      ],
+      "camera": [
+       5.41942351231106,
+       1.811278256186707,
+       0.18802218541703075
+      ],
+      "fps": 60.004724781478856,
+      "low1": 59.523809523799216,
+      "frames": 137,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       3.451095663099479,
+       0.0004999999999999965,
+       2.5960013325951414
+      ],
+      "camera": [
+       5.1992879366193945,
+       1.9613685041786737,
+       0.2260100965813221
+      ],
+      "fps": 60.000628278830156,
+      "low1": 59.523809523799216,
+      "frames": 201,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       3.1847483244328307,
+       0.0004999999999999965,
+       2.87630510762556
+      ],
+      "camera": [
+       5.080695402323324,
+       1.9973911286760497,
+       0.30432808964924707
+      ],
+      "fps": 60.00173918084586,
+      "low1": 59.523809523799216,
+      "frames": 217,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       4.067041895082562,
+       0.0004999999999999965,
+       1.9477748377486792
+      ],
+      "camera": [
+       5.3396921368978205,
+       1.876263872485159,
+       0.18806168015910596
+      ],
+      "fps": 60.00133336296365,
+      "low1": 59.523809523799216,
+      "frames": 280,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       4.200215564415879,
+       0.0005,
+       1.8076229502334664
+      ],
+      "camera": [
+       5.382680861559389,
+       1.8412319589339556,
+       0.188026749812628
+      ],
+      "fps": 60.00209797545369,
+      "low1": 59.523809523799216,
+      "frames": 296,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       3.434485057460586,
+       0.0004999999999999965,
+       2.6134721811641786
+      ],
+      "camera": [
+       5.19243373796141,
+       1.963740491198268,
+       0.23015161239328696
+      ],
+      "fps": 60.00179646097189,
+      "low1": 59.523809523802434,
+      "frames": 344,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       3.201431136127269,
+       0.0004999999999999965,
+       2.8587379843157947
+      ],
+      "camera": [
+       5.076446801256177,
+       1.9980348641561445,
+       0.30795845475509775
+      ],
+      "fps": 60.00240009600385,
+      "low1": 59.523809523802434,
+      "frames": 360,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       4.133664993741897,
+       0.0004999999999999965,
+       1.8776505420008371
+      ],
+      "camera": [
+       5.35501061389316,
+       1.863779079292884,
+       0.1880411396741295
+      ],
+      "fps": 60.00260880907868,
+      "low1": 59.523809523799216,
+      "frames": 424,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       4.133664993741897,
+       0.0004999999999999965,
+       1.8776505420008371
+      ],
+      "camera": [
+       5.35501061389316,
+       1.863779079292884,
+       0.1880411396741295
+      ],
+      "fps": 60.00260880907868,
+      "low1": 59.523809523799216,
+      "frames": 424,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       3.417874774099303,
+       0.0005000000000000035,
+       2.6309426000297353
+      ],
+      "camera": [
+       5.185366760695306,
+       1.9660574967903244,
+       0.23458808082909233
+      ],
+      "fps": 60.0022642363863,
+      "low1": 59.523809523799216,
+      "frames": 487,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       3.218114270099317,
+       0.0004999999999999965,
+       2.841170431302549
+      ],
+      "camera": [
+       5.080414602054016,
+       1.9985484932094746,
+       0.3031096907097859
+      ],
+      "fps": 60.001947324862485,
+      "low1": 59.523809523799216,
+      "frames": 503,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       4.183641706702486,
+       0.0005000000000000035,
+       1.8250448015685063
+      ],
+      "camera": [
+       5.3665286469646984,
+       1.8543834402483295,
+       0.1880337436309738
+      ],
+      "fps": 60.00215447592373,
+      "low1": 59.52380952380136,
+      "frames": 567,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       4.183641706702486,
+       0.0005000000000000035,
+       1.8250448015685063
+      ],
+      "camera": [
+       5.3665286469646984,
+       1.8543834402483295,
+       0.1880337436309738
+      ],
+      "fps": 60.00215447592373,
+      "low1": 59.52380952380136,
+      "frames": 567,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       1.6185028155095444,
+       0.0005,
+       4.129500133514404
+      ],
+      "camera": [
+       2.8474777085233582,
+       1.8139974268411496,
+       2.635630690003734
+      ],
+      "fps": 60.002072285071094,
+      "low1": 59.523809523799216,
+      "frames": 647,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       1.6185028155095444,
+       0.0005,
+       4.129500133514404
+      ],
+      "camera": [
+       2.8474777085233582,
+       1.8139974268411496,
+       2.635630690003734
+      ],
+      "fps": 60.002072285071094,
+      "low1": 59.523809523799216,
+      "frames": 647,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       3.032429404803223,
+       0.0004999999999999965,
+       2.6782090381956514
+      ],
+      "camera": [
+       2.9409690776450943,
+       1.5649357900561207,
+       2.6387652563484294
+      ],
+      "fps": 59.230940666198094,
+      "low1": 26.168224299063997,
+      "frames": 701,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       3.512984621010913,
+       0.0004999999999999965,
+       2.4519057627794107
+      ],
+      "camera": [
+       4.954231958279455,
+       1.9166473288434842,
+       0.444155110806304
+      ],
+      "fps": 59.24796151815568,
+      "low1": 28.13928948293883,
+      "frames": 717,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       1.3271167630576688,
+       0.0004999999999999965,
+       4.129500133514404
+      ],
+      "camera": [
+       2.6286927827297095,
+       1.832596726385561,
+       2.5435584982128363
+      ],
+      "fps": 59.30923991742923,
+      "low1": 28.13928948293883,
+      "frames": 780,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       1.3271167630576688,
+       0.0004999999999999965,
+       4.129500133514404
+      ],
+      "camera": [
+       2.6286927827297095,
+       1.832596726385561,
+       2.5435584982128363
+      ],
+      "fps": 59.30923991742923,
+      "low1": 28.13928948293883,
+      "frames": 780,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       2.596693807945019,
+       0.017103065160381875,
+       2.5578449860565153
+      ],
+      "camera": [
+       2.6229267336013753,
+       1.5781123965996218,
+       2.5235143566923273
+      ],
+      "fps": 58.50946602114304,
+      "low1": 17.964071856286903,
+      "frames": 833,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       2.569499952316284,
+       0.03938922012671872,
+       2.2517254569633947
+      ],
+      "camera": [
+       2.614290378212403,
+       1.5995349302977178,
+       2.2171273381993193
+      ],
+      "fps": 58.53706184416166,
+      "low1": 17.964071856286903,
+      "frames": 849,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       0.8942094290246057,
+       0.0004999999999999965,
+       4.01816196200493
+      ],
+      "camera": [
+       2.8862476434671556,
+       2.0000306602830875,
+       1.3416715081445467
+      ],
+      "fps": 58.61338978565758,
+      "low1": 17.964071856286903,
+      "frames": 896,
+      "entryMs": 3834.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       0.8942094290246057,
+       0.0004999999999999965,
+       4.01816196200493
+      ],
+      "camera": [
+       2.8124285575439423,
+       2.0002669327940956,
+       1.4190441823966884
+      ],
+      "fps": 58.61338978565758,
+      "low1": 17.964071856286903,
+      "frames": 897,
+      "entryMs": 3834.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       2.872370510395031,
+       0.0005000000000000035,
+       1.640781962300307
+      ],
+      "camera": [
+       3.740935306912452,
+       1.8017479821014806,
+       0.4375621447063285
+      ],
+      "fps": 58.7050288581563,
+      "low1": 19.312475859404525,
+      "frames": 961,
+      "entryMs": 3834.8000000715256
+     }
+    }
+   ],
+   "settled": {
+    "mode": "third",
+    "door": null,
+    "blocked": false,
+    "locked": false,
+    "animation": "run",
+    "position": [
+     2.872370510395031,
+     0.0005000000000000035,
+     1.640781962300307
+    ],
+    "camera": [
+     3.740935306912452,
+     1.8017479821014806,
+     0.4375621447063285
+    ],
+    "fps": 58.7050288581563,
+    "low1": 19.312475859404525,
+    "frames": 961,
+    "entryMs": 3834.8000000715256
+   },
+   "network": [
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/outfit-latin.woff2",
+     "start": 640.3000000715256,
+     "end": 1136.7000000476837,
+     "bytes": 32592
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/fraunces-600-latin.woff2",
+     "start": 640.4000000953674,
+     "end": 1127.7000000476837,
+     "bytes": 17472
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-router-DUymecSS.js",
+     "start": 640.6000000238419,
+     "end": 1251.3000000715256,
+     "bytes": 8718
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-react-CS4MHxMm.js",
+     "start": 640.6000000238419,
+     "end": 1250.9000000953674,
+     "bytes": 47583
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-twJIso0k.js",
+     "start": 640.7000000476837,
+     "end": 1016.6000000238419,
+     "bytes": 32465
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CO6GBvCf.css",
+     "start": 640.8000000715256,
+     "end": 1126.7000000476837,
+     "bytes": 15090
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/ThreeStage-DxzyxxIr.js",
+     "start": 1266.8000000715256,
+     "end": 1754.6000000238419,
+     "bytes": 34741
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-three-Dv4s8tq0.js",
+     "start": 1267,
+     "end": 1790.1000000238419,
+     "bytes": 197558
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServices-DAYI6Nbk.js",
+     "start": 1267,
+     "end": 1914.9000000953674,
+     "bytes": 52711
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/types-BR-OoGj9.js",
+     "start": 1267.1000000238419,
+     "end": 1645.2000000476837,
+     "bytes": 13462
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/merchantFurniture-ZuMdbwJD.js",
+     "start": 1267.1000000238419,
+     "end": 1668,
+     "bytes": 1694
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productImageSafety-CDXX3Z8N.js",
+     "start": 1267.1000000238419,
+     "end": 1783.5,
+     "bytes": 734
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServicesCatalog-gFhvLWEg.js",
+     "start": 1267.2000000476837,
+     "end": 1764.5,
+     "bytes": 2951
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/renderQualityStore-DxVj220a.js",
+     "start": 1267.2000000476837,
+     "end": 2013.8000000715256,
+     "bytes": 11525
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/middleware-BoNmX9tp.js",
+     "start": 1267.3000000715256,
+     "end": 1938.6000000238419,
+     "bytes": 1701
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productSurfaceLighting-BCYRGe4O.js",
+     "start": 1267.3000000715256,
+     "end": 2030.2000000476837,
+     "bytes": 14820
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildSkinStore-iroEKnso.js",
+     "start": 1267.5,
+     "end": 1854.7000000476837,
+     "bytes": 1044
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/serviceFixtureMeshes-GiGuMKiG.js",
+     "start": 1267.5,
+     "end": 1865,
+     "bytes": 2239
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/DemoDesignerPage-B3jRWA9I.js",
+     "start": 1272.8000000715256,
+     "end": 2031.3000000715256,
+     "bytes": 2787
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/designsApi-BpiEI4MT.js",
+     "start": 1272.9000000953674,
+     "end": 1981.8000000715256,
+     "bytes": 5816
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-u6bcEy_a.js",
+     "start": 1272.9000000953674,
+     "end": 2026.8000000715256,
+     "bytes": 326958
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/propertyStore-DcfWtZqY.js",
+     "start": 1272.9000000953674,
+     "end": 2071.7000000476837,
+     "bytes": 31829
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/showcaseSafety-DFBXsUeQ.js",
+     "start": 1273,
+     "end": 2079.4000000953674,
+     "bytes": 479
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/LocaleThemeControls-T6ArtPK6.js",
+     "start": 1273.2000000476837,
+     "end": 2072.4000000953674,
+     "bytes": 1655
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/downloadJson-DhXa1J4E.js",
+     "start": 1273.4000000953674,
+     "end": 2031.8000000715256,
+     "bytes": 576
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/RequireMerchant-Do98o4Fd.js",
+     "start": 1273.4000000953674,
+     "end": 2034.8000000715256,
+     "bytes": 2646
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/cartStore-Dyggz6eA.js",
+     "start": 1273.5,
+     "end": 2033.9000000953674,
+     "bytes": 5022
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/currency-24atDEM8.js",
+     "start": 1273.6000000238419,
+     "end": 2035.1000000238419,
+     "bytes": 625
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/quotedProducts-2NCXztC6.js",
+     "start": 1273.7000000476837,
+     "end": 2038.9000000953674,
+     "bytes": 692
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/CurrencySwitcher-BgYMeuf8.js",
+     "start": 1273.8000000715256,
+     "end": 2031.8000000715256,
+     "bytes": 1835
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-konva-CbK8OvmD.js",
+     "start": 1273.9000000953674,
+     "end": 2058.8000000715256,
+     "bytes": 92347
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/commission-BSjTNLTx.js",
+     "start": 1273.9000000953674,
+     "end": 2079.3000000715256,
+     "bytes": 352
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-Xhd2x0gp.css",
+     "start": 1274.1000000238419,
+     "end": 2078.8000000715256,
+     "bytes": 43044
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/embedMessages-BIa44F5a.js",
+     "start": 1274.3000000715256,
+     "end": 2031.9000000953674,
+     "bytes": 1016
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-variable.woff2",
+     "start": 1281.4000000953674,
+     "end": 2023.6000000238419,
+     "bytes": 352540
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/brand/olb/olb-mark.svg",
+     "start": 2103.3000000715256,
+     "end": 2470,
+     "bytes": 700
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/products?limit=100",
+     "start": 2156.2000000476837,
+     "end": 2957,
+     "bytes": 1802
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-variable-italic.woff2",
+     "start": 2788.7000000476837,
+     "end": 3328.600000023842,
+     "bytes": 388276
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/modelSnapshot-DxkgqUyV.js",
+     "start": 2848,
+     "end": 3204.4000000953674,
+     "bytes": 2776
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkMode-ClMZAahH.js",
+     "start": 9462.200000047684,
+     "end": 10267.400000095367,
+     "bytes": 28680
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/walk-controls-BAN4guWh.js",
+     "start": 9462.400000095367,
+     "end": 10116.800000071526,
+     "bytes": 1101
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/walk-animation-CVCR6P-e.js",
+     "start": 9462.400000095367,
+     "end": 10187.400000095367,
+     "bytes": 16155
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkMode-q0T477Js.css",
+     "start": 9462.5,
+     "end": 10167.5,
+     "bytes": 1939
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.png",
+     "start": 16675.700000047684,
+     "end": 17281,
+     "bytes": 2065
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-b.png",
+     "start": 16675.900000095367,
+     "end": 17272.900000095367,
+     "bytes": 2120
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-male-a.png",
+     "start": 16675.900000095367,
+     "end": 17306,
+     "bytes": 2075
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-male-b.png",
+     "start": 16676,
+     "end": 17297.800000071526,
+     "bytes": 2171
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+     "start": 21085.300000071526,
+     "end": 21838.700000047684,
+     "bytes": 27141
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+     "start": 22111.600000023842,
+     "end": 22783,
+     "bytes": 12100
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+     "start": 22111.800000071526,
+     "end": 22920.700000047684,
+     "bytes": 60862
+    }
+   ],
+   "text": "Walk mode\nExplore your design\nExit walk ×\nThird person\nWalk / run\nControls\n·\nMove + turn\n\nClick or drag to look · E doors · V view\n\nKenney · CC0",
+   "unchanged": true,
+   "meetingLinks": [],
+   "blockedWrites": []
+  },
+  {
+   "device": "phone",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "httpErrors": [],
+   "failedRequests": [],
+   "beforeWalkResources": [
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/outfit-latin.woff2",
+     "start": 598.5999999046326,
+     "end": 1099.5999999046326,
+     "bytes": 32592
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/fraunces-600-latin.woff2",
+     "start": 598.8999999761581,
+     "end": 984.2999999523163,
+     "bytes": 17472
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-react-CS4MHxMm.js",
+     "start": 599,
+     "end": 1106.1999999284744,
+     "bytes": 47583
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-twJIso0k.js",
+     "start": 599.0999999046326,
+     "end": 1222.0999999046326,
+     "bytes": 32465
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-router-DUymecSS.js",
+     "start": 599.0999999046326,
+     "end": 1222.7999999523163,
+     "bytes": 8718
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CO6GBvCf.css",
+     "start": 599.1999999284744,
+     "end": 1223.1999999284744,
+     "bytes": 15090
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/ThreeStage-DxzyxxIr.js",
+     "start": 1238.5999999046326,
+     "end": 1611.5,
+     "bytes": 34741
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/types-BR-OoGj9.js",
+     "start": 1238.8999999761581,
+     "end": 1615,
+     "bytes": 13462
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-three-Dv4s8tq0.js",
+     "start": 1238.8999999761581,
+     "end": 1857.0999999046326,
+     "bytes": 197558
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServices-DAYI6Nbk.js",
+     "start": 1238.8999999761581,
+     "end": 1873.6999999284744,
+     "bytes": 52711
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/merchantFurniture-ZuMdbwJD.js",
+     "start": 1239.0999999046326,
+     "end": 1615.7999999523163,
+     "bytes": 1694
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productImageSafety-CDXX3Z8N.js",
+     "start": 1239.1999999284744,
+     "end": 1613.3999999761581,
+     "bytes": 734
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/renderQualityStore-DxVj220a.js",
+     "start": 1239.2999999523163,
+     "end": 1711.6999999284744,
+     "bytes": 11525
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServicesCatalog-gFhvLWEg.js",
+     "start": 1239.2999999523163,
+     "end": 2036.2999999523163,
+     "bytes": 2951
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productSurfaceLighting-BCYRGe4O.js",
+     "start": 1239.3999999761581,
+     "end": 1609.7999999523163,
+     "bytes": 14820
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/middleware-BoNmX9tp.js",
+     "start": 1239.3999999761581,
+     "end": 1612.5,
+     "bytes": 1701
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildSkinStore-iroEKnso.js",
+     "start": 1239.5,
+     "end": 1619.0999999046326,
+     "bytes": 1044
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/serviceFixtureMeshes-GiGuMKiG.js",
+     "start": 1239.5999999046326,
+     "end": 1954.5999999046326,
+     "bytes": 2239
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/DemoDesignerPage-B3jRWA9I.js",
+     "start": 1247.7999999523163,
+     "end": 1712.6999999284744,
+     "bytes": 2787
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-u6bcEy_a.js",
+     "start": 1248.0999999046326,
+     "end": 2119.399999976158,
+     "bytes": 326958
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/propertyStore-DcfWtZqY.js",
+     "start": 1248.2999999523163,
+     "end": 1718.8999999761581,
+     "bytes": 31829
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/showcaseSafety-DFBXsUeQ.js",
+     "start": 1248.3999999761581,
+     "end": 1875.7999999523163,
+     "bytes": 479
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/designsApi-BpiEI4MT.js",
+     "start": 1248.3999999761581,
+     "end": 1941.1999999284744,
+     "bytes": 5816
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/LocaleThemeControls-T6ArtPK6.js",
+     "start": 1248.5,
+     "end": 1875.6999999284744,
+     "bytes": 1655
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/RequireMerchant-Do98o4Fd.js",
+     "start": 1248.5999999046326,
+     "end": 1719.2999999523163,
+     "bytes": 2646
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/downloadJson-DhXa1J4E.js",
+     "start": 1248.5999999046326,
+     "end": 1875.6999999284744,
+     "bytes": 576
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/cartStore-Dyggz6eA.js",
+     "start": 1248.6999999284744,
+     "end": 2036.5999999046326,
+     "bytes": 5022
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/currency-24atDEM8.js",
+     "start": 1248.7999999523163,
+     "end": 1844.8999999761581,
+     "bytes": 625
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/quotedProducts-2NCXztC6.js",
+     "start": 1248.7999999523163,
+     "end": 1927.6999999284744,
+     "bytes": 692
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/CurrencySwitcher-BgYMeuf8.js",
+     "start": 1248.8999999761581,
+     "end": 1713.5,
+     "bytes": 1835
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-konva-CbK8OvmD.js",
+     "start": 1249,
+     "end": 1939.8999999761581,
+     "bytes": 92347
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/commission-BSjTNLTx.js",
+     "start": 1249.1999999284744,
+     "end": 1891.2999999523163,
+     "bytes": 352
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-Xhd2x0gp.css",
+     "start": 1249.2999999523163,
+     "end": 1868.7999999523163,
+     "bytes": 43044
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/embedMessages-BIa44F5a.js",
+     "start": 1249.5,
+     "end": 1828.5,
+     "bytes": 1016
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-variable.woff2",
+     "start": 1260.2999999523163,
+     "end": 2035.2999999523163,
+     "bytes": 352540
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/brand/olb/olb-mark.svg",
+     "start": 2144,
+     "end": 2509.6999999284744,
+     "bytes": 700
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/products?limit=100",
+     "start": 2460.7999999523163,
+     "end": 3715.7999999523163,
+     "bytes": 1804
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-variable-italic.woff2",
+     "start": 2682.2999999523163,
+     "end": 3255.6999999284744,
+     "bytes": 388276
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/modelSnapshot-DxkgqUyV.js",
+     "start": 2755.2999999523163,
+     "end": 3259.0999999046326,
+     "bytes": 2776
+    }
+   ],
+   "chooserMs": 1426,
+   "entry": {
+    "mode": "third",
+    "door": null,
+    "blocked": false,
+    "locked": false,
+    "animation": "idle",
+    "position": [
+     4.3500000000000005,
+     0.001000000000000222,
+     1.65
+    ],
+    "camera": [
+     4.3500000000000005,
+     1.6010000000000002,
+     1.65
+    ],
+    "fps": 0,
+    "low1": 0,
+    "frames": 1,
+    "entryMs": 2804.8000000715256
+   },
+   "renderer": {
+    "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "width": 390,
+    "height": 844
+   },
+   "samples": [
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       4.3500000000000005,
+       0.0004999999999999965,
+       1.65
+      ],
+      "camera": [
+       5.419423512309892,
+       1.8112782561864775,
+       0.18802218541862548
+      ],
+      "fps": 39.84063745019922,
+      "low1": 6.002400960384206,
+      "frames": 94,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       3.2513351590994928,
+       0.0005000000000000035,
+       2.8062291638679553
+      ],
+      "camera": [
+       5.1206847857765245,
+       1.992507550570743,
+       0.2685453701823928
+      ],
+      "fps": 46.59772756287506,
+      "low1": 6.317119393556567,
+      "frames": 158,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       3.134808198432834,
+       0.0004999999999999965,
+       2.9288620654437634
+      ],
+      "camera": [
+       4.987023709820895,
+       2.0003089657839475,
+       0.3991427547853652
+      ],
+      "fps": 47.64846024883093,
+      "low1": 6.317119393556567,
+      "frames": 174,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       3.7507544304159217,
+       0.0004999999999999965,
+       2.2806355705973025
+      ],
+      "camera": [
+       5.2647597012822684,
+       1.9352451893685627,
+       0.19080909809422453
+      ],
+      "fps": 47.00935462534256,
+      "low1": 5.001250312578172,
+      "frames": 211,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       3.950514934415908,
+       0.0005000000000000035,
+       2.0704077393244886
+      ],
+      "camera": [
+       5.321668086167795,
+       1.8909345292553252,
+       0.18809866433490763
+      ],
+      "fps": 47.779901328948,
+      "low1": 5.455537370431009,
+      "frames": 227,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       2.9850239234606177,
+       0.0004999999999999965,
+       3.0864848015280097
+      ],
+      "camera": [
+       4.89751612326824,
+       2.0003017187068557,
+       0.493339693060479
+      ],
+      "fps": 50.121261115602294,
+      "low1": 5.455537370431009,
+      "frames": 291,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       2.9850239234606177,
+       0.0004999999999999965,
+       3.0864848015280097
+      ],
+      "camera": [
+       4.89751612326824,
+       2.0003017187068557,
+       0.493339693060479
+      ],
+      "fps": 50.121261115602294,
+      "low1": 5.455537370431009,
+      "frames": 291,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       3.7757607574085967,
+       0.0005,
+       2.254308739697965
+      ],
+      "camera": [
+       5.271804919854799,
+       1.9302278406737141,
+       0.18985905702059114
+      ],
+      "fps": 51.68974064445927,
+      "low1": 6.00060006000603,
+      "frames": 354,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       3.942227844075252,
+       0.0005000000000000035,
+       2.0791188803039535
+      ],
+      "camera": [
+       5.321942506875746,
+       1.890720511264877,
+       0.18807585182398956
+      ],
+      "fps": 52.01144832996764,
+      "low1": 6.00060006000603,
+      "frames": 370,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       2.9600902857660025,
+       0.0004999999999999965,
+       3.112714713363267
+      ],
+      "camera": [
+       4.868258612808464,
+       2.0003625672277217,
+       0.5240415227725848
+      ],
+      "fps": 53.083764167201295,
+      "low1": 6.384065372829442,
+      "frames": 434,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       2.9600902857660025,
+       0.0004999999999999965,
+       3.112714713363267
+      ],
+      "camera": [
+       4.868258612808464,
+       2.0003625672277217,
+       0.5240415227725848
+      ],
+      "fps": 53.083764167201295,
+      "low1": 6.384065372829442,
+      "frames": 434,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "walk",
+      "position": [
+       3.8090907617025223,
+       0.0005000000000000035,
+       2.2192219852050368
+      ],
+      "camera": [
+       5.27946583387769,
+       1.9244943909362549,
+       0.18918505906157002
+      ],
+      "fps": 53.90237680645057,
+      "low1": 6.384065372829442,
+      "frames": 498,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       3.958911139702512,
+       0.0004999999999999965,
+       2.0615511117504264
+      ],
+      "camera": [
+       5.326507851546326,
+       1.8870021668320398,
+       0.18805928563342822
+      ],
+      "fps": 54.07734568566198,
+      "low1": 6.793478260869588,
+      "frames": 514,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       1.5390170124142666,
+       0.0005,
+       4.129500133514404
+      ],
+      "camera": [
+       2.7696326137797636,
+       1.8147865186859609,
+       2.637612924665595
+      ],
+      "fps": 54.688103888072995,
+      "low1": 6.793478260869588,
+      "frames": 578,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       1.1486803954028046,
+       0.0005000000000000035,
+       4.129500133514404
+      ],
+      "camera": [
+       2.6178937827518585,
+       1.8998410822947434,
+       2.1707729542709755
+      ],
+      "fps": 54.8213596073962,
+      "low1": 6.793478260869588,
+      "frames": 594,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       2.5699288206694564,
+       0.039636541511340856,
+       2.4333549559922956
+      ],
+      "camera": [
+       2.6173361964523827,
+       1.5881725964011137,
+       2.4660298170430637
+      ],
+      "fps": 54.70554523193416,
+      "low1": 7.000700070007016,
+      "frames": 642,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       2.5848541682804833,
+       0.034312903122463684,
+       1.9688615310579174
+      ],
+      "camera": [
+       3.599541080936034,
+       1.8337110271947032,
+       0.6271630789983142
+      ],
+      "fps": 54.825212808391846,
+      "low1": 7.000700070007016,
+      "frames": 658,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       1.2594567112592965,
+       0.000500000000000007,
+       3.4217797338275155
+      ],
+      "camera": [
+       3.2503284787762654,
+       2.0001787260545956,
+       0.7467859364500455
+      ],
+      "fps": 55.076396291630346,
+      "low1": 7.000700070007016,
+      "frames": 695,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "idle",
+      "position": [
+       0.7910527708455422,
+       0.0004999999999999965,
+       3.914727751984467
+      ],
+      "camera": [
+       2.694763392255173,
+       2.000492320962824,
+       1.3305898597418024
+      ],
+      "fps": 55.18004664215979,
+      "low1": 7.000700070007016,
+      "frames": 711,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       3.048433900580265,
+       0.0004999999999999965,
+       1.4554032885899553
+      ],
+      "camera": [
+       3.8832358282729533,
+       1.7922149636099838,
+       0.2733892995030349
+      ],
+      "fps": 55.3478697252244,
+      "low1": 7.385524372230448,
+      "frames": 774,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       3.048433900580265,
+       0.0004999999999999965,
+       1.4554032885899553
+      ],
+      "camera": [
+       3.8832358282729533,
+       1.7922149636099838,
+       0.2733892995030349
+      ],
+      "fps": 55.3478697252244,
+      "low1": 7.385524372230448,
+      "frames": 774,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       0.9696322849089407,
+       0.0005,
+       3.7268634376577485
+      ],
+      "camera": [
+       2.9631065063661586,
+       2.0004451626634276,
+       1.0483912491041454
+      ],
+      "fps": 55.6830453563715,
+      "low1": 7.827448251869895,
+      "frames": 838,
+      "entryMs": 2804.8000000715256
+     }
+    },
+    {
+     "before": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       0.9696322849089407,
+       0.0005,
+       3.7268634376577485
+      ],
+      "camera": [
+       2.9631065063661586,
+       2.0004451626634276,
+       1.0483912491041454
+      ],
+      "fps": 55.6830453563715,
+      "low1": 7.827448251869895,
+      "frames": 838,
+      "entryMs": 2804.8000000715256
+     },
+     "after": {
+      "mode": "third",
+      "door": null,
+      "blocked": false,
+      "locked": false,
+      "animation": "run",
+      "position": [
+       2.5701611431814606,
+       0.044638551020006606,
+       2.0682375735596863
+      ],
+      "camera": [
+       2.625944037183077,
+       1.6103282697990784,
+       1.9893645842677163
+      ],
+      "fps": 55.96873818227658,
+      "low1": 7.827448251869895,
+      "frames": 901,
+      "entryMs": 2804.8000000715256
+     }
+    }
+   ],
+   "settled": {
+    "mode": "third",
+    "door": null,
+    "blocked": false,
+    "locked": false,
+    "animation": "idle",
+    "position": [
+     3.0317317105990553,
+     0.0004999999999999965,
+     1.4724565000673993
+    ],
+    "camera": [
+     3.891623829302184,
+     1.7841588647987363,
+     0.27172942631401975
+    ],
+    "fps": 56.035257582425764,
+    "low1": 8.451656524678832,
+    "frames": 917,
+    "entryMs": 2804.8000000715256
+   },
+   "network": [
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/outfit-latin.woff2",
+     "start": 598.5999999046326,
+     "end": 1099.5999999046326,
+     "bytes": 32592
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/fraunces-600-latin.woff2",
+     "start": 598.8999999761581,
+     "end": 984.2999999523163,
+     "bytes": 17472
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-react-CS4MHxMm.js",
+     "start": 599,
+     "end": 1106.1999999284744,
+     "bytes": 47583
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-twJIso0k.js",
+     "start": 599.0999999046326,
+     "end": 1222.0999999046326,
+     "bytes": 32465
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-router-DUymecSS.js",
+     "start": 599.0999999046326,
+     "end": 1222.7999999523163,
+     "bytes": 8718
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CO6GBvCf.css",
+     "start": 599.1999999284744,
+     "end": 1223.1999999284744,
+     "bytes": 15090
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/ThreeStage-DxzyxxIr.js",
+     "start": 1238.5999999046326,
+     "end": 1611.5,
+     "bytes": 34741
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/types-BR-OoGj9.js",
+     "start": 1238.8999999761581,
+     "end": 1615,
+     "bytes": 13462
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-three-Dv4s8tq0.js",
+     "start": 1238.8999999761581,
+     "end": 1857.0999999046326,
+     "bytes": 197558
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServices-DAYI6Nbk.js",
+     "start": 1238.8999999761581,
+     "end": 1873.6999999284744,
+     "bytes": 52711
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/merchantFurniture-ZuMdbwJD.js",
+     "start": 1239.0999999046326,
+     "end": 1615.7999999523163,
+     "bytes": 1694
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productImageSafety-CDXX3Z8N.js",
+     "start": 1239.1999999284744,
+     "end": 1613.3999999761581,
+     "bytes": 734
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/renderQualityStore-DxVj220a.js",
+     "start": 1239.2999999523163,
+     "end": 1711.6999999284744,
+     "bytes": 11525
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServicesCatalog-gFhvLWEg.js",
+     "start": 1239.2999999523163,
+     "end": 2036.2999999523163,
+     "bytes": 2951
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productSurfaceLighting-BCYRGe4O.js",
+     "start": 1239.3999999761581,
+     "end": 1609.7999999523163,
+     "bytes": 14820
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/middleware-BoNmX9tp.js",
+     "start": 1239.3999999761581,
+     "end": 1612.5,
+     "bytes": 1701
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildSkinStore-iroEKnso.js",
+     "start": 1239.5,
+     "end": 1619.0999999046326,
+     "bytes": 1044
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/serviceFixtureMeshes-GiGuMKiG.js",
+     "start": 1239.5999999046326,
+     "end": 1954.5999999046326,
+     "bytes": 2239
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/DemoDesignerPage-B3jRWA9I.js",
+     "start": 1247.7999999523163,
+     "end": 1712.6999999284744,
+     "bytes": 2787
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-u6bcEy_a.js",
+     "start": 1248.0999999046326,
+     "end": 2119.399999976158,
+     "bytes": 326958
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/propertyStore-DcfWtZqY.js",
+     "start": 1248.2999999523163,
+     "end": 1718.8999999761581,
+     "bytes": 31829
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/showcaseSafety-DFBXsUeQ.js",
+     "start": 1248.3999999761581,
+     "end": 1875.7999999523163,
+     "bytes": 479
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/designsApi-BpiEI4MT.js",
+     "start": 1248.3999999761581,
+     "end": 1941.1999999284744,
+     "bytes": 5816
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/LocaleThemeControls-T6ArtPK6.js",
+     "start": 1248.5,
+     "end": 1875.6999999284744,
+     "bytes": 1655
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/RequireMerchant-Do98o4Fd.js",
+     "start": 1248.5999999046326,
+     "end": 1719.2999999523163,
+     "bytes": 2646
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/downloadJson-DhXa1J4E.js",
+     "start": 1248.5999999046326,
+     "end": 1875.6999999284744,
+     "bytes": 576
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/cartStore-Dyggz6eA.js",
+     "start": 1248.6999999284744,
+     "end": 2036.5999999046326,
+     "bytes": 5022
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/currency-24atDEM8.js",
+     "start": 1248.7999999523163,
+     "end": 1844.8999999761581,
+     "bytes": 625
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/quotedProducts-2NCXztC6.js",
+     "start": 1248.7999999523163,
+     "end": 1927.6999999284744,
+     "bytes": 692
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/CurrencySwitcher-BgYMeuf8.js",
+     "start": 1248.8999999761581,
+     "end": 1713.5,
+     "bytes": 1835
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-konva-CbK8OvmD.js",
+     "start": 1249,
+     "end": 1939.8999999761581,
+     "bytes": 92347
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/commission-BSjTNLTx.js",
+     "start": 1249.1999999284744,
+     "end": 1891.2999999523163,
+     "bytes": 352
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-Xhd2x0gp.css",
+     "start": 1249.2999999523163,
+     "end": 1868.7999999523163,
+     "bytes": 43044
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/embedMessages-BIa44F5a.js",
+     "start": 1249.5,
+     "end": 1828.5,
+     "bytes": 1016
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-variable.woff2",
+     "start": 1260.2999999523163,
+     "end": 2035.2999999523163,
+     "bytes": 352540
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/brand/olb/olb-mark.svg",
+     "start": 2144,
+     "end": 2509.6999999284744,
+     "bytes": 700
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/products?limit=100",
+     "start": 2460.7999999523163,
+     "end": 3715.7999999523163,
+     "bytes": 1804
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-variable-italic.woff2",
+     "start": 2682.2999999523163,
+     "end": 3255.6999999284744,
+     "bytes": 388276
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/modelSnapshot-DxkgqUyV.js",
+     "start": 2755.2999999523163,
+     "end": 3259.0999999046326,
+     "bytes": 2776
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkMode-ClMZAahH.js",
+     "start": 7954.899999976158,
+     "end": 8431.099999904633,
+     "bytes": 28680
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/walk-animation-CVCR6P-e.js",
+     "start": 7955.099999904633,
+     "end": 8336.399999976158,
+     "bytes": 16155
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/walk-controls-BAN4guWh.js",
+     "start": 7955.199999928474,
+     "end": 8311.5,
+     "bytes": 1101
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkMode-q0T477Js.css",
+     "start": 7955.399999976158,
+     "end": 8318.599999904633,
+     "bytes": 1939
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.png",
+     "start": 8509.799999952316,
+     "end": 8855,
+     "bytes": 2065
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-b.png",
+     "start": 8509.799999952316,
+     "end": 8869.099999904633,
+     "bytes": 2120
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-male-b.png",
+     "start": 8509.799999952316,
+     "end": 8873.199999928474,
+     "bytes": 2171
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-male-a.png",
+     "start": 8509.799999952316,
+     "end": 8877.399999976158,
+     "bytes": 2075
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+     "start": 11654.199999928474,
+     "end": 12037.299999952316,
+     "bytes": 27141
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+     "start": 12147.699999928474,
+     "end": 12511.5,
+     "bytes": 12100
+    },
+    {
+     "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+     "start": 12147.899999976158,
+     "end": 12655.699999928474,
+     "bytes": 60862
+    }
+   ],
+   "text": "Walk mode\nExit walk ×\nThird person\nWalk / run\nControls\n·\nMove + turn\n\nClick or drag to look · E doors · V view\n\nKenney · CC0",
+   "unchanged": true,
+   "meetingLinks": [],
+   "blockedWrites": []
+  }
+ ]
+}

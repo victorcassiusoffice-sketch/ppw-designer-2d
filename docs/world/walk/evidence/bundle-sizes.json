@@ -1,0 +1,118 @@
+{
+  "auditedAt": "2026-10-27T20:12:35.467Z",
+  "method": "Read-only parse of static imports in final production dist/assets; es-module-lexer. Each gzip size is independently compressed with Node gzip defaults. No rebuild or browser.",
+  "first3DEntry": "ThreeStage-DMr7ah6G.js",
+  "designerRouteEntry": "App-T5XJrWKP.js",
+  "first3DStaticClosure": [
+    "App-T5XJrWKP.js",
+    "CurrencySwitcher-DPWzDjtO.js",
+    "LocaleThemeControls-De5ct6cx.js",
+    "RequireMerchant-BvJGo3r3.js",
+    "ThreeStage-DMr7ah6G.js",
+    "buildSkinStore-BUcqGZS8.js",
+    "buildingServices-DUAe9bFz.js",
+    "buildingServicesCatalog-gFhvLWEg.js",
+    "cartStore-B210j4e0.js",
+    "commission-BSjTNLTx.js",
+    "currency-CGYOmNh0.js",
+    "designsApi-DxRL_04E.js",
+    "downloadJson-DhXa1J4E.js",
+    "main-B_zQJXZs.js",
+    "merchantFurniture-ZuMdbwJD.js",
+    "middleware-BoNmX9tp.js",
+    "productImageSafety-CDXX3Z8N.js",
+    "productSurfaceLighting-3xhnrMEm.js",
+    "propertyStore-CndjWzKx.js",
+    "quotedProducts-2NCXztC6.js",
+    "renderQualityStore-Co4Twmt6.js",
+    "serviceFixtureMeshes-GiGuMKiG.js",
+    "showcaseSafety-vfpeCbFJ.js",
+    "types-BR-OoGj9.js",
+    "vendor-konva-CbK8OvmD.js",
+    "vendor-react-CS4MHxMm.js",
+    "vendor-router-YSxUxVSZ.js",
+    "vendor-three-Dv4s8tq0.js"
+  ],
+  "walkEntry": "WalkMode-C9vynrAX.js",
+  "walkStaticClosure": [
+    "App-T5XJrWKP.js",
+    "CurrencySwitcher-DPWzDjtO.js",
+    "LocaleThemeControls-De5ct6cx.js",
+    "RequireMerchant-BvJGo3r3.js",
+    "ThreeStage-DMr7ah6G.js",
+    "WalkMode-C9vynrAX.js",
+    "buildSkinStore-BUcqGZS8.js",
+    "buildingServices-DUAe9bFz.js",
+    "buildingServicesCatalog-gFhvLWEg.js",
+    "cartStore-B210j4e0.js",
+    "commission-BSjTNLTx.js",
+    "currency-CGYOmNh0.js",
+    "designsApi-DxRL_04E.js",
+    "downloadJson-DhXa1J4E.js",
+    "main-B_zQJXZs.js",
+    "merchantFurniture-ZuMdbwJD.js",
+    "middleware-BoNmX9tp.js",
+    "productImageSafety-CDXX3Z8N.js",
+    "productSurfaceLighting-3xhnrMEm.js",
+    "propertyStore-CndjWzKx.js",
+    "quotedProducts-2NCXztC6.js",
+    "renderQualityStore-Co4Twmt6.js",
+    "serviceFixtureMeshes-GiGuMKiG.js",
+    "showcaseSafety-vfpeCbFJ.js",
+    "types-BR-OoGj9.js",
+    "vendor-konva-CbK8OvmD.js",
+    "vendor-react-CS4MHxMm.js",
+    "vendor-router-YSxUxVSZ.js",
+    "vendor-three-Dv4s8tq0.js",
+    "walk-animation-CVCR6P-e.js",
+    "walk-controls-BAN4guWh.js"
+  ],
+  "exclusivelyDeferredJavaScript": [
+    {
+      "file": "WalkMode-C9vynrAX.js",
+      "bytes": 79783,
+      "gzipBytes": 27410,
+      "sha256": "93dda8cc5acf85e2798ac807da3086ec09c09416ea1ac30b0edc3f207eee49a7"
+    },
+    {
+      "file": "walk-animation-CVCR6P-e.js",
+      "bytes": 50981,
+      "gzipBytes": 14768,
+      "sha256": "40e5de0c11b9ac47d4c78eab1f7dc3240733801c713fa9f6f1c25dd3eeb288ec"
+    },
+    {
+      "file": "walk-controls-BAN4guWh.js",
+      "bytes": 2132,
+      "gzipBytes": 764,
+      "sha256": "47204eff0ab632bda947d93f81479af5f18f0833a806a82e86f952d4e7133806"
+    }
+  ],
+  "exclusivelyDeferredJavaScriptTotal": {
+    "bytes": 132896,
+    "gzipBytes": 42942
+  },
+  "deferredCss": [
+    {
+      "file": "WalkMode-q0T477Js.css",
+      "bytes": 4939,
+      "gzipBytes": 1562,
+      "sha256": "80efe6fdeb9d5f34021122e47e59cc9841b90725012bd4e74beed45f5e398017"
+    }
+  ],
+  "deferredCssTotal": {
+    "bytes": 4939,
+    "gzipBytes": 1562
+  },
+  "featureCodeInFirst3DClosure": false,
+  "notes": [
+    "First-picture dependencies include both the App designer route and its ThreeStage; shared renderer/app dependencies already in first3DStaticClosure are excluded from incremental Walk bytes.",
+    "GLBs, thumbnails, Draco decoder responses and runtime memory are separate from these JavaScript/CSS totals."
+  ],
+  "sourceDiffAudit": {
+    "comparedTo": "3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2",
+    "existingTestsModified": [],
+    "existingEstimateImplementationModified": false,
+    "apiFilesAdded": [],
+    "method": "git diff --name-status base; both modified source paths and all test/spec paths inspected"
+  }
+}

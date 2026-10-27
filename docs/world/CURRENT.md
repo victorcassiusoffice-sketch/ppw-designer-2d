@@ -1,6 +1,6 @@
 # World current state
 
-Last stay-current check: **2026-10-27**. This file describes the Stage 2 branch candidates, not a production deployment. No merge or deployment is authorized. Base for both builds: `3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. Branches: `gpt/olb-walk-mode-2026-10-27` and `gpt/olb-site-map-2026-10-27`. PR numbers, preview verification, final scores and measurements are **pending the integration owner's evidence pass**.
+Last stay-current check: **2026-10-27**. This file describes the Stage 2 branch candidates, not a production deployment. No merge or deployment is authorized. Base for both builds: `3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. Branches: `gpt/olb-walk-mode-2026-10-27` and `gpt/olb-site-map-2026-10-27`. Open candidates: [#53 Walk mode](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/53) and [#54 Site from the map](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/54). Integration evidence updated 28 October 2026 Mauritius time; source/release check remains dated 27 October.
 
 ## Components and releases
 
@@ -23,7 +23,7 @@ Runtime decoder files, unchanged by the character conversion:
 | `draco_wasm_wrapper.js` | 58,572 | `f3ab54e2feabfe8bd37928b5f400bc10230dcc278c7e70bca5e025f63519d960` |
 | `draco_decoder.js` (fallback) | 512,498 | `a47cd7c84911c5175bb0511c01ba41ddafb71873fd391f055def514398f5e7c4` |
 
-The normal WASM path uses the wrapper and WASM; the JavaScript fallback is an alternative, not a required extra download. Entry pause and actual network trace still need the integration measurement. No decoder preload is added to the first-picture path.
+The normal WASM path uses the wrapper and WASM; the JavaScript fallback is an alternative, not a required extra download. Measured entry pause is 3.835 s laptop / 2.805 s phone viewport; network trace confirms only the selected character loads after selection. No decoder preload is added to the first-picture path.
 
 ## Character pack
 
@@ -52,7 +52,7 @@ Terms/source pages below were **checked 2026-10-27**. This is the access date, n
 | PVGIS 5.3, `https://re.jrc.ec.europa.eu/api/v5_3/PVcalc` | [JRC API conditions](https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/using-pvgis-5/api-non-interactive-service_en) and [manual](https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/using-pvgis-5/pvgis-5-user-manual_en). Results may be reused; attribution records JRC/PVGIS version and query. Server calls only because browser AJAX is prohibited. | 30 calls/s/IP, HTTP 429 above the limit, 529 under compute overload; no monthly quota published. Candidate uses 1 kWp, 14% losses, optimal angles, 30-day process cache, 1 s process-local separation. Existing no-site solar estimates remain on their original path. |
 | OSM Overpass public instance, `https://overpass-api.de/api/interpreter` | ODbL and © OpenStreetMap contributors. [Official commons policy](https://dev.overpass-api.de/overpass-doc/en/preface/commons.html) explicitly discourages relying on public instances as a general-purpose app backend. This is a bounded pilot integration, not a scalable service commitment. | Broad guidance: about 10,000 requests/day and under 1 GB/day; dynamic slots/cooldowns, 429/504 possible. One confirmed-plot context query, 24 h process cache, 10 s process-local separation. No request on every pan. A public production expansion needs a suitable provider/operating decision. |
 
-Server-process caches and throttles do not persist across restarts and do not coordinate multiple server instances. Browser cache also has bounded entries/expiry. The final report must not claim a durable global quota limiter. Requests are fixed-origin and bounded; provider failure retains the boundary and reports unavailable. API resilience, Retry-After behavior and multi-instance operating limits remain part of the integration review.
+Server-process caches and throttles do not persist across restarts and do not coordinate multiple server instances. Browser cache also has bounded entries/expiry. No durable global quota limiter is claimed. Requests are fixed-origin and bounded; provider failure retains the boundary and reports unavailable. Bounded-response, Retry-After and admission tests pass; multi-instance quotas remain an operating limitation.
 
 Verified source samples: Mauritius `srtm/S21E057.tif` plus `gmted/30S030E_20101117_gmted_mea075.tif` (AWS tile last modified 2017-11-18); London `uk_lidar/LIDAR-DTM-2M-TQ28.tif` plus `TQ38.tif` (2017-11-15); Paris `eudem/eudem_dem_5deg_n45e000.tif` (2017-11-15, rejected). These old archive dates are shown as source currency evidence, not current ground conditions. UK credit uses the provider's **Environment Agency 2015** notice, not the current catalogue's 2022 release.
 
@@ -66,15 +66,19 @@ No Google code path/key/environment variable; no anonymous Esri or NASA plot-sca
 
 ## Evidence status and next work
 
-Final bundle sizes, first-picture timing pairs, walk entry pause, average/1% low FPS, chooser latency, CI status, preview URLs and rubric scores: **pending integration measurement; no passing result implied**. The asset-only checks above are complete. Physical-phone performance cannot be established by a 390 × 844 desktop viewport alone.
+Latest regular CI suites: Walk **4,329 tests / 400 files**, Site **4,378 / 402**. Root/API/middleware typechecks and builds pass after the Site fetch-mock typing correction. Lighthouse remains red on both, with the same 22 failing assertions as merged PR51. No gate was weakened. Exact measurements, eight Walk preview screenshots, Site PDFs, sources and test evidence live in each PR's `docs/world/<build>/REPORT.md`.
 
-The lowest three rubric scores are **pending the first scored run**. The integration owner must replace this line with actual scores and evidence before the Stage 2 hand-back; do not manufacture a ranking from unrun checks.
+Walk deferred JS **42,942 bytes gzip** plus one **91,804–92,780 byte** character. Site workspace/map/worker **464,676 bytes gzip total**; map alone **299,328**, worker **151,615**. Heavy features stay deferred. Site persistence validation adds **4,350 gzip bytes** to the early store; Walk Three export aliases add **12 gzip bytes**, plus small launcher/lifecycle adapters. Literal zero early code growth is not claimed or passed.
 
-Provisional next three improvements, to be reordered after the scored run:
+First-picture gate fails: Walk 8/10 primary pairs slower (10/10 canvas marks); Site 9/10 (10/10 canvas marks). Walk preview medians laptop/phone 6.02 / 4.99 s; Site 5.57 / 5.10 s. Screenshot-free Walk averages **59.70 / 59.57 fps**, 1% lows **39.80 / 34.70**. Strict laptop 60 fps is not claimed passed. Chooser cold open **8.958 / 1.426 s**; entry **3.835 / 2.805 s**. Phone is emulation on Intel Iris Xe, not hardware.
 
-1. Address the lowest measured Walk collision/camera/input or phone-performance score, preserving read-only design state.
-2. Address the lowest measured Site report/print/input score; extend unsupported concave planning or survey cases only with validated geometry and clear provenance.
-3. Recheck Quaternius source availability and Three/Draco patch releases; replace/upgrade only after licence, animation and paired first-picture gates pass. Reassess public-provider operating limits before broader use.
+Lowest three priority scores (ties selected by release impact): **first picture 1**, **chooser latency 1**, **frame pacing/performance 1**. Other 1s include input-latency evidence, third-person camera polish, first-use comprehension, one-hand physical validation and unassisted Site usability. No score is 3.
+
+Next three improvements, in order:
+
+1. Repair first-picture/early-code gates, including Site persistence loading architecture, and resolve inherited Lighthouse assertions without suppressing gates; keep estimates and no-site serialization unchanged.
+2. Reduce cold chooser/entry latency and frame-time stalls; refine third-person framing in tight rooms. Keep all before/after paired evidence, including failures.
+3. Test first-use comprehension and one-hand controls on physical phones; harden/report provider availability and unsupported Site geometry. Recheck source licences/current versions during the four-week review before any upgrade.
 
 ## Standing improvement cycle
 

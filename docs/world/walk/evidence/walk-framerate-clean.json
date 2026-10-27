@@ -1,0 +1,238 @@
+{
+ "at": "2026-10-27T20:21:25.457Z",
+ "target": "walk",
+ "codeHead": "4e8f5c5f3e246416f16464c8bbfd003f2561f687",
+ "method": "Additional frame-pacing run without screenshots. Retains original instrumented run separately. Fresh Chromium per viewport, Intel Iris Xe D3D11, no CPU/network throttle. After entry wait 3 seconds, alternate W/S once per second for 40 seconds, with Shift during the last 20 seconds. Final runtime window contains up to 1800 recent active frame intervals; average fps and reciprocal mean of worst 1% intervals. Phone is desktop touch emulation, not hardware.",
+ "rows": [
+  {
+   "device": "desktop",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "httpErrors": [],
+   "failedRequests": [],
+   "samples": [
+    {
+     "mode": "third",
+     "door": null,
+     "blocked": false,
+     "locked": false,
+     "animation": "walk",
+     "position": [
+      4.250302689542561,
+      0.0004999999999999965,
+      1.7548699935796765
+     ],
+     "camera": [
+      5.381843386135027,
+      1.8418816691802362,
+      0.18802840314681646
+     ],
+     "fps": 55.47254982992657,
+     "low1": 7.777777777777747,
+     "frames": 708,
+     "entryMs": 3671.0999999046326
+    },
+    {
+     "mode": "third",
+     "door": null,
+     "blocked": false,
+     "locked": false,
+     "animation": "walk",
+     "position": [
+      4.21720038326275,
+      0.0005000000000000035,
+      1.789653150720454
+     ],
+     "camera": [
+      5.374198055450742,
+      1.848073502761377,
+      0.18803050136808452
+     ],
+     "fps": 57.48749216881822,
+     "low1": 12.172854534388215,
+     "frames": 1313,
+     "entryMs": 3671.0999999046326
+    },
+    {
+     "mode": "third",
+     "door": null,
+     "blocked": false,
+     "locked": false,
+     "animation": "run",
+     "position": [
+      3.9695732204553273,
+      0.0004999999999999965,
+      1.9719171631180399
+     ],
+     "camera": [
+      5.20634440938988,
+      1.8883326445387498,
+      0.23379141700965178
+     ],
+     "fps": 59.70386881069893,
+     "low1": 39.7965951801854,
+     "frames": 1914,
+     "entryMs": 3671.0999999046326
+    },
+    {
+     "mode": "third",
+     "door": null,
+     "blocked": false,
+     "locked": false,
+     "animation": "run",
+     "position": [
+      3.865041040306605,
+      0.0004999999999999965,
+      2.0814836485557167
+     ],
+     "camera": [
+      5.169536628243335,
+      1.9048431941830508,
+      0.2509536389617648
+     ],
+     "fps": 59.70386881069893,
+     "low1": 39.7965951801854,
+     "frames": 2519,
+     "entryMs": 3671.0999999046326
+    }
+   ],
+   "final": {
+    "mode": "third",
+    "door": null,
+    "blocked": false,
+    "locked": false,
+    "animation": "run",
+    "position": [
+     3.865041040306605,
+     0.0004999999999999965,
+     2.0814836485557167
+    ],
+    "camera": [
+     5.169536628243335,
+     1.9048431941830508,
+     0.2509536389617648
+    ],
+    "fps": 59.70386881069893,
+    "low1": 39.7965951801854,
+    "frames": 2519,
+    "entryMs": 3671.0999999046326
+   },
+   "blockedWrites": []
+  },
+  {
+   "device": "phone",
+   "consoleErrors": [],
+   "pageErrors": [],
+   "httpErrors": [],
+   "failedRequests": [],
+   "samples": [
+    {
+     "mode": "third",
+     "door": null,
+     "blocked": false,
+     "locked": false,
+     "animation": "walk",
+     "position": [
+      4.474850314999985,
+      0.0004999999999999965,
+      1.518607605454488
+     ],
+     "camera": [
+      5.433593851362124,
+      1.7997229332137918,
+      0.18802071280538724
+     ],
+     "fps": 53.77428834598009,
+     "low1": 6.564141035258828,
+     "frames": 626,
+     "entryMs": 2548.600000023842
+    },
+    {
+     "mode": "third",
+     "door": null,
+     "blocked": false,
+     "locked": false,
+     "animation": "walk",
+     "position": [
+      4.524790440999979,
+      0.0004999999999999965,
+      1.4660506476362831
+     ],
+     "camera": [
+      5.445069678322186,
+      1.7903648729424708,
+      0.18801952021315782
+     ],
+     "fps": 56.564208609576205,
+     "low1": 9.115077857956729,
+     "frames": 1183,
+     "entryMs": 2548.600000023842
+    },
+    {
+     "mode": "third",
+     "door": null,
+     "blocked": false,
+     "locked": false,
+     "animation": "run",
+     "position": [
+      3.815896751956303,
+      0.0005,
+      2.1576963291223086
+     ],
+     "camera": [
+      5.184713599523846,
+      1.9205020344270138,
+      0.23969109715769665
+     ],
+     "fps": 57.26768982334594,
+     "low1": 10.590727229936443,
+     "frames": 1774,
+     "entryMs": 2548.600000023842
+    },
+    {
+     "mode": "third",
+     "door": null,
+     "blocked": false,
+     "locked": false,
+     "animation": "run",
+     "position": [
+      4.284319023037727,
+      0.0005,
+      1.6647238700751184
+     ],
+     "camera": [
+      5.3280024369284735,
+      1.841241018178643,
+      0.19116995012948745
+     ],
+     "fps": 59.57207393556288,
+     "low1": 34.69545104085993,
+     "frames": 2393,
+     "entryMs": 2548.600000023842
+    }
+   ],
+   "final": {
+    "mode": "third",
+    "door": null,
+    "blocked": false,
+    "locked": false,
+    "animation": "run",
+    "position": [
+     4.284319023037727,
+     0.0005,
+     1.6647238700751184
+    ],
+    "camera": [
+     5.3280024369284735,
+     1.841241018178643,
+     0.19116995012948745
+    ],
+    "fps": 59.57207393556288,
+    "low1": 34.69545104085993,
+    "frames": 2393,
+    "entryMs": 2548.600000023842
+   },
+   "blockedWrites": []
+  }
+ ]
+}
