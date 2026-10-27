@@ -1,0 +1,412 @@
+{
+  "base": "https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app",
+  "phase": "preview",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "placeholders": [],
+      "checks": [
+        "2d basket: image column, demo text guard, no horizontal overflow",
+        "2d catalogue: existing photos and labelled drawings, no placeholder URLs",
+        "3d basket: image column, demo text guard, no horizontal overflow",
+        "3d catalogue: existing photos and labelled drawings, no placeholder URLs"
+      ],
+      "shots": [
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-2d-basket.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-2d-console.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-2d-rubber.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-2d-nordictrack.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-3d-basket.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-3d-console.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-3d-rubber.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-3d-nordictrack.png"
+      ],
+      "observations": [
+        {
+          "view": "2d",
+          "images": 33,
+          "drawings": 33
+        },
+        {
+          "view": "2d",
+          "search": "Console",
+          "images": [
+            {
+              "id": "demo-console-table",
+              "kind": "plan",
+              "source": "/products/topdown/demo-console-table.webp",
+              "loaded": true
+            }
+          ]
+        },
+        {
+          "view": "2d",
+          "search": "Rubber",
+          "images": [
+            {
+              "id": "courts-gessica-dining-6",
+              "kind": "plan",
+              "source": "/products/catalog-plans/courts-gessica-dining-6-faf99dd3d99823bd.png",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-rubber-interlock",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-rubber-interlock.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-1m",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-outdoor-rubber-1m.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-50",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-outdoor-rubber-50.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-epdm-roll",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-epdm-roll.webp",
+              "loaded": true
+            }
+          ]
+        },
+        {
+          "view": "2d",
+          "search": "NordicTrack",
+          "images": [
+            {
+              "id": "m-6",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-2450.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-7",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-tour-de-france.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-8",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-gx10.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-11",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-x16.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-12",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-rw900.webp",
+              "loaded": true
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "images": 33,
+          "drawings": 33
+        },
+        {
+          "view": "3d",
+          "search": "Console",
+          "images": [
+            {
+              "id": "demo-console-table",
+              "kind": "plan",
+              "source": "/products/topdown/demo-console-table.webp",
+              "loaded": true
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "search": "Rubber",
+          "images": [
+            {
+              "id": "courts-gessica-dining-6",
+              "kind": "plan",
+              "source": "/products/catalog-plans/courts-gessica-dining-6-faf99dd3d99823bd.png",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-rubber-interlock",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-rubber-interlock.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-1m",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-outdoor-rubber-1m.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-50",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-outdoor-rubber-50.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-epdm-roll",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-epdm-roll.webp",
+              "loaded": true
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "search": "NordicTrack",
+          "images": [
+            {
+              "id": "m-6",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-2450.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-7",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-tour-de-france.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-8",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-gx10.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-11",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-x16.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-12",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-rw900.webp",
+              "loaded": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "placeholders": [],
+      "checks": [
+        "2d basket: image column, demo text guard, no horizontal overflow",
+        "2d catalogue: existing photos and labelled drawings, no placeholder URLs",
+        "3d basket: image column, demo text guard, no horizontal overflow",
+        "3d catalogue: existing photos and labelled drawings, no placeholder URLs"
+      ],
+      "shots": [
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-2d-basket.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-2d-console.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-2d-rubber.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-2d-nordictrack.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-basket.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-console.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-rubber.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-nordictrack.png"
+      ],
+      "observations": [
+        {
+          "view": "2d",
+          "images": 33,
+          "drawings": 33
+        },
+        {
+          "view": "2d",
+          "search": "Console",
+          "images": [
+            {
+              "id": "demo-console-table",
+              "kind": "plan",
+              "source": "/products/topdown/demo-console-table.webp",
+              "loaded": true
+            }
+          ]
+        },
+        {
+          "view": "2d",
+          "search": "Rubber",
+          "images": [
+            {
+              "id": "courts-gessica-dining-6",
+              "kind": "plan",
+              "source": "/products/catalog-plans/courts-gessica-dining-6-faf99dd3d99823bd.png",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-rubber-interlock",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-rubber-interlock.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-1m",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-outdoor-rubber-1m.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-50",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-outdoor-rubber-50.webp",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-epdm-roll",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-epdm-roll.webp",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "2d",
+          "search": "NordicTrack",
+          "images": [
+            {
+              "id": "m-6",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-2450.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-7",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-tour-de-france.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-8",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-gx10.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-11",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-x16.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-12",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-rw900.webp",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "images": 33,
+          "drawings": 33
+        },
+        {
+          "view": "3d",
+          "search": "Console",
+          "images": [
+            {
+              "id": "demo-console-table",
+              "kind": "plan",
+              "source": "/products/topdown/demo-console-table.webp",
+              "loaded": true
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "search": "Rubber",
+          "images": [
+            {
+              "id": "courts-gessica-dining-6",
+              "kind": "plan",
+              "source": "/products/catalog-plans/courts-gessica-dining-6-faf99dd3d99823bd.png",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-rubber-interlock",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-rubber-interlock.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-1m",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-outdoor-rubber-1m.webp",
+              "loaded": true
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-50",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-outdoor-rubber-50.webp",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-epdm-roll",
+              "kind": "plan",
+              "source": "/products/topdown/k1-floor-epdm-roll.webp",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "search": "NordicTrack",
+          "images": [
+            {
+              "id": "m-6",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-2450.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-7",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-tour-de-france.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-8",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-gx10.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-11",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-x16.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-12",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-rw900.webp",
+              "loaded": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2559 @@
+{
+  "at": "2026-10-25T18:28:08.545Z",
+  "phase": "diagnostic",
+  "base": "http://127.0.0.1:5173",
+  "method": "Fresh Chromium process/profile per run; no network/CPU throttling. Reviewer loading-hidden method plus first real render timestamp. Native D3D11. Orbit counts completed renders, not idle RAF.",
+  "runs": [
+    {
+      "device": "desktop",
+      "run": 1,
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "dclMs": 165,
+      "firstPictureMs": 5418,
+      "timings": {
+        "first": 3744.599999964237,
+        "loadingHidden": null,
+        "long": [
+          {
+            "start": 341.5,
+            "duration": 378
+          },
+          {
+            "start": 845.5999999642372,
+            "duration": 1694
+          },
+          {
+            "start": 2541.199999988079,
+            "duration": 1206
+          },
+          {
+            "start": 3767,
+            "duration": 451
+          },
+          {
+            "start": 4240.699999988079,
+            "duration": 356
+          },
+          {
+            "start": 4626.199999988079,
+            "duration": 440
+          },
+          {
+            "start": 5066.299999952316,
+            "duration": 199
+          },
+          {
+            "start": 5268.699999988079,
+            "duration": 759
+          }
+        ],
+        "gl": [
+          {
+            "name": "compileShader",
+            "start": 1540.0999999642372,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1540.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1540.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1550.0999999642372,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1550.5999999642372,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1550.5999999642372,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1583.0999999642372,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1583.3999999761581,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1583.3999999761581,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1607.3999999761581,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1607.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1607.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1621.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1621.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1621.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1662.3999999761581,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1662.3999999761581,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1662.3999999761581,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 2422.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2422.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2422.699999988079,
+            "duration": 0.19999998807907104
+          },
+          {
+            "name": "compileShader",
+            "start": 2423.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2423.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2423.7999999523163,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 2424.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2424.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2424.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2425.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2426,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2426,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2426.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2427.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2427.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2429.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2429.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2429.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2430.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2430.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2430.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2431.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2432.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2432.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2433.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2433.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2433.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2434.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2435.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2435.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2435.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2436,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2436,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2436.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2436.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2436.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2437.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2437.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2437.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2449.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2450.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2450.399999976158,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 2482.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2483.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2483.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2484.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2485.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2485.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2487.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2487.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2487.7999999523163,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 2489.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2490.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2490.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2492.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2493.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2493.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2493.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2494,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2494,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2496.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2497.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2497.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2500.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2501.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2501.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2514.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2515.099999964237,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "linkProgram",
+            "start": 2515.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2516.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2517.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2517.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2603.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2604.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2604.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3872.7999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3873,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3873,
+            "duration": 0.09999996423721313
+          },
+          {
+            "name": "compileShader",
+            "start": 3881.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3882.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3882.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3900.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3901.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3901.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3908.899999976158,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 3909.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3909.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3917.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3917.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3917.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3921.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3921.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3921.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3934.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3934.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3934.2999999523163,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3941,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3941.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3941.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4083.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4083.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4083.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4272.699999988079,
+            "duration": 0.09999996423721313
+          },
+          {
+            "name": "compileShader",
+            "start": 4273.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4273.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4421.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4421.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4421.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4669.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4669.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4669.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4879.799999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4880.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4880.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5099.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5099.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5099.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5100.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5100.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5100.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5100.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5100.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5100.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5100.799999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5100.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5100.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5102.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5102.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5102.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5103.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5104.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5104.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5106,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5106.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5106.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5108.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5108.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5108.5,
+            "duration": 0.09999996423721313
+          },
+          {
+            "name": "compileShader",
+            "start": 5109.599999964237,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 5110,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5110.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5110.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5111.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5111.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5112.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5113.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5113.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5114.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5114.799999952316,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5114.799999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5117.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5118.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5118.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5120.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5120.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5120.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5120.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5121,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5121,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5121.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5121.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5121.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5121.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5122.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5122.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5131,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5131.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5131.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5150.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5151.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5151.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5154.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5155.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5155.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5176.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5177.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5180.299999952316,
+            "duration": 0.5
+          },
+          {
+            "name": "compileShader",
+            "start": 5183.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5184.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5184.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5188,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5188.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5188.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5189.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5189.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5189.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5196.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5196.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5196.799999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5201.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5201.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5201.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5208.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5208.799999952316,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5208.799999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5214.5,
+            "duration": 0.09999996423721313
+          },
+          {
+            "name": "compileShader",
+            "start": 5215,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5215,
+            "duration": 0.09999996423721313
+          },
+          {
+            "name": "compileShader",
+            "start": 5303.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 5304.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 5304.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6015.699999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6016.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6016.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6067.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6067.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6067.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6306,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6306,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6306,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6315.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6315.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6315.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6323.399999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6323.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6323.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6383.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6383.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6383.599999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6554.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6554.099999964237,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6554.199999988079,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6561.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6561.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6561.899999976158,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6573.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 6573.299999952316,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 6573.299999952316,
+            "duration": 0
+          }
+        ],
+        "resources": [
+          {
+            "name": "http://127.0.0.1:5173/assets/vendor-react-CS4MHxMm.js",
+            "start": 110,
+            "duration": 28.399999976158142,
+            "size": 45922
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/vendor-router-YSxUxVSZ.js",
+            "start": 110.39999997615814,
+            "duration": 24.5,
+            "size": 8336
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/main-q97_-KV6.js",
+            "start": 110.5,
+            "duration": 27,
+            "size": 31395
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/main-CO6GBvCf.css",
+            "start": 110.79999995231628,
+            "duration": 26.30000001192093,
+            "size": 14588
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/ThreeStage-cOHMgaur.js",
+            "start": 154.5,
+            "duration": 21.5,
+            "size": 32273
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/vendor-three-CmL9lfit.js",
+            "start": 154.5999999642372,
+            "duration": 74.90000003576279,
+            "size": 191541
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/buildingServices-CVUg-ouL.js",
+            "start": 154.69999998807907,
+            "duration": 30.5,
+            "size": 51603
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/types-BR-OoGj9.js",
+            "start": 154.69999998807907,
+            "duration": 35.89999997615814,
+            "size": 12921
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/productImageSafety-CXAhLEq0.js",
+            "start": 154.79999995231628,
+            "duration": 33.5,
+            "size": 520
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/merchantFurniture-ZuMdbwJD.js",
+            "start": 154.79999995231628,
+            "duration": 36.40000003576279,
+            "size": 1672
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/buildingServicesCatalog-gFhvLWEg.js",
+            "start": 154.89999997615814,
+            "duration": 42.30000001192093,
+            "size": 2873
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/renderQualityStore-B7rfdKKW.js",
+            "start": 154.89999997615814,
+            "duration": 43.80000001192093,
+            "size": 11181
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/middleware-BoNmX9tp.js",
+            "start": 155,
+            "duration": 45,
+            "size": 1661
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/buildSkinStore-Csu9nt5F.js",
+            "start": 155.0999999642372,
+            "duration": 52.80000001192093,
+            "size": 1044
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/serviceFixtureMeshes-Bjx-skdf.js",
+            "start": 155.0999999642372,
+            "duration": 54.5,
+            "size": 2182
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/productSurfaceLighting-CFExShkt.js",
+            "start": 155.0999999642372,
+            "duration": 54.60000002384186,
+            "size": 14310
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/DemoDesignerPage-7Z76rfns.js",
+            "start": 162,
+            "duration": 54.19999998807907,
+            "size": 2676
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/App-DvhdSSWZ.js",
+            "start": 162.0999999642372,
+            "duration": 134.60000002384186,
+            "size": 327485
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/propertyStore-_1b9CUAr.js",
+            "start": 162.29999995231628,
+            "duration": 63.30000001192093,
+            "size": 30136
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/designsApi-DS78fKuk.js",
+            "start": 162.39999997615814,
+            "duration": 57.39999997615814,
+            "size": 5652
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/showcaseSafety-vfpeCbFJ.js",
+            "start": 162.5,
+            "duration": 61.69999998807907,
+            "size": 1021
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/LocaleThemeControls-DQiDMd79.js",
+            "start": 162.69999998807907,
+            "duration": 65.59999996423721,
+            "size": 1608
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/downloadJson-DhXa1J4E.js",
+            "start": 162.89999997615814,
+            "duration": 67.30000001192093,
+            "size": 576
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/RequireMerchant-BvJGo3r3.js",
+            "start": 162.89999997615814,
+            "duration": 67.30000001192093,
+            "size": 2592
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/cartStore-CEmyvb8L.js",
+            "start": 163.0999999642372,
+            "duration": 72.5,
+            "size": 4856
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/currency-CYDrrpYV.js",
+            "start": 163.19999998807907,
+            "duration": 73.5,
+            "size": 625
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/quotedProducts-2NCXztC6.js",
+            "start": 163.39999997615814,
+            "duration": 74,
+            "size": 692
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/CurrencySwitcher-Bthrz3Fc.js",
+            "start": 163.5,
+            "duration": 75.19999998807907,
+            "size": 1748
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/vendor-konva-CbK8OvmD.js",
+            "start": 163.69999998807907,
+            "duration": 86.69999998807907,
+            "size": 89564
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/commission-BSjTNLTx.js",
+            "start": 163.79999995231628,
+            "duration": 79.30000001192093,
+            "size": 352
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/App-Xhd2x0gp.css",
+            "start": 164.29999995231628,
+            "duration": 50.90000003576279,
+            "size": 38305
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/embedMessages-BIa44F5a.js",
+            "start": 164.79999995231628,
+            "duration": 78.5,
+            "size": 1016
+          },
+          {
+            "name": "http://127.0.0.1:5173/fonts/inter-variable.woff2",
+            "start": 169.89999997615814,
+            "duration": 38.39999997615814,
+            "size": 352540
+          },
+          {
+            "name": "http://127.0.0.1:5173/brand/olb/olb-mark.svg",
+            "start": 329.69999998807907,
+            "duration": 5.599999964237213,
+            "size": 700
+          },
+          {
+            "name": "http://127.0.0.1:5173/brand/olb/olb-mark.svg",
+            "start": 389.5999999642372,
+            "duration": 7.600000023841858,
+            "size": 700
+          },
+          {
+            "name": "http://127.0.0.1:5173/api/products?limit=100",
+            "start": 391.89999997615814,
+            "duration": 301.89999997615814,
+            "size": 1264
+          },
+          {
+            "name": "http://127.0.0.1:5173/fonts/inter-variable-italic.woff2",
+            "start": 611.3999999761581,
+            "duration": 85.30000001192093,
+            "size": 388276
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/modelSnapshot-Bw8MFkHB.js",
+            "start": 699.3999999761581,
+            "duration": 27.19999998807907,
+            "size": 2694
+          }
+        ],
+        "marks": []
+      },
+      "attrs": {
+        "data-testid": "wallpaint-3d-gl",
+        "data-engine": "three.js r186",
+        "data-hover-cutaway": "",
+        "data-erase-target": "",
+        "data-projection": "perspective",
+        "data-shading": "natural-basic",
+        "data-quality": "medium",
+        "data-shadow-size": "2048",
+        "data-auto-ao": "disabled",
+        "data-auto-ao-fps": "7.3",
+        "data-first-picture-ms": "3744.399999976158",
+        "data-ao-prepare-start-ms": "5089.099999964237",
+        "data-shading-prepared-ms": "6048.5",
+        "data-first-ao-ms": "6585.599999964237"
+      },
+      "camera": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+      "renderCamera": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}",
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1167,
+        "height": 596
+      },
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "overflow": 0,
+      "passed": true
+    },
+    {
+      "device": "phone",
+      "run": 1,
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "dclMs": 60,
+      "firstPictureMs": 4117,
+      "timings": {
+        "first": 3201.5,
+        "loadingHidden": null,
+        "long": [
+          {
+            "start": 221.60000002384186,
+            "duration": 294
+          },
+          {
+            "start": 612.7000000476837,
+            "duration": 1442
+          },
+          {
+            "start": 2055.300000011921,
+            "duration": 1147
+          },
+          {
+            "start": 3224.900000035763,
+            "duration": 295
+          },
+          {
+            "start": 3542.2000000476837,
+            "duration": 240
+          },
+          {
+            "start": 3787.5,
+            "duration": 324
+          },
+          {
+            "start": 4115.700000047684,
+            "duration": 333
+          }
+        ],
+        "gl": [
+          {
+            "name": "compileShader",
+            "start": 1093.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1093.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1093.4000000357628,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1099.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1100,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1100,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 1126.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1126.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1126.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1148.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1148.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1148.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1159.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1159.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1159.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1196.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1196.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1196.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1954,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1954,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1954,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1955.4000000357628,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1955.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1955.800000011921,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 1956.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1957,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1957,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1957.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1958.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1958.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1958.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1959,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1959,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1960,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1960.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1960.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1961.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1962.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1962.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1963.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1963.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1963.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1964.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1965.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1965.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1966.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1966.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1966.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1967.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1967.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1967.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1968.4000000357628,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1968.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1968.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1968.9000000357628,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1968.9000000357628,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1968.9000000357628,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 1983.300000011921,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 1984,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 1984,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2004.9000000357628,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2005.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2005.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2007.1000000238419,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 2007.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2007.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2009.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2010.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2010.2000000476837,
+            "duration": 0.09999996423721313
+          },
+          {
+            "name": "compileShader",
+            "start": 2013,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2013.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2013.6000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2016.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2017.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2017.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2018.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2018.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2018.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2024.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2025.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2025.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2028.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2029.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2029.1000000238419,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 2034.4000000357628,
+            "duration": 0.19999998807907104
+          },
+          {
+            "name": "compileShader",
+            "start": 2035,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "linkProgram",
+            "start": 2035.1000000238419,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2036.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2037.300000011921,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "linkProgram",
+            "start": 2037.4000000357628,
+            "duration": 0.09999996423721313
+          },
+          {
+            "name": "compileShader",
+            "start": 2111.600000023842,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 2111.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 2111.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3307.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3307.900000035763,
+            "duration": 0.09999996423721313
+          },
+          {
+            "name": "linkProgram",
+            "start": 3308,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 3313,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3313.5,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3313.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3324.600000023842,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3325,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3325,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3333.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3333.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3333.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3340.300000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3340.400000035763,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3340.400000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3343.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3343.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3343.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3358.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3359,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3359,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3364.400000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3364.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3364.800000011921,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "compileShader",
+            "start": 3436.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3437.600000023842,
+            "duration": 0.10000002384185791
+          },
+          {
+            "name": "linkProgram",
+            "start": 3437.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3499.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3499.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3499.900000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3602.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3602.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3602.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3842.7000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3843.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3843.2000000476837,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3986.400000035763,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 3986.600000023842,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 3986.600000023842,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4145.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4146.200000047684,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4146.200000047684,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4296.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4296.700000047684,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4296.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4468.800000011921,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4469.100000023842,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4469.100000023842,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4561.5,
+            "duration": 0
+          },
+          {
+            "name": "compileShader",
+            "start": 4561.600000023842,
+            "duration": 0
+          },
+          {
+            "name": "linkProgram",
+            "start": 4561.600000023842,
+            "duration": 0
+          }
+        ],
+        "resources": [
+          {
+            "name": "http://127.0.0.1:5173/assets/vendor-react-CS4MHxMm.js",
+            "start": 19.200000047683716,
+            "duration": 15.299999952316284,
+            "size": 45922
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/vendor-router-YSxUxVSZ.js",
+            "start": 19.400000035762787,
+            "duration": 10.399999976158142,
+            "size": 8336
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/main-q97_-KV6.js",
+            "start": 19.400000035762787,
+            "duration": 12.800000011920929,
+            "size": 31395
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/main-CO6GBvCf.css",
+            "start": 19.5,
+            "duration": 11.800000011920929,
+            "size": 14588
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/ThreeStage-cOHMgaur.js",
+            "start": 49,
+            "duration": 30,
+            "size": 32273
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/types-BR-OoGj9.js",
+            "start": 49.30000001192093,
+            "duration": 35.40000003576279,
+            "size": 12921
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/buildingServices-CVUg-ouL.js",
+            "start": 49.30000001192093,
+            "duration": 41.5,
+            "size": 51603
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/vendor-three-CmL9lfit.js",
+            "start": 49.30000001192093,
+            "duration": 77.19999998807907,
+            "size": 191541
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/productImageSafety-CXAhLEq0.js",
+            "start": 49.40000003576279,
+            "duration": 30,
+            "size": 520
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/merchantFurniture-ZuMdbwJD.js",
+            "start": 49.40000003576279,
+            "duration": 30.5,
+            "size": 1672
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/buildingServicesCatalog-gFhvLWEg.js",
+            "start": 49.5,
+            "duration": 41,
+            "size": 2873
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/renderQualityStore-B7rfdKKW.js",
+            "start": 49.5,
+            "duration": 41.80000001192093,
+            "size": 11181
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/middleware-BoNmX9tp.js",
+            "start": 49.700000047683716,
+            "duration": 42.19999998807907,
+            "size": 1661
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/productSurfaceLighting-CFExShkt.js",
+            "start": 49.700000047683716,
+            "duration": 47.299999952316284,
+            "size": 14310
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/buildSkinStore-Csu9nt5F.js",
+            "start": 49.700000047683716,
+            "duration": 49,
+            "size": 1044
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/serviceFixtureMeshes-Bjx-skdf.js",
+            "start": 49.700000047683716,
+            "duration": 53.39999997615814,
+            "size": 2182
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/DemoDesignerPage-7Z76rfns.js",
+            "start": 57.30000001192093,
+            "duration": 49.40000003576279,
+            "size": 2676
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/App-DvhdSSWZ.js",
+            "start": 57.30000001192093,
+            "duration": 119.69999998807907,
+            "size": 327485
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/propertyStore-_1b9CUAr.js",
+            "start": 57.40000003576279,
+            "duration": 57,
+            "size": 30136
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/designsApi-DS78fKuk.js",
+            "start": 57.5,
+            "duration": 56.5,
+            "size": 5652
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/showcaseSafety-vfpeCbFJ.js",
+            "start": 57.5,
+            "duration": 58.5,
+            "size": 1021
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/LocaleThemeControls-DQiDMd79.js",
+            "start": 57.60000002384186,
+            "duration": 84.69999998807907,
+            "size": 1608
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/RequireMerchant-BvJGo3r3.js",
+            "start": 57.60000002384186,
+            "duration": 85.10000002384186,
+            "size": 2592
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/downloadJson-DhXa1J4E.js",
+            "start": 57.700000047683716,
+            "duration": 83.19999998807907,
+            "size": 576
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/cartStore-CEmyvb8L.js",
+            "start": 57.80000001192093,
+            "duration": 85.10000002384186,
+            "size": 4856
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/currency-CYDrrpYV.js",
+            "start": 58,
+            "duration": 84.70000004768372,
+            "size": 625
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/quotedProducts-2NCXztC6.js",
+            "start": 58.10000002384186,
+            "duration": 114.19999998807907,
+            "size": 692
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/CurrencySwitcher-Bthrz3Fc.js",
+            "start": 58.200000047683716,
+            "duration": 115.29999995231628,
+            "size": 1748
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/vendor-konva-CbK8OvmD.js",
+            "start": 58.30000001192093,
+            "duration": 125.40000003576279,
+            "size": 89564
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/commission-BSjTNLTx.js",
+            "start": 58.40000003576279,
+            "duration": 115.30000001192093,
+            "size": 352
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/App-Xhd2x0gp.css",
+            "start": 58.5,
+            "duration": 54.700000047683716,
+            "size": 38305
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/embedMessages-BIa44F5a.js",
+            "start": 58.60000002384186,
+            "duration": 115,
+            "size": 1016
+          },
+          {
+            "name": "http://127.0.0.1:5173/fonts/inter-variable.woff2",
+            "start": 61.700000047683716,
+            "duration": 44.299999952316284,
+            "size": 352540
+          },
+          {
+            "name": "http://127.0.0.1:5173/brand/olb/olb-mark.svg",
+            "start": 216.5,
+            "duration": 5.900000035762787,
+            "size": 700
+          },
+          {
+            "name": "http://127.0.0.1:5173/api/products?limit=100",
+            "start": 261.60000002384186,
+            "duration": 228.30000001192093,
+            "size": 1264
+          },
+          {
+            "name": "http://127.0.0.1:5173/fonts/inter-variable-italic.woff2",
+            "start": 428.2000000476837,
+            "duration": 63.799999952316284,
+            "size": 388276
+          },
+          {
+            "name": "http://127.0.0.1:5173/assets/modelSnapshot-Bw8MFkHB.js",
+            "start": 496.10000002384186,
+            "duration": 25.69999998807907,
+            "size": 2694
+          }
+        ],
+        "marks": []
+      },
+      "attrs": {
+        "data-testid": "wallpaint-3d-gl",
+        "data-engine": "three.js r186",
+        "data-hover-cutaway": "",
+        "data-erase-target": "",
+        "data-projection": "perspective",
+        "data-shading": "natural-basic",
+        "data-quality": "medium",
+        "data-shadow-size": "1024",
+        "data-auto-ao": "phone-off",
+        "data-auto-ao-fps": "",
+        "data-first-picture-ms": "3201.300000011921"
+      },
+      "camera": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":1.89},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":35.37196827726509,\"fovRad\":0.6632251157578452}",
+      "renderCamera": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":1.89},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":35.37196827726509,\"fovRad\":0.7255576420055392}",
+      "canvas": {
+        "x": 0,
+        "y": 110,
+        "width": 390,
+        "height": 603
+      },
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "overflow": 0,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "origin": "https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app",
+  "label": "after",
+  "at": "2026-10-25T20:00:33.730Z",
+  "cases": [
+    {
+      "device": "desktop",
+      "links": [
+        {
+          "text": "Book 1 hour ↗",
+          "canonical": true,
+          "href": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour"
+        },
+        {
+          "text": "Book a 1-hour meeting ↗",
+          "canonical": true,
+          "href": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour"
+        },
+        {
+          "text": "Choose a 1-hour meeting ↗",
+          "canonical": true,
+          "href": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "pageErrors": [],
+      "httpErrors": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "blockedWrites": [],
+      "screenshots": [
+        "docs\\qa-sims-fix-round-2-2026-10-25\\meeting-links\\after-desktop-plumbing-meeting.png"
+      ],
+      "overflowPx": 0,
+      "knownExternalRateErrors": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "links": [
+        {
+          "text": "Book 1 hour ↗",
+          "canonical": true,
+          "href": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour"
+        },
+        {
+          "text": "Book a 1-hour meeting ↗",
+          "canonical": true,
+          "href": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour"
+        },
+        {
+          "text": "Choose a 1-hour meeting ↗",
+          "canonical": true,
+          "href": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "pageErrors": [],
+      "httpErrors": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "blockedWrites": [],
+      "screenshots": [
+        "docs\\qa-sims-fix-round-2-2026-10-25\\meeting-links\\after-phone-plumbing-meeting.png"
+      ],
+      "overflowPx": 0,
+      "knownExternalRateErrors": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ]
+    }
+  ]
+}

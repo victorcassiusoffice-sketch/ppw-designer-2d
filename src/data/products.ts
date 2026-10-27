@@ -13,6 +13,7 @@ import { SERVICE_PRODUCTS } from './serviceProducts';
 import { MERCHANT_FURNITURE_PRODUCTS } from './merchantFurniture';
 import { getApiProductFromCache } from './apiCatalogAdapter';
 import { demoProductById, demoProducts } from '../demo/demoCatalog';
+import { usableProductImage, planSymbolDataUrl } from './productImageSafety';
 import type {
   Product,
   ProductCatalog,
@@ -313,10 +314,13 @@ export function productImageForSku(sku: string | null | undefined): string | nul
 }
 
 export function productImageUrl(p: Product): string {
-  if (p.photo_image_url) return p.photo_image_url;
-  if (p.topdown_image_url) return p.topdown_image_url;
-  if (p.image_url) return p.image_url;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(thumbnailFor(p.category))}`;
+  return usableProductImage(p.photo_image_url) ?? usableProductImage(p.topdown_image_url)
+    ?? usableProductImage(p.image_url) ?? productPlanSymbolUrl(p);
+}
+
+/** Existing product-specific plan art takes precedence over its category symbol. */
+export function productPlanSymbolUrl(p: Product): string {
+  return planSymbolDataUrl(p.thumbnail_svg || thumbnailFor(p.category));
 }
 
 /**
@@ -328,8 +332,6 @@ export function productImageUrl(p: Product): string {
  * Mirrors `productImageUrl`'s never-empty guarantee.
  */
 export function productTopDownUrl(p: Product): string {
-  if (p.topdown_image_url) return p.topdown_image_url;
-  if (p.photo_image_url) return p.photo_image_url;
-  if (p.image_url) return p.image_url;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(thumbnailFor(p.category))}`;
+  return usableProductImage(p.topdown_image_url) ?? usableProductImage(p.photo_image_url)
+    ?? usableProductImage(p.image_url) ?? productPlanSymbolUrl(p);
 }

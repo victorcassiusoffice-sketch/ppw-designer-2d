@@ -39,8 +39,8 @@ export function buildSeedImageryMap(seedProducts: SeedProductLike[]): Map<string
   const map = new Map<string, SeedImageryEntry>();
   for (const p of seedProducts) {
     if (!p.sku) continue;
-    const topdown = p.topdown_image_url?.trim() || null;
-    const photo = p.photo_image_url?.trim() || null;
+    const topdown = isPlaceholderImage(p.topdown_image_url) ? null : p.topdown_image_url!.trim();
+    const photo = isPlaceholderImage(p.photo_image_url) ? null : p.photo_image_url!.trim();
     const description = p.notes?.trim() || null;
     if (!topdown && !photo && !description) continue;
     map.set(p.sku.toUpperCase(), { topdown, photo, description });
@@ -80,7 +80,7 @@ export function enrichImagery<T extends EnrichableRow>(
     if (!entry) return row;
     const bestShopImage = entry.photo ?? entry.topdown;
     const imageUrl =
-      isPlaceholderImage(row.imageUrl) && bestShopImage ? bestShopImage : row.imageUrl;
+      isPlaceholderImage(row.imageUrl) ? bestShopImage : row.imageUrl;
     const topdownImageUrl = row.topdownImageUrl ?? entry.topdown ?? null;
     const description =
       (!row.description || row.description.trim() === '') && entry.description

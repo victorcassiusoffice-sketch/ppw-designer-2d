@@ -1,0 +1,59 @@
+# Catalogue and basket pictures — fix round 2
+
+One Live Build · `gpt/olb-fix-round-2-2026-10-25` · 25 October 2026, preview verification completed 26 October 2026. Scope: brief items 3 and 4. Production publication belongs to the parent task.
+
+## Changes
+
+- Both the 2D cart sheet and 3D Your design basket now have a product-picture column. The same resolver shows an existing supplier photo first, followed by the product's existing top-down / plan art, explicitly labelled **Drawing**. Image failure advances to a local drawing; it never requests an external placeholder.
+- Preserved all **22** existing K1 / Emcar product photos. The **13** cards identified as false photos now resolve to their existing local plan art and the Drawing label. Removed **33** placeholder URLs from the bundled seed, including entries whose actual photo already took precedence.
+- Added **33 cached overhead PNGs** projected from the existing dimensioned Courts planning models. These distinguish beds, sofas, tables, appliances and other modelled products. They are approximate planning drawings, not manufacturer photographs, CAD files or newly generated 3D models. No Courts website pictures were fetched or copied. Model dimensions and all quantity calculations are unchanged.
+- Legacy placeholder URLs returned by an API or saved marketplace cart are rejected before image rendering. Guarded both Designer adapters, canonical product-image resolvers and raw marketplace / merchant image renderers. The existing API response enrichment only uses valid saved imagery; unknown-SKU response semantics remain unchanged, with frontend rejection as the final boundary.
+- Public demo baskets hide product counts, finish-order quantities, paint-container quantities and money. The normal Designer keeps quantities and monetary values. Existing demo text scrubbing remains responsible for supplier/client names. No ordering or email was attempted.
+
+## Verification
+
+Focused command:
+
+`npx vitest run src/data/__tests__/placeholderImages.test.ts src/components/__tests__/BasketPictures.test.tsx src/components/__tests__/catalogMetadata.test.ts src/components/__tests__/CatalogProductExtras.test.tsx src/data/__tests__/productsSeed.test.ts src/data/__tests__/productImageUrl.test.ts src/data/__tests__/apiCatalogAdapter.test.ts api/__tests__/seedImagery.test.ts --reporter=dot`
+
+**8 files, 139 tests passed.** Tests cover all 13 affected cards, preservation of 22 real photos, placeholder rejection in each image position, API aliases, all 33 drawing dimensions/PNG dimensions, stale dimension/custom-mesh rejection, both basket picture columns, finish-count hiding on `/demo`, and retained quantities/money outside it. Existing API tests were run without editing them. Scoped ESLint passed with zero warnings.
+
+Static asset command: `node tools/bake-plan-drawings-2026-10-25.mjs http://127.0.0.1:5176` → **33 rendered, 0 skipped, 0 errors, 0 remote requests**. This is offline projection through the existing plan renderer; no paid generation or added runtime rendering path. Manifest: `src/data/catalogPlanDrawings.json`; assets: `public/products/catalog-plans/`; provenance report: `plan-drawings.json`.
+
+Production baseline: `node tools/baskets-placeholder-shot-2026-10-25.mjs https://onelivebuild.com before` → desktop 1280×800 and phone 390×844, both 2D and 3D, **16 screenshots, 0 console/page errors, 0 attempted API writes, no horizontal overflow**. All four baskets had **0 images**. Requests to the placeholder host and placeholder cards marked photo were reproduced. Baseline report records those defects rather than calling them passing fixes.
+
+Final local after capture: `node tools/baskets-placeholder-shot-2026-10-25.mjs http://127.0.0.1:5176 after` → **8 checks passed, 16 screenshots, 0 console/page errors, 0 attempted API writes, 0 placeholder requests, no horizontal overflow**. Each of the four demo baskets contains **33 product pictures**, labelled Drawing. Console and Rubber resolve to local plan art; NordicTrack retains actual local supplier photographs. Visible images loaded successfully at both sizes. Reviewed desktop and phone screenshots show clear picture/name columns, contained drawings and readable labels. The preview's “Live catalog unavailable · saved products shown” notice is expected without the production catalog API; this is local evidence, not a deployment check.
+
+Final compiled scroll check: `node tools/baskets-scroll-shot-2026-10-25.mjs http://127.0.0.1:5173` → **4/4 checks passed, 8 screenshots, 0 console/page errors, 0 attempted API writes, 0 placeholder requests**. Real wheel input reaches the final finish rows/footer and brings the last product fully into view. Picture hit-tests confirm it is not covered. On the 390px phone, the 3D last product ends at y=689px, above the fixed tools at y=782px; the 2D last product is fully visible at y=574–661px. No application changes were needed for scrolling. Evidence: `after/scroll-report.json`, `*-basket-end.png`, `*-basket-last.png`.
+
+The initial supplementary scroll harness is segregated as `after/scroll-initial-harness-report.json`: desktop checks passed, but phone hit-tests were invalid because wheel-to-bottom showed the finish rows following the final product, leaving that product above the panel. The phone screenshots show final finish rows and the demo footer reachable above the bottom tools. This initial harness result is neither an application failure nor the final product-visibility pass; the corrected harness scrolls the final product back into view before hit-testing it.
+
+## Deployed preview verification
+
+Verified [the unique preview](https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app/demo?view=2d&pitch=1) with the same desktop/phone assertions. The final catalogue/basket run passed **8/8 checks** and saved **16 screenshots**; deployed last-product scrolling passed **4/4 checks** and saved **8 screenshots**. Both runs recorded **0 console/page errors, 0 attempted API writes and 0 placeholder requests**; the catalogue/basket screenshots also passed the horizontal-overflow and demo text guards. The live API's `m-*` product aliases retained supplier photos. The final product remains fully visible above the phone tools, matching the compiled local geometry. Reports are `preview/report.json` and `preview/scroll-report.json`.
+
+The first preview attempt passed desktop and phone 2D plus the phone 3D basket, then exceeded the harness's default **5-second** image-readiness wait for the phone 3D Console card. That attempt and screenshot are preserved in `preview/first-attempt-report.json` and `preview/first-attempt-phone-image-timeout.png`. No console/page error or placeholder request accompanied it. The same source had loaded earlier; a rerun with a bounded **20-second** image-readiness wait passed, and the final Console screenshot visibly contains its drawing. Only the QA wait changed, not application code. These checks establish eventual image rendering; they do not assert a five-second remote image-loading guarantee. Off-screen images can remain lazy/unloaded and are not claimed as visible-image failures.
+
+## Before / after evidence
+
+Root directory: `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/`.
+
+- [Desktop 2D basket before](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-2d-basket.png) / [after](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/desktop-2d-basket.png).
+- [Phone 2D basket before](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-2d-basket.png) / [after](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/phone-2d-basket.png).
+- [Desktop 3D basket before](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-3d-basket.png) / [after](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/desktop-3d-basket.png).
+- [Phone 3D basket before](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-3d-basket.png) / [after](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/phone-3d-basket.png).
+- [Console card before](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-2d-console.png) / [after](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/desktop-2d-console.png).
+- [Phone 3D final product](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/phone-3d-basket-last.png) / [final finishes](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/phone-3d-basket-end.png).
+- [Preview phone 3D Console drawing](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-console.png) / [preview final basket product](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-basket-last.png).
+
+The same directories include Rubber and NordicTrack cards at both viewport sizes in both views. The former demonstrates the drawing fallback, the latter retained supplier photography.
+
+## Remaining image-data limits
+
+The bundled catalog audit found 22 seed photos, 14 seed top-down assets (including the 13 affected cards), six existing product SVG drawings, 33 cached Courts model projections, and specific existing outdoor/service/furniture plan art. Those are photo or planning-art sources, rather than the removed external placeholder tiles. Newly onboarded or unknown API products can still arrive with no photo, top-down art, matching model projection or product SVG; the final fallback is then a generic category symbol. That symbol is not a realistic product image and is not counted among the verified photo/drawing assets. Such onboarding still needs supplied product art; no supplier images or additional models were generated in this task.
+
+## Source boundaries
+
+Owned changes: `src/components/CartStrip.tsx`, `HouseCostPanel.tsx`, `CatalogProductExtras.tsx`, `catalogMetadata.ts`, new `basketPictures.css`; `src/data/products.json`, `products.ts`, **`apiCatalogAdapter.ts`**, new `productImageSafety.ts` and `catalogPlanDrawings.json`; `src/hooks/useProducts.ts`; image guards in `src/pages/PublicProductsPage.tsx`, `ProductDetailPage.tsx`, `MarketplaceCartPage.tsx`, `MerchantDashboardPage.tsx`; **`api/_lib/products/seedImagery.ts`**. Tests changed only catalogue/image tests; new tests are `placeholderImages.test.ts` and `BasketPictures.test.tsx`. Tools are `bake-plan-drawings-2026-10-25.mjs`, `baskets-placeholder-shot-2026-10-25.mjs` and `baskets-scroll-shot-2026-10-25.mjs`.
+
+No edits to RoomCanvas, ThreeStage, RoomView3D, protected geometry/material/foundation/service tests, API files outside `_lib`, database, migration, environment variables or dependencies. No Vault writes, login, ordering, paid generation, commit, push or deployment performed by this subtask. Negative-test fixtures and rejection rules intentionally still mention the placeholder hostname; they are not runtime asset dependencies. No marketplace checkout or merchant workflow was exercised beyond guard tests.

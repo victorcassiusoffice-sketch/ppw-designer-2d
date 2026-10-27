@@ -1,0 +1,172 @@
+{
+ "startedAt": "2026-10-25T18:11:17.138Z",
+ "which": [
+  "local"
+ ],
+ "devices": [
+  "desktop"
+ ],
+ "dest": [
+  5,
+  -2.9
+ ],
+ "rows": [
+  {
+   "target": "local",
+   "device": "desktop",
+   "checks": [
+    {
+     "name": "drag-chair-near-top",
+     "pass": true,
+     "ms": 7934,
+     "detail": {
+      "before": {
+       "x": 6.15,
+       "y": 5.9,
+       "rot": 90,
+       "room": "Home office"
+      },
+      "after": {
+       "x": 4.5,
+       "y": -3,
+       "rot": 90,
+       "room": "Outdoors"
+      },
+      "from": {
+       "x": 671.8882352941176,
+       "y": 588.1588235294117
+      },
+      "dest": {
+       "x": 605.5882352941177,
+       "y": 169.94117647058823
+      }
+     }
+    },
+    {
+     "name": "select-and-handle-free",
+     "pass": true,
+     "ms": 146,
+     "detail": {
+      "item": {
+       "centre": {
+        "x": 596.1823529411764,
+        "y": 179.80588235294118
+       },
+       "rect": {
+        "x": 582.6470588235294,
+        "y": 165.3529411764706,
+        "w": 27.070588235294167,
+        "h": 28.905882352941177
+       },
+       "d": 0
+      },
+      "handle": {
+       "x": 647.7176470588236,
+       "y": 287,
+       "r": 12,
+       "ownerIsThis": true
+      },
+      "elementUnderHandle": "CANVAS",
+      "handleSide": "below",
+      "placementControls": {
+       "x": 499.9375,
+       "y": 675,
+       "width": 280.125,
+       "height": 50
+      },
+      "handleToCentrePx": 119
+     }
+    },
+    {
+     "name": "four-45-turns",
+     "pass": true,
+     "ms": 3843,
+     "detail": {
+      "turns": [
+       {
+        "n": 1,
+        "before": 90,
+        "after": 135,
+        "delta": 45,
+        "elementUnderHandle": "CANVAS",
+        "handle": {
+         "x": 647.7176470588236,
+         "y": 287,
+         "r": 12,
+         "ownerIsThis": true
+        },
+        "centreDeltaPx": 1.1368683772161603e-13,
+        "viewportUnchanged": true,
+        "toast": []
+       },
+       {
+        "n": 2,
+        "before": 135,
+        "after": 180,
+        "delta": 45,
+        "elementUnderHandle": "CANVAS",
+        "handle": {
+         "x": 653.9730239110918,
+         "y": 287,
+         "r": 12,
+         "ownerIsThis": true
+        },
+        "centreDeltaPx": 0,
+        "viewportUnchanged": true,
+        "toast": []
+       },
+       {
+        "n": 3,
+        "before": 180,
+        "after": 225,
+        "delta": 45,
+        "elementUnderHandle": "CANVAS",
+        "handle": {
+         "x": 648.635294117647,
+         "y": 287,
+         "r": 12,
+         "ownerIsThis": true
+        },
+        "centreDeltaPx": 0,
+        "viewportUnchanged": true,
+        "toast": []
+       },
+       {
+        "n": 4,
+        "before": 225,
+        "after": 270,
+        "delta": 45,
+        "elementUnderHandle": "CANVAS",
+        "handle": {
+         "x": 653.9730239110918,
+         "y": 287,
+         "r": 12,
+         "ownerIsThis": true
+        },
+        "centreDeltaPx": 1.1368683772161603e-13,
+        "viewportUnchanged": true,
+        "toast": []
+       }
+      ],
+      "okTurns": 4
+     }
+    }
+   ],
+   "consoleErrors": [],
+   "pageErrors": [],
+   "httpErrors": [],
+   "failedRequests": [],
+   "shots": [
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/after/t3-local-desktop-1-chair-moved.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/after/t3-local-desktop-2-selected.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/after/t3-local-desktop-3-turn-1.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/after/t3-local-desktop-3-turn-2.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/after/t3-local-desktop-3-turn-3.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/after/t3-local-desktop-3-turn-4.png"
+   ],
+   "overflowPx": 0,
+   "blockedWrites": []
+  }
+ ],
+ "endedAt": "2026-10-25T18:11:34.847Z"
+}

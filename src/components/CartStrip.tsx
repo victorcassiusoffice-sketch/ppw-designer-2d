@@ -33,6 +33,8 @@ import { CATEGORY_LABELS } from '../data/products';
 import { formatCurrency as formatMoney } from '../lib/currency';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import { hasQuotedProducts, quoteAwareAmount } from '../lib/quotedProducts';
+import { CatalogProductImage } from './CatalogProductExtras';
+import './basketPictures.css';
 
 // Chrome recipe (toolbar contract 2026-08-29) — same strings as the
 // DetailsPanel so the two surfaces are one control set.
@@ -117,7 +119,7 @@ export function CartStrip() {
           <span className="rounded-lg bg-ppw-inkDeep px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-paper">
             {pitch ? 'Products' : 'Cart'}
           </span>
-          <span>
+          {!pitch && <span>
             <b className="text-ppw-inkDeep">{cart.uniqueProductCount}</b> unique - <b className="text-ppw-inkDeep">{cart.totalItemCount}</b> placed
             {cart.floorLines.length > 0 && (
               <>
@@ -134,7 +136,7 @@ export function CartStrip() {
                 {' '}- <b className="text-ppw-inkDeep" data-testid="cart-cladding-packs">{cart.claddingLines.reduce((a, l) => a + l.packs, 0)}</b> cladding packs
               </>
             )}
-          </span>
+          </span>}
         </div>
         <div className="flex items-center gap-3">
           {!pitch && <><span className="text-sm font-semibold tabular-nums text-ppw-inkDeep">
@@ -163,9 +165,10 @@ export function CartStrip() {
           <table className="w-full text-[12px]">
             <thead>
               <tr className={`text-left ${CAPTION}`}>
+                <th className="py-1 font-semibold"><span className="sr-only">Picture</span></th>
                 <th className="py-1 font-semibold">Product</th>
                 <th className="hidden py-1 font-semibold sm:table-cell">Cat.</th>
-                <th className="py-1 text-right font-semibold">Qty</th>
+                {!pitch && <th className="py-1 text-right font-semibold">Qty</th>}
                 {!pitch && <th className="hidden py-1 text-right font-semibold sm:table-cell">Unit</th>}
                 {!pitch && <th className="py-1 text-right font-semibold">Line</th>}
               </tr>
@@ -173,6 +176,7 @@ export function CartStrip() {
             <tbody>
               {cart.lines.map((l) => (
                 <tr key={l.productId} className="border-t border-ppw-rim">
+                  <td className="basket-picture-cell"><CatalogProductImage product={l.product} className="basket-product-picture" /></td>
                   <td className="py-1.5 pr-2 font-medium text-ppw-inkDeep max-w-[180px] sm:max-w-[200px]">
                     <span className="block truncate">{l.product.name}</span>
                     <span className="block text-[11px] font-medium tabular-nums text-ppw-charcoal sm:hidden">
@@ -182,7 +186,7 @@ export function CartStrip() {
                   <td className="hidden py-1.5 pr-2 text-ppw-charcoal sm:table-cell">
                     {CATEGORY_LABELS[l.product.category]}
                   </td>
-                  <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep">{l.quantity}</td>
+                  {!pitch && <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep">{l.quantity}</td>}
                   {!pitch && <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
                     {l.product.price_on_request ? 'Price on request' : money(l.unitPriceDisplay, currency)}
                   </td>}
@@ -195,10 +199,11 @@ export function CartStrip() {
                   Qty is units to ORDER incl. the cut-edge surplus. */}
               {cart.floorLines.map((f) => (
                 <tr key={f.lineId} className="border-t border-ppw-rim" data-testid="cart-floor-line">
+                  <td />
                   <td className="py-1.5 pr-2 font-medium text-ppw-inkDeep max-w-[180px] sm:max-w-[200px]">
                     <span className="block truncate">
                       {f.materialName}
-                      {f.surplusUnits > 0 && (
+                      {!pitch && f.surplusUnits > 0 && (
                         <span className="ml-1 text-[11px] font-medium text-ppw-charcoal">
                           (+{f.surplusUnits} for cuts)
                         </span>
@@ -209,10 +214,10 @@ export function CartStrip() {
                     </span>
                   </td>
                   <td className="hidden py-1.5 pr-2 text-ppw-charcoal sm:table-cell">Floor</td>
-                  <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep whitespace-nowrap">
+                  {!pitch && <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep whitespace-nowrap">
                     {f.unitsToOrder} {f.unit}
                     {f.unitsToOrder === 1 ? '' : 's'}
-                  </td>
+                  </td>}
                   {!pitch && <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
                     {money(f.unitPriceDisplay, currency)}
                   </td>}
@@ -225,6 +230,7 @@ export function CartStrip() {
                   area × height − openings (Vic 2026-09-02). */}
               {cart.wallPaintLines.map((l) => (
                 <tr key={l.lineId} className="border-t border-ppw-rim" data-testid="cart-wallpaint-line">
+                  <td />
                   <td className="py-1.5 pr-2 font-medium text-ppw-inkDeep max-w-[180px] sm:max-w-[200px]">
                     <span className="flex items-center gap-1.5 truncate">
                       <span
@@ -238,14 +244,14 @@ export function CartStrip() {
                       </span>
                     </span>
                     <span className="block text-[11px] font-medium tabular-nums text-ppw-charcoal sm:hidden">
-                      {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} · Paint
+                      {pitch ? 'Paint' : `${l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} · Paint`}
                     </span>
                   </td>
                   <td className="hidden py-1.5 pr-2 text-ppw-charcoal sm:table-cell">Paint</td>
-                  <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep whitespace-nowrap">
+                  {!pitch && <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep whitespace-nowrap">
                     {l.tins.reduce((a, t) => a + t.count, 0)} tin
                     {l.tins.reduce((a, t) => a + t.count, 0) === 1 ? '' : 's'}
-                  </td>
+                  </td>}
                   {!pitch && <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
                     {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')}
                   </td>}

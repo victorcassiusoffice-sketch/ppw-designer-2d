@@ -1,4 +1,5 @@
 import { serviceRunPoints3D } from '../designer/buildingServices';
+import { loadThreeStage } from './threeStageLoader';
 /**
  * RoomView3D — the Sims-style view of the storey (Vic 2026-09-14), now the
  * designer's 3D MODE (Vic 2026-09-17: "make it a super realistic 3D version
@@ -134,7 +135,7 @@ import { foundationBounds } from '../designer/foundation';
 import { foundationSceneFaces } from '../designer/foundationScene';
 
 // The GL renderer and three itself arrive in their own chunk, on first use.
-const ThreeStage = lazy(() => import('./three/ThreeStage'));
+const ThreeStage = lazy(loadThreeStage);
 
 export interface RoomView3DProps {
   variant: 'card' | 'overlay';

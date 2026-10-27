@@ -124,7 +124,7 @@ describe('the six Sims-world demo seeds', () => {
     expect(p.commission_pct).toBe(0.05);
     expect(p.shopify_ready).toBe(false);
     expect(p.price.currency).toBe('MUR');
-    expect(p.image_url.startsWith('https://placehold.co/400x400?text=')).toBe(true);
+    expect(p.image_url).toBe('');
     // The canvas draws the plan symbol; there is deliberately no top-down art.
     expect(p.topdown_image_url).toBeUndefined();
     expect(p.photo_image_url).toBeUndefined();
@@ -208,9 +208,10 @@ describe('the six Sims-world demo seeds', () => {
     ]);
   });
 
-  it('image resolvers fall back to the placeholder URL (no top-down art to fit)', () => {
+  it('image resolvers use the existing plan symbol without an outside placeholder host', () => {
     const p = byId.get('demo-floor-lamp')!;
-    expect(productImageUrl(p)).toBe(p.image_url);
-    expect(productTopDownUrl(p)).toBe(p.image_url);
+    expect(decodeURIComponent(productImageUrl(p))).toContain('width="64"');
+    expect(decodeURIComponent(productImageUrl(p))).toContain('height="64"');
+    expect(productTopDownUrl(p)).toBe(productImageUrl(p));
   });
 });

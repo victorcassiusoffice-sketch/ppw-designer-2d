@@ -73,7 +73,7 @@ The intended project workflow is: clients may revise choices before the approved
 - Browser JavaScript and rendered assets cannot be made impossible to copy. Private API keys and server logic are not shipped to the browser. Public source maps are disabled; when Sentry is configured, hidden maps are uploaded privately and removed before release. The build fails if a map survives.
 - Product models use supplied dimensions where available; 3D previews are not guaranteed exact manufacturer models. Solar output is an estimate, not telemetry or guaranteed generation. Material quantities still depend on coverage, waste, substrate, measurements and supplier specifications. Generated artwork is explicitly labelled architectural concept imagery.
 
-Meeting: https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour?month=2026-09
+Meeting: https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour
 
 ## Tests that pin this behaviour
 

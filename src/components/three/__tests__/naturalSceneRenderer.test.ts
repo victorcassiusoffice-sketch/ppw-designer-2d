@@ -1,9 +1,22 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
-import { naturalRenderResolution, withOpaqueOccluders } from '../naturalSceneRenderer';
+import { naturalRenderResolution, withOpaqueOccluders, prepareNormalMaterials } from '../naturalSceneRenderer';
 
 describe('bounded natural-light scene shading', () => {
+  it('prewarms the actual normal pass material on its target and restores beauty before awaiting', async () => {
+    const scene = new THREE.Scene(), beauty = new THREE.MeshStandardMaterial(), normal = new THREE.MeshNormalMaterial();
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), [beauty, beauty]); scene.add(mesh);
+    const original = mesh.material, oldTarget = new THREE.WebGLRenderTarget(), normalTarget = new THREE.WebGLRenderTarget();
+    let active = oldTarget;
+    const renderer = { getRenderTarget: () => active, setRenderTarget: (target: THREE.WebGLRenderTarget | null) => { active = target!; },
+      compileAsync: vi.fn(() => { expect(mesh.material).toBe(normal); expect(active).toBe(normalTarget); return Promise.resolve(scene); }) };
+    const pending = prepareNormalMaterials(renderer, scene, new THREE.PerspectiveCamera(), normal, normalTarget);
+    expect(mesh.material).toBe(original); expect(active).toBe(oldTarget); await pending;
+    renderer.compileAsync.mockImplementationOnce(() => { throw new Error('context lost'); });
+    expect(() => prepareNormalMaterials(renderer, scene, new THREE.PerspectiveCamera(), normal, normalTarget)).toThrow('context lost');
+    expect(mesh.material).toBe(original); expect(active).toBe(oldTarget);
+  });
   it.each([[390, 844, 3], [1440, 900, 2], [3840, 2160, 2], [7680, 4320, 4], [1, 1, 1]])('bounds render and AO costs for a %s×%s viewport', (width, height, dpr) => {
     const resolution = naturalRenderResolution(width, height, dpr);
     expect(resolution.beautyWidth * resolution.beautyHeight).toBeLessThanOrEqual(2_000_000);

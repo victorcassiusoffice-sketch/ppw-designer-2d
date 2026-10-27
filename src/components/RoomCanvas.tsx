@@ -5275,6 +5275,7 @@ export function RoomCanvas({
                     pxPerMetre={pxPerMetre}
                     viewport={viewport}
                     viewportWidth={stageSize.width}
+                    viewportHeight={stageSize.height}
                     planSun={planSun}
                     wallHeightM={planWallHeight}
                     // THAT room's polygon and items — the drag/validate math
@@ -5721,6 +5722,7 @@ export function RoomCanvas({
 interface PlacedItemGroupProps {
   viewport: Viewport;
   viewportWidth: number;
+  viewportHeight: number;
   item: PlacedItem;
   /**
    * Live snap step in metres (units brief 2026-08-28, D14). Threaded in so
@@ -5790,7 +5792,8 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   const wPx = footprint.w * pxPerMetre, hPx = footprint.h * pxPerMetre;
   const handle = planHandleLayout({ w: wPx, h: hPx, scale: props.viewport.scale,
     left: props.viewport.x + item.x * pxPerMetre * props.viewport.scale,
-    top: props.viewport.y + item.y * pxPerMetre * props.viewport.scale, width: props.viewportWidth });
+    top: props.viewport.y + item.y * pxPerMetre * props.viewport.scale,
+    width: props.viewportWidth, height: props.viewportHeight });
   const hasSurfaceChildren = usePropertyStore(state => state.property.rooms.some(room => room.placedItems.some(child => child.parentInstanceId === savedItem.instanceId)));
   const canTurn = placementKind(product) !== 'wall' && !hasSurfaceChildren;
   const cancelTurn = useCallback(() => {

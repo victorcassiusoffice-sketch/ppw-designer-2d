@@ -69,7 +69,7 @@ The merchant routes /merchant/:slug, /merchant/:slug/connect, /merchant/:slug/pr
 
 ## Meeting booking
 
-- [https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour](https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour) - Room Designer / One Live Build: all prospective company markets, book a one-hour integration discussion.
+- [https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour](https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour) - Room Designer / One Live Build: all prospective company markets, book a one-hour integration discussion.
 
 Preview enquiry submissions are disabled. Use the Calendly link to book; discuss physical meetings directly with Victor. The forms demonstrate a future configured enquiry workflow.
 

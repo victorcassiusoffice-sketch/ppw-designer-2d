@@ -1,0 +1,430 @@
+{
+  "base": "https://onelivebuild.com",
+  "phase": "before",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "placeholders": [
+        "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
+        "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll"
+      ],
+      "checks": [
+        "2d baseline basket image count recorded; demo text guard and no horizontal overflow",
+        "2d baseline catalogue image sources and network requests recorded",
+        "3d baseline basket image count recorded; demo text guard and no horizontal overflow",
+        "3d baseline catalogue image sources and network requests recorded"
+      ],
+      "shots": [
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-2d-basket.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-2d-console.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-2d-rubber.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-2d-nordictrack.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-3d-basket.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-3d-console.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-3d-rubber.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-3d-nordictrack.png"
+      ],
+      "observations": [
+        {
+          "view": "2d",
+          "images": 0,
+          "drawings": 0
+        },
+        {
+          "view": "2d",
+          "search": "Console",
+          "images": [
+            {
+              "id": "demo-console-table",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "2d",
+          "search": "Rubber",
+          "images": [
+            {
+              "id": "courts-gessica-dining-6",
+              "kind": "illustration",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-rubber-interlock",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-1m",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-50",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-epdm-roll",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "2d",
+          "search": "NordicTrack",
+          "images": [
+            {
+              "id": "m-6",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-2450.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-7",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-tour-de-france.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-8",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-gx10.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-11",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-x16.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-12",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-rw900.webp",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "images": 0,
+          "drawings": 0
+        },
+        {
+          "view": "3d",
+          "search": "Console",
+          "images": [
+            {
+              "id": "demo-console-table",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "search": "Rubber",
+          "images": [
+            {
+              "id": "courts-gessica-dining-6",
+              "kind": "illustration",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-rubber-interlock",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-1m",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-50",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-epdm-roll",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "search": "NordicTrack",
+          "images": [
+            {
+              "id": "m-6",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-2450.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-7",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-tour-de-france.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-8",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-gx10.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-11",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-x16.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-12",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-rw900.webp",
+              "loaded": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "placeholders": [
+        "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
+        "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+        "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll"
+      ],
+      "checks": [
+        "2d baseline basket image count recorded; demo text guard and no horizontal overflow",
+        "2d baseline catalogue image sources and network requests recorded",
+        "3d baseline basket image count recorded; demo text guard and no horizontal overflow",
+        "3d baseline catalogue image sources and network requests recorded"
+      ],
+      "shots": [
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-2d-basket.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-2d-console.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-2d-rubber.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-2d-nordictrack.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-3d-basket.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-3d-console.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-3d-rubber.png",
+        "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-3d-nordictrack.png"
+      ],
+      "observations": [
+        {
+          "view": "2d",
+          "images": 0,
+          "drawings": 0
+        },
+        {
+          "view": "2d",
+          "search": "Console",
+          "images": [
+            {
+              "id": "demo-console-table",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "2d",
+          "search": "Rubber",
+          "images": [
+            {
+              "id": "courts-gessica-dining-6",
+              "kind": "illustration",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-rubber-interlock",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-1m",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-50",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-epdm-roll",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "2d",
+          "search": "NordicTrack",
+          "images": [
+            {
+              "id": "m-6",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-2450.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-7",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-tour-de-france.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-8",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-gx10.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-11",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-x16.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-12",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-rw900.webp",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "images": 0,
+          "drawings": 0
+        },
+        {
+          "view": "3d",
+          "search": "Console",
+          "images": [
+            {
+              "id": "demo-console-table",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "search": "Rubber",
+          "images": [
+            {
+              "id": "courts-gessica-dining-6",
+              "kind": "illustration",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-rubber-interlock",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-1m",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-outdoor-rubber-50",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+              "loaded": false
+            },
+            {
+              "id": "k1-floor-epdm-roll",
+              "kind": "photo",
+              "source": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
+              "loaded": false
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "search": "NordicTrack",
+          "images": [
+            {
+              "id": "m-6",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-2450.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-7",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-tour-de-france.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-8",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-gx10.webp",
+              "loaded": false
+            },
+            {
+              "id": "m-11",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-x16.webp",
+              "loaded": true
+            },
+            {
+              "id": "m-12",
+              "kind": "photo",
+              "source": "/products/photos/k1-nordictrack-rw900.webp",
+              "loaded": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

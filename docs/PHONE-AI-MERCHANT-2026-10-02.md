@@ -98,7 +98,7 @@ Developer, merchant and construction presentations share a new **AI & connect** 
 The shared enquiry form supports project discussions, feedback and physical meeting requests. In-person requests collect location and optional availability; they do not confirm a booking. Explicit contact consent and bounded fields are required. The server writes to the existing leads table and returns a saved receipt only after a successful database insert. Failure retains the user's entries and offers a downloadable copy or Calendly. A downloaded copy is clearly marked not submitted. The endpoint does not send email, create orders or book appointments. Honeypot validation and rate limiting protect the public form, including a bounded instance-local fallback when Redis is unavailable.
 
 The existing one-hour meeting link remains:
-`https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour?month=2026-09`.
+`https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour`.
 
 ## Routes and endpoint map — new implementation, awaiting deployment verification
 

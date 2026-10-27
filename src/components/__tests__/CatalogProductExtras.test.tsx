@@ -25,8 +25,8 @@ describe('catalogue controls', () => {
       expect(host.querySelector('img')?.getAttribute('src')).toBe(urls[i]);
     }
     act(() => host.querySelector('img')!.dispatchEvent(new Event('error')));
-    expect(host.querySelector('img')).toBeNull(); expect(host.querySelector('svg')).not.toBeNull();
-    expect(host.textContent).toContain('Illustration');
+    expect(host.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/);
+    expect(host.textContent).toContain('Drawing');
   });
   it('changes to the declared SKU and dimensions, without inventing a material variant or starting placement', () => {
     const product = getAllProducts()[0];

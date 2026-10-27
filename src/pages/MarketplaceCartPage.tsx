@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
 import { PPW_COMMISSION_RATE } from '../lib/commission';
+import { usableProductImage } from '../data/productImageSafety';
 import '../styles/soft-shop.css';
 
 interface MerchantSubtotal {
@@ -169,9 +170,9 @@ export default function MarketplaceCartPage(): JSX.Element {
                         borderBottom: '1px solid var(--rim)',
                       }}
                     >
-                      {cartItem?.imageUrl ? (
+                      {usableProductImage(cartItem?.imageUrl) ? (
                         <img
-                          src={cartItem.imageUrl}
+                          src={usableProductImage(cartItem?.imageUrl)}
                           alt={line.name}
                           style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 12, background: '#fff', border: '1px solid var(--rim)' }}
                         />

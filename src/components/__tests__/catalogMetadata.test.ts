@@ -57,13 +57,13 @@ describe('baked model catalogue images', () => {
   it('uses the actual merchant photo before cached models and labels every generated fallback', () => {
     const p = getAllProducts().find(row => row.id === Object.keys(manifest)[0])!;
     const images = catalogThumbnailImages({ ...p, photo_image_url: '/actual-product.jpg', image_url: '/drawing.svg', topdown_image_url: '/overhead.png' });
-    expect(images.map(image => image.kind)).toEqual(['photo', 'model', 'plan', 'illustration']);
+    expect(images.map(image => image.kind)).toEqual(['photo', 'plan', 'model', 'illustration']);
     expect(images[0].url).toBe('/actual-product.jpg');
     expect(images.slice(1).every(image => image.label.length > 0)).toBe(true);
     expect(catalogThumbnailImages({ ...p, photo_image_url: undefined, image_url: '', topdown_image_url: undefined })[0].kind).toBe('model');
   });
   it('does not call legacy SVG schematics a supplier photo', () => {
     const images = catalogThumbnailImages({ ...product, id: 'no-model', sku: 'no-model', photo_image_url: undefined, image_url: '/symbol.svg', topdown_image_url: undefined });
-    expect(images).toEqual([{ url: '/symbol.svg', kind: 'illustration', label: 'Illustration' }]);
+    expect(images).toEqual([{ url: '/symbol.svg', kind: 'illustration', label: 'Drawing' }]);
   });
 });

@@ -1,0 +1,7 @@
+Inter 4.1, unmodified official variable font binaries.
+Downloaded 2026-10-25 from:
+https://rsms.me/inter/font-files/InterVariable.woff2?v=4.1
+https://rsms.me/inter/font-files/InterVariable-Italic.woff2?v=4.1
+Licence: https://github.com/rsms/inter/blob/v4.1/LICENSE.txt
+Local licence: OFL-inter.txt
+Self-hosted to remove a blocking third-party stylesheet from the first-picture path.

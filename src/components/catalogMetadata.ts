@@ -1,5 +1,7 @@
 import type { Product } from '../data/products.schema';
 import bakedJson from '../data/catalogModelThumbnails.json';
+import planJson from '../data/catalogPlanDrawings.json';
+import { usableProductImage, isVectorProductImage, planSymbolDataUrl } from '../data/productImageSafety';
 
 export type CatalogBrowseMode = 'category' | 'function' | 'room';
 export interface CatalogBrowse { mode: CatalogBrowseMode; value: string }
@@ -64,22 +66,29 @@ export function availabilityInfo(product: Pick<Product, 'availability' | 'lead_t
 interface BakedThumbnail { url: string; sku: string; hash: string; modelUrl: string }
 const baked = bakedJson as Record<string, BakedThumbnail>;
 const bakedBySku = new Map(Object.values(baked).map(entry => [entry.sku, entry]));
+interface PlanDrawing { url: string; sku: string; dimensions: Product['dimensions_cm'] }
+const plans = planJson as Record<string, PlanDrawing>;
+const plansBySku = new Map(Object.values(plans).map(entry => [entry.sku, entry]));
 export interface CatalogThumbnailImage { url: string; kind: 'photo' | 'model' | 'plan' | 'illustration'; label: string }
-const vectorImage = (url: string) => /^data:image\/svg\+xml/i.test(url) || /\.svg(?:[?#]|$)/i.test(url);
+const vectorImage = isVectorProductImage;
 export function catalogThumbnailImages(product: Product): CatalogThumbnailImage[] {
   const entry = baked[product.id] ?? bakedBySku.get(product.sku);
   const compatible = !product.mesh_url || product.mesh_url === entry?.modelUrl;
   const candidates: CatalogThumbnailImage[] = [];
   const add = (url: string | undefined, kind: CatalogThumbnailImage['kind'], label: string) => {
-    if (url && !candidates.some(image => image.url === url)) candidates.push({ url, kind, label });
+    const safe = usableProductImage(url);
+    if (safe && !candidates.some(image => image.url === safe)) candidates.push({ url: safe, kind, label });
   };
   // Explicit merchant photography is authoritative. Old schematic SVGs are not photos.
   if (product.photo_image_url && !vectorImage(product.photo_image_url)) add(product.photo_image_url, 'photo', '');
   if (product.image_url && !vectorImage(product.image_url) && product.image_url !== product.topdown_image_url) add(product.image_url, 'photo', '');
-  if (compatible) add(entry?.url, 'model', 'Model preview');
-  add(product.topdown_image_url, 'plan', 'Plan illustration');
-  add(product.photo_image_url, 'illustration', 'Illustration');
-  add(product.image_url, 'illustration', 'Illustration');
+  add(product.topdown_image_url, 'plan', 'Drawing');
+  const plan = plans[product.id] ?? plansBySku.get(product.sku);
+  if (plan && !product.mesh_url && ['length', 'width', 'height'].every(key => plan.dimensions[key as keyof Product['dimensions_cm']] === product.dimensions_cm[key as keyof Product['dimensions_cm']])) add(plan.url, 'plan', 'Drawing');
+  if (product.thumbnail_svg) add(planSymbolDataUrl(product.thumbnail_svg), 'plan', 'Drawing');
+  if (compatible) add(entry?.url, 'model', 'Drawing');
+  add(product.photo_image_url, 'illustration', 'Drawing');
+  add(product.image_url, 'illustration', 'Drawing');
   return candidates;
 }
 export function catalogThumbnailUrls(product: Product): string[] {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Product } from '../data/products.schema';
-import { thumbnailFor } from '../data/products';
+import { productPlanSymbolUrl } from '../data/products';
 import { availabilityInfo, catalogThumbnailImages, catalogVariants, CATALOG_FUNCTIONS, CATALOG_ROOMS, CATALOG_GROUP_LABELS, type CatalogBrowse, type CatalogThumbnailImage } from './catalogMetadata';
 import { handleCatalogCategoryKey } from './catalogPresentation';
 
@@ -11,10 +11,10 @@ export function CatalogProductImage({ product, className = '' }: { product: Prod
 }
 function CatalogImage({ images, product, className }: { images: CatalogThumbnailImage[]; product: Product; className: string }) {
   const [index, setIndex] = useState(0);
-  const image = images[index], label = image?.label ?? 'Illustration';
+  const image = images[index], label = image?.label ?? 'Drawing';
   return <span className={`catalog-product-visual ${className}`} data-image-kind={image?.kind ?? 'illustration'}>
     {image ? <img className="catalog-model-thumbnail" src={image.url} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setIndex(value => value + 1)} />
-      : <span className="catalog-model-thumbnail" aria-hidden="true" dangerouslySetInnerHTML={{ __html: thumbnailFor(product.category) }} />}
+      : <img className="catalog-model-thumbnail" src={productPlanSymbolUrl(product)} alt="" loading="lazy" decoding="async" draggable={false} />}
     {label && <span className="catalog-image-label">{label}</span>}
   </span>;
 }

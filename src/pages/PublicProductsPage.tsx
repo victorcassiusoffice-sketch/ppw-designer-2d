@@ -14,6 +14,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
+import { usableProductImage } from '../data/productImageSafety';
 import '../styles/soft-shop.css';
 
 interface PublicProduct {
@@ -345,8 +346,8 @@ export default function PublicProductsPage(): JSX.Element {
                     return (
                       <article key={p.id} className="soft-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                         <Link to={`/products/${p.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                          {p.imageUrl ? (
-                            <img src={p.imageUrl} alt={p.name} loading="lazy" className="soft-product-img" />
+                          {usableProductImage(p.imageUrl) ? (
+                            <img src={usableProductImage(p.imageUrl)} alt={p.name} loading="lazy" className="soft-product-img" />
                           ) : (
                             <div className="soft-product-img soft-product-img--empty">No image</div>
                           )}

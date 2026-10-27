@@ -1,0 +1,23 @@
+[
+  {
+    "origin": "https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app",
+    "checkedAt": "2026-10-25T19:51:25.7898400+00:00",
+    "ok": true,
+    "env": "preview",
+    "commit": "b68deddaf2dca8d3334175c964adf5310edcfcd6"
+  },
+  {
+    "origin": "https://onelivebuild.com",
+    "checkedAt": "2026-10-25T19:51:28.4047251+00:00",
+    "ok": true,
+    "env": "production",
+    "commit": "fc0b1118390813444d6bf45d7c452e3677ec16eb"
+  },
+  {
+    "origin": "https://designer.ppwellness.co",
+    "checkedAt": "2026-10-25T19:51:30.5454035+00:00",
+    "ok": true,
+    "env": "production",
+    "commit": "fc0b1118390813444d6bf45d7c452e3677ec16eb"
+  }
+]
