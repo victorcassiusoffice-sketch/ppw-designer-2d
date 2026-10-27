@@ -38,4 +38,43 @@ describe('progressive first picture uses the actual building', () => {
     expect(() => preview.draw(scene, () => { throw new Error('context lost'); })).toThrow('context lost');
     expect(mesh.material).toBe(materials); preview.dispose();
   });
+  it('prepares the actual first-frame variants without leaving temporary materials installed while awaiting shaders', async () => {
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera();
+    const original = new THREE.MeshPhysicalMaterial({ color: '#508479' });
+    const materials = [original, original];
+    const visible = new THREE.Mesh(new THREE.BoxGeometry(), materials);
+    const hidden = new THREE.Mesh(new THREE.BoxGeometry(), original);
+    hidden.visible = false; scene.add(visible, hidden);
+    let finish!: (value: THREE.Scene) => void;
+    const compiling = new Promise<THREE.Scene>(resolve => { finish = resolve; });
+    let prepared!: THREE.Material;
+    const renderer = { compileAsync: vi.fn((target: THREE.Object3D, viewpoint: THREE.Camera) => {
+      expect(target).toBe(scene); expect(viewpoint).toBe(camera);
+      prepared = visible.material[0];
+      expect(prepared).toBeInstanceOf(THREE.MeshLambertMaterial);
+      // Three.compile traverses hidden cutaway meshes too. They must not
+      // introduce original PBR programs into the first-picture warm-up.
+      expect(hidden.material).toBe(prepared);
+      expect(hidden.visible).toBe(false);
+      return compiling;
+    }) };
+    const preview = createFirstPictureMaterials();
+    const pending = preview.prepare(renderer, scene, camera);
+    expect(visible.material).toBe(materials); expect(hidden.material).toBe(original);
+    preview.draw(scene, () => expect(visible.material[0]).toBe(prepared));
+    finish(scene); await pending;
+    expect(visible.material).toBe(materials); expect(hidden.material).toBe(original);
+    preview.dispose();
+  });
+  it('restores original materials when shader preparation fails synchronously or asynchronously', async () => {
+    const scene = new THREE.Scene(), original = new THREE.MeshPhysicalMaterial();
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), original); scene.add(mesh);
+    const preview = createFirstPictureMaterials(), camera = new THREE.PerspectiveCamera();
+    expect(() => preview.prepare({ compileAsync: () => { throw new Error('context lost'); } }, scene, camera)).toThrow('context lost');
+    expect(mesh.material).toBe(original);
+    const pending = preview.prepare({ compileAsync: () => Promise.reject(new Error('link failed')) }, scene, camera);
+    expect(mesh.material).toBe(original);
+    await expect(pending).rejects.toThrow('link failed');
+    expect(mesh.material).toBe(original); preview.dispose();
+  });
 });
