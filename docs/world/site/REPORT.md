@@ -1,6 +1,6 @@
 # Site from the map — Stage 2 report
 
-Implementation commit: `f25f4d8fc8c9dc9829b773dfeba256482be5083b`, branch `gpt/olb-site-map-2026-10-27`, based on `origin/main` at `3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. Local validation completed 28 October 2026, Mauritius time. This report records implementation and evidence; the integration timing and CI gate below remains pending until the parent run supplies it. No merge or manual deployment was performed.
+Implementation commit: `f25f4d8fc8c9dc9829b773dfeba256482be5083b`, branch `gpt/olb-site-map-2026-10-27`, based on `origin/main` at `3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. Local validation completed 28 October 2026, Mauritius time. This report records implementation and evidence; the final integration timing and CI gates are recorded below. No merge or manual deployment was performed.
 
 > Estimates from public data for planning a conversation, not a survey and not an approval.
 
@@ -87,6 +87,7 @@ Overpass returned HTTP 502 capacity errors or reached the bounded 10-second time
 | Live map | Corrected Tamarin town-centre anchor shows streets/buildings; linked attribution remains visible |
 | Phone survey save/reload | Traverse → imported survey → declared datum → platform → planning assumptions → apply → reload retained geometry, source, points and results |
 | A4 output | All three offline-report pages and all nine geographic-report pages rendered and visually inspected; no clipping or overlap |
+| Final normal-preview phone smoke | Passed at 390 × 844: plain demo Site entry hidden; `?site=1` opens the report with banner, boundary label, unavailable states and visible close control; zero map/provider requests, JavaScript/console/HTTP errors or document/report overflow. [Recorded checks](evidence/preview-smoke.json). |
 
 The mathematical fixtures cover metre conversion and orientation, triangle area and Mauritius conversion, decimal/quadrant bearings, exact closure and a visible 1 m residual, self-touch/date-line/large-boundary rejection, concave triangulation, flat and mixed-sign cut/fill, clipping and incomplete coverage, contour constraints/conflicts, slope/aspect, convex setbacks and unsupported concave envelopes. Persistence checks reject forged redundant coordinates and malformed nested source data. The unchanged foundation estimator is rerun on a detached model and the original model remains byte-identical. Provider tests include bounded bodies, retry guidance and source/admission checks.
 
@@ -138,12 +139,29 @@ The heavy feature assets are deferred. Saved-input normalization and local geome
 - Headless phone viewport evidence is not physical iPhone/iPad testing. No physical-device or paired performance pass is asserted here.
 - The existing dependency audit reported 59 findings across the repository tree; unrelated broad dependency upgrades were not included in this feature change.
 
-## Integration gate — pending parent results
+## Final preview and CI gates
 
-The parent run must complete and record the PR URL, normal-workflow Vercel preview URL, exact final commit and CI checks here or link the final handoff. CI is **not asserted green** by the local build result. The initial Site PR #54 API typecheck found a mock with an inferred zero-argument call tuple in `providers.test.ts`; the fix supplies the real `typeof fetch` signature without changing runtime behaviour. The exact API-config recheck and all eight provider tests now pass locally; the replacement CI run remains pending.
+[PR #54](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/54). [Normal branch preview](https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo?site=1&view=2d&pitch=1). Runtime code is `f25f4d8fc8c9dc9829b773dfeba256482be5083b`; `7916fa0f39fd38df69e4ee5bb25d39dc840589f8` changes a test type and evidence only. The test mock is now typed with `vi.fn<typeof fetch>`; exact API-config TypeScript and all eight provider tests pass. Initial failed CI is retained in history.
 
-[Site PR #54](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/54) is open. Its initial full CI test job also passed all **402 files / 4,378 tests**. Independent comparison of the initial Site Lighthouse run with merged PR #51 found the same **22 error assertions**, with identical thresholds and actual assertion values, on the existing demo/pitch routes. No error assertions were added or removed, and no gate or unrelated application behaviour was changed. Lighthouse therefore remains **failing**, even though those failures are inherited; the CI-green requirement is still unmet. The compact linked comparison identifies both runs and does not claim coverage of later commits.
+The inherited Lighthouse failures are the same 22 assertions as merged PR51, with no new error-level assertion; [Site-specific comparison](evidence/lighthouse-inherited.txt). The latest run adds a plumbing LCP timing warning (0.89 versus the 0.9 warning threshold; 1,202 ms) and drops the prior bootup-time warning. Typecheck/test fixes do not change the Lighthouse routes. The all-green CI gate is **unmet**. No gate was weakened. Final workflow states are also recorded in the handoff.
 
-Paired production-versus-preview first-picture measurements remain **pending**, with at least five pairs per device in the same measurement window and every failed/slower pair retained. The required gate is no preview pair slower than production, plus a network/bundle audit of pre-first-picture additions. Entry-pause timing is also pending. Root is performing those checks without concurrent heavy tests/builds or browser work from this Site task.
+Copied PR51 t14 loop, fresh Chromium process/profile for each navigation, fresh browser caches (native GPU-driver caches were not controlled), native Intel Iris Xe/D3D11, no CPU or network throttle. Desktop 1280 × 800; phone 390 × 844 touch emulation on the same laptop, not a physical phone. Production and preview starts are separated by less than 60 seconds in every pair; all results are retained. Preview hosts use the original harness DNS pin to 216.198.79.3. Different host/CDN paths can contribute; these measurements do not isolate a code-only cause. Primary times use the original loading-hidden wait; independent in-page canvas marks are also retained.
 
-Update [CURRENT.md](../CURRENT.md), [RUBRIC.md](../RUBRIC.md) and [DECISIONS.md](../DECISIONS.md) consistently with the final results. A pending or failed gate must remain visible in the handoff; it is not permission to weaken the gate or merge.
+| Viewport | Pair | Production s | Preview s | Delta ms | Start gap s |
+|---|---:|---:|---:|---:|---:|
+| desktop | 1 | 4.203 | 6.346 | +2143 | 15.5 |
+| desktop | 2 | 4.577 | 4.939 | +362 | 16.4 |
+| desktop | 3 | 4.298 | 5.569 | +1271 | 8.0 |
+| desktop | 4 | 4.215 | 4.979 | +764 | 17.6 |
+| desktop | 5 | 4.381 | 7.353 | +2972 | 12.8 |
+| phone | 1 | 4.352 | 5.100 | +748 | 9.4 |
+| phone | 2 | 4.579 | 5.149 | +570 | 9.0 |
+| phone | 3 | 3.710 | 4.923 | +1213 | 7.5 |
+| phone | 4 | 4.721 | 5.313 | +592 | 8.8 |
+| phone | 5 | 4.907 | 4.843 | -64 | 8.5 |
+
+9/10 preview pairs are slower by the primary harness measure; 10/10 are slower by the independent canvas mark. The no-slower-pair gate is **FAILED**. All navigation/JavaScript/HTTP error counts in these paired runs were zero. Raw observations and time origins: [t14 JSON](evidence/t14-load-timed-prod_site-desktop_phone.json); [summary](evidence/site-paired-summary.json).
+
+Median first picture: laptop 4.30 s production / 5.57 s preview; phone 4.58 / 5.10 s. Laptop <3 s and every-phone-run <5 s budgets are not met. Literal zero-new-code before first picture also remains unmet for the explicitly quantified persistence adapters above.
+
+Opening the real map has provider/network variability; no physical-device or guaranteed sub-second map-entry claim is made. The offline sample, provider evidence and fully inspected report files remain available without representing the sampled outlines as verified cadastral plots.

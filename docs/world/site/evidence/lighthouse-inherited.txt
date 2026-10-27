@@ -1,11 +1,11 @@
 Site PR54 independent Lighthouse inherited-failure evidence
 
-Latest audited Site head f25f4d8 failed Lighthouse with exactly the same 22 error assertions as merged PR51, including identical thresholds and actual values. No error assertions were added or removed. Site has 19 warnings versus base20: no added warning IDs; only the plumbing bootup-time warning is absent.
+Latest audited Site head 7916fa0 failed Lighthouse with exactly the same 22 error assertions as merged PR51, including identical thresholds and actual values. No error assertions were added or removed. Both runs have 20 warnings: Site adds a plumbing largest-contentful-paint warning (score 0.89 vs required 0.9; 1,202.3 ms vs baseline 1,104.9 ms), while the baseline plumbing bootup-time warning is absent. This timing-warning difference is retained, not described as an identical warning set.
 
 Baseline PR51: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40229318359
   Audited head 5a5f4a24281d118e80d3e54cd11f6233d6968f4b; merged as 3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2.
-Site PR54: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40575462187
-  Audited head f25f4d8fc8c9dc9829b773dfeba256482be5083b. This does not cover later fixes.
+Site PR54: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40576598434
+  Audited head 7916fa0f39fd38df69e4ee5bb25d39dc840589f8. This does not cover later fixes.
 
 Inherited errors on /demo?view=2d&pitch=1 (10):
   csp-xss, installable-manifest, label-content-name-mismatch, maskable-icon,
@@ -20,10 +20,10 @@ Inherited errors on /pitch/plumbing (12):
 All error-level minScore assertions are 0 against >=0.9 except plumbing unsized-images=0.5. unused-css-rules=2 against <=0 on both routes; plumbing uses-responsive-images=1 against <=0.
 The accessible-name failure remains the same rooms-trigger button. The plumbing console failure remains exchangerate.host/latest returning 401. Lighthouse workflow and config are unchanged from merged base.
 
-Regular Site CI: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40575462178
-  Same f25f4d8 head. Actual Vitest result: 402 files and 4,378 tests passed. Root typecheck passed. API typecheck failed at providers.test.ts(82,31), TS2493 empty-tuple mock.calls indexing; middleware typecheck skipped. This separate typecheck issue is not an inherited Lighthouse failure and is being fixed independently.
+Regular Site CI: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40576598477
+  Same 7916fa0 head. Actual Vitest result: 402 files and 4,378 tests passed. Root, API and middleware typechecks all passed. The prior API mock-typing failure was corrected; no runtime code changed in that fix.
 
-Both Lighthouse audits use version11.4.0, one report per route per run. Timing changes do not establish improvement or regression. Existing CI audits /demo?view=2d&pitch=1 and /pitch/plumbing; it does not audit the new /site or /world flows.
+Both Lighthouse audits use version 11.4.0, one report per route per run. Timing changes do not establish improvement or regression. Existing CI audits /demo?view=2d&pitch=1 and /pitch/plumbing; it does not audit the new /site or /world flows.
 CI-green requirement remains unmet. No gates or unrelated application behavior were changed for this investigation.
 
-Source logs and complete GitHub artifacts are preserved in the originating chat's work/lighthouse-comparison/pr54 folder and adjacent log files. lighthouse-inherited.json contains exact normalized assertions and compact report details. This Site-specific proof replaces the earlier copied Walk reference.
+Source logs and complete GitHub artifacts are preserved in the originating chat's work/lighthouse-comparison/pr54-latest folder and adjacent log files. lighthouse-inherited.json contains exact normalized assertions and compact report details. This Site-specific proof replaces the prior f25f4d8 evidence; original artifacts remain preserved separately.

@@ -1,0 +1,146 @@
+{
+  "target": "site",
+  "startedAt": "2026-10-27T20:16:07.658Z",
+  "endedAt": "2026-10-27T20:19:57.575Z",
+  "method": "Unmodified t14 measurement loop from PR51 harness, fresh Chromium/context per load; production then preview interleaved. Only target/output adaptation. Native D3D11 with preview hosts pinned to216.198.79.3, no CPU/network throttling. Primary first3dMs uses original loading-hidden wait; independent canvas marks retained. Local heavy builds/tests and other task browsers idle. Different host/CDN paths are inherent in requested comparison; a slower result is not by itself proof of code-only cause.",
+  "pairs": [
+    {
+      "device": "desktop",
+      "run": 1,
+      "productionMs": 4203,
+      "previewMs": 6346,
+      "deltaMs": 2143,
+      "productionCanvasMarkMs": 4151.100000023842,
+      "previewCanvasMarkMs": 6283,
+      "startSeparationSeconds": 15.48839990234375,
+      "productionTimeOrigin": 1793132167813.6,
+      "previewTimeOrigin": 1793132183302
+    },
+    {
+      "device": "desktop",
+      "run": 2,
+      "productionMs": 4577,
+      "previewMs": 4939,
+      "deltaMs": 362,
+      "productionCanvasMarkMs": 4522.799999952316,
+      "previewCanvasMarkMs": 4889.899999976158,
+      "startSeparationSeconds": 16.392,
+      "productionTimeOrigin": 1793132224733,
+      "previewTimeOrigin": 1793132241125
+    },
+    {
+      "device": "desktop",
+      "run": 3,
+      "productionMs": 4298,
+      "previewMs": 5569,
+      "deltaMs": 1271,
+      "productionCanvasMarkMs": 4265.800000071526,
+      "previewCanvasMarkMs": 5496.600000023842,
+      "startSeparationSeconds": 7.95910009765625,
+      "productionTimeOrigin": 1793132268767.7,
+      "previewTimeOrigin": 1793132276726.8
+    },
+    {
+      "device": "desktop",
+      "run": 4,
+      "productionMs": 4215,
+      "previewMs": 4979,
+      "deltaMs": 764,
+      "productionCanvasMarkMs": 4183,
+      "previewCanvasMarkMs": 4935.399999976158,
+      "startSeparationSeconds": 17.63889990234375,
+      "productionTimeOrigin": 1793132311389.6,
+      "previewTimeOrigin": 1793132329028.5
+    },
+    {
+      "device": "desktop",
+      "run": 5,
+      "productionMs": 4381,
+      "previewMs": 7353,
+      "deltaMs": 2972,
+      "productionCanvasMarkMs": 4353.600000023842,
+      "previewCanvasMarkMs": 7305.100000023842,
+      "startSeparationSeconds": 12.845800048828124,
+      "productionTimeOrigin": 1793132355971.5,
+      "previewTimeOrigin": 1793132368817.3
+    },
+    {
+      "device": "phone",
+      "run": 1,
+      "productionMs": 4352,
+      "previewMs": 5100,
+      "deltaMs": 748,
+      "productionCanvasMarkMs": 4259.5,
+      "previewCanvasMarkMs": 5041.900000095367,
+      "startSeparationSeconds": 9.413300048828125,
+      "productionTimeOrigin": 1793132203881.3,
+      "previewTimeOrigin": 1793132213294.6
+    },
+    {
+      "device": "phone",
+      "run": 2,
+      "productionMs": 4579,
+      "previewMs": 5149,
+      "deltaMs": 570,
+      "productionCanvasMarkMs": 4526.5,
+      "previewCanvasMarkMs": 5100.899999976158,
+      "startSeparationSeconds": 9.0215,
+      "productionTimeOrigin": 1793132249940.8,
+      "previewTimeOrigin": 1793132258962.3
+    },
+    {
+      "device": "phone",
+      "run": 3,
+      "productionMs": 3710,
+      "previewMs": 4923,
+      "deltaMs": 1213,
+      "productionCanvasMarkMs": 3677.100000023842,
+      "previewCanvasMarkMs": 4878.199999928474,
+      "startSeparationSeconds": 7.5385,
+      "productionTimeOrigin": 1793132294010.5,
+      "previewTimeOrigin": 1793132301549
+    },
+    {
+      "device": "phone",
+      "run": 4,
+      "productionMs": 4721,
+      "previewMs": 5313,
+      "deltaMs": 592,
+      "productionCanvasMarkMs": 4685.799999952316,
+      "previewCanvasMarkMs": 5238.300000071526,
+      "startSeparationSeconds": 8.830199951171876,
+      "productionTimeOrigin": 1793132337987.5,
+      "previewTimeOrigin": 1793132346817.7
+    },
+    {
+      "device": "phone",
+      "run": 5,
+      "productionMs": 4907,
+      "previewMs": 4843,
+      "deltaMs": -64,
+      "productionCanvasMarkMs": 3870.2999999523163,
+      "previewCanvasMarkMs": 4789.199999928474,
+      "startSeparationSeconds": 8.508,
+      "productionTimeOrigin": 1793132380389.6,
+      "previewTimeOrigin": 1793132388897.6
+    }
+  ],
+  "slowerPairs": 9,
+  "slowerCanvasMarkPairs": 10,
+  "allPairsWithin60Seconds": true,
+  "devices": [
+    {
+      "device": "desktop",
+      "productionMedianMs": 4298,
+      "previewMedianMs": 5569,
+      "slowerPairs": 5
+    },
+    {
+      "device": "phone",
+      "productionMedianMs": 4579,
+      "previewMedianMs": 5100,
+      "slowerPairs": 4
+    }
+  ],
+  "errors": 0
+}

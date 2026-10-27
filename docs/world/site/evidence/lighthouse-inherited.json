@@ -9,9 +9,9 @@
   },
   "current": {
     "pr": 54,
-    "runId": 40575462187,
-    "headSha": "f25f4d8fc8c9dc9829b773dfeba256482be5083b",
-    "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40575462187",
+    "runId": 40576598434,
+    "headSha": "7916fa0f39fd38df69e4ee5bb25d39dc840589f8",
+    "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40576598434",
     "conclusion": "failure"
   },
   "errors": {
@@ -23,8 +23,18 @@
   },
   "warnings": {
     "baselineCount": 20,
-    "currentCount": 19,
-    "added": [],
+    "currentCount": 20,
+    "added": [
+      {
+        "route": "/pitch/plumbing",
+        "id": "largest-contentful-paint",
+        "level": "warn",
+        "assertion": "minScore",
+        "expected": 0.9,
+        "actual": 0.89,
+        "operator": ">="
+      }
+    ],
     "removed": [
       {
         "route": "/pitch/plumbing",
@@ -41,42 +51,49 @@
         "route": "/demo?view=2d&pitch=1",
         "id": "first-contentful-paint",
         "baselineActual": 0.22,
-        "currentActual": 0.24,
+        "currentActual": 0.33,
         "expected": 0.9
       },
       {
         "route": "/demo?view=2d&pitch=1",
         "id": "first-meaningful-paint",
         "baselineActual": 0.22,
-        "currentActual": 0.24,
+        "currentActual": 0.33,
         "expected": 0.9
       },
       {
         "route": "/demo?view=2d&pitch=1",
         "id": "largest-contentful-paint",
         "baselineActual": 0.46,
-        "currentActual": 0.47,
+        "currentActual": 0.54,
+        "expected": 0.9
+      },
+      {
+        "route": "/demo?view=2d&pitch=1",
+        "id": "speed-index",
+        "baselineActual": 0.17,
+        "currentActual": 0.34,
         "expected": 0.9
       },
       {
         "route": "/demo?view=2d&pitch=1",
         "id": "categories.performance",
         "baselineActual": 0.4,
-        "currentActual": 0.41,
+        "currentActual": 0.45,
         "expected": 0.75
       },
       {
         "route": "/pitch/plumbing",
         "id": "first-contentful-paint",
         "baselineActual": 0.86,
-        "currentActual": 0.88,
+        "currentActual": 0.87,
         "expected": 0.9
       },
       {
         "route": "/pitch/plumbing",
         "id": "first-meaningful-paint",
         "baselineActual": 0.86,
-        "currentActual": 0.88,
+        "currentActual": 0.87,
         "expected": 0.9
       }
     ]
@@ -321,7 +338,7 @@
       {
         "route": "/demo?view=2d&pitch=1",
         "lighthouseVersion": "11.4.0",
-        "performanceScore": 0.41,
+        "performanceScore": 0.45,
         "totalByteWeight": 1265877,
         "consoleErrors": [],
         "labelMismatch": [
@@ -335,7 +352,7 @@
         "route": "/pitch/plumbing",
         "lighthouseVersion": "11.4.0",
         "performanceScore": 0.96,
-        "totalByteWeight": 576871,
+        "totalByteWeight": 576870,
         "consoleErrors": [
           {
             "source": "network",
@@ -355,16 +372,15 @@
   },
   "workflowAndConfigUnchanged": true,
   "regularCi": {
-    "runId": 40575462178,
-    "headSha": "f25f4d8fc8c9dc9829b773dfeba256482be5083b",
-    "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40575462178",
-    "conclusion": "failure",
+    "runId": 40576598477,
+    "headSha": "7916fa0f39fd38df69e4ee5bb25d39dc840589f8",
+    "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40576598477",
+    "conclusion": "success",
     "rootTypecheck": "success",
-    "apiTypecheck": "failure",
-    "middlewareTypecheck": "skipped",
-    "apiFailure": "api/_lib/site/__tests__/providers.test.ts(82,31): TS2493 Tuple type '[]' of length '0' has no element at index '1'.",
+    "apiTypecheck": "success",
+    "middlewareTypecheck": "success",
     "testFilesPassed": 402,
     "testsPassed": 4378
   },
-  "interpretation": "Lighthouse CI remains failing. All 22 error assertions are inherited unchanged from merged PR51. Site has 19 warning IDs vs baseline20: no added warnings; plumbing bootup-time warning absent. Single-run results do not prove a performance improvement or regression. The separate API typecheck failure is not an inherited Lighthouse issue and is tracked separately."
+  "interpretation": "Lighthouse CI remains failing. All 22 error assertions are inherited unchanged from merged PR51. Site has 20 warnings: one added plumbing LCP warning (score0.89 vs required0.9; 1202.3ms vs baseline1104.9ms), and the baseline plumbing bootup-time warning is absent. Single-run results do not prove a performance improvement or regression. Regular CI is now successful, including root/API/middleware typechecks and 4378 tests."
 }
