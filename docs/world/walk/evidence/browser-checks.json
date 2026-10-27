@@ -1,0 +1,173 @@
+{
+  "url": "http://127.0.0.1:5183/demo?view=3d&pitch=1",
+  "started": "2026-10-27T20:00:49.693Z",
+  "performanceMeasured": false,
+  "checks": {
+    "earlyExitDuringCharacterFetch": {
+      "passed": true,
+      "readonly": true
+    },
+    "reopenAndLockedEscape": {
+      "passed": true,
+      "rememberedCharacter": "Lea",
+      "locked": {
+        "mode": "third",
+        "door": null,
+        "blocked": false,
+        "locked": true,
+        "animation": "idle",
+        "position": [
+          4.3500000000000005,
+          0.0004999999999999965,
+          1.65
+        ],
+        "camera": [
+          5.4194217240739455,
+          1.8112779045698053,
+          0.1880246300640367
+        ]
+      },
+      "readonly": true
+    },
+    "phoneJoystickLook": {
+      "passed": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "initial": {
+        "mode": "third",
+        "door": null,
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          4.3500000000000005,
+          0.0004999999999999965,
+          1.65
+        ],
+        "camera": [
+          5.406730203254105,
+          1.8087824003699897,
+          0.2053748394603394
+        ]
+      },
+      "moved": {
+        "mode": "third",
+        "door": null,
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          3.7840118799325095,
+          0.0004999999999999965,
+          2.2456455486715097
+        ],
+        "camera": [
+          5.289673698200159,
+          1.9170838407685666,
+          0.18803566935975402
+        ]
+      },
+      "stopped": {
+        "mode": "third",
+        "door": null,
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          3.7840118799325095,
+          0.0004999999999999965,
+          2.2456455486715097
+        ],
+        "camera": [
+          5.289135113034441,
+          1.9175230346525414,
+          0.18803572526329715
+        ]
+      },
+      "looked": {
+        "mode": "third",
+        "door": null,
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          3.7840118799325095,
+          0.0004999999999999965,
+          2.2456455486715097
+        ],
+        "camera": [
+          4.797263513821806,
+          1.8715783192994808,
+          0.25890573632871017
+        ]
+      }
+    },
+    "manualDoor": {
+      "passed": true,
+      "fixture": "Living to wellness room",
+      "eOpens": true,
+      "tapCloses": true,
+      "beforeE": {
+        "mode": "third",
+        "door": "Open door",
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          2.93419058432464,
+          0.0005000000000000035,
+          3.298865480492972
+        ],
+        "camera": [
+          3.2280228428352857,
+          1.6545975462570905,
+          2.6381991100413122
+        ]
+      },
+      "afterE": {
+        "mode": "third",
+        "door": "Close door",
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          2.93419058432464,
+          0.0005000000000000035,
+          3.298865480492972
+        ],
+        "camera": [
+          3.0315899799123636,
+          1.646412152040044,
+          2.6398376371542196
+        ]
+      },
+      "afterTap": {
+        "mode": "third",
+        "door": "Open door",
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          2.93419058432464,
+          0.0005000000000000035,
+          3.298865480492972
+        ],
+        "camera": [
+          3.2279982528286126,
+          1.65459334624588,
+          2.638220066957401
+        ]
+      }
+    },
+    "phoneExitReadonlyAndRemembered": {
+      "passed": true,
+      "rememberedCharacter": "Sam",
+      "readonly": true,
+      "viewToggle": true
+    }
+  },
+  "errors": [],
+  "finished": "2026-10-27T20:02:25.867Z"
+}

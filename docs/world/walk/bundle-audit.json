@@ -1,0 +1,204 @@
+{
+  "auditedAt": "2026-10-27T20:04:48.395Z",
+  "method": "Vite production builds with write:false and a generateBundle audit plugin; baseline and candidate share the same node_modules. SHA-256 and gzip use exact emitted UTF-8 bytes.",
+  "baselineRef": "3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2",
+  "baselineVendor": {
+    "fileName": "assets/vendor-three-CjQotlrx.js",
+    "bytes": 744964,
+    "gzipBytes": 191245,
+    "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2"
+  },
+  "candidateVendor": {
+    "fileName": "assets/vendor-three-Dv4s8tq0.js",
+    "bytes": 745009,
+    "gzipBytes": 191257,
+    "sha256": "0d8898adf8d55a87d9d573033a40d07b43623d1ef6df3467bebb909003b6688b"
+  },
+  "rawDeltaBytes": 45,
+  "gzipDeltaBytes": 12,
+  "unchangedImplementation": true,
+  "moduleComparisons": [
+    {
+      "module": "build/three.core.js",
+      "renderedBytes": 1044025,
+      "baselineRenderedBytes": 1044025,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "build/three.module.js",
+      "renderedBytes": 651695,
+      "baselineRenderedBytes": 651695,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/utils/BufferGeometryUtils.js",
+      "renderedBytes": 10088,
+      "baselineRenderedBytes": 10088,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/utils/SkeletonUtils.js",
+      "renderedBytes": 1405,
+      "baselineRenderedBytes": 1405,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/loaders/GLTFLoader.js",
+      "renderedBytes": 115530,
+      "baselineRenderedBytes": 115530,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/loaders/DRACOLoader.js",
+      "renderedBytes": 18682,
+      "baselineRenderedBytes": 18682,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/environments/RoomEnvironment.js",
+      "renderedBytes": 4751,
+      "baselineRenderedBytes": 4751,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/geometries/RoundedBoxGeometry.js",
+      "renderedBytes": 6385,
+      "baselineRenderedBytes": 6385,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/shaders/CopyShader.js",
+      "renderedBytes": 704,
+      "baselineRenderedBytes": 704,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/postprocessing/Pass.js",
+      "renderedBytes": 4082,
+      "baselineRenderedBytes": 4082,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/postprocessing/ShaderPass.js",
+      "renderedBytes": 3095,
+      "baselineRenderedBytes": 3095,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/postprocessing/MaskPass.js",
+      "renderedBytes": 4621,
+      "baselineRenderedBytes": 4621,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/postprocessing/EffectComposer.js",
+      "renderedBytes": 8221,
+      "baselineRenderedBytes": 8221,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/postprocessing/RenderPass.js",
+      "renderedBytes": 4188,
+      "baselineRenderedBytes": 4188,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/shaders/GTAOShader.js",
+      "renderedBytes": 11913,
+      "baselineRenderedBytes": 11913,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/shaders/PoissonDenoiseShader.js",
+      "renderedBytes": 6923,
+      "baselineRenderedBytes": 6923,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/math/SimplexNoise.js",
+      "renderedBytes": 15059,
+      "baselineRenderedBytes": 15059,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/postprocessing/GTAOPass.js",
+      "renderedBytes": 19151,
+      "baselineRenderedBytes": 19151,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/shaders/OutputShader.js",
+      "renderedBytes": 1849,
+      "baselineRenderedBytes": 1849,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/postprocessing/OutputPass.js",
+      "renderedBytes": 3812,
+      "baselineRenderedBytes": 3812,
+      "identicalRenderedExports": true
+    },
+    {
+      "module": "examples/jsm/controls/OrbitControls.js",
+      "renderedBytes": 40600,
+      "baselineRenderedBytes": 40600,
+      "identicalRenderedExports": true
+    }
+  ],
+  "additionalCrossChunkExports": [
+    "Controls",
+    "Triangle",
+    "REVISION",
+    "Ray",
+    "AnimationClip"
+  ],
+  "explanation": "The 45-byte raw increase is five export aliases for implementations already present in the first-picture Three vendor. Line3 implementation, animation runtime, pointer controls and Walk feature remain deferred. No byte-for-byte identity is claimed.",
+  "deferredThreeChunks": [
+    {
+      "fileName": "assets/walk-animation-CVCR6P-e.js",
+      "bytes": 50981,
+      "modules": 26
+    },
+    {
+      "fileName": "assets/walk-controls-BAN4guWh.js",
+      "bytes": 2132,
+      "modules": 1
+    }
+  ],
+  "staticGraph": {
+    "artifact": "Walk dist/assets",
+    "matchesAuditedCandidateVendor": true,
+    "note": "Final production graph.",
+    "root": "ThreeStage-DMr7ah6G.js",
+    "staticClosure": [
+      "ThreeStage-DMr7ah6G.js",
+      "buildSkinStore-BUcqGZS8.js",
+      "buildingServices-DUAe9bFz.js",
+      "buildingServicesCatalog-gFhvLWEg.js",
+      "main-B_zQJXZs.js",
+      "merchantFurniture-ZuMdbwJD.js",
+      "middleware-BoNmX9tp.js",
+      "productImageSafety-CDXX3Z8N.js",
+      "productSurfaceLighting-3xhnrMEm.js",
+      "renderQualityStore-Co4Twmt6.js",
+      "serviceFixtureMeshes-GiGuMKiG.js",
+      "types-BR-OoGj9.js",
+      "vendor-react-CS4MHxMm.js",
+      "vendor-router-YSxUxVSZ.js",
+      "vendor-three-Dv4s8tq0.js"
+    ],
+    "deferredFeatureChunks": [
+      "walk-animation-CVCR6P-e.js",
+      "walk-controls-BAN4guWh.js",
+      "WalkMode-C9vynrAX.js"
+    ],
+    "featureChunkInFirstPictureClosure": false,
+    "vendorHasStaticImports": []
+  },
+  "verification": {
+    "walkTests": "31/31 passed",
+    "applicationTypecheck": "passed",
+    "viteConfigTypecheck": "passed",
+    "noOutputBuild": true
+  }
+}

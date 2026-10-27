@@ -1,4 +1,5 @@
-import { Box3, DoubleSide, Line3, Matrix4, Quaternion, Ray, Vector3 } from 'three';
+import { Box3, DoubleSide, Matrix4, Quaternion, Ray, Vector3 } from 'three';
+import { Line3 } from 'three/src/math/Line3.js';
 import type { ExtendedTriangle, MeshBVH } from 'three-mesh-bvh';
 import type { WalkDoor, WalkerState, WalkSpawn, WalkStair, WalkWorld } from './types';
 import { WALK_FIXED_STEP_S, WALK_HEIGHT_M, WALK_RADIUS_M } from './types';

@@ -213,6 +213,8 @@ export class WalkRuntime {
       }
       else {
         this.desired.copy(this.eye).addScaledVector(this.direction, -3.1).add(new THREE.Vector3(0, .45, 0));
+        // A shoulder offset keeps the avatar away from the central door target.
+        this.desired.add(new THREE.Vector3(.4, 0, 0).applyAxisAngle(THREE.Object3D.DEFAULT_UP, this.euler.y));
         const safe = pullInCamera(this.world, this.eye, this.desired, .18);
         this.follow.lerp(safe, 1 - Math.exp(-14 * dt));
         // Check the smoothed location too: interpolation across a corner is not a safe path.
@@ -226,7 +228,8 @@ export class WalkRuntime {
       }
       const canvas = this.host.renderer.domElement;
       const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
-      if (this.camera.aspect !== aspect) { this.camera.aspect = aspect; this.camera.updateProjectionMatrix(); }
+      const fov = aspect < .8 && this.mode === 'third' ? 95 : 65;
+      if (this.camera.aspect !== aspect || this.camera.fov !== fov) { this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
       for (const door of this.world.doors) {
         const group = this.doors.get(door.id)!; const pose = doorTransform(door);
         if (Math.abs(group.quaternion.dot(pose.quaternion)) < .999999) this.host.renderer.shadowMap.needsUpdate = true;

@@ -17,6 +17,7 @@ export default defineConfig({
   plugins: [
     {
       name: 'defer-walk-collision-math',
+      enforce: 'pre',
       resolveId(source, importer) {
         if (source === 'three' && importer?.replace(/\\/g, '/').includes('/node_modules/three-mesh-bvh/')) {
           return path.resolve(__dirname, 'src/walk/threeCollision.ts');
