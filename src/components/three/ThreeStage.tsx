@@ -231,6 +231,8 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
 }
 
 export interface ThreeStageHandle {
+  /** A private deferred viewer may render its own camera without changing the design. */
+  beginWalk(): { scene: THREE.Scene; renderer: THREE.WebGLRenderer; render(camera: THREE.PerspectiveCamera): void; release(): void } | null;
   viewHover(x:number|null,y?:number):void;
   hitErase(x:number,y:number):ThreeEraseTarget|null;
   setEraseHover(target:ThreeEraseTarget|null,floorOutline?:readonly {x:number;y:number}[]):void;
@@ -665,6 +667,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const drawingSizeRef = useRef(new THREE.Vector2());
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | THREE.OrthographicCamera | null>(null);
+  const walkOwnsFrames = useRef(false);
   const hemiRef = useRef<THREE.HemisphereLight | null>(null);
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   /** A soft light that rides with the camera so no wall face is ever unlit. */
@@ -765,6 +768,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
+      if (walkOwnsFrames.current) return;
       const r = rendererRef.current;
       const s = sceneRef.current;
       const c = cameraRef.current;
@@ -1677,6 +1681,28 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     ref,
     () => {
       const api:ThreeStageHandle = {
+      beginWalk() {
+        const scene = sceneRef.current, renderer = rendererRef.current;
+        if (!scene || !renderer) return null;
+        walkOwnsFrames.current = true;
+        return {
+          scene, renderer,
+          render(view) {
+            if (fillRef.current) {
+              fillRef.current.position.copy(view.position).add(new THREE.Vector3(0, 4, 0));
+              fillRef.current.target.position.copy(view.position);
+              fillRef.current.target.updateMatrixWorld();
+            }
+            if (skyRef.current) skyRef.current.position.set(view.position.x, 0, view.position.z);
+            if (scene.fog instanceof THREE.Fog) {
+              scene.fog.near = view.position.distanceTo(boundsRef.current.centre) + boundsRef.current.radius + FOG_CLEARANCE_M;
+              scene.fog.far = scene.fog.near + Math.max(60, boundsRef.current.radius * 8);
+            }
+            renderer.render(scene, view);
+          },
+          release() { walkOwnsFrames.current = false; requestRender(); },
+        };
+      },
       viewHover(x,y) {
         if(x===null||y===undefined||!viewHoverEnabled||brushHex!==undefined||brushConstruction||catalogPreview||solids.activeRoof){
           if(viewLoweredRef.current){clearViewHover();requestRender();}return;

@@ -44,6 +44,7 @@ export function PlanGardenWorkspace() {
   useEffect(() => {
     if (!open) return;
     const escape = (event: KeyboardEvent) => {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       if (event.key !== 'Escape') return;
       event.preventDefault();
       event.stopImmediatePropagation();

@@ -861,6 +861,7 @@ export function RoomCanvas({
   useEffect(() => {
     if (!pendingProductId) return;
     function onKey(e: KeyboardEvent) {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
       if (e.key === 'Escape') {
@@ -5804,6 +5805,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   }, []);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       if (!rotationRun.current) return;
       if (event.key === 'Escape' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z')) {
         event.preventDefault(); event.stopImmediatePropagation(); cancelTurn();
