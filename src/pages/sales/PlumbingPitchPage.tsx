@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
-import { PitchEnquiryForm } from '../pitch/PitchEnquiryForm';
 import { BUILDING_SERVICES_SOURCES } from '../../data/buildingServicesCatalog';
 import { Kicker, OpenLink, SalesShell } from './SalesShell';
 import { useChapter } from './salesNavigation';
 import { MEETING } from './salesPack';
-import '../pitch/pitch.css';
-import '../pitch/pitch-tactile.css';
+
+const PlumbingEnquiryForm = lazy(() => import('./PlumbingEnquiryForm'));
 
 const CHAPTERS = [
   'The opportunity',
@@ -374,7 +373,9 @@ export default function PlumbingPitchPage() {
             </p>
           </aside>
           <div className="sales-surface pitch-app sales-contact-form">
-            <PitchEnquiryForm audience="merchants" />
+            <Suspense fallback={<p role="status">Loading form…</p>}>
+              <PlumbingEnquiryForm />
+            </Suspense>
           </div>
         </div>
       )}
