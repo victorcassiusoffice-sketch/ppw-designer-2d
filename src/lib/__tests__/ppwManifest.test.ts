@@ -26,6 +26,7 @@ describe('brand-correct application manifest', () => {
     expect(start.origin).toBe('https://designer.example');
     expect(start.pathname).toBe('/demo');
     expect(start.searchParams.get('pitch')).toBe('1');
+    expect(start.searchParams.get('brand')).toBe('ppw');
     expect(start.pathname.startsWith(manifest.scope)).toBe(true);
   });
 
