@@ -1,0 +1,127 @@
+{
+  "head": "554fb61",
+  "scope": [
+    "src/components/three/naturalSceneRenderer.ts",
+    "src/lib/topdown/modelSnapshot.ts"
+  ],
+  "originalFailuresPreserved": [
+    "chooser-diagnostic.json",
+    "chooser-cpu.json",
+    "chooser-cpu-profile.json",
+    "chooser-cpu-phone.json",
+    "chooser-cpu-phone-profile.json"
+  ],
+  "attribution": {
+    "desktop": {
+      "aoPrepareStartMs": 12752,
+      "aoPreparedMs": 13148,
+      "firstAoMs": 18588.7,
+      "firstAoTaskMs": 5438,
+      "dominantSelfMs": 5088.8,
+      "stack": [
+        "ThreeStage.requestRender",
+        "NaturalSceneRenderer.render",
+        "EffectComposer.render",
+        "RenderPass.render",
+        "WebGLRenderer.render",
+        "WebGLProgram.getUniforms/onFirstUse"
+      ]
+    },
+    "phone": {
+      "thumbnailBeautyShaderSelfMs": 4155.3,
+      "thumbnailShadowShaderSelfMs": 1115.1,
+      "initialThumbnailPmremShaderSelfMs": 713.6,
+      "stack": [
+        "modelSnapshot queued photograph/photographShadow",
+        "WebGLRenderer.render",
+        "WebGLProgram.getUniforms/onFirstUse"
+      ]
+    }
+  },
+  "changes": [
+    "Precompile beauty shader variants on the same HalfFloat composer.readBuffer used by RenderPass.",
+    "Isolate warm-up material copies while direct canvas renders continue, preserving shader callbacks and restoring original materials synchronously.",
+    "Retain temporary program references until first successful composer draw; release on draw or disposal.",
+    "Await compileAsync before the two existing deferred plan thumbnail draws; keep serial queue and GPU resources alive through asynchronous work."
+  ],
+  "unchanged": [
+    "AO sample counts, radius, denoise settings, output resolution, lighting, geometry, camera and material appearance.",
+    "First-picture/detail/AO scheduling conditions and timers.",
+    "Plan thumbnail dimensions, camera, product geometry, image cache and 5-second idle cleanup policy."
+  ],
+  "validation": {
+    "focusedTests": "17/17 (4 files)",
+    "appTypecheck": "passed",
+    "changedFileEslint": "passed",
+    "productionBuild": "passed",
+    "localBrowser": [
+      {
+        "device": "desktop",
+        "wholeActionToVisibleMs": 127,
+        "eventToVisibleMs": 62.700000047683716,
+        "firstPictureMs": 3334.600000023842,
+        "shading": "natural-depth",
+        "firstAoMs": "7854.5",
+        "thumbs": [
+          {
+            "width": 64,
+            "height": 64
+          },
+          {
+            "width": 64,
+            "height": 64
+          },
+          {
+            "width": 64,
+            "height": 64
+          },
+          {
+            "width": 64,
+            "height": 64
+          }
+        ],
+        "glbsBeforeChoice": [],
+        "pageErrors": [],
+        "consoleErrors": [],
+        "httpErrors": []
+      },
+      {
+        "device": "phone",
+        "wholeActionToVisibleMs": 931,
+        "eventToVisibleMs": 137.59999990463257,
+        "firstPictureMs": 2213.5,
+        "shading": "natural-basic",
+        "firstAoMs": null,
+        "thumbs": [
+          {
+            "width": 64,
+            "height": 64
+          },
+          {
+            "width": 64,
+            "height": 64
+          },
+          {
+            "width": 64,
+            "height": 64
+          },
+          {
+            "width": 64,
+            "height": 64
+          }
+        ],
+        "glbsBeforeChoice": [],
+        "pageErrors": [],
+        "consoleErrors": [],
+        "httpErrors": []
+      }
+    ]
+  },
+  "limits": [
+    "CPU profiles add overhead and establish stack attribution, not comparable timing deltas.",
+    "Local production 127 ms desktop / 931 ms phone meets 1 second only in this diagnostic; the remote formal gate requires a rerun.",
+    "Initial PMREM setup remains synchronous; the local phone result is near 1 second.",
+    "NaturalSceneRenderer belongs to an early ThreeStage bundle; this fix adds early implementation bytes. Root final-output closure audit must report them; no alias exception is claimed for this code.",
+    "No total first-picture regression claim from this local diagnostic; controlled base/branch pairs remain required."
+  ]
+}

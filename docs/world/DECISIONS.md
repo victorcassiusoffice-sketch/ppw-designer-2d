@@ -1,6 +1,6 @@
 # World decisions
 
-All decisions below are dated **2026-10-27**. The first group records Victor's binding Stage 2 choices; the second records implementation choices made within that authorization. Integration measurements and rubric scores are pending, so this ledger does not imply deployment or acceptance.
+The dated historical entries record Victor's Stage 2 choices and implementation decisions. The Fix 1 section below records the 28 October 2026 changes and supersedes earlier choices where stated. Measurements and all 30 scores are complete in the current reports; remaining gates are explicit. This ledger does not grant deployment or merge authority.
 
 | Date | Choice | Reason | Cost to reverse |
 |---|---|---|---|
@@ -57,5 +57,26 @@ Keep `CURRENT.md` and the scored `RUBRIC.md` consistent with the actual branch b
 | 2026-10-28 | Use portrait FOV 95°, shoulder offset and hide actor when camera extremely close | Improves navigation framing while preserving swept camera collision; tight-room polish still needed | Camera tuning and physical-user regression checks |
 | 2026-10-28 | Preserve every failed first-picture pair and label preview release gates unmet | Fresh-browser measurements are slower; no warmup deletion or threshold changes | Actual performance corrections and a new fully retained paired run |
 | 2026-10-28 | Measure frame pacing again without screenshots, keep original data | Captures inside the movement interval can affect 1% lows | Use external capture hardware or equivalent non-interfering instrumentation |
-| 2026-10-28 | Retain inherited Lighthouse failures as release blockers | Same22 assertions already fail on merged PR51; unrelated PWA/CSP/plumbing changes exceed this feature build | A focused authorized repair with unchanged audit gates |
+| 2026-10-28 | Retain inherited Lighthouse failures as release blockers | Same 22 assertions already fail on merged PR51; unrelated PWA/CSP/plumbing changes exceed this feature build | A focused authorized repair with unchanged audit gates |
 | 2026-10-28 | Correct a test-only fetch mock signature | CI API config includes tests and exposed a zero-argument tuple inference missed by the narrower local check | No reversal needed; run exact CI configuration in later rounds |
+
+
+## Fix round 1 — 28 October 2026
+
+These decisions supersede the Stage 2 synchronous-hydration choice, per-pair custom-domain gate, and treating inherited Lighthouse as this round's blocker. They do not waive the strict static gate.
+
+| Choice | Reason / evidence | Cost to reverse |
+|---|---|---|
+| Count the existing 45 raw / 12 gzip Three export aliases as zero | Explicit Commander ruling Fix 1 §1/§2B; network has no separate Walk implementation request before first picture; early adapters remain counted | Re-audit implementations/exports on dependency changes |
+| Keep opaque optional world data in the legacy store; defer canonical validation and figures | Removes previous 4,350 gzip canonical payload; preserves saved-world data through early writes, rejects malformed geometry before use | A storage-format/integration redesign with no-site/import/rehydration regressions |
+| Report remaining early adapters as failing literal byte equality | Walk +1968/+744, Site +2570/+953 raw/gzip in controlled 28 JS closure; alias exception does not cover launch/lifecycle/persistence/plot code | A separate integration design or explicit Commander rule change; no invented exemption or size padding |
+| Bundle exact licensed PNGs with post-picture launcher; import engine only after Start | All four visible; no GLB before Start; visible streamed progress | Revalidate real click and cold loading evidence |
+| Retain initial chooser failures and repair the measured shader stall | Initial 7,386 / 1,363 ms failed; final whole action to decoded frame 117.0 / 237.0 ms passes. Matching AO beauty and thumbnail shaders warm asynchronously; original lighting and draw parameters remain | Revalidate target-specific shader programs, queue lifetime, visual output and real input after renderer changes |
+| Retain an operated open door while visible/in reach | Fixes 2/3 lost-prompt regression; other aimed doors take precedence; occlusion/distance still apply | Interaction-policy regression work |
+| Shorter 2.15 m swept follow with level compressed aim and safe low-ceiling fallback | Actual narrow office pair; no camera through world/actor | New camera tests and physical-device evidence |
+| First Esc unlocks, second Esc exits using live DOM lock ownership | Five native cycles incl duplicate delayed pointerlockchange; first-use card and locked HUD explain | Browser event-order regression checks |
+| Measure event→changed-position render submission via opt-in one-shot hook | All desktop samples <50 ms; no movement/controller tuning required; not an input-to-photon claim | External high-speed camera or compositor measurement |
+| Preview live Site checks use only existing healthcheck env=preview | Real map/search/draw/visible credits at both sizes; simulated production/error remains offline; deferred waiting screen owns focus | Remove switch after tester no longer needs it, retaining production fail-closed tests |
+| Same-host medians gate; custom-domain pairs informational; retain canvas marks too | Fix 1 §1 ruling; five fresh-browser pairs/device/branch at pinned 216.198.79.3; exact gaps/profiles retained | A Commander-defined protocol, not cherry-picked warmups |
+| Leave Lighthouse untouched and list exact inherited 22 IDs | Both final code CI runs have identical error sets/values to tree-identical main; no new error | Separate authorized repair with unchanged thresholds |
+| No rebase | Start-of-round fetch still 3eefbf7; PR #52 remains outside scope | Rebase and repeat full suites/measurements if explicitly required after main moves |

@@ -1,0 +1,785 @@
+{
+  "at": "2026-10-28T09:33:38.004Z",
+  "diagnostic": true,
+  "method": "One diagnostic CDP CPU-profiler pair through first picture. Fresh browser per target, native GPU, same pinned host and viewport. Sampling adds overhead; these are attribution samples, not replacements for formal timing pairs. Sample weights are clipped to NavigationStart through the app first-picture mark.",
+  "units": "Milliseconds of sampled main-thread stack occupancy; native GPU/driver blocking can be charged to a JavaScript caller. Not a measure of pure CPU instruction time.",
+  "limitations": [
+    "One fixed-order base then Site phone pair. Sampling and Debugger add overhead; do not replace the formal timing samples or infer a stable causal regression from this pair.",
+    "Navigation changes renderer: raw profiling begins around HTML commit, so pre-commit network time is outside sampled coverage. We clip the end to the first-picture performance.now mark using CDP NavigationStart.",
+    "Resource timings overlap CPU work; do not add resource delivery deltas to stack deltas.",
+    "Shader first-use is identifiable at WebGLProgram onFirstUse/getUniforms, but the sample cannot distinguish driver compilation, synchronization, or getProgramInfoLog/getShaderInfoLog native work within that function."
+  ],
+  "rows": [
+    {
+      "target": "base",
+      "url": "https://ppw-designer-2d-nm7fkrg1m-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+      "sampledCoverageMs": 5424.831,
+      "firstPictureMs": 6153.299999952316,
+      "reactSchedulerInclusiveMs": 2142.872,
+      "reactMountEffectsInclusiveMs": 1664.636,
+      "webglContextSelfMs": 718.769,
+      "rendererConstructorInclusiveMs": 727.948,
+      "threeStageRendererEffectInclusiveMs": 732.939,
+      "threeStageFirstDrawInclusiveMs": 1627.046,
+      "shaderFirstUseSelfMs": 1523.1019999999999,
+      "idleMs": 1263.344,
+      "topMountSelf": [
+        {
+          "ms": 718.769,
+          "function": "it",
+          "file": "vendor-three-CjQotlrx.js",
+          "line": 4228,
+          "column": 24266
+        },
+        {
+          "ms": 37.635,
+          "function": "Ae",
+          "file": "productSurfaceLighting-Dea5HGiy.js",
+          "line": 1,
+          "column": 5785
+        },
+        {
+          "ms": 36.779,
+          "function": "Ae",
+          "file": "productSurfaceLighting-Dea5HGiy.js",
+          "line": 1,
+          "column": 5785
+        },
+        {
+          "ms": 33.666,
+          "function": "x",
+          "file": "renderQualityStore-CiNBaEjL.js",
+          "line": 1,
+          "column": 18028
+        },
+        {
+          "ms": 27.842,
+          "function": "A",
+          "file": "App-DdEdZeYR.js",
+          "line": 3,
+          "column": 479129
+        },
+        {
+          "ms": 27.459,
+          "function": "Pe",
+          "file": "productSurfaceLighting-Dea5HGiy.js",
+          "line": 1,
+          "column": 3677
+        },
+        {
+          "ms": 26.297,
+          "function": "he",
+          "file": "ThreeStage-2pJOIxNS.js",
+          "line": 1,
+          "column": 8027
+        },
+        {
+          "ms": 25.712,
+          "function": "Ae",
+          "file": "productSurfaceLighting-Dea5HGiy.js",
+          "line": 1,
+          "column": 5785
+        },
+        {
+          "ms": 24.604,
+          "function": "fe",
+          "file": "App-DdEdZeYR.js",
+          "line": 3,
+          "column": 542336
+        },
+        {
+          "ms": 24.034,
+          "function": "Be",
+          "file": "productSurfaceLighting-Dea5HGiy.js",
+          "line": 1,
+          "column": 8022
+        },
+        {
+          "ms": 22.798,
+          "function": "G",
+          "file": "renderQualityStore-CiNBaEjL.js",
+          "line": 1,
+          "column": 17917
+        },
+        {
+          "ms": 20.053,
+          "function": "angleTo",
+          "file": "vendor-three-CjQotlrx.js",
+          "line": 5,
+          "column": 21039
+        }
+      ],
+      "selectedStacks": [
+        {
+          "selfMs": 943.677,
+          "frames": [
+            {
+              "function": "w",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4170,
+              "column": 294
+            },
+            {
+              "function": "getUniforms",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4177,
+              "column": 282
+            },
+            {
+              "function": "Zu",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 42238
+            },
+            {
+              "function": "renderBufferDirect",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 29876
+            },
+            {
+              "function": "Gl",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 38670
+            },
+            {
+              "function": "Zs",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 38414
+            },
+            {
+              "function": "Vl",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 36487
+            },
+            {
+              "function": "render",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 33254
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-2pJOIxNS.js",
+              "line": 1,
+              "column": 61964
+            },
+            {
+              "function": "draw",
+              "file": "ThreeStage-2pJOIxNS.js",
+              "line": 1,
+              "column": 3433
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-2pJOIxNS.js",
+              "line": 1,
+              "column": 60709
+            },
+            {
+              "function": "(root)",
+              "file": "",
+              "line": 0,
+              "column": 0
+            }
+          ]
+        },
+        {
+          "selfMs": 718.769,
+          "frames": [
+            {
+              "function": "it",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 24266
+            },
+            {
+              "function": "oM",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 22798
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-2pJOIxNS.js",
+              "line": 1,
+              "column": 65761
+            },
+            {
+              "function": "sl",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 40,
+              "column": 24052
+            },
+            {
+              "function": "Xt",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 40,
+              "column": 40990
+            },
+            {
+              "function": "(anonymous)",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 40,
+              "column": 40406
+            },
+            {
+              "function": "E",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 25,
+              "column": 1370
+            },
+            {
+              "function": "un",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 25,
+              "column": 1872
+            },
+            {
+              "function": "(root)",
+              "file": "",
+              "line": 0,
+              "column": 0
+            }
+          ]
+        },
+        {
+          "selfMs": 579.425,
+          "frames": [
+            {
+              "function": "w",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4170,
+              "column": 294
+            },
+            {
+              "function": "getUniforms",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4177,
+              "column": 282
+            },
+            {
+              "function": "Zu",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 42238
+            },
+            {
+              "function": "renderBufferDirect",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 29876
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "Nx.render",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 758
+            },
+            {
+              "function": "render",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 33254
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-2pJOIxNS.js",
+              "line": 1,
+              "column": 61964
+            },
+            {
+              "function": "draw",
+              "file": "ThreeStage-2pJOIxNS.js",
+              "line": 1,
+              "column": 3433
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-2pJOIxNS.js",
+              "line": 1,
+              "column": 60709
+            },
+            {
+              "function": "(root)",
+              "file": "",
+              "line": 0,
+              "column": 0
+            }
+          ]
+        }
+      ],
+      "resources": [
+        {
+          "file": "vendor-react-CS4MHxMm.js",
+          "start": 732.6999999284744,
+          "end": 1153.6999999284744
+        },
+        {
+          "file": "ThreeStage-2pJOIxNS.js",
+          "start": 1237.8999999761581,
+          "end": 1606.0999999046326
+        },
+        {
+          "file": "vendor-three-CjQotlrx.js",
+          "start": 1237.8999999761581,
+          "end": 1754.5
+        },
+        {
+          "file": "App-DdEdZeYR.js",
+          "start": 1244.3999999761581,
+          "end": 2201.7999999523163
+        },
+        {
+          "file": "App-Xhd2x0gp.css",
+          "start": 1245.0999999046326,
+          "end": 2215.399999976158
+        }
+      ],
+      "htmlEndMs": 727.8999999761581,
+      "errors": {
+        "page": [],
+        "console": [],
+        "http": []
+      },
+      "browserClosed": true,
+      "sampledNonIdleMs": 4161.487
+    },
+    {
+      "target": "site",
+      "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+      "sampledCoverageMs": 6401.869,
+      "firstPictureMs": 7054.200000047684,
+      "reactSchedulerInclusiveMs": 2516.682,
+      "reactMountEffectsInclusiveMs": 2239.054,
+      "webglContextSelfMs": 1091.413,
+      "rendererConstructorInclusiveMs": 1099.453,
+      "threeStageRendererEffectInclusiveMs": 1103.875,
+      "threeStageFirstDrawInclusiveMs": 1635.014,
+      "shaderFirstUseSelfMs": 1543.5349999999999,
+      "idleMs": 1988.794,
+      "topMountSelf": [
+        {
+          "ms": 1091.413,
+          "function": "it",
+          "file": "vendor-three-CjQotlrx.js",
+          "line": 4228,
+          "column": 24266
+        },
+        {
+          "ms": 86.331,
+          "function": "setSize",
+          "file": "vendor-three-CjQotlrx.js",
+          "line": 4228,
+          "column": 26370
+        },
+        {
+          "ms": 46.75,
+          "function": "T",
+          "file": "App-Bkoqz7J6.js",
+          "line": 3,
+          "column": 481064
+        },
+        {
+          "ms": 43.201,
+          "function": "Ae",
+          "file": "productSurfaceLighting-FXiurRKL.js",
+          "line": 1,
+          "column": 5785
+        },
+        {
+          "ms": 36.622,
+          "function": "Ae",
+          "file": "productSurfaceLighting-FXiurRKL.js",
+          "line": 1,
+          "column": 5785
+        },
+        {
+          "ms": 34.471,
+          "function": "G",
+          "file": "renderQualityStore-DLWtCDPc.js",
+          "line": 1,
+          "column": 17917
+        },
+        {
+          "ms": 27.074,
+          "function": "Pe",
+          "file": "productSurfaceLighting-FXiurRKL.js",
+          "line": 1,
+          "column": 3677
+        },
+        {
+          "ms": 27.07,
+          "function": "he",
+          "file": "ThreeStage-vRwW4Dy9.js",
+          "line": 1,
+          "column": 8027
+        },
+        {
+          "ms": 25.668,
+          "function": "_getTextWidth",
+          "file": "vendor-konva-CbK8OvmD.js",
+          "line": 1,
+          "column": 145573
+        },
+        {
+          "ms": 24.919,
+          "function": "xe",
+          "file": "App-Bkoqz7J6.js",
+          "line": 3,
+          "column": 544275
+        },
+        {
+          "ms": 23.929,
+          "function": "Ae",
+          "file": "productSurfaceLighting-FXiurRKL.js",
+          "line": 1,
+          "column": 5785
+        },
+        {
+          "ms": 23.745,
+          "function": "angleTo",
+          "file": "vendor-three-CjQotlrx.js",
+          "line": 5,
+          "column": 21039
+        }
+      ],
+      "selectedStacks": [
+        {
+          "selfMs": 1432.783,
+          "frames": [
+            {
+              "function": "w",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4170,
+              "column": 294
+            },
+            {
+              "function": "getUniforms",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4177,
+              "column": 282
+            },
+            {
+              "function": "Zu",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 42238
+            },
+            {
+              "function": "renderBufferDirect",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 29876
+            },
+            {
+              "function": "Gl",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 38670
+            },
+            {
+              "function": "Zs",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 38414
+            },
+            {
+              "function": "Vl",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 36487
+            },
+            {
+              "function": "render",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 33254
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-vRwW4Dy9.js",
+              "line": 1,
+              "column": 61964
+            },
+            {
+              "function": "draw",
+              "file": "ThreeStage-vRwW4Dy9.js",
+              "line": 1,
+              "column": 3433
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-vRwW4Dy9.js",
+              "line": 1,
+              "column": 60709
+            },
+            {
+              "function": "(root)",
+              "file": "",
+              "line": 0,
+              "column": 0
+            }
+          ]
+        },
+        {
+          "selfMs": 1091.413,
+          "frames": [
+            {
+              "function": "it",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 24266
+            },
+            {
+              "function": "oM",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 22798
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-vRwW4Dy9.js",
+              "line": 1,
+              "column": 65761
+            },
+            {
+              "function": "sl",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 40,
+              "column": 24052
+            },
+            {
+              "function": "Xt",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 40,
+              "column": 40990
+            },
+            {
+              "function": "(anonymous)",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 40,
+              "column": 40406
+            },
+            {
+              "function": "E",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 25,
+              "column": 1370
+            },
+            {
+              "function": "un",
+              "file": "vendor-react-CS4MHxMm.js",
+              "line": 25,
+              "column": 1872
+            },
+            {
+              "function": "(root)",
+              "file": "",
+              "line": 0,
+              "column": 0
+            }
+          ]
+        },
+        {
+          "selfMs": 110.752,
+          "frames": [
+            {
+              "function": "w",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4170,
+              "column": 294
+            },
+            {
+              "function": "getUniforms",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4177,
+              "column": 282
+            },
+            {
+              "function": "Zu",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 42238
+            },
+            {
+              "function": "renderBufferDirect",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 29876
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "_",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 5947
+            },
+            {
+              "function": "Nx.render",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4204,
+              "column": 758
+            },
+            {
+              "function": "render",
+              "file": "vendor-three-CjQotlrx.js",
+              "line": 4228,
+              "column": 33254
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-vRwW4Dy9.js",
+              "line": 1,
+              "column": 61964
+            },
+            {
+              "function": "draw",
+              "file": "ThreeStage-vRwW4Dy9.js",
+              "line": 1,
+              "column": 3433
+            },
+            {
+              "function": "(anonymous)",
+              "file": "ThreeStage-vRwW4Dy9.js",
+              "line": 1,
+              "column": 60709
+            },
+            {
+              "function": "(root)",
+              "file": "",
+              "line": 0,
+              "column": 0
+            }
+          ]
+        }
+      ],
+      "resources": [
+        {
+          "file": "vendor-react-CS4MHxMm.js",
+          "start": 658.2000000476837,
+          "end": 1145.9000000953674
+        },
+        {
+          "file": "ThreeStage-vRwW4Dy9.js",
+          "start": 1291.1000000238419,
+          "end": 2606
+        },
+        {
+          "file": "vendor-three-CjQotlrx.js",
+          "start": 1291.2000000476837,
+          "end": 2528
+        },
+        {
+          "file": "App-Bkoqz7J6.js",
+          "start": 1299.4000000953674,
+          "end": 2055.7000000476837
+        },
+        {
+          "file": "App-Xhd2x0gp.css",
+          "start": 1300,
+          "end": 2559
+        }
+      ],
+      "htmlEndMs": 651.4000000953674,
+      "errors": {
+        "page": [],
+        "console": [],
+        "http": []
+      },
+      "browserClosed": true,
+      "sampledNonIdleMs": 4413.075
+    }
+  ],
+  "deltaSiteMinusBase": {
+    "sampledCoverageMs": 977.038,
+    "firstPictureMs": 900.9,
+    "reactSchedulerInclusiveMs": 373.81,
+    "reactMountEffectsInclusiveMs": 574.418,
+    "webglContextSelfMs": 372.644,
+    "rendererConstructorInclusiveMs": 371.505,
+    "threeStageRendererEffectInclusiveMs": 370.936,
+    "threeStageFirstDrawInclusiveMs": 7.968,
+    "shaderFirstUseSelfMs": 20.433,
+    "idleMs": 725.45,
+    "htmlEndMs": -76.5,
+    "sampledNonIdleMs": 251.588
+  },
+  "sourceProof": [
+    {
+      "file": "vendor-three-CjQotlrx.js",
+      "line": 4170,
+      "column": 294,
+      "text": "linkProgram(v);function w(L){if(s.debug.checkShaderErrors){const U=i.getProgramInfoLog(v)||\"\",z=i.getShaderInfoLog(T)||\"\",I=i.getShaderInfoLog(b)||\"\",B=U.trim(),q=z.trim(),X=I.trim();let ie=!0,G=!0;if(i.getProgramParameter(v,i.LINK_STATUS)===!1)if(ie=!1,typeof s.debug.onShaderError==\"function\")s.debug.onShaderError(i,v,T,b);else{const $=ph(i,T,\"vertex\"),j=ph(i,b,\"fragment\");Ve(\"WebGLProgram: Shader Error \"+i.getError()+\" - VALIDATE_STATUS \"+i.getProgramParameter(v,i.VALIDATE_STATUS)+`"
+    },
+    {
+      "file": "vendor-three-CjQotlrx.js",
+      "line": 4228,
+      "column": 24266,
+      "text": "l?J:1}let D=n;function it(y,N){return t.getContext(y,N)}let Ze,R,M,F,k,K,le,ue,Z,te,pe,Pe,de,fe,Ae,Ue,Ge,O,me,Q,ge,Se,se;try{const y={alpha:!0,depth:i,stencil:r,antialias:o,premultipliedAlpha:l,preserveDrawingBuffer:c,powerPreference:h,failIfMajorPerformanceCaveat:u};if(\"setAttribute\"in t&&t.setAttribute(\"data-engine\",`three.js r${Qo}`),t.addEventListener(\"webglcontextlost\",gt,!1),t.addEventListener(\"webglcontextrestored\",at,!1),t.addEventListener(\"webglcontextcreationerror\",ln,!1),D===null){const N=\"webgl2\";if(D=it(N,y"
+    }
+  ],
+  "interpretation": [
+    "This diagnostic pair contains +373.8 ms in the React scheduler stack; +372.6 ms is self time at canvas.getContext during ThreeStage WebGLRenderer construction. The renderer setup effect itself differs by +370.9 ms, so the native context call explains that specific effect difference.",
+    "The first-draw callback differs by only +8.0 ms; aggregate WebGLProgram first-use self time differs by +20.4 ms. These samples do not show a corresponding extra second in first-draw work.",
+    "The final earlier trace had a larger mount difference than this profile pair. This pair identifies a variable native context-creation cost on that path, not a causal proof for all formal timing differences and not a claim that the whole regression is host delivery.",
+    "Both profiles reference identical vendor-three-CjQotlrx.js and the same getContext function location/source. Site ThreeStage and vendor-three delivery were later in this pair, while HTML and App delivery were earlier; do not simplify delivery to a uniformly slower host.",
+    "All existing formal timing files are preserved. No source changes or new functional/performance gates were introduced by this diagnostic."
+  ]
+}

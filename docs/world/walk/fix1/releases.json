@@ -1,0 +1,37 @@
+[
+  {
+    "package": "three",
+    "latest": "0.186.1",
+    "published": "2026-09-24T14:42:21.301Z",
+    "checkedAt": "2026-10-28T07:50:54.1712899Z",
+    "source": "https://registry.npmjs.org/three"
+  },
+  {
+    "package": "maplibre-gl",
+    "latest": "6.16.0",
+    "published": "2026-10-25T13:17:01.849Z",
+    "checkedAt": "2026-10-28T07:50:54.5600608Z",
+    "source": "https://registry.npmjs.org/maplibre-gl"
+  },
+  {
+    "package": "three-mesh-bvh",
+    "latest": "0.9.16",
+    "published": "2026-10-08T05:46:08.08Z",
+    "checkedAt": "2026-10-28T07:50:55.0760117Z",
+    "source": "https://registry.npmjs.org/three-mesh-bvh"
+  },
+  {
+    "package": "draco3dgltf",
+    "latest": "1.5.9",
+    "published": "2026-10-16T19:27:04.932Z",
+    "checkedAt": "2026-10-28T07:50:55.6131833Z",
+    "source": "https://registry.npmjs.org/draco3dgltf"
+  },
+  {
+    "package": "@gltf-transform/cli",
+    "latest": "4.5.1",
+    "published": "2026-09-28T12:48:27.788Z",
+    "checkedAt": "2026-10-28T07:50:56.8136747Z",
+    "source": "https://registry.npmjs.org/@gltf-transform/cli"
+  }
+]

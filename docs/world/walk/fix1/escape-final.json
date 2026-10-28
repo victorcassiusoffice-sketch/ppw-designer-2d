@@ -1,0 +1,206 @@
+{
+  "source": "2498c8c plus duplicate-unlock fix",
+  "url": "http://127.0.0.1:5183/demo?view=3d&pitch=1",
+  "errors": [],
+  "attempts": [
+    {
+      "secondPressDelayMs": 0,
+      "firstEscapeStays": true,
+      "secondEscapeExits": true
+    },
+    {
+      "secondPressDelayMs": 80,
+      "firstEscapeStays": true,
+      "secondEscapeExits": true
+    },
+    {
+      "secondPressDelayMs": 300,
+      "firstEscapeStays": true,
+      "secondEscapeExits": true
+    },
+    {
+      "secondPressDelayMs": 0,
+      "firstEscapeStays": true,
+      "secondEscapeExits": true
+    },
+    {
+      "secondPressDelayMs": 80,
+      "firstEscapeStays": true,
+      "secondEscapeExits": true
+    }
+  ],
+  "passed": true,
+  "trace": [
+    {
+      "type": "pointerlockchange",
+      "at": 20773.200000047684,
+      "locked": true
+    },
+    {
+      "type": "keydown",
+      "at": 20942.899999976158,
+      "locked": true,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 20952.5,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "keydown",
+      "at": 20958.899999976158,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 20991.399999976158,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 21073.600000023842,
+      "locked": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 23714.799999952316,
+      "locked": true
+    },
+    {
+      "type": "keydown",
+      "at": 23717.100000023842,
+      "locked": true,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 23718.399999976158,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 23732.399999976158,
+      "locked": false
+    },
+    {
+      "type": "keydown",
+      "at": 23818.100000023842,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 23852.899999976158,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 25897.799999952316,
+      "locked": true
+    },
+    {
+      "type": "keydown",
+      "at": 25902.299999952316,
+      "locked": true,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 25903.200000047684,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 25913.5,
+      "locked": false
+    },
+    {
+      "type": "keydown",
+      "at": 26218.5,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 26265.5,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 28435.700000047684,
+      "locked": true
+    },
+    {
+      "type": "keydown",
+      "at": 28441.200000047684,
+      "locked": true,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 28449.700000047684,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "keydown",
+      "at": 28455.200000047684,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 28490,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 28492.600000023842,
+      "locked": false
+    },
+    {
+      "type": "keydown",
+      "at": 30857,
+      "locked": true,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 30857.899999976158,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 30864.5,
+      "locked": false
+    },
+    {
+      "type": "pointerlockchange",
+      "at": 30864.5,
+      "locked": false
+    },
+    {
+      "type": "keydown",
+      "at": 30966.200000047684,
+      "locked": false,
+      "repeat": false
+    },
+    {
+      "type": "keyup",
+      "at": 30991.700000047684,
+      "locked": false,
+      "repeat": false
+    }
+  ],
+  "browserClosed": true
+}

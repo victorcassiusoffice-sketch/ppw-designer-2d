@@ -1,0 +1,386 @@
+{
+  "codeHead": "2498c8c",
+  "generatedAt": "2026-10-28T08:10:41.116Z",
+  "rows": [
+    {
+      "device": "desktop",
+      "url": "http://127.0.0.1:5183/demo?view=3d&pitch=1",
+      "errors": [],
+      "blockedWrites": [],
+      "modes": [
+        {
+          "mode": "third",
+          "before": {
+            "mode": "third",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              1.8000000000000003,
+              2.1605,
+              0.9500000000000002
+            ]
+          },
+          "afterSwing": {
+            "mode": "third",
+            "door": "Close door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              1.8000000000000003,
+              2.1605,
+              0.9500000000000002
+            ]
+          },
+          "retainedClosePrompt": true,
+          "closed": {
+            "mode": "third",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              1.8000000000000003,
+              2.1605,
+              0.9500000000000002
+            ]
+          },
+          "closedBy": "button click"
+        },
+        {
+          "mode": "first",
+          "before": {
+            "mode": "first",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              2.4,
+              1.5505,
+              3.1
+            ]
+          },
+          "afterSwing": {
+            "mode": "first",
+            "door": "Close door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              2.4,
+              1.5505,
+              3.1
+            ]
+          },
+          "retainedClosePrompt": true,
+          "closed": {
+            "mode": "first",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              2.4,
+              1.5505,
+              3.1
+            ]
+          },
+          "closedBy": "button click"
+        }
+      ],
+      "escape": [
+        {
+          "secondPressDelayMs": 0,
+          "firstEscapeStays": true,
+          "secondEscapeExits": true
+        },
+        {
+          "secondPressDelayMs": 80,
+          "firstEscapeStays": true
+        }
+      ],
+      "fixture": {
+        "accepted": true,
+        "fixture": {
+          "position": [
+            2.4,
+            0.001,
+            3.1
+          ],
+          "yaw": 3.141592653589793,
+          "frames": 60
+        },
+        "baselineCamera": false,
+        "source": "world-fix-1 followCamera",
+        "position": [
+          2.4,
+          0.0005000000000000035,
+          3.1
+        ],
+        "camera": [
+          1.8000000000000003,
+          2.1605,
+          0.9500000000000002
+        ],
+        "quaternion": [
+          0.00978062902590799,
+          0.9896576192100274,
+          0.11655815570537904,
+          -0.08304415918027341
+        ],
+        "fov": 65,
+        "actorVisible": true
+      },
+      "failure": "TimeoutError: locator.waitFor: Timeout 30000ms exceeded.",
+      "escapeTrace": [
+        {
+          "type": "pointerlockchange",
+          "at": 24352.800000071526,
+          "locked": true
+        },
+        {
+          "type": "keydown",
+          "at": 24356.300000071526,
+          "locked": true,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 24357.100000023842,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keydown",
+          "at": 24360.600000023842,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 24380.200000047684,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 24382.700000047684,
+          "locked": false
+        },
+        {
+          "type": "keydown",
+          "at": 25676.800000071526,
+          "locked": true,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 25677.600000023842,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 25686.200000047684,
+          "locked": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 25686.300000071526,
+          "locked": false
+        },
+        {
+          "type": "keydown",
+          "at": 25765.300000071526,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 25770.700000047684,
+          "locked": false,
+          "repeat": false
+        }
+      ],
+      "browserClosed": true
+    },
+    {
+      "device": "phone",
+      "url": "http://127.0.0.1:5183/demo?view=3d&pitch=1",
+      "errors": [],
+      "blockedWrites": [],
+      "modes": [
+        {
+          "mode": "third",
+          "before": {
+            "mode": "third",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              1.8000000000000003,
+              2.1605,
+              0.9500000000000002
+            ]
+          },
+          "afterSwing": {
+            "mode": "third",
+            "door": "Close door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              1.8000000000000003,
+              2.1605,
+              0.9500000000000002
+            ]
+          },
+          "retainedClosePrompt": true,
+          "closed": {
+            "mode": "third",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              1.8000000000000003,
+              2.1605,
+              0.9500000000000002
+            ]
+          },
+          "closedBy": "actual touch tap"
+        },
+        {
+          "mode": "first",
+          "before": {
+            "mode": "first",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              2.4,
+              1.5505,
+              3.1
+            ]
+          },
+          "afterSwing": {
+            "mode": "first",
+            "door": "Close door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              2.4,
+              1.5505,
+              3.1
+            ]
+          },
+          "retainedClosePrompt": true,
+          "closed": {
+            "mode": "first",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "position": [
+              2.4,
+              0.0005000000000000035,
+              3.1
+            ],
+            "camera": [
+              2.4,
+              1.5505,
+              3.1
+            ]
+          },
+          "closedBy": "actual touch tap"
+        }
+      ],
+      "escape": [],
+      "fixture": {
+        "accepted": true,
+        "fixture": {
+          "position": [
+            2.4,
+            0.001,
+            3.1
+          ],
+          "yaw": 3.141592653589793,
+          "frames": 60
+        },
+        "baselineCamera": false,
+        "source": "world-fix-1 followCamera",
+        "position": [
+          2.4,
+          0.0005000000000000035,
+          3.1
+        ],
+        "camera": [
+          1.8000000000000003,
+          2.1605,
+          0.9500000000000002
+        ],
+        "quaternion": [
+          0.00978062902590799,
+          0.9896576192100274,
+          0.11655815570537904,
+          -0.08304415918027341
+        ],
+        "fov": 95,
+        "actorVisible": true
+      },
+      "phoneTapExit": true,
+      "escapeTrace": [],
+      "passed": true,
+      "browserClosed": true
+    }
+  ]
+}
