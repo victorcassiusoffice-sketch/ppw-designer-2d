@@ -1,9 +1,16 @@
-/** Static metadata only. Import this from the deferred Walk module, never the initial scene. */
+import mayaThumbnail from './thumbnails/kenney-female-a.png?inline';
+import leaThumbnail from './thumbnails/kenney-female-b.png?inline';
+import alexThumbnail from './thumbnails/kenney-male-a.png?inline';
+import samThumbnail from './thumbnails/kenney-male-b.png?inline';
+
+/** Metadata and tiny PNGs arrive together in the deferred chooser, never the initial scene. */
 export interface WalkCharacter {
   id: string;
   label: string;
   url: string;
   thumbnailUrl: string;
+  /** Exact in-pack PNG, inlined so the visible chooser never waits for another request. */
+  thumbnailDataUrl: string;
   clips: { idle: string; walk: string; run: string };
   /** Source bind-pose height; fit the loaded model to the controller's avatar height. */
   heightM: number;
@@ -25,6 +32,7 @@ export const WALK_CHARACTERS: readonly WalkCharacter[] = [
     label: 'Maya',
     url: '/models/world-characters/kenney-female-a.glb',
     thumbnailUrl: '/models/world-characters/kenney-female-a.png',
+    thumbnailDataUrl: mayaThumbnail,
     heightM: 0.7755173593759537,
     bytes: 92780,
   },
@@ -34,6 +42,7 @@ export const WALK_CHARACTERS: readonly WalkCharacter[] = [
     label: 'Lea',
     url: '/models/world-characters/kenney-female-b.glb',
     thumbnailUrl: '/models/world-characters/kenney-female-b.png',
+    thumbnailDataUrl: leaThumbnail,
     heightM: 0.7233427911996841,
     bytes: 92116,
   },
@@ -43,6 +52,7 @@ export const WALK_CHARACTERS: readonly WalkCharacter[] = [
     label: 'Alex',
     url: '/models/world-characters/kenney-male-a.glb',
     thumbnailUrl: '/models/world-characters/kenney-male-a.png',
+    thumbnailDataUrl: alexThumbnail,
     heightM: 0.6713277250528336,
     bytes: 92204,
   },
@@ -52,6 +62,7 @@ export const WALK_CHARACTERS: readonly WalkCharacter[] = [
     label: 'Sam',
     url: '/models/world-characters/kenney-male-b.glb',
     thumbnailUrl: '/models/world-characters/kenney-male-b.png',
+    thumbnailDataUrl: samThumbnail,
     heightM: 0.6613336950540543,
     bytes: 91804,
   },

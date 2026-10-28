@@ -136,7 +136,7 @@ import { foundationSceneFaces } from '../designer/foundationScene';
 
 // The GL renderer and three itself arrive in their own chunk, on first use.
 const ThreeStage = lazy(loadThreeStage);
-const WalkMode = lazy(() => import('../walk/WalkMode'));
+const WalkLauncher = lazy(() => import('../walk/WalkLauncher'));
 
 export interface RoomView3DProps {
   variant: 'card' | 'overlay';
@@ -527,7 +527,6 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     return cancelObjectTurn;
   }, [selectedInstanceId, property.id, property.activeLevelId, tool, armedProductId, cancelObjectTurn]);
   const [stageReady, setStageReady] = useState(false);
-  const [walk, setWalk] = useState<{ property: Property; solids: SceneSolids } | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const cameraViewportHeightRef = useRef(0);
   const [camera, setCamera] = useState<OrbitCamera | null>(null);
@@ -2030,19 +2029,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         ) : null}
       </div>
       {backend === 'gl' && !stageReady && <Loading3D />}
-      {backend === 'gl' && stageReady && solids.floors.length > 0 && <button type="button" aria-label="Open Walk mode"
-        style={{ position: 'absolute', right: 16, bottom: 52, zIndex: 22, minHeight: 44, padding: '10px 16px', borderRadius: 14, background: '#f5faf3', color: '#184c3e', border: '1px solid #9ebaae', fontWeight: 650 }}
-        onClick={() => {
-          cancelObjectTurn();
-          const snapshot = structuredClone(property);
-          // Walking includes every storey and roof terrace, independent of editing visibility.
-          const roof = snapshot.levels?.find(level => isRoofLevel(level));
-          const source = roof ? { ...snapshot, activeLevelId: roof.id } : snapshot;
-          const all = buildingSolids(source, p => sceneFromProperty(p, null, SOLIDS_CAMERA), 'building', true);
-          setWalk({ property: snapshot, solids: { ...all, roofs: [] } });
-        }}>Walk</button>}
-      {walk && <Suspense fallback={<div role="status" style={{ position: 'absolute', inset: 0, zIndex: 30, background: '#edf3e8', display: 'grid', placeItems: 'center' }}>Opening Walk…</div>}>
-        <WalkMode property={walk.property} solids={walk.solids} onClose={() => setWalk(null)} />
+      {backend === 'gl' && stageReady && solids.floors.length > 0 && <Suspense fallback={null}>
+        <WalkLauncher property={property} onOpen={cancelObjectTurn}
+          sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
       </Suspense>}
       {removeActive && <div className="remove-build-status" role="status" data-testid="remove-3d-hud" data-target-kind={removeHover?.kind??'none'}><span>{removeTargetMessage(removeHover)}</span><button type="button" onClick={finishRemoving}>Done</button></div>}
       {/* The gesture surface. */}

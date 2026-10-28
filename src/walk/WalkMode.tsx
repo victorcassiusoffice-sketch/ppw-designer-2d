@@ -6,7 +6,7 @@ import type { OrbitCamera } from '../designer/roomView3d';
 import type { Property } from '../store/propertyStore';
 import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
 import { DEFAULT_WALK_CHARACTER_ID, WALK_CHARACTERS } from './characters';
-import { WalkRuntime, type WalkStatus } from './runtime';
+import type { WalkRuntime, WalkStatus } from './runtime';
 import './walk.css';
 
 const camera: OrbitCamera = { target: { x: 0, y: 0, z: 1 }, distanceM: 10, azimuthRad: 0, elevationRad: .6, fovRad: Math.PI / 3 };
@@ -16,7 +16,10 @@ function savedCharacter(): string {
   catch { return DEFAULT_WALK_CHARACTER_ID; }
 }
 
-export default function WalkMode({ property, solids, onClose }: { property: Property; solids: SceneSolids; onClose: () => void }): JSX.Element {
+export default function WalkMode({ prepareVisit, onClose }: {
+  prepareVisit: () => { property: Property; solids: SceneSolids };
+  onClose: () => void;
+}): JSX.Element {
   const host = useRef<HTMLElement>(null);
   const stage = useRef<ThreeStageHandle>(null);
   const runtime = useRef<WalkRuntime | null>(null);
@@ -26,31 +29,54 @@ export default function WalkMode({ property, solids, onClose }: { property: Prop
   const [help, setHelp] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState('Preparing your walk…');
+  const [visit, setVisit] = useState<ReturnType<typeof prepareVisit> | null>(null);
   const [status, setStatus] = useState<WalkStatus | null>(null);
   const [size, setSize] = useState({ width: innerWidth, height: innerHeight });
   const startedAt = useRef(0);
   const stickPointer = useRef<number | null>(null);
   const lookPointer = useRef<{ id: number; x: number; y: number } | null>(null);
-  useWorkspaceFocus(host, onClose, { onKeyDown: event => { if (!help) runtime.current?.keyDown(event); } });
+  const prepare = useRef(prepareVisit);
+  prepare.current = prepareVisit;
+  useWorkspaceFocus(host, () => { if (!runtime.current?.escape()) onClose(); }, { onKeyDown: event => { if (!help) runtime.current?.keyDown(event); } });
   useEffect(() => {
     const resize = () => setSize({ width: innerWidth, height: innerHeight });
     window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize);
   }, []);
   const stageReady = useCallback(() => setReady(true), []);
   useEffect(() => {
-    if (!started || !ready) return;
+    if (!started) return;
+    // Let the progress line paint before constructing the private walk scene.
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        try { setVisit(prepare.current()); }
+        catch (reason) { setError(reason instanceof Error ? reason.message : 'Walk could not start.'); }
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [started]);
+  useEffect(() => {
+    if (!started || !ready || !visit) return;
     const surface = stage.current?.beginWalk();
     if (!surface) return;
     let active = true, viewer: WalkRuntime | undefined;
-    try {
-      viewer = new WalkRuntime(surface, solids, property, value => { if (active) setStatus(value); }, onClose);
+    let release = () => surface.release();
+    setLoading('Loading walk controls…');
+    void import('./runtime').then(async ({ WalkRuntime: Runtime }) => {
+      if (!active) return;
+      viewer = new Runtime(surface, visit.solids, visit.property, value => { if (active) setStatus(value); }, onClose);
+      release = () => viewer?.dispose();
       runtime.current = viewer;
-      viewer.load(WALK_CHARACTERS.find(c => c.id === choice)!, startedAt.current).catch(reason => {
-        if (active) { setError(reason instanceof Error ? reason.message : 'Walk could not load. Please exit and try again.'); viewer?.dispose(); runtime.current = null; }
-      });
-    } catch (reason) { surface.release(); setError(reason instanceof Error ? reason.message : 'Walk could not start.'); }
-    return () => { active = false; viewer?.dispose(); runtime.current = null; };
-  }, [started, ready, choice, solids, property]);
+      await viewer.load(WALK_CHARACTERS.find(c => c.id === choice)!, startedAt.current,
+        message => { if (active) setLoading(message); });
+    }).catch(reason => {
+      if (active) {
+        setError(reason instanceof Error ? reason.message : 'Walk could not load. Please exit and try again.');
+        release(); release = () => {}; runtime.current = null;
+      }
+    });
+    return () => { active = false; release(); runtime.current = null; };
+  }, [started, ready, choice, visit]);
   const begin = () => {
     try { localStorage.setItem(preferenceKey, choice); } catch { /* A private session can still walk. */ }
     startedAt.current = performance.now(); setStarted(true);
@@ -71,7 +97,7 @@ export default function WalkMode({ property, solids, onClose }: { property: Prop
   return createPortal(
     <section ref={host} className="world-walk" data-world-walk="true" role="dialog" aria-modal="true" aria-label="Walk mode"
       data-testid="world-walk" data-status={status ? JSON.stringify(status) : undefined}>
-      {started && <div className="world-walk-scene"><ThreeStage ref={stage} solids={solids} camera={camera}
+      {started && visit && <div className="world-walk-scene"><ThreeStage ref={stage} solids={visit.solids} camera={camera}
         width={size.width} height={size.height} hover={null} wallView="up" presentation="architectural"
         onReady={stageReady} onFailed={() => { runtime.current?.dispose(); runtime.current = null; setError('WebGL is unavailable. Exit to return to your design.'); }} /></div>}
       <header className="world-walk-header"><div><strong>Walk mode</strong><span>Explore your design</span></div>
@@ -80,11 +106,11 @@ export default function WalkMode({ property, solids, onClose }: { property: Prop
         <p className="world-walk-eyebrow">A walk through your home</p><h1>Choose your character</h1>
         <div className="world-walk-characters" role="group" aria-label="Character">
           {WALK_CHARACTERS.map(character => <button key={character.id} type="button" aria-pressed={choice === character.id} onClick={() => setChoice(character.id)}>
-            <img src={character.thumbnailUrl} alt="" width="96" height="96" /><span>{character.label}</span>
+            <img src={character.thumbnailDataUrl} data-thumbnail-source={character.thumbnailUrl} alt="" width="64" height="64" decoding="sync" loading="eager" /><span>{character.label}</span>
           </button>)}
         </div>
         <div className="world-walk-controls-card"><strong>Ready in ten seconds</strong>
-          <p><b>Keyboard:</b> WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors · Esc to exit.</p>
+          <p><b>Keyboard:</b> WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.</p>
           <p><b>Phone:</b> use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close.</p>
         </div>
         <button type="button" className="world-walk-primary" onClick={begin}>Start walk</button>
@@ -92,7 +118,7 @@ export default function WalkMode({ property, solids, onClose }: { property: Prop
         <p className="world-walk-small">Roof coverings are hidden so connected roof terraces remain accessible.</p>
         <a href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Characters by Kenney · CC0</a>
       </div> : error ? <div className="world-walk-card" role="alert"><h1>Walk is unavailable</h1><p>{error}</p><button type="button" onClick={onClose}>Return to design</button></div>
-      : !status ? <div className="world-walk-loading" role="status">Preparing your walk…</div> : <>
+      : !status ? <div className="world-walk-loading" role="status" aria-live="polite"><span className="world-walk-spinner" aria-hidden="true" />{loading}</div> : <>
         <div className="world-walk-look" aria-label="Drag to look" onClick={() => { if (matchMedia('(pointer:fine)').matches) runtime.current?.lock(); }}
           onPointerDown={event => { if (event.pointerType !== 'mouse' || !status.locked) { lookPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY }; event.currentTarget.setPointerCapture(event.pointerId); } }}
           onPointerMove={event => { const pointer = lookPointer.current; if (pointer?.id === event.pointerId) { runtime.current?.dragLook(event.clientX - pointer.x, event.clientY - pointer.y); pointer.x = event.clientX; pointer.y = event.clientY; } }}
@@ -102,7 +128,7 @@ export default function WalkMode({ property, solids, onClose }: { property: Prop
           <button type="button" aria-pressed={running} onClick={() => { setRunning(!running); runtime.current?.setRunning(!running); }}>{running ? 'Running' : 'Walk / run'}</button>
           <button type="button" aria-expanded={help} onClick={() => { runtime.current?.clearInput(); setHelp(!help); }}>Controls</button>
         </div>
-        {help && <div className="world-walk-help"><strong>Make yourself at home</strong><p>WASD / arrows: move. Shift: run. Mouse / drag: look. V: first / third person. E: door within 2 m. Escape: exit.</p><p>On a phone, the pad moves forward / back and turns left / right with one thumb.</p><button type="button" onClick={() => setHelp(false)}>Got it</button></div>}
+        {help && <div className="world-walk-help"><strong>Make yourself at home</strong><p>WASD / arrows: move. Shift: run. Mouse / drag: look. V: first / third person. E: door within 2 m. Esc frees the mouse; press Esc again to exit.</p><p>On a phone, the pad moves forward / back and turns left / right with one thumb.</p><button type="button" onClick={() => setHelp(false)}>Got it</button></div>}
         <div className="world-walk-aim" aria-hidden="true">·</div>
         <div className="world-walk-door" role="status">{status.blocked ? <span>Step away so the door can move safely.</span> : status.door && <button type="button" onClick={() => runtime.current?.interact()}>{status.door} <kbd>E</kbd></button>}</div>
         <div className="world-walk-stick" role="application" aria-label="Move and turn with one thumb" tabIndex={0}
@@ -110,7 +136,7 @@ export default function WalkMode({ property, solids, onClose }: { property: Prop
           onPointerMove={moveStick} onPointerUp={stopStick} onPointerCancel={stopStick} onLostPointerCapture={stopStick}>
           <span className="world-walk-stick-knob" /><span className="world-walk-stick-label">Move + turn</span>
         </div>
-        <p className="world-walk-hint">{status.locked ? 'E doors · V view · Esc exit' : 'Click or drag to look · E doors · V view'}</p>
+        <p className="world-walk-hint">{status.locked ? 'Esc frees the mouse · E doors · V view' : 'Click or drag to look · E doors · V view · Esc exits'}</p>
         <a className="world-walk-credit" href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Kenney · CC0</a>
       </>}
     </section>, document.body,

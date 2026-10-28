@@ -1,3 +1,4 @@
+.world-walk-launch{position:absolute;right:16px;bottom:52px;z-index:22;min-height:44px;padding:10px 16px;border-radius:14px;background:#f5faf3;color:#184c3e;border:1px solid #9ebaae;font-weight:650}
 .world-walk{position:fixed;inset:0;z-index:1000;background:#d8e1d9;color:#172f2b;font:14px/1.45 system-ui,sans-serif;overflow:hidden;touch-action:none}
 .world-walk button{border:1px solid #b8c8c0;border-radius:14px;background:#fffffff2;color:#183b32;padding:10px 14px;min-height:44px;font-weight:650;cursor:pointer}
 .world-walk button:focus-visible,.world-walk a:focus-visible{outline:3px solid #126f5c;outline-offset:3px}
@@ -6,10 +7,13 @@
 .world-walk-header>div{display:flex;flex-direction:column}.world-walk-header strong{font-size:18px}.world-walk-header span{font-size:12px}.world-walk-header button{pointer-events:auto}.world-walk-exit span{font-size:23px;margin-left:10px}
 .world-walk-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 32px));max-height:calc(100dvh - 110px);overflow:auto;background:#f8faf6;border:1px solid #fff;border-radius:24px;padding:28px;box-shadow:0 18px 80px #183b3230;touch-action:pan-y}
 .world-walk-card h1{font-size:28px;line-height:1.15;margin:0 0 22px}.world-walk-eyebrow{text-transform:uppercase;font-size:11px;letter-spacing:.12em;margin:0 0 10px;color:#537164}.world-walk-card a{font-size:12px;text-decoration:underline}
-.world-walk-characters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}.world-walk-characters button{padding:8px 4px;display:flex;flex-direction:column;align-items:center;background:#ecf0e9}.world-walk-characters button[aria-pressed=true]{border:2px solid #186c58;background:#d8ece0;box-shadow:0 0 0 2px #186c581c}.world-walk-characters img{width:100%;height:auto;image-rendering:auto}
+.world-walk-characters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}.world-walk-characters button{padding:8px 4px;display:flex;flex-direction:column;align-items:center;background:#ecf0e9}.world-walk-characters button[aria-pressed=true]{border:2px solid #186c58;background:#d8ece0;box-shadow:0 0 0 2px #186c581c}.world-walk-characters img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain;image-rendering:auto}
 .world-walk-controls-card{padding:16px;border-radius:16px;background:#eaf0e9;margin-bottom:18px}.world-walk-controls-card p{margin:8px 0 0;font-size:13px}.world-walk .world-walk-primary{background:#195f4f;color:white;width:100%;border-color:#195f4f}.world-walk-small{font-size:12px;color:#51685c}
 .world-walk-small{margin:8px 0}
-.world-walk-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:18px 24px;background:#fff;border-radius:18px}
+.world-walk-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:18px 24px;background:#fff;border-radius:18px;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px)}
+.world-walk-spinner{width:20px;height:20px;flex:none;border:3px solid #cedfd7;border-top-color:#195f4f;border-radius:50%;animation:world-walk-spin .8s linear infinite}
+@keyframes world-walk-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.world-walk-spinner{animation:none}}
 .world-walk-toolbar{position:absolute;top:88px;left:20px;display:flex;gap:8px;z-index:4}.world-walk-toolbar button[aria-pressed=true]{background:#185f4f;color:#fff}
 .world-walk-help{position:absolute;top:150px;left:20px;z-index:6;width:min(380px,calc(100% - 40px));border-radius:20px;background:#f9fcf7f5;padding:20px;box-shadow:0 8px 40px #183b3220}
 .world-walk-aim{position:absolute;top:50%;left:50%;z-index:2;pointer-events:none;color:#fff;font-size:32px;line-height:0;text-shadow:0 0 4px #000}
