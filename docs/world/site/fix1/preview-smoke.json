@@ -1,0 +1,377 @@
+{
+  "at": "2026-10-28T09:25:34.355Z",
+  "origin": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app",
+  "expectedSha": "2c6743a1a00fea395556358d011fa323b81b0018",
+  "note": "Normal preview with no access code. Headless desktop/touch viewport on laptop, not a physical phone. All non-GET/HEAD/OPTIONS network requests are intercepted and blocked; service workers are disabled. Live provider responses are not substituted. One separately labelled production-env negative test substitutes only healthcheck JSON. Two labelled initial-focus cases deliberately delay the SiteEntry JavaScript response.",
+  "rows": [
+    {
+      "case": "delayed-initial-entry-focus",
+      "device": "laptop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "note": "SiteEntry JavaScript is deliberately held until after Escape; app state is read only. Diagnostic keyboard listener records propagation without editing the design.",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CubRsXx-.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BSy-TAz7.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CJ8zM2O0.css"
+      ],
+      "delayedEntryRequests": 1,
+      "dialogBox": {
+        "x": 288,
+        "y": 200,
+        "width": 864,
+        "height": 600
+      },
+      "loadingMessage": "Opening Site… Cancel",
+      "focusedCancel": true,
+      "backgroundInert": true,
+      "backgroundClickAttempted": true,
+      "backgroundKeysReceived": 0,
+      "backgroundUnchanged": true,
+      "closedOnEscape": true,
+      "inertRestored": true,
+      "focusRestored": true,
+      "workspaceAfterCancel": 0,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "delayed-initial-entry-focus",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "note": "SiteEntry JavaScript is deliberately held until after Escape; app state is read only. Diagnostic keyboard listener records propagation without editing the design.",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CubRsXx-.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BSy-TAz7.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CJ8zM2O0.css"
+      ],
+      "delayedEntryRequests": 1,
+      "dialogBox": {
+        "x": 78,
+        "y": 168.796875,
+        "width": 234,
+        "height": 506.40625
+      },
+      "loadingMessage": "Opening Site… Cancel",
+      "focusedCancel": true,
+      "backgroundInert": true,
+      "backgroundClickAttempted": true,
+      "backgroundKeysReceived": 0,
+      "backgroundUnchanged": true,
+      "closedOnEscape": true,
+      "inertRestored": true,
+      "focusRestored": true,
+      "workspaceAfterCancel": 0,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "live-map",
+      "device": "laptop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [
+        "https://tiles.openfreemap.org/styles/liberty",
+        "https://tiles.openfreemap.org/planet",
+        "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json",
+        "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf",
+        "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/site/search?q=Tamarin%20Mauritius"
+      ],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CubRsXx-.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BSy-TAz7.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CJ8zM2O0.css",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteMap-BDoEfmOF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteMap-Y3Rwdjno.css",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/maplibre-gl-worker-GrpJo12C.js"
+      ],
+      "previewModeNote": [
+        "Preview test mode · live map and public services enabled for this session."
+      ],
+      "searchRequestsBeforeTyping": 0,
+      "searchRequestsBeforeSubmit": 0,
+      "searchResults": [
+        "Tamarin, Tamarin VCA, Black River, Mauritius",
+        "Tamarin VCA, Black River, Mauritius",
+        "Tourelle du Tamarin, Tamarin VCA, Black River, Mauritius",
+        "Tamarin River, Tamarin VCA, Black River, Mauritius",
+        "Tamarin River, Tamarin VCA, Black River, Mauritius"
+      ],
+      "searchError": [],
+      "attribution": [
+        {
+          "text": "OpenFreeMap",
+          "href": "https://openfreemap.org/",
+          "x": 158,
+          "y": 703.109375,
+          "width": 69.390625,
+          "height": 15,
+          "visible": true
+        },
+        {
+          "text": "OpenMapTiles",
+          "href": "https://openmaptiles.org/",
+          "x": 243.21875,
+          "y": 703.109375,
+          "width": 70.203125,
+          "height": 15,
+          "visible": true
+        },
+        {
+          "text": "OpenStreetMap",
+          "href": "https://www.openstreetmap.org/copyright",
+          "x": 368.296875,
+          "y": 703.109375,
+          "width": 76.953125,
+          "height": 15,
+          "visible": true
+        }
+      ],
+      "mapBox": {
+        "x": 149,
+        "y": 316.109375,
+        "width": 608.90625,
+        "height": 380
+      },
+      "cornerCount": 4,
+      "boundaryCheck": [
+        "Boundary is ready. Add levels, review the report, then apply it to the plan.",
+        "Boundary drawn by you; not a cadastral survey."
+      ],
+      "boundaryError": [],
+      "mapErrors": [],
+      "report": "Estimates from public data for planning a conversation, not a survey and not an approval.\n\nMy site\n\nBoundary drawn by you; not a cadastral survey.\n\n1\n101.96 m\n2\n63.49 m\n3\n101.96 m\n4\n63.49 m\nN\nBoundary & orientation\nArea\n6,472.73 m²\ndrawn\nMauritius measure\n153.346 perches · 1.5335 arpents\ndrawn\nApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.\nPerimeter\n330.88 m\ndrawn\nShortest / longest side\n63.49 / 101.96 m\ndrawn\nFirst corner (WGS84)\n-20.328929, 57.377188\ndrawn\nNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.\nPlan anchor\nx -5.00 m · y -5.00 m\ndrawn\nApplying a site does not move any existing room.\nLevels & terrain\nLowest / highest input level\nUnavailable\nunavailable\nBest-fit slope\nUnavailable\nunavailable\nDownhill aspect\nUnavailable / level plane\nunavailable\nPublic terrain\nUnavailable\nunavailable\nPublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.\nPlatform scenario\nPlatform level\nUnavailable\nunavailable\nCut / fill\nUnavailable\nunavailable\nSupply survey points/contours or type what-if corner levels to calculate.\nExisting foundation scenario\nExisting / scenario concrete\nUnavailable\nunavailable\nRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.\nSun & mapped surroundings\nPVGIS annual solar yield\nUnavailable\nunavailable\n1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.\nPVGIS optimal tilt\nUnavailable\nunavailable\nWithin 100 m of the boundary\nUnavailable\nunavailable\nOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.\nWaterways / power features\nUnavailable\nunavailable\nMapped public features only; buried services and connection capacity require utility confirmation.\nMapped land use nearby\nUnavailable\nunavailable\nPlanning conversation\nSetback envelope\nUnavailable\nunavailable\nNo plot-specific planning rules verified. No buildable area or approval is inferred.\nIllustrative buildable footprint\nUnavailable\nunavailable\nNo plot-specific planning rules verified. No buildable area or approval is inferred.\nSources & unresolved checks\n\nSources accompany every number. Boundaries and survey-plan transcription have not been checked against the cadastre. Confirm boundaries, datum, services, ground conditions and current planning rules with the relevant professionals.\n\nEstimates from public data for planning a conversation, not a survey and not an approval.",
+      "documentOverflowPx": 0,
+      "mapRequested": true,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "live-map",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [
+        "https://tiles.openfreemap.org/styles/liberty",
+        "https://tiles.openfreemap.org/planet",
+        "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json",
+        "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf",
+        "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/site/search?q=Tamarin%20Mauritius"
+      ],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CubRsXx-.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BSy-TAz7.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CJ8zM2O0.css",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteMap-BDoEfmOF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteMap-Y3Rwdjno.css",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/maplibre-gl-worker-GrpJo12C.js"
+      ],
+      "previewModeNote": [
+        "Preview test mode · live map and public services enabled for this session."
+      ],
+      "searchRequestsBeforeTyping": 0,
+      "searchRequestsBeforeSubmit": 0,
+      "searchResults": [
+        "Tamarin, Tamarin VCA, Black River, Mauritius",
+        "Tamarin VCA, Black River, Mauritius",
+        "Tourelle du Tamarin, Tamarin VCA, Black River, Mauritius",
+        "Tamarin River, Tamarin VCA, Black River, Mauritius",
+        "Tamarin River, Tamarin VCA, Black River, Mauritius"
+      ],
+      "searchError": [],
+      "attribution": [
+        {
+          "text": "OpenFreeMap",
+          "href": "https://openfreemap.org/",
+          "x": 26,
+          "y": 526.640625,
+          "width": 63.078125,
+          "height": 14,
+          "visible": true
+        },
+        {
+          "text": "OpenMapTiles",
+          "href": "https://openmaptiles.org/",
+          "x": 103.484375,
+          "y": 526.640625,
+          "width": 63.8125,
+          "height": 14,
+          "visible": true
+        },
+        {
+          "text": "OpenStreetMap",
+          "href": "https://www.openstreetmap.org/copyright",
+          "x": 217.203125,
+          "y": 526.640625,
+          "width": 69.96875,
+          "height": 14,
+          "visible": true
+        }
+      ],
+      "mapBox": {
+        "x": 17,
+        "y": 229.640625,
+        "width": 356,
+        "height": 290
+      },
+      "cornerCount": 4,
+      "boundaryCheck": [
+        "Boundary is ready. Add levels, review the report, then apply it to the plan.",
+        "Boundary drawn by you; not a cadastral survey."
+      ],
+      "boundaryError": [],
+      "mapErrors": [],
+      "report": "Estimates from public data for planning a conversation, not a survey and not an approval.\n\nMy site\n\nBoundary drawn by you; not a cadastral survey.\n\n1\n59.38 m\n2\n48.45 m\n3\n59.38 m\n4\n48.45 m\nN\nBoundary & orientation\nArea\n2,876.98 m²\ndrawn\nMauritius measure\n68.159 perches · 0.6816 arpents\ndrawn\nApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.\nPerimeter\n215.66 m\ndrawn\nShortest / longest side\n48.45 / 59.38 m\ndrawn\nFirst corner (WGS84)\n-20.328997, 57.377395\ndrawn\nNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.\nPlan anchor\nx -5.00 m · y -5.00 m\ndrawn\nApplying a site does not move any existing room.\nLevels & terrain\nLowest / highest input level\nUnavailable\nunavailable\nBest-fit slope\nUnavailable\nunavailable\nDownhill aspect\nUnavailable / level plane\nunavailable\nPublic terrain\nUnavailable\nunavailable\nPublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.\nPlatform scenario\nPlatform level\nUnavailable\nunavailable\nCut / fill\nUnavailable\nunavailable\nSupply survey points/contours or type what-if corner levels to calculate.\nExisting foundation scenario\nExisting / scenario concrete\nUnavailable\nunavailable\nRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.\nSun & mapped surroundings\nPVGIS annual solar yield\nUnavailable\nunavailable\n1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.\nPVGIS optimal tilt\nUnavailable\nunavailable\nWithin 100 m of the boundary\nUnavailable\nunavailable\nOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.\nWaterways / power features\nUnavailable\nunavailable\nMapped public features only; buried services and connection capacity require utility confirmation.\nMapped land use nearby\nUnavailable\nunavailable\nPlanning conversation\nSetback envelope\nUnavailable\nunavailable\nNo plot-specific planning rules verified. No buildable area or approval is inferred.\nIllustrative buildable footprint\nUnavailable\nunavailable\nNo plot-specific planning rules verified. No buildable area or approval is inferred.\nSources & unresolved checks\n\nSources accompany every number. Boundaries and survey-plan transcription have not been checked against the cadastre. Confirm boundaries, datum, services, ground conditions and current planning rules with the relevant professionals.\n\nEstimates from public data for planning a conversation, not a survey and not an approval.",
+      "documentOverflowPx": 0,
+      "mapRequested": true,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "offline",
+      "device": "laptop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CubRsXx-.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BSy-TAz7.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CJ8zM2O0.css"
+      ],
+      "hint": "Practice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.",
+      "mapCanvasCount": 0,
+      "mapCreditCount": 0,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "offline",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CubRsXx-.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BSy-TAz7.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CJ8zM2O0.css"
+      ],
+      "hint": "Practice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.",
+      "mapCanvasCount": 0,
+      "mapCreditCount": 0,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "production-env-negative-simulation",
+      "device": "phone",
+      "note": "Only healthcheck is deliberately mocked to production; this is not a claim that the unmerged code runs on production.",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CubRsXx-.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BSy-TAz7.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CJ8zM2O0.css"
+      ],
+      "hint": "Practice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.",
+      "mapCanvasCount": 0,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    }
+  ],
+  "healthcheck": {
+    "ok": true,
+    "service": "ppw-designer-2d",
+    "env": "preview",
+    "commit": "2c6743a1a00fea395556358d011fa323b81b0018",
+    "sentryConfigured": true,
+    "timestamp": "2026-10-28T09:25:37.291Z"
+  },
+  "networkWrites": {
+    "attemptedCount": 0,
+    "blockedCount": 0,
+    "transmittedCount": 0
+  },
+  "passed": true
+}

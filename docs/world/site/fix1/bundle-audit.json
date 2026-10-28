@@ -1,1109 +1,630 @@
 {
-  "at": "2026-10-28T07:59:49.478Z",
-  "baseCommit": "3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2",
-  "buildEnvironment": "preview",
   "method": "Controlled Vite/Rollup builds with identical existing build variables. Static closure is App + dynamically loaded ThreeStage. Actual browser trace separately verifies network requests at the canvas first-picture mark.",
-  "verdict": "Canonical Site implementation deferred; literal same-byte gate NOT passed because launcher/preservation/overlay adapters remain.",
-  "base": {
-    "raw": 2880122,
-    "gzip": 865212
-  },
-  "candidate": {
-    "raw": 2882089,
-    "gzip": 865943
-  },
-  "delta": {
-    "raw": 1967,
-    "gzip": 731
-  },
-  "earlySiteModules": [
+  "baseCommit": "3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2",
+  "files": [
     {
-      "id": "src/site/SiteLaunchButton.tsx",
-      "renderedLength": 2783,
-      "renderedExports": [
-        "SiteLaunchButton"
-      ],
-      "chunk": "assets/App-DPF68phQ.js",
-      "early": true
-    }
-  ],
-  "deferredSiteModules": [
-    {
-      "id": "src/site/terrain.ts",
-      "renderedLength": 8115,
-      "renderedExports": [
-        "surveyTIN",
-        "terrainEstimate",
-        "parseSurvey"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/foundationScenario.ts",
-      "renderedLength": 1045,
-      "renderedExports": [
-        "foundationScenario"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/previewMode.ts",
-      "renderedLength": 1547,
-      "renderedExports": [
-        "previewLiveRequested",
-        "clearPreviewLive",
-        "isOfflineDemo",
-        "verifyPreviewLive"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/providers.ts",
-      "renderedLength": 2387,
-      "renderedExports": [
-        "demoSiteMode",
-        "siteRequest",
-        "loadPublicData"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/sample.ts",
-      "renderedLength": 1036,
-      "renderedExports": [
-        "sampleLocations",
-        "sampleSite"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/SiteDiagram.tsx",
-      "renderedLength": 2817,
-      "renderedExports": [
-        "SiteDiagram"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/SiteReport.tsx",
-      "renderedLength": 15333,
-      "renderedExports": [
-        "Metric",
-        "default"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/site.css",
-      "renderedLength": 0,
-      "renderedExports": [],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/SiteWorkspace.tsx",
-      "renderedLength": 39236,
-      "renderedExports": [
-        "default"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/SiteEntry.tsx",
-      "renderedLength": 1406,
-      "renderedExports": [
-        "default"
-      ],
-      "chunk": "assets/SiteEntry-DrhG5c75.js",
-      "early": false
-    },
-    {
-      "id": "src/site/geometry.ts",
-      "renderedLength": 10501,
-      "renderedExports": [
-        "toLocal",
-        "toLonLat",
-        "cross",
-        "signedArea",
-        "area",
-        "distance",
-        "metrics",
-        "intersects",
-        "boundaryError",
-        "inside",
-        "bearingDegrees",
-        "traverse",
-        "geographicBoundaryError",
-        "makeSite",
-        "triangulate",
-        "integrateCutFill",
-        "slope",
-        "setbackEnvelope"
-      ],
-      "chunk": "assets/hydration-4zGMC8-U.js",
-      "early": false
-    },
-    {
-      "id": "src/site/types.ts",
-      "renderedLength": 7899,
-      "renderedExports": [
-        "REPORT_BANNER",
-        "boundaryLabel",
-        "normaliseGeoSite"
-      ],
-      "chunk": "assets/hydration-4zGMC8-U.js",
-      "early": false
-    },
-    {
-      "id": "src/site/hydration.ts",
-      "renderedLength": 1828,
-      "renderedExports": [
-        "validateWorld",
-        "normaliseHydratedSite",
-        "siteHydrationWarning",
-        "hydrateCurrentSite",
-        "startSiteHydration"
-      ],
-      "chunk": "assets/hydration-4zGMC8-U.js",
-      "early": false
-    },
-    {
-      "id": "src/site/SiteMap.tsx",
-      "renderedLength": 5820,
-      "renderedExports": [
-        "MapAttribution",
-        "default"
-      ],
-      "chunk": "assets/SiteMap-BDoEfmOF.js",
-      "early": false
-    }
-  ],
-  "earlyFileComparison": [
-    {
+      "name": "assets/App.js",
       "base": {
         "file": "assets/App-CROjg-sG.js",
-        "bytes": 1060546,
-        "gzipBytes": 326617,
-        "sha256": "27c6927f3947f109861615306328a15b2effa148791431d3d5d49999a6be86f2",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/main-DvO__g69.js",
-          "assets/buildingServices-D7eQkhKr.js",
-          "assets/middleware-BoNmX9tp.js",
-          "assets/propertyStore-DAzV58D0.js",
-          "assets/designsApi-vmM8Eco8.js",
-          "assets/showcaseSafety-DFBXsUeQ.js",
-          "assets/buildingServicesCatalog-gFhvLWEg.js",
-          "assets/LocaleThemeControls-BRZbV6iy.js",
-          "assets/types-BR-OoGj9.js",
-          "assets/RequireMerchant-BvJGo3r3.js",
-          "assets/downloadJson-DhXa1J4E.js",
-          "assets/vendor-router-YSxUxVSZ.js",
-          "assets/cartStore-DfhgqqhS.js",
-          "assets/currency-TeQzs54S.js",
-          "assets/quotedProducts-2NCXztC6.js",
-          "assets/CurrencySwitcher-DAGBomCy.js",
-          "assets/renderQualityStore-DinSqPpH.js",
-          "assets/productImageSafety-CDXX3Z8N.js",
-          "assets/vendor-konva-CbK8OvmD.js",
-          "assets/buildSkinStore-DBtXvGgt.js",
-          "assets/commission-BSjTNLTx.js"
-        ],
-        "dynamicImports": [
-          "assets/ServicesThreeEditor-BC-FO6zV.js",
-          "assets/CityThreeView-BOIUn7-3.js",
-          "assets/SharedProjectWorkbench-2MAe_mWd.js",
-          "assets/AiProviderDraft-BqRZ5sEU.js",
-          "assets/modelSnapshot-GOA-nC4t.js",
-          "assets/modelSnapshot-GOA-nC4t.js",
-          "assets/html2canvas.esm-CBrSDip1.js"
-        ]
+        "bytes": 1062179,
+        "gzipBytes": 327162,
+        "sha256": "bf86e0f2325def519abc8dd8cefe314647280c3c9a64205f9d1311accfd037d7"
       },
       "candidate": {
-        "file": "assets/App-DPF68phQ.js",
-        "bytes": 1062465,
-        "gzipBytes": 327323,
-        "sha256": "0d5f12dd1debb5cb1d24d9d5cbc15bb28c4f2321fb4edede1461c99116e05679",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/main-D9vV4AjR.js",
-          "assets/buildingServices-DxTDbTub.js",
-          "assets/middleware-BoNmX9tp.js",
-          "assets/propertyStore-DB0lMEJ7.js",
-          "assets/designsApi-Bi1VX8E4.js",
-          "assets/showcaseSafety-DFBXsUeQ.js",
-          "assets/buildingServicesCatalog-gFhvLWEg.js",
-          "assets/LocaleThemeControls-EJgj23G9.js",
-          "assets/types-BR-OoGj9.js",
-          "assets/RequireMerchant-BvJGo3r3.js",
-          "assets/downloadJson-DhXa1J4E.js",
-          "assets/vendor-router-YSxUxVSZ.js",
-          "assets/cartStore-DLtZ5ZO7.js",
-          "assets/currency-Y9OBAtBN.js",
-          "assets/quotedProducts-2NCXztC6.js",
-          "assets/CurrencySwitcher-CONw87tH.js",
-          "assets/renderQualityStore-9w4qQoYH.js",
-          "assets/productImageSafety-CDXX3Z8N.js",
-          "assets/vendor-konva-CbK8OvmD.js",
-          "assets/buildSkinStore-CwNIIDPh.js",
-          "assets/commission-BSjTNLTx.js"
-        ],
-        "dynamicImports": [
-          "assets/ServicesThreeEditor-D88tgpNt.js",
-          "assets/CityThreeView-DTQ6Sog1.js",
-          "assets/SharedProjectWorkbench-CnQ5-o8Y.js",
-          "assets/SiteEntry-DrhG5c75.js",
-          "assets/hydration-4zGMC8-U.js",
-          "assets/AiProviderDraft-8KUtYTuA.js",
-          "assets/modelSnapshot-c_ZnhU8u.js",
-          "assets/modelSnapshot-c_ZnhU8u.js",
-          "assets/html2canvas.esm-CBrSDip1.js"
-        ]
+        "file": "assets/App-BC73Fc1c.js",
+        "bytes": 1064701,
+        "gzipBytes": 328100,
+        "sha256": "3003b3f42fd48c46e5670b4aa7b8391c1682e87bec402f86f75ece5576a1d5d7"
       },
-      "rawDelta": 1919,
-      "gzipDelta": 706
+      "rawDelta": 2522,
+      "gzipDelta": 938
     },
     {
+      "name": "assets/CurrencySwitcher.js",
       "base": {
         "file": "assets/CurrencySwitcher-DAGBomCy.js",
         "bytes": 2642,
         "gzipBytes": 1447,
-        "sha256": "e95ef7dcb149260627d300798873217d799d5c9c662efb9ba709673af53e3da4",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/main-DvO__g69.js"
-        ],
-        "dynamicImports": []
+        "sha256": "e95ef7dcb149260627d300798873217d799d5c9c662efb9ba709673af53e3da4"
       },
       "candidate": {
-        "file": "assets/CurrencySwitcher-CONw87tH.js",
+        "file": "assets/CurrencySwitcher-0jH_I1Lj.js",
         "bytes": 2642,
-        "gzipBytes": 1446,
-        "sha256": "4bd70cf9a43e0bc70605270293491a80ce00c842a39dd609c82fa1c559d84d13",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/main-D9vV4AjR.js"
-        ],
-        "dynamicImports": []
+        "gzipBytes": 1447,
+        "sha256": "180bc9cafae8fae3427b6869735fc79fe6250a42f5beea12d396aa46cfa89169"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/LocaleThemeControls.js",
+      "base": {
+        "file": "assets/LocaleThemeControls-BRZbV6iy.js",
+        "bytes": 3170,
+        "gzipBytes": 1309,
+        "sha256": "4aeb6458a04ce21746eba6ae0fd0fb75db0b51e7a1e018ae438d371706b8c2ae"
+      },
+      "candidate": {
+        "file": "assets/LocaleThemeControls-BaTf4Ke6.js",
+        "bytes": 3170,
+        "gzipBytes": 1309,
+        "sha256": "b240fdf293efb200768355cedcbde3decc766a82832d7cbe5f28f2652d3b6aa0"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/RequireMerchant.js",
+      "base": {
+        "file": "assets/RequireMerchant-BvJGo3r3.js",
+        "bytes": 5153,
+        "gzipBytes": 2292,
+        "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a"
+      },
+      "candidate": {
+        "file": "assets/RequireMerchant-BvJGo3r3.js",
+        "bytes": 5153,
+        "gzipBytes": 2292,
+        "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/ThreeStage.js",
+      "base": {
+        "file": "assets/ThreeStage-xnIYIUoq.js",
+        "bytes": 93555,
+        "gzipBytes": 32821,
+        "sha256": "db53851762e824bef4e924875025193ce6bfa5f2925f9d9d128c4b2332f9351e"
+      },
+      "candidate": {
+        "file": "assets/ThreeStage-bvcDhHMR.js",
+        "bytes": 93555,
+        "gzipBytes": 32822,
+        "sha256": "f3e123ca4e2e82d9c0de71b0136ddf7f1fbb89c8ff2e2f5da046d012201cd78d"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 1
+    },
+    {
+      "name": "assets/buildSkinStore.js",
+      "base": {
+        "file": "assets/buildSkinStore-DBtXvGgt.js",
+        "bytes": 744,
+        "gzipBytes": 462,
+        "sha256": "6fa757896ede21d78c5bd86bf7072370642e4631e314e3ea365553c694acf0ca"
+      },
+      "candidate": {
+        "file": "assets/buildSkinStore-CjfdDvXe.js",
+        "bytes": 744,
+        "gzipBytes": 461,
+        "sha256": "b7c8aee5e560cd0487bdca3f276f1fe7909a04944d80141776d171963c53faca"
       },
       "rawDelta": 0,
       "gzipDelta": -1
     },
     {
-      "base": {
-        "file": "assets/LocaleThemeControls-BRZbV6iy.js",
-        "bytes": 3170,
-        "gzipBytes": 1309,
-        "sha256": "4aeb6458a04ce21746eba6ae0fd0fb75db0b51e7a1e018ae438d371706b8c2ae",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/main-DvO__g69.js",
-          "assets/buildSkinStore-DBtXvGgt.js"
-        ],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/LocaleThemeControls-EJgj23G9.js",
-        "bytes": 3170,
-        "gzipBytes": 1309,
-        "sha256": "96f651e98697981fff5e3539b41f701c7ac348a22eeea5890f13d50f480649e5",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/main-D9vV4AjR.js",
-          "assets/buildSkinStore-CwNIIDPh.js"
-        ],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/RequireMerchant-BvJGo3r3.js",
-        "bytes": 5153,
-        "gzipBytes": 2292,
-        "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/vendor-router-YSxUxVSZ.js"
-        ],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/RequireMerchant-BvJGo3r3.js",
-        "bytes": 5153,
-        "gzipBytes": 2292,
-        "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/vendor-router-YSxUxVSZ.js"
-        ],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/ThreeStage-xnIYIUoq.js",
-        "bytes": 93555,
-        "gzipBytes": 32821,
-        "sha256": "db53851762e824bef4e924875025193ce6bfa5f2925f9d9d128c4b2332f9351e",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/vendor-three-CjQotlrx.js",
-          "assets/buildingServices-D7eQkhKr.js",
-          "assets/renderQualityStore-DinSqPpH.js",
-          "assets/productSurfaceLighting-Cl084EKV.js",
-          "assets/buildSkinStore-DBtXvGgt.js",
-          "assets/serviceFixtureMeshes-dDaBzpGO.js",
-          "assets/buildingServicesCatalog-gFhvLWEg.js",
-          "assets/types-BR-OoGj9.js",
-          "assets/main-DvO__g69.js",
-          "assets/vendor-router-YSxUxVSZ.js",
-          "assets/merchantFurniture-ZuMdbwJD.js",
-          "assets/productImageSafety-CDXX3Z8N.js",
-          "assets/middleware-BoNmX9tp.js"
-        ],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/ThreeStage-B-rrH4xP.js",
-        "bytes": 93555,
-        "gzipBytes": 32826,
-        "sha256": "260120591879c1cfa2d6dd449d4172ab09af1cceab9f3212a570fdc7f898b23c",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/vendor-three-CjQotlrx.js",
-          "assets/buildingServices-DxTDbTub.js",
-          "assets/renderQualityStore-9w4qQoYH.js",
-          "assets/productSurfaceLighting-DQnmu3bO.js",
-          "assets/buildSkinStore-CwNIIDPh.js",
-          "assets/serviceFixtureMeshes-dDaBzpGO.js",
-          "assets/buildingServicesCatalog-gFhvLWEg.js",
-          "assets/types-BR-OoGj9.js",
-          "assets/main-D9vV4AjR.js",
-          "assets/vendor-router-YSxUxVSZ.js",
-          "assets/merchantFurniture-ZuMdbwJD.js",
-          "assets/productImageSafety-CDXX3Z8N.js",
-          "assets/middleware-BoNmX9tp.js"
-        ],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 5
-    },
-    {
-      "base": {
-        "file": "assets/buildSkinStore-DBtXvGgt.js",
-        "bytes": 744,
-        "gzipBytes": 462,
-        "sha256": "6fa757896ede21d78c5bd86bf7072370642e4631e314e3ea365553c694acf0ca",
-        "type": "chunk",
-        "imports": [
-          "assets/main-DvO__g69.js",
-          "assets/middleware-BoNmX9tp.js"
-        ],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/buildSkinStore-CwNIIDPh.js",
-        "bytes": 744,
-        "gzipBytes": 463,
-        "sha256": "4055a4310877ba97e6ba22fc40801dd2aad2c2f61017fb61750aea65b0392bc6",
-        "type": "chunk",
-        "imports": [
-          "assets/main-D9vV4AjR.js",
-          "assets/middleware-BoNmX9tp.js"
-        ],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 1
-    },
-    {
+      "name": "assets/buildingServices.js",
       "base": {
         "file": "assets/buildingServices-D7eQkhKr.js",
-        "bytes": 175731,
-        "gzipBytes": 51266,
-        "sha256": "23132fdab613e956234fedc0f3158f18413a155481a2613f7d4a4b7a0b0eb1c4",
-        "type": "chunk",
-        "imports": [
-          "assets/types-BR-OoGj9.js",
-          "assets/main-DvO__g69.js",
-          "assets/merchantFurniture-ZuMdbwJD.js",
-          "assets/productImageSafety-CDXX3Z8N.js",
-          "assets/buildingServicesCatalog-gFhvLWEg.js"
-        ],
-        "dynamicImports": [
-          "assets/sofapColourMatch-DvLtg7hz.js"
-        ]
+        "bytes": 175717,
+        "gzipBytes": 51250,
+        "sha256": "b6cfce8fe0e6d5c07691fac6c32af3cde49130a4aa0ef56683b8d134a2829eb9"
       },
       "candidate": {
-        "file": "assets/buildingServices-DxTDbTub.js",
-        "bytes": 175731,
-        "gzipBytes": 51267,
-        "sha256": "e4c0bbca90126a716cbef763d0b9a02f793e5e9d1cd64d3095aa8671ab882bc3",
-        "type": "chunk",
-        "imports": [
-          "assets/types-BR-OoGj9.js",
-          "assets/main-D9vV4AjR.js",
-          "assets/merchantFurniture-ZuMdbwJD.js",
-          "assets/productImageSafety-CDXX3Z8N.js",
-          "assets/buildingServicesCatalog-gFhvLWEg.js"
-        ],
-        "dynamicImports": [
-          "assets/sofapColourMatch-DvLtg7hz.js"
-        ]
-      },
-      "rawDelta": 0,
-      "gzipDelta": 1
-    },
-    {
-      "base": {
-        "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
-        "bytes": 6105,
-        "gzipBytes": 2573,
-        "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
-        "bytes": 6105,
-        "gzipBytes": 2573,
-        "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/cartStore-DfhgqqhS.js",
-        "bytes": 12564,
-        "gzipBytes": 4558,
-        "sha256": "f89ba871887dfb0269f0874ca63cd94aa2312bcc949e22613dd85272f811a938",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/main-DvO__g69.js",
-          "assets/middleware-BoNmX9tp.js",
-          "assets/propertyStore-DAzV58D0.js",
-          "assets/buildingServices-D7eQkhKr.js"
-        ],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/cartStore-DLtZ5ZO7.js",
-        "bytes": 12564,
-        "gzipBytes": 4556,
-        "sha256": "09514f0615d59cd0429852f55a7247d5837c7673d28dd7df9ce9c44ebe87eda4",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/main-D9vV4AjR.js",
-          "assets/middleware-BoNmX9tp.js",
-          "assets/propertyStore-DB0lMEJ7.js",
-          "assets/buildingServices-DxTDbTub.js"
-        ],
-        "dynamicImports": []
+        "file": "assets/buildingServices-nIafiqBC.js",
+        "bytes": 175717,
+        "gzipBytes": 51248,
+        "sha256": "2d9b11c31f80ef6adfa3c449d57d7075e758724db54effc33aec0fd6c8acb064"
       },
       "rawDelta": 0,
       "gzipDelta": -2
     },
     {
+      "name": "assets/buildingServicesCatalog.js",
       "base": {
-        "file": "assets/commission-BSjTNLTx.js",
-        "bytes": 52,
-        "gzipBytes": 72,
-        "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
+        "bytes": 6105,
+        "gzipBytes": 2573,
+        "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87"
       },
       "candidate": {
-        "file": "assets/commission-BSjTNLTx.js",
-        "bytes": 52,
-        "gzipBytes": 72,
-        "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
+        "bytes": 6105,
+        "gzipBytes": 2573,
+        "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87"
       },
       "rawDelta": 0,
       "gzipDelta": 0
     },
     {
+      "name": "assets/cartStore.js",
+      "base": {
+        "file": "assets/cartStore-DfhgqqhS.js",
+        "bytes": 12564,
+        "gzipBytes": 4558,
+        "sha256": "f89ba871887dfb0269f0874ca63cd94aa2312bcc949e22613dd85272f811a938"
+      },
+      "candidate": {
+        "file": "assets/cartStore-BrE_nC_E.js",
+        "bytes": 12564,
+        "gzipBytes": 4554,
+        "sha256": "281278e9bf223aad7ab0d73dce9c921f336c783aa1d63da26552538236cdad18"
+      },
+      "rawDelta": 0,
+      "gzipDelta": -4
+    },
+    {
+      "name": "assets/commission.js",
+      "base": {
+        "file": "assets/commission-BSjTNLTx.js",
+        "bytes": 52,
+        "gzipBytes": 72,
+        "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09"
+      },
+      "candidate": {
+        "file": "assets/commission-BSjTNLTx.js",
+        "bytes": 52,
+        "gzipBytes": 72,
+        "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/currency.js",
       "base": {
         "file": "assets/currency-TeQzs54S.js",
         "bytes": 325,
         "gzipBytes": 251,
-        "sha256": "e09b9ef5667034bf0857b3b3e3b83d355dbbd7086aa41d8c7d37713b81dfce70",
-        "type": "chunk",
-        "imports": [
-          "assets/main-DvO__g69.js"
-        ],
-        "dynamicImports": []
+        "sha256": "e09b9ef5667034bf0857b3b3e3b83d355dbbd7086aa41d8c7d37713b81dfce70"
       },
       "candidate": {
-        "file": "assets/currency-Y9OBAtBN.js",
+        "file": "assets/currency-BOeuon9S.js",
         "bytes": 325,
-        "gzipBytes": 252,
-        "sha256": "00a4bab98f1512da20da718c14dfcbd54fcf6b2492e038e5534d8d332c9cfd8f",
-        "type": "chunk",
-        "imports": [
-          "assets/main-D9vV4AjR.js"
-        ],
-        "dynamicImports": []
+        "gzipBytes": 251,
+        "sha256": "8090290b5a129740458bb0a8702f8c29432e3d4f70b841ba5a14722a951af418"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/designsApi.js",
+      "base": {
+        "file": "assets/designsApi-vmM8Eco8.js",
+        "bytes": 16071,
+        "gzipBytes": 5352,
+        "sha256": "dfaa597ff1ae5777003378447c5c15eea60fe5a3ba396464e7378f1eca6af183"
+      },
+      "candidate": {
+        "file": "assets/designsApi-CcrtXjH3.js",
+        "bytes": 16071,
+        "gzipBytes": 5350,
+        "sha256": "b4ade68b756ba01e15c08bc9f90c189eda70ece6f5668021d1b56d557d30fb56"
+      },
+      "rawDelta": 0,
+      "gzipDelta": -2
+    },
+    {
+      "name": "assets/downloadJson.js",
+      "base": {
+        "file": "assets/downloadJson-DhXa1J4E.js",
+        "bytes": 276,
+        "gzipBytes": 233,
+        "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad"
+      },
+      "candidate": {
+        "file": "assets/downloadJson-DhXa1J4E.js",
+        "bytes": 276,
+        "gzipBytes": 233,
+        "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/main.js",
+      "base": {
+        "file": "assets/main-DvO__g69.js",
+        "bytes": 86230,
+        "gzipBytes": 31101,
+        "sha256": "f9fc28713214bf05ffa48d93d78e4bc635818852e2fc0b8f9d88df1d9bf70176"
+      },
+      "candidate": {
+        "file": "assets/main-D7T32VgD.js",
+        "bytes": 86230,
+        "gzipBytes": 31104,
+        "sha256": "f40304f50b7e15d6b8ab9564fcb029dca8733d886ccc91a887676e75749f3ec4"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 3
+    },
+    {
+      "name": "assets/merchantFurniture.js",
+      "base": {
+        "file": "assets/merchantFurniture-ZuMdbwJD.js",
+        "bytes": 2710,
+        "gzipBytes": 1372,
+        "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1"
+      },
+      "candidate": {
+        "file": "assets/merchantFurniture-ZuMdbwJD.js",
+        "bytes": 2710,
+        "gzipBytes": 1372,
+        "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/middleware.js",
+      "base": {
+        "file": "assets/middleware-BoNmX9tp.js",
+        "bytes": 3758,
+        "gzipBytes": 1361,
+        "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41"
+      },
+      "candidate": {
+        "file": "assets/middleware-BoNmX9tp.js",
+        "bytes": 3758,
+        "gzipBytes": 1361,
+        "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/productImageSafety.js",
+      "base": {
+        "file": "assets/productImageSafety-CDXX3Z8N.js",
+        "bytes": 434,
+        "gzipBytes": 292,
+        "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac"
+      },
+      "candidate": {
+        "file": "assets/productImageSafety-CDXX3Z8N.js",
+        "bytes": 434,
+        "gzipBytes": 292,
+        "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac"
+      },
+      "rawDelta": 0,
+      "gzipDelta": 0
+    },
+    {
+      "name": "assets/productSurfaceLighting.js",
+      "base": {
+        "file": "assets/productSurfaceLighting-Cl084EKV.js",
+        "bytes": 37533,
+        "gzipBytes": 14014,
+        "sha256": "33bf3d8e595e69d715c09362d352445586ca6fdfdb5ca5316b74bd3fd6b5f18b"
+      },
+      "candidate": {
+        "file": "assets/productSurfaceLighting-1Df_PIDz.js",
+        "bytes": 37533,
+        "gzipBytes": 14015,
+        "sha256": "55ce58d1406f81552b25fc82aaa93e8eb8c8e8ebfc24ea4c358bdbb886e2f97c"
       },
       "rawDelta": 0,
       "gzipDelta": 1
     },
     {
+      "name": "assets/propertyStore.js",
       "base": {
-        "file": "assets/designsApi-vmM8Eco8.js",
-        "bytes": 16071,
-        "gzipBytes": 5352,
-        "sha256": "dfaa597ff1ae5777003378447c5c15eea60fe5a3ba396464e7378f1eca6af183",
-        "type": "chunk",
-        "imports": [
-          "assets/main-DvO__g69.js",
-          "assets/propertyStore-DAzV58D0.js",
-          "assets/middleware-BoNmX9tp.js",
-          "assets/buildingServices-D7eQkhKr.js",
-          "assets/showcaseSafety-DFBXsUeQ.js"
-        ],
-        "dynamicImports": []
+        "file": "assets/propertyStore-DAzV58D0.js",
+        "bytes": 88628,
+        "gzipBytes": 29835,
+        "sha256": "bc68f285b489b41e5bb00e329e4c3665ccb475f0dd7dd6ac5b6de4a8736f2821"
       },
       "candidate": {
-        "file": "assets/designsApi-Bi1VX8E4.js",
-        "bytes": 16071,
-        "gzipBytes": 5352,
-        "sha256": "5d390660774859de0ed6d2b7ae2969ed401142cb5609c29b7e96ca25311df063",
-        "type": "chunk",
-        "imports": [
-          "assets/main-D9vV4AjR.js",
-          "assets/propertyStore-DB0lMEJ7.js",
-          "assets/middleware-BoNmX9tp.js",
-          "assets/buildingServices-DxTDbTub.js",
-          "assets/showcaseSafety-DFBXsUeQ.js"
-        ],
-        "dynamicImports": []
+        "file": "assets/propertyStore-DoifMOi0.js",
+        "bytes": 88676,
+        "gzipBytes": 29855,
+        "sha256": "d830028ddc2333adb25499593308ec8370da76f537468bc44ba3bf0ff1d3d73e"
+      },
+      "rawDelta": 48,
+      "gzipDelta": 20
+    },
+    {
+      "name": "assets/quotedProducts.js",
+      "base": {
+        "file": "assets/quotedProducts-2NCXztC6.js",
+        "bytes": 392,
+        "gzipBytes": 265,
+        "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae"
+      },
+      "candidate": {
+        "file": "assets/quotedProducts-2NCXztC6.js",
+        "bytes": 392,
+        "gzipBytes": 265,
+        "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae"
       },
       "rawDelta": 0,
       "gzipDelta": 0
     },
     {
+      "name": "assets/renderQualityStore.js",
       "base": {
-        "file": "assets/downloadJson-DhXa1J4E.js",
-        "bytes": 276,
-        "gzipBytes": 233,
-        "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "file": "assets/renderQualityStore-DinSqPpH.js",
+        "bytes": 27262,
+        "gzipBytes": 10881,
+        "sha256": "2e0b0e8b9f79e2af99f8c8c1a751ccd5bc49180594907021ab059fbf59930a1d"
       },
       "candidate": {
-        "file": "assets/downloadJson-DhXa1J4E.js",
-        "bytes": 276,
-        "gzipBytes": 233,
-        "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/main-DvO__g69.js",
-        "bytes": 81578,
-        "gzipBytes": 29106,
-        "sha256": "73f3871f84daf8545bea3bb6d873b76838abd6afc59290c5d3fbfe80e632044c",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/vendor-router-YSxUxVSZ.js"
-        ],
-        "dynamicImports": [
-          "assets/ThreeStage-xnIYIUoq.js",
-          "assets/App-CROjg-sG.js",
-          "assets/CartPage-CfJjWeEu.js",
-          "assets/CheckoutPage-Bdx6FmC-.js",
-          "assets/OrderSuccessPage-CUnDSuxo.js",
-          "assets/OrderCancelledPage-DejESXo4.js",
-          "assets/OrderPendingPage-BKxNhTRI.js",
-          "assets/OrdersPage-G1GQ23Zs.js",
-          "assets/SuppliersPage-CDp_z_ZX.js",
-          "assets/SuppliersSignupCompletePage-CGibStLu.js",
-          "assets/AdminLayout-CFyYIisU.js",
-          "assets/AdminMerchantsPage-BLJnEhLH.js",
-          "assets/RequireAdmin-DFaBMPKz.js",
-          "assets/MerchantsListPage-TVahEilP.js",
-          "assets/MerchantDetailPage-ig-m2ZWO.js",
-          "assets/OrdersListPage-CjsUpJx_.js",
-          "assets/PayoutsListPage-CRLmwydE.js",
-          "assets/ProductsListPage-CApCZ-aR.js",
-          "assets/SuppliersListPage-RJSt22Hv.js",
-          "assets/DashboardPage-DZlO3oGU.js",
-          "assets/AuditLogPage-R80r8rxB.js",
-          "assets/PublicProductsPage-oLNIeFHX.js",
-          "assets/ProductDetailPage-Dr2fIDNO.js",
-          "assets/MarketplaceCartPage-DwirGVmm.js",
-          "assets/MarketplaceCheckoutPage-DeHvCfv8.js",
-          "assets/OrderTrackPage-Cx27guS1.js",
-          "assets/GumroadReturnPage-BG_EzyOK.js",
-          "assets/MerchantAgentPage-kHCVhgZW.js",
-          "assets/MerchantDashboardPage-B8qQnC7v.js",
-          "assets/MerchantOnboardingPage-Dpwg32D0.js",
-          "assets/MerchantAddProductPage-CMt09diz.js",
-          "assets/RequireMerchant-BvJGo3r3.js",
-          "assets/MyDesignsPage-DIBU8EkZ.js",
-          "assets/DemoDesignerPage-DLqO3W61.js",
-          "assets/DeveloperPitchPage-BZ8wziDr.js",
-          "assets/ConstructionPitchPage-wSziOmth.js",
-          "assets/MerchantPitchPage-BWLWJXr3.js",
-          "assets/PlumbingPitchPage-eS2hzHg6.js",
-          "assets/EmployeeStarterPage-DA0C6pFz.js",
-          "assets/StudioPage-CZfBsDjr.js",
-          "assets/StudioPage-CZfBsDjr.js",
-          "assets/StudioPage-CZfBsDjr.js",
-          "assets/MerchantConnectPage-C5bjaT7E.js",
-          "assets/StudioPage-CZfBsDjr.js",
-          "assets/StudioPage-CZfBsDjr.js",
-          "assets/StudioPage-CZfBsDjr.js",
-          "assets/OlbHomePage-DM6wkDYJ.js"
-        ]
-      },
-      "candidate": {
-        "file": "assets/main-D9vV4AjR.js",
-        "bytes": 81578,
-        "gzipBytes": 29105,
-        "sha256": "4df47d49cd2b5bf6977ca4c4c67a5a6346e57c36d9905939a5085a2dbc217bdd",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js",
-          "assets/vendor-router-YSxUxVSZ.js"
-        ],
-        "dynamicImports": [
-          "assets/ThreeStage-B-rrH4xP.js",
-          "assets/App-DPF68phQ.js",
-          "assets/CartPage-JJ1Bjw6F.js",
-          "assets/CheckoutPage-C-6N0xUL.js",
-          "assets/OrderSuccessPage-rdPyzNpA.js",
-          "assets/OrderCancelledPage-m0Kk7fSQ.js",
-          "assets/OrderPendingPage-Dr_WuRmz.js",
-          "assets/OrdersPage-B2PJ32zP.js",
-          "assets/SuppliersPage-CDp_z_ZX.js",
-          "assets/SuppliersSignupCompletePage-CGibStLu.js",
-          "assets/AdminLayout-Bj2b8TxH.js",
-          "assets/AdminMerchantsPage-7ekKu5qK.js",
-          "assets/RequireAdmin-DqqqU1Dw.js",
-          "assets/MerchantsListPage-DuSD1LmL.js",
-          "assets/MerchantDetailPage-CAFJw56O.js",
-          "assets/OrdersListPage-0Ne1br2V.js",
-          "assets/PayoutsListPage-Da0c0sSY.js",
-          "assets/ProductsListPage-CLs4qRml.js",
-          "assets/SuppliersListPage-D_FBRx7K.js",
-          "assets/DashboardPage-KY_kTdJQ.js",
-          "assets/AuditLogPage-D_bJ8gth.js",
-          "assets/PublicProductsPage-Ci8amFgl.js",
-          "assets/ProductDetailPage-CWZD7hjb.js",
-          "assets/MarketplaceCartPage-CH7nhbs2.js",
-          "assets/MarketplaceCheckoutPage-BekU4Evi.js",
-          "assets/OrderTrackPage-lidyyguF.js",
-          "assets/GumroadReturnPage-BG_EzyOK.js",
-          "assets/MerchantAgentPage-kHCVhgZW.js",
-          "assets/MerchantDashboardPage-B8qQnC7v.js",
-          "assets/MerchantOnboardingPage-Dpwg32D0.js",
-          "assets/MerchantAddProductPage-CMt09diz.js",
-          "assets/RequireMerchant-BvJGo3r3.js",
-          "assets/MyDesignsPage-DjBkVsL3.js",
-          "assets/DemoDesignerPage-lRyLzLFQ.js",
-          "assets/DeveloperPitchPage-CWRClAcB.js",
-          "assets/ConstructionPitchPage-CwIVckwf.js",
-          "assets/MerchantPitchPage-Bgt1-BBl.js",
-          "assets/PlumbingPitchPage-B9WMCfwU.js",
-          "assets/EmployeeStarterPage-BtADSC4e.js",
-          "assets/StudioPage-BysV1j1W.js",
-          "assets/StudioPage-BysV1j1W.js",
-          "assets/StudioPage-BysV1j1W.js",
-          "assets/MerchantConnectPage-C5bjaT7E.js",
-          "assets/StudioPage-BysV1j1W.js",
-          "assets/StudioPage-BysV1j1W.js",
-          "assets/StudioPage-BysV1j1W.js",
-          "assets/OlbHomePage-Bn_xs67l.js"
-        ]
+        "file": "assets/renderQualityStore-DLZqEu5t.js",
+        "bytes": 27262,
+        "gzipBytes": 10880,
+        "sha256": "c9a46785e677ca3d17b5173a1a4f4b544a4f204b8cb0406cf38c701034526bd6"
       },
       "rawDelta": 0,
       "gzipDelta": -1
     },
     {
-      "base": {
-        "file": "assets/merchantFurniture-ZuMdbwJD.js",
-        "bytes": 2710,
-        "gzipBytes": 1372,
-        "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/merchantFurniture-ZuMdbwJD.js",
-        "bytes": 2710,
-        "gzipBytes": 1372,
-        "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/middleware-BoNmX9tp.js",
-        "bytes": 3758,
-        "gzipBytes": 1361,
-        "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/middleware-BoNmX9tp.js",
-        "bytes": 3758,
-        "gzipBytes": 1361,
-        "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/productImageSafety-CDXX3Z8N.js",
-        "bytes": 434,
-        "gzipBytes": 292,
-        "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/productImageSafety-CDXX3Z8N.js",
-        "bytes": 434,
-        "gzipBytes": 292,
-        "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/productSurfaceLighting-Cl084EKV.js",
-        "bytes": 37533,
-        "gzipBytes": 14014,
-        "sha256": "33bf3d8e595e69d715c09362d352445586ca6fdfdb5ca5316b74bd3fd6b5f18b",
-        "type": "chunk",
-        "imports": [
-          "assets/renderQualityStore-DinSqPpH.js",
-          "assets/vendor-three-CjQotlrx.js",
-          "assets/buildingServices-D7eQkhKr.js"
-        ],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/productSurfaceLighting-DQnmu3bO.js",
-        "bytes": 37533,
-        "gzipBytes": 14014,
-        "sha256": "cbf6766598c19e12523635334dda9b0259ef80b91f9a240f69440c5c268f32b9",
-        "type": "chunk",
-        "imports": [
-          "assets/renderQualityStore-9w4qQoYH.js",
-          "assets/vendor-three-CjQotlrx.js",
-          "assets/buildingServices-DxTDbTub.js"
-        ],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/propertyStore-DAzV58D0.js",
-        "bytes": 88628,
-        "gzipBytes": 29835,
-        "sha256": "bc68f285b489b41e5bb00e329e4c3665ccb475f0dd7dd6ac5b6de4a8736f2821",
-        "type": "chunk",
-        "imports": [
-          "assets/buildingServices-D7eQkhKr.js",
-          "assets/main-DvO__g69.js",
-          "assets/middleware-BoNmX9tp.js"
-        ],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/propertyStore-DB0lMEJ7.js",
-        "bytes": 88676,
-        "gzipBytes": 29856,
-        "sha256": "7f61ccd0bbbfd7b80102a5e7bc616eef553cc3186d8f866ea011c01b510d31fb",
-        "type": "chunk",
-        "imports": [
-          "assets/buildingServices-DxTDbTub.js",
-          "assets/main-D9vV4AjR.js",
-          "assets/middleware-BoNmX9tp.js"
-        ],
-        "dynamicImports": []
-      },
-      "rawDelta": 48,
-      "gzipDelta": 21
-    },
-    {
-      "base": {
-        "file": "assets/quotedProducts-2NCXztC6.js",
-        "bytes": 392,
-        "gzipBytes": 265,
-        "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/quotedProducts-2NCXztC6.js",
-        "bytes": 392,
-        "gzipBytes": 265,
-        "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
-      "base": {
-        "file": "assets/renderQualityStore-DinSqPpH.js",
-        "bytes": 27262,
-        "gzipBytes": 10881,
-        "sha256": "2e0b0e8b9f79e2af99f8c8c1a751ccd5bc49180594907021ab059fbf59930a1d",
-        "type": "chunk",
-        "imports": [
-          "assets/buildingServices-D7eQkhKr.js",
-          "assets/main-DvO__g69.js",
-          "assets/middleware-BoNmX9tp.js"
-        ],
-        "dynamicImports": []
-      },
-      "candidate": {
-        "file": "assets/renderQualityStore-9w4qQoYH.js",
-        "bytes": 27262,
-        "gzipBytes": 10881,
-        "sha256": "3a59e87a9865493f75512f52a7d248b9d174ee69360a0486132c7aa68795606f",
-        "type": "chunk",
-        "imports": [
-          "assets/buildingServices-DxTDbTub.js",
-          "assets/main-D9vV4AjR.js",
-          "assets/middleware-BoNmX9tp.js"
-        ],
-        "dynamicImports": []
-      },
-      "rawDelta": 0,
-      "gzipDelta": 0
-    },
-    {
+      "name": "assets/serviceFixtureMeshes.js",
       "base": {
         "file": "assets/serviceFixtureMeshes-dDaBzpGO.js",
         "bytes": 4351,
         "gzipBytes": 1883,
-        "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-three-CjQotlrx.js"
-        ],
-        "dynamicImports": []
+        "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d"
       },
       "candidate": {
         "file": "assets/serviceFixtureMeshes-dDaBzpGO.js",
         "bytes": 4351,
         "gzipBytes": 1883,
-        "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-three-CjQotlrx.js"
-        ],
-        "dynamicImports": []
+        "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d"
       },
       "rawDelta": 0,
       "gzipDelta": 0
     },
     {
+      "name": "assets/showcaseSafety.js",
       "base": {
         "file": "assets/showcaseSafety-DFBXsUeQ.js",
         "bytes": 179,
         "gzipBytes": 162,
-        "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4"
       },
       "candidate": {
         "file": "assets/showcaseSafety-DFBXsUeQ.js",
         "bytes": 179,
         "gzipBytes": 162,
-        "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4"
       },
       "rawDelta": 0,
       "gzipDelta": 0
     },
     {
+      "name": "assets/types.js",
       "base": {
         "file": "assets/types-BR-OoGj9.js",
         "bytes": 54910,
         "gzipBytes": 12621,
-        "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7"
       },
       "candidate": {
         "file": "assets/types-BR-OoGj9.js",
         "bytes": 54910,
         "gzipBytes": 12621,
-        "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7"
       },
       "rawDelta": 0,
       "gzipDelta": 0
     },
     {
+      "name": "assets/vendor-konva.js",
       "base": {
         "file": "assets/vendor-konva-CbK8OvmD.js",
         "bytes": 292561,
         "gzipBytes": 89264,
-        "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js"
-        ],
-        "dynamicImports": []
+        "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd"
       },
       "candidate": {
         "file": "assets/vendor-konva-CbK8OvmD.js",
         "bytes": 292561,
         "gzipBytes": 89264,
-        "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js"
-        ],
-        "dynamicImports": []
+        "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd"
       },
       "rawDelta": 0,
       "gzipDelta": 0
     },
     {
+      "name": "assets/vendor-react.js",
       "base": {
         "file": "assets/vendor-react-CS4MHxMm.js",
         "bytes": 142362,
         "gzipBytes": 45622,
-        "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d"
       },
       "candidate": {
         "file": "assets/vendor-react-CS4MHxMm.js",
         "bytes": 142362,
         "gzipBytes": 45622,
-        "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d"
       },
       "rawDelta": 0,
       "gzipDelta": 0
     },
     {
+      "name": "assets/vendor-router.js",
       "base": {
         "file": "assets/vendor-router-YSxUxVSZ.js",
         "bytes": 21566,
         "gzipBytes": 8036,
-        "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js"
-        ],
-        "dynamicImports": []
+        "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96"
       },
       "candidate": {
         "file": "assets/vendor-router-YSxUxVSZ.js",
         "bytes": 21566,
         "gzipBytes": 8036,
-        "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96",
-        "type": "chunk",
-        "imports": [
-          "assets/vendor-react-CS4MHxMm.js"
-        ],
-        "dynamicImports": []
+        "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96"
       },
       "rawDelta": 0,
       "gzipDelta": 0
     },
     {
+      "name": "assets/vendor-three.js",
       "base": {
         "file": "assets/vendor-three-CjQotlrx.js",
         "bytes": 744964,
         "gzipBytes": 191245,
-        "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2"
       },
       "candidate": {
         "file": "assets/vendor-three-CjQotlrx.js",
         "bytes": 744964,
         "gzipBytes": 191245,
-        "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2",
-        "type": "chunk",
-        "imports": [],
-        "dynamicImports": []
+        "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2"
       },
       "rawDelta": 0,
       "gzipDelta": 0
+    }
+  ],
+  "earlyRawDelta": 2570,
+  "earlyGzipDelta": 953,
+  "newEarlyChunks": [],
+  "missingEarlyChunks": [],
+  "literalByteEquality": false,
+  "aliasException": null,
+  "featureModules": [
+    {
+      "id": "src/site/SiteLoading.tsx",
+      "chunk": "assets/App-BC73Fc1c.js",
+      "early": true,
+      "renderedLength": 853
+    },
+    {
+      "id": "src/site/SiteLaunchButton.tsx",
+      "chunk": "assets/App-BC73Fc1c.js",
+      "early": true,
+      "renderedLength": 2632
+    },
+    {
+      "id": "src/site/terrain.ts",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 8115
+    },
+    {
+      "id": "src/site/foundationScenario.ts",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 1045
+    },
+    {
+      "id": "src/site/previewMode.ts",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 1547
+    },
+    {
+      "id": "src/site/providers.ts",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 2387
+    },
+    {
+      "id": "src/site/sample.ts",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 1036
+    },
+    {
+      "id": "src/site/SiteDiagram.tsx",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 2817
+    },
+    {
+      "id": "src/site/SiteReport.tsx",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 15333
+    },
+    {
+      "id": "src/site/site.css",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 0
+    },
+    {
+      "id": "src/site/SiteWorkspace.tsx",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 39236
+    },
+    {
+      "id": "src/site/SiteEntry.tsx",
+      "chunk": "assets/SiteEntry-2gpgZmyn.js",
+      "early": false,
+      "renderedLength": 1294
+    },
+    {
+      "id": "src/site/geometry.ts",
+      "chunk": "assets/hydration-DWVno_BU.js",
+      "early": false,
+      "renderedLength": 10501
+    },
+    {
+      "id": "src/site/types.ts",
+      "chunk": "assets/hydration-DWVno_BU.js",
+      "early": false,
+      "renderedLength": 7899
+    },
+    {
+      "id": "src/site/hydration.ts",
+      "chunk": "assets/hydration-DWVno_BU.js",
+      "early": false,
+      "renderedLength": 1828
+    },
+    {
+      "id": "src/site/SiteMap.tsx",
+      "chunk": "assets/SiteMap-BDoEfmOF.js",
+      "early": false,
+      "renderedLength": 5820
+    }
+  ],
+  "deferredAssets": [
+    {
+      "file": "assets/SiteEntry-2gpgZmyn.js",
+      "bytes": 40021,
+      "gzipBytes": 14365,
+      "sha256": "e55490ad8aa7ef5a17715bfb39a1833eb07ac9761a646de4cb3e1870ddbc6ac3",
+      "type": "chunk"
+    },
+    {
+      "file": "assets/hydration-DWVno_BU.js",
+      "bytes": 13322,
+      "gzipBytes": 5288,
+      "sha256": "1f0d0292c537eb1ca18ff6c13c7b177cb09add48aa9e659bc363bb59dd22d752",
+      "type": "chunk"
+    },
+    {
+      "file": "assets/SiteMap-BDoEfmOF.js",
+      "bytes": 1090441,
+      "gzipBytes": 299328,
+      "sha256": "1aecbc85186874dadc675e38bb027a2b73006b4a51f0f463ee43ba2db72054ba",
+      "type": "chunk"
+    },
+    {
+      "file": "assets/SiteEntry-CJ8zM2O0.css",
+      "bytes": 8901,
+      "gzipBytes": 2436,
+      "sha256": "cdeead447199d7a6a3f1716c98a87dfd320f8147621ef042bf32636f3eacb637",
+      "type": "asset"
+    },
+    {
+      "file": "assets/SiteMap-Y3Rwdjno.css",
+      "bytes": 71547,
+      "gzipBytes": 10181,
+      "sha256": "5c87cb3105d67ec8eeadc5a53f7216942f393710153222753bed280f70034658",
+      "type": "asset"
+    },
+    {
+      "file": "assets/maplibre-gl-worker-GrpJo12C.js",
+      "bytes": 520092,
+      "gzipBytes": 151615,
+      "sha256": "e680068ee4d7630979c4cb894df946fa944b19454bd92195f4ed79a4ba82cc2f",
+      "type": "asset"
     }
   ]
 }
