@@ -49,6 +49,12 @@ export default function PlumbingPitchPage() {
           <figure className="sales-shot">
             <img
               src="/showcase/plumbing-workspace.jpg"
+              srcSet="/showcase/plumbing-workspace-384.webp 384w, /showcase/plumbing-workspace-672.webp 672w, /showcase/plumbing-workspace-960.webp 960w, /showcase/plumbing-workspace.jpg 1280w"
+              sizes="(max-width: 700px) calc(100vw - 54px), (max-width: 1050px) calc((100vw - 96px) / 2), (max-width: 1480px) calc((100vw - 114px) * 0.51923), 708px"
+              width={1280}
+              height={720}
+              {...{ fetchpriority: 'high' }}
+              decoding="async"
               alt="Actual Room Designer Plumbing and Electric workspace, with a measured floor, sink, toilet and coloured service routes"
             />
             <figcaption>
@@ -141,6 +147,9 @@ export default function PlumbingPitchPage() {
                 <button className="sales-start-demo" onClick={() => setLive(true)}>
                   <img
                     src="/showcase/building-services-3d.jpg"
+                    width={1280}
+                    height={900}
+                    decoding="async"
                     alt="Actual Building services 3D editor with measured pipe routes, raised equipment and editable dimensions"
                   />
                   <span>Launch interactive workspace →</span>
