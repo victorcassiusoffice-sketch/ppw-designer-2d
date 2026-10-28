@@ -1012,7 +1012,6 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       onFailed?.();
       return;
     }
-    renderer.setPixelRatio(qualityRef.current.pixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Colour truth (Vic 2026-09-17): the wall must be the SAME hex as the
     // 2D chip and the merchant's colour card. Filmic tone mapping remaps
@@ -1471,7 +1470,6 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       naturalRendererRef.current?.dispose();
       naturalRendererRef.current = null;
     }
-    r.setPixelRatio(quality.pixelRatio);
     if (sun.shadow.mapSize.x !== quality.shadowSize) {
       sun.shadow.map?.dispose();
       sun.shadow.map = null;
@@ -1481,7 +1479,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     requestRender();
     // All captured settings are listed; renderer/camera refs stay mounted.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quality.ambientOcclusion, quality.pixelRatio, quality.shadowSize, quality.anisotropy]);
+  }, [quality.ambientOcclusion, quality.shadowSize, quality.anisotropy]);
 
   useEffect(() => {
     const scene = sceneRef.current;
@@ -1552,11 +1550,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       c = projection === 'orthographic' ? new THREE.OrthographicCamera(-1, 1, 1, -1, 0.05, c.far) : new THREE.PerspectiveCamera(50, 1, 0.05, c.far);
       cameraRef.current = c;
     }
-    // WebGLRenderer.setSize writes canvas.width/height even when unchanged,
-    // reallocating/clearing the drawing buffer. Orbit changes the camera,
-    // not the viewport: resize only when the actual layout dimensions change.
+    // Allocate once with the final layout and density, not first at the default
+    // canvas size and again for quality. This renderer has no XR or internal
+    // output effects; the optional AO composer sizes its own targets separately.
+    // Orbit and quality changes that keep the density must not clear the buffer.
     const viewport = r.getSize(drawingSizeRef.current);
-    if (viewport.x !== width || viewport.y !== height) r.setSize(width, height, false);
+    if (viewport.x !== width || viewport.y !== height || r.getPixelRatio() !== quality.pixelRatio) r.setDrawingBufferSize(width, height, quality.pixelRatio);
     if (c instanceof THREE.PerspectiveCamera) {
       c.aspect = width / height;
       c.fov = (camera.fovRad * 180) / Math.PI;
@@ -1611,7 +1610,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     requestRender(shadowsChanged);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [camera, projection, width, height, solids, wallView]);
+  }, [camera, projection, width, height, solids, wallView, quality.pixelRatio]);
 
   // ---- selection (the plan's selection, mirrored) -----------------------------------
   // A mint pad on the floor under the picked body — the Sims' footprint
