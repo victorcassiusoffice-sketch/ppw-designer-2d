@@ -703,6 +703,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const firstFullPictureAtRef = useRef<number | null>(null);
   const detailReadyRef = useRef(presentation !== 'natural');
   const firstMaterialsRef = useRef<ReturnType<typeof createFirstPictureMaterials> | null>(null);
+  const firstPreparationRef = useRef<{ renderer: THREE.WebGLRenderer; buildId: number; ready: boolean } | null>(null);
   const prepareDetailsRef = useRef<(() => void) | null>(null);
   const detailTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -774,6 +775,27 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const far = Math.max(1000, c.position.distanceTo(extent.centre) + extent.radius * 2 + 20);
         if (c.far !== far) { c.far = far; c.updateProjectionMatrix(); }
         updateFog();
+        if (firstPictureAtRef.current === null && !detailReadyRef.current && typeof r.compileAsync === 'function') {
+          let preparation = firstPreparationRef.current;
+          if (!preparation || preparation.renderer !== r || preparation.buildId !== buildRef.current) {
+            preparation = { renderer: r, buildId: buildRef.current, ready: false };
+            firstPreparationRef.current = preparation;
+            firstMaterialsRef.current ??= createFirstPictureMaterials();
+            const pending = preparation;
+            const ready = () => {
+              if (rendererRef.current !== r || firstPreparationRef.current !== pending || buildRef.current !== pending.buildId) return;
+              pending.ready = true;
+              r.domElement.dataset.firstPreparedMs = String(performance.now());
+              requestRender(false);
+            };
+            r.domElement.dataset.firstPrepareStartMs = String(performance.now());
+            try { void firstMaterialsRef.current.prepare(r, s, c).then(ready, ready); }
+            catch { ready(); }
+          }
+          // Keep Loading 3D visible until the completed, shadowed scene has
+          // actually drawn. Preparation alone never fires onReady.
+          if (!preparation.ready) return;
+        }
         let rendered = false;
         const automatic = qualityChoiceRef.current === 'auto' && !qualityRef.current.phone;
         const shadingReady = optionalShadingReady(firstFullPictureAtRef.current, performance.now(), pendingBodiesRef.current);
@@ -1127,6 +1149,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       firstRefreshTimerRef.current = null;
       prepareDetailsRef.current = null;
       firstMaterialsRef.current?.dispose(); firstMaterialsRef.current = null;
+      firstPreparationRef.current = null;
       firstPictureAtRef.current = null;
       firstFullPictureAtRef.current = null;
       pendingBodiesRef.current = 0;

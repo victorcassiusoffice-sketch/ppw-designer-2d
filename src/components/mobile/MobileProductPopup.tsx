@@ -17,7 +17,7 @@
  */
 import { useEffect, useState } from 'react';
 import type { Product } from '../../data/products.schema';
-import { productImageUrl } from '../../data/products';
+import { catalogDetailImageUrl } from '../catalogMetadata';
 import { CHROME_BG, CHROME_RIM, CHROME_TEXT } from '../../designer/blueprintTheme';
 import { useDragToPlace } from './useDragToPlace';
 // Floor tool (2026-08-30): a product that IS a Floor-tool material is laid by
@@ -81,7 +81,7 @@ export function MobileProductPopup({
   embedded = false,
 }: MobileProductPopupProps) {
   const [expanded, setExpanded] = useState(false);
-  const imgUrl = productImageUrl(product);
+  const imgUrl = catalogDetailImageUrl(product);
   const floorMat = floorMaterialForProduct(product);
   const setFloorDraft = useDesignerUIStore((s) => s.setFloorDraft);
   const setTool = useDesignerUIStore((s) => s.setTool);
