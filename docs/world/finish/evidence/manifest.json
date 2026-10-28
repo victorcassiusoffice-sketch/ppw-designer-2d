@@ -1,0 +1,140 @@
+{
+  "at": "2026-10-28T17:52:59.281Z",
+  "files": [
+    {
+      "name": "all-40-loads.json.gz",
+      "bytes": 154161,
+      "sha256": "c99be5c01367d1bc9161a0dc2763c6269fa4cebd49f216b04f8d7669d3807f84"
+    },
+    {
+      "name": "all-frame-intervals.json.gz",
+      "bytes": 191842,
+      "sha256": "664ff81b27670e09ed769a11307943c09e0309f776e118eb3a5db2f4113239d7"
+    },
+    {
+      "name": "all-walk-inputs.json.gz",
+      "bytes": 5705,
+      "sha256": "771bebae6a455297780d3b8e27bc2155304ced165e451dfde40336d88e69cf7b"
+    },
+    {
+      "name": "functional-v1-retained.json.gz",
+      "bytes": 3377,
+      "sha256": "fbeabe761f9367f8e7c4c5614099930464564102dbb66df748bc51bc9fed9d3c"
+    },
+    {
+      "name": "functional-v2.json.gz",
+      "bytes": 3100,
+      "sha256": "a3cb87f02233357f96d75bd0f28cba06cb6a9a092ba3aa91401e73d4567b24c8"
+    },
+    {
+      "name": "initial-measurements.json",
+      "bytes": 26132,
+      "sha256": "313267a3b0e9a68a6da322801c3b6b712c2f738a7a21ade73e2808616caded7a"
+    },
+    {
+      "name": "INITIAL-MEASUREMENTS.md",
+      "bytes": 4928,
+      "sha256": "ee445dd9f2451753e01724b0ed839bec595d3df0d3bd1671d835e1e22d62d00f"
+    },
+    {
+      "name": "INITIAL-PROFILES.md",
+      "bytes": 6653,
+      "sha256": "7d21240ace63f40b58d5438eedfe49381fe92b2c2df562597dcaa69c2d029d53"
+    },
+    {
+      "name": "initial-site-30-loads.json.gz",
+      "bytes": 117022,
+      "sha256": "d7b292e517c059cff7f410c4a8ccff09299186ac7f325ea7b39d5f0b51b4c0bb"
+    },
+    {
+      "name": "initial-walk-30-loads.json.gz",
+      "bytes": 119039,
+      "sha256": "932dca4ed2a76abd2d75ec64896c5f6c5a4d7902eda93ec2fa7da8ffcc1afed5"
+    },
+    {
+      "name": "lighthouse.json",
+      "bytes": 44323,
+      "sha256": "26a5ef6aa365d65d1500bc1574df6011d8215fb21c374eb5288bb2aa2c5c9a4d"
+    },
+    {
+      "name": "measurements.json",
+      "bytes": 100809,
+      "sha256": "163834558bcbf505d9405db66a329b80ba73fcbb7c5dc801035000234860d4b8"
+    },
+    {
+      "name": "network-audit.json.gz",
+      "bytes": 113108,
+      "sha256": "e7b70e88f597805d0f73a19cac72cba7162f56df9e4cf00a141739f0b179ec17"
+    },
+    {
+      "name": "PRINT-FAILURE.md",
+      "bytes": 1391,
+      "sha256": "be2db277f5e70d00fcae02b16fc54f96d04e6ab86fc0eaf7b5cf32c388269af4"
+    },
+    {
+      "name": "PROTOCOL.md",
+      "bytes": 7739,
+      "sha256": "14fda4adfdc804a5c556490db3e08e7995d394d201a991e9d878992425d2d6fb"
+    },
+    {
+      "name": "REPORT.md",
+      "bytes": 8463,
+      "sha256": "bb1fcc28ca0b17fc6ec4ee11cda3c79bc06c54c53c12d46df9a8af270d2eb7e9"
+    },
+    {
+      "name": "rules-initial-retained.json",
+      "bytes": 21272,
+      "sha256": "9c4c9ee90d13aa9b13af8f706a1abc2fd5554dab47110741e6dd60adcd40fd28"
+    },
+    {
+      "name": "rules-site.json",
+      "bytes": 21128,
+      "sha256": "462ea2c877a35f31d8baf1f3e0e0be037d52718fee6afb771ba3a9be0b579e54"
+    },
+    {
+      "name": "rules-static.json",
+      "bytes": 1200,
+      "sha256": "bac4b83c324843ae0b87060b53c1be93fc801cde214f12d403c35809d6aad576"
+    },
+    {
+      "name": "rules-visible.json",
+      "bytes": 23521,
+      "sha256": "8ba7939133475601163a976fa4a540b603eac1bb62a989a92b998526b2d3cec8"
+    },
+    {
+      "name": "site-a4.pdf",
+      "bytes": 318522,
+      "sha256": "6d07a12b19dbffeb1d7a1cac057b26661392bd213c4ca892dbdc932a70237821"
+    },
+    {
+      "name": "site-checks.json",
+      "bytes": 72706,
+      "sha256": "041fc59104c0e4061d077a935a34319996b8fcdca3d78117d473158648a733ec"
+    },
+    {
+      "name": "site-live-phone.jpg",
+      "bytes": 41382,
+      "sha256": "cb7456001ec156107f54625a45c43ddca2a0fff1a19afbc388a07bce8724301b"
+    },
+    {
+      "name": "site-print-checks.json",
+      "bytes": 2353,
+      "sha256": "fff621500565123b90fa26e454f54cff83879930756c8a46222787769ae61c24"
+    },
+    {
+      "name": "site-report-phone.jpg",
+      "bytes": 36710,
+      "sha256": "1ac8ff15502387b033b700e8d5af64dcf88de0b054c2415827298aa009baedc5"
+    },
+    {
+      "name": "walk-checks.json",
+      "bytes": 12638,
+      "sha256": "c12ccd1076e8c346332a7a7781edb54885b6d03c8a1cd303510de6343b4e4f13"
+    },
+    {
+      "name": "WALK-CHECKS.md",
+      "bytes": 7534,
+      "sha256": "fb8f4165a25dbaa1a1ea1a116124eda6af68bd05944adedf9c4ade35c8368ce1"
+    }
+  ]
+}
