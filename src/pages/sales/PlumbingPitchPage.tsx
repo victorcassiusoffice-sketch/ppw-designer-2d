@@ -4,6 +4,7 @@ import { BUILDING_SERVICES_SOURCES } from '../../data/buildingServicesCatalog';
 import { Kicker, OpenLink, SalesShell } from './SalesShell';
 import { useChapter } from './salesNavigation';
 import { MEETING } from './salesPack';
+import hero from './plumbingHero.json';
 
 const PlumbingEnquiryForm = lazy(() => import('./PlumbingEnquiryForm'));
 
@@ -47,11 +48,11 @@ export default function PlumbingPitchPage() {
           </div>
           <figure className="sales-shot">
             <img
-              src="/showcase/plumbing-workspace.jpg"
-              srcSet="/showcase/plumbing-workspace-384.webp 384w, /showcase/plumbing-workspace-672.webp 672w, /showcase/plumbing-workspace-960.webp 960w, /showcase/plumbing-workspace.jpg 1280w"
-              sizes="(max-width: 700px) calc(100vw - 30px), (max-width: 1050px) calc((100vw - 96px) / 2), (max-width: 1480px) calc((100vw - 114px) * 0.51923), 710px"
-              width={1280}
-              height={720}
+              src={hero.src}
+              srcSet={hero.srcSet}
+              sizes={hero.sizes}
+              width={hero.width}
+              height={hero.height}
               {...{ fetchpriority: 'high' }}
               decoding="async"
               alt="Actual Room Designer Plumbing and Electric workspace, with a measured floor, sink, toilet and coloured service routes"
