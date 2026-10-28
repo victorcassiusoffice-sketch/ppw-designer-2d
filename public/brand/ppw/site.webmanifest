@@ -1,0 +1,14 @@
+{
+  "name": "Wellness Room Designer · Peak Performance Wellness",
+  "short_name": "PPW Designer",
+  "description": "Wellness Room Designer by Peak Performance Wellness.",
+  "start_url": "/demo?view=2d&pitch=1",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5F1EA",
+  "theme_color": "#0F766E",
+  "icons": [
+    { "src": "/brand/ppw/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/ppw/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
