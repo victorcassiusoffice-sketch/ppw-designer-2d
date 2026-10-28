@@ -12,6 +12,7 @@ import type { WalkCharacter } from './characters';
 import { createWalkWorld } from './scene';
 import { capsuleClear, createWalker, doorTransform, followCamera, groundHeight, interactionDoor, pullInCamera, stepWalker, toggleDoor } from './collision';
 import { findWalkSpawn } from './spawn';
+import { WalkFrameMeasurement, type FrameMeasurementResult } from './frameMeasurement';
 
 type Host = NonNullable<ReturnType<ThreeStageHandle['beginWalk']>>;
 export interface WalkStatus {
@@ -59,6 +60,8 @@ export class WalkRuntime {
   private unlockedAt = -Infinity;
   private measurementArmed = false;
   private inputMeasure: { inputAt: number; handlerAt: number; source: string; key: string; mode: string; x: number; z: number } | null = null;
+  private frameMeasurement: WalkFrameMeasurement | null = null;
+  private frameMeasurementTimer: number | undefined;
   private disposeTestHook?: () => void;
   private testCameraBaseline = false;
   private testPose: { position: number[]; yaw: number; frames: number } | null = null;
@@ -70,9 +73,17 @@ export class WalkRuntime {
   private euler = new THREE.Euler(0, 0, 0, 'YXZ');
   private decoder = new DRACOLoader();
   private abort = new AbortController();
-  private onBlur = () => { this.clearInput(); this.paused = true; this.controls.unlock(); };
-  private onFocus = () => { this.paused = false; this.last = performance.now(); };
-  private onVisibility = () => document.hidden ? this.onBlur() : this.onFocus();
+  private pauseFrames(reason: string): void {
+    this.clearInput(); this.paused = true; this.controls.unlock();
+    this.emitFrameMeasurement(this.frameMeasurement?.transition(performance.now(), false, reason));
+  }
+  private resumeFrames(reason: string): void {
+    this.paused = false; this.last = performance.now();
+    this.emitFrameMeasurement(this.frameMeasurement?.transition(this.last, !document.hidden, reason));
+  }
+  private onBlur = () => this.pauseFrames('blur');
+  private onFocus = () => this.resumeFrames('focus');
+  private onVisibility = () => document.hidden ? this.pauseFrames('hidden') : this.resumeFrames('visible');
   private onKeyUp = (event: KeyboardEvent) => {
     this.keys.delete(event.code);
     if (event.code === 'Escape') { this.escapeHeld = false; this.unlockPending = false; }
@@ -90,6 +101,30 @@ export class WalkRuntime {
     this.measurementArmed = true; this.inputMeasure = null;
     this.host.renderer.domElement.removeAttribute('data-walk-input-result');
   };
+  private onMeasureFrames = (event: Event) => {
+    if (!this.ready || this.disposed || this.frameMeasurement) return;
+    const requested = (event as CustomEvent<{ durationMs?: number }>).detail?.durationMs ?? 40000;
+    if (!Number.isFinite(requested) || requested < 100 || requested > 120000) return;
+    const canvas = this.host.renderer.domElement;
+    canvas.removeAttribute('data-walk-frame-result');
+    this.frameMeasurement = new WalkFrameMeasurement(performance.now(), requested, !this.paused && !document.hidden);
+    const complete = () => {
+      const sample = this.frameMeasurement;
+      if (!sample) return;
+      const now = performance.now(), remaining = sample.deadlineAt - now;
+      if (remaining > 0) this.frameMeasurementTimer = window.setTimeout(complete, remaining);
+      else this.emitFrameMeasurement(sample.finish(now, 'deadline'));
+    };
+    this.frameMeasurementTimer = window.setTimeout(complete, requested);
+  };
+  private emitFrameMeasurement(result: FrameMeasurementResult | null | undefined): void {
+    if (!result) return;
+    this.frameMeasurement = null;
+    window.clearTimeout(this.frameMeasurementTimer); this.frameMeasurementTimer = undefined;
+    const canvas = this.host.renderer.domElement;
+    canvas.setAttribute('data-walk-frame-result', JSON.stringify(result));
+    canvas.dispatchEvent(new CustomEvent('world-walk-frame-result', { detail: result }));
+  }
 
   constructor(private host: Host, solids: SceneSolids, property: Property,
     private onStatus: (status: WalkStatus) => void, _onExit: () => void) {
@@ -135,6 +170,7 @@ export class WalkRuntime {
     window.addEventListener('focus', this.onFocus);
     document.addEventListener('visibilitychange', this.onVisibility);
     host.renderer.domElement.addEventListener('world-walk-measure-input', this.onMeasureInput);
+    host.renderer.domElement.addEventListener('world-walk-measure-frames', this.onMeasureFrames);
     // Vite removes this fixture bridge from production. It exists only to make
     // the old/new camera evidence use the same valid pose in the actual scene.
     if (import.meta.env.DEV) {
@@ -346,6 +382,9 @@ export class WalkRuntime {
         group.position.copy(pose.position); group.quaternion.copy(pose.quaternion);
       }
       this.host.render(this.camera);
+      // Collect only when explicitly armed, and publish once at the deadline.
+      // Unlike the historical HUD, this retains long stalls and window tails.
+      if (this.frameMeasurement) this.emitFrameMeasurement(this.frameMeasurement.rendered(performance.now()));
       if (import.meta.env.DEV && this.testPose && ++this.testPose.frames === 60) {
         const result = { accepted: true, fixture: this.testPose, baselineCamera: this.testCameraBaseline,
           source: this.testCameraBaseline ? '52dfa87:src/walk/runtime.ts' : 'world-fix-1 followCamera',
@@ -382,11 +421,13 @@ export class WalkRuntime {
 
   dispose(): void {
     if (this.disposed) return;
+    this.emitFrameMeasurement(this.frameMeasurement?.finish(performance.now(), 'disposed'));
     this.disposed = true; this.abort.abort(); cancelAnimationFrame(this.raf); this.clearInput();
     this.controls.unlock(); this.controls.dispose(); this.decoder.dispose();
     this.controls.removeEventListener('unlock', this.onUnlock);
     this.controls.removeEventListener('lock', this.onLock);
     this.host.renderer.domElement.removeEventListener('world-walk-measure-input', this.onMeasureInput);
+    this.host.renderer.domElement.removeEventListener('world-walk-measure-frames', this.onMeasureFrames);
     this.disposeTestHook?.();
     window.removeEventListener('keyup', this.onKeyUp, true); window.removeEventListener('blur', this.onBlur);
     window.removeEventListener('focus', this.onFocus); document.removeEventListener('visibilitychange', this.onVisibility);
