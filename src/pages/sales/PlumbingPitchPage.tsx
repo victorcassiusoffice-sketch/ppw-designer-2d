@@ -50,7 +50,7 @@ export default function PlumbingPitchPage() {
             <img
               src="/showcase/plumbing-workspace.jpg"
               srcSet="/showcase/plumbing-workspace-384.webp 384w, /showcase/plumbing-workspace-672.webp 672w, /showcase/plumbing-workspace-960.webp 960w, /showcase/plumbing-workspace.jpg 1280w"
-              sizes="(max-width: 700px) calc(100vw - 54px), (max-width: 1050px) calc((100vw - 96px) / 2), (max-width: 1480px) calc((100vw - 114px) * 0.51923), 708px"
+              sizes="(max-width: 700px) calc(100vw - 30px), (max-width: 1050px) calc((100vw - 96px) / 2), (max-width: 1480px) calc((100vw - 114px) * 0.51923), 710px"
               width={1280}
               height={720}
               {...{ fetchpriority: 'high' }}
