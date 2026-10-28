@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePropertyStore } from '../store/propertyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
+import SiteLoading from './SiteLoading';
 const SiteWorkspace = lazy(() => import('./SiteEntry'));
 /** Only this small launcher is on the initial plan path. */
 export function SiteLaunchButton() {
@@ -63,11 +64,7 @@ export function SiteLaunchButton() {
       {open &&
         createPortal(
           <Suspense
-            fallback={
-              <div role="status" className="site-loading">
-                Opening Site… <button onClick={() => setOpen(false)}>Cancel</button>
-              </div>
-            }
+            fallback={<SiteLoading message="Opening Site…" onClose={() => setOpen(false)} />}
           >
             <SiteWorkspace onClose={() => setOpen(false)} demo={demo} />
           </Suspense>,
