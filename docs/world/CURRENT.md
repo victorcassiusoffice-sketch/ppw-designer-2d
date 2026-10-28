@@ -1,5 +1,16 @@
 # World current state
 
+## Finish round 1 — publication hard stop
+
+Checked Wednesday, 28 October 2026 at 13:59:56 GMT+4. **Finish is not complete.** The finish instruction now includes PR #52 startup work, absolute first-picture targets and safe Lighthouse repairs. Those supersede the older scope exclusions below, which describe retained Fix 1 evidence.
+
+Main is still **3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2**. PR #52 is open/unmerged at **56d852d1f2f5d7342b9e02194964d6b998c795c7**. The required rebase of the nine/seven already-published World commits cannot be published to the existing PR branches by a normal fast-forward push. Force-push is explicitly prohibited; a merge/bridge commit is also outside the literal no-merge instruction. Cherry-picking would preserve history but would not be the required rebase. No permission is inferred and no false “includes PR #52” statement was added. See [proof](finish/base-publication-proof.md), [round log](ROUNDS.md) and [lessons](LESSONS.md).
+
+No application, dependency or test file changed in this Finish startup. No new performance, physical-device or first-use evidence is claimed; the rubric retains its measured 26 scores of 2 and four scores of 1. Completed Fix 1 fixes remain. Resume after a consistent authorized publication path exists: integrate PR #52, run the full suites, then measure all Finish gates before making further fixes. The ten-round budget is not exhausted; one startup was stopped at the explicit history-publication boundary.
+
+The once-per-Finish current check is complete: [official-source review](finish/current-research.md). Latest BVH is now **0.9.17**, including a correction to the closestPointToSegment method used by Walk; installed remains **0.9.16** pending the required full-suite and paired-run proof. Provider terms were rechecked on 28 October. The read-only [Lighthouse repair plan](finish/lighthouse-plan.md) classifies all 22 inherited failures and identifies safe candidates; no repair is falsely reported as implemented.
+
+
 Last stay-current check: **2026-10-28**. This file describes the Stage 2 branch candidates, not a production deployment. No merge or deployment is authorized. Base for both builds: `3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. Branches: `gpt/olb-walk-mode-2026-10-27` and `gpt/olb-site-map-2026-10-27`. Open candidates: [#53 Walk mode](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/53) and [#54 Site from the map](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/54). Integration evidence updated 28 October 2026 Mauritius time; Fix round 1 release check refreshed 28 October 2026.
 
 ## Components and releases
@@ -10,7 +21,7 @@ Versions were read from the installed package manifests/lockfiles; available ver
 |---|---|---|---|
 | Three | 0.186.0, retained on both branches | 0.186.1 — 2026-09-24 14:42:21 | https://registry.npmjs.org/three. Preserve existing renderer baseline; a patch upgrade requires regression/performance evidence. |
 | MapLibre GL JS | 6.16.0, Site branch only | 6.16.0 — 2026-10-25 13:17:01 | https://registry.npmjs.org/maplibre-gl. Deferred map UI. |
-| three-mesh-bvh | 0.9.16, Walk branch only | 0.9.16 — 2026-10-08 05:46:08 | https://registry.npmjs.org/three-mesh-bvh. Deferred collision module. |
+| three-mesh-bvh | 0.9.16, Walk branch only | 0.9.17 — 2026-10-28 08:05:16 | https://registry.npmjs.org/three-mesh-bvh. Deferred collision module. |
 | Draco converter package | draco3dgltf 1.5.7, existing build tooling | 1.5.9 — 2026-10-16 19:27:04 | https://registry.npmjs.org/draco3dgltf. Used for four GLB conversions; not substituted for the served decoder. |
 | glTF Transform | 4.5.0, existing build tooling | 4.5.1 — 2026-09-28 12:48:27 (primary npm registry checked 2026-10-28) | Existing repository tooling; conversion recipe in `characters/prepare.mjs`. |
 | Runtime Draco decoder | Existing Three r186 glTF-targeted binary; no embedded semantic version | Compare to the installed Three distribution, not npm encoder version | Existing `/draco/` files, Apache 2.0. WASM matches Three r186 byte-for-byte. |
@@ -42,7 +53,7 @@ The isolated asset renderer passed texture loading and 24 finite bone-animation 
 
 ## Data providers and limits
 
-Terms/source pages below were **checked 2026-10-27**. This is the access date, not a claimed legal effective date. A numeric cap that is not published is marked that way; no “free” service is described as an availability guarantee. No provider requires a new account, key, card, login, environment variable or added paid infrastructure.
+Terms/source pages below were **rechecked 2026-10-28**; exact pages and access evidence are in [the Finish review](finish/current-research.md). This is the access date, not a claimed legal effective date. A numeric cap that is not published is marked that way; no “free” service is described as an availability guarantee. No provider requires a new account, key, card, login, environment variable or added paid infrastructure.
 
 | Provider / selected endpoint | Terms and data conditions | Rate/quota and current safeguards |
 |---|---|---|
@@ -90,7 +101,7 @@ Next three improvements:
 2. Measure steady frame pacing on physical phones after the shader fix, keeping entry and cold chooser results separate from ongoing movement.
 3. Test first-use controls and one-hand navigation on physical phones. Continue the four-week primary-source/version review before upgrades.
 
-Absolute 3 s / 5 s work belongs to PR #52; inherited Lighthouse repair has its own row/round. Neither was attempted. Satellite/OCR/shadows/shared walk/headset remain excluded. No merge, force-push, main push, manual deployment, migration, new environment/account/key or message was performed.
+Historical Fix 1 scope: absolute 3 s / 5 s work and Lighthouse repair were excluded then. The Finish instruction now includes both; neither was implemented during the stopped Finish startup. Satellite/OCR/shadows/shared walk/headset remain excluded. No merge, force-push, main push, manual deployment, migration, new environment/account/key or message was performed.
 
 ## Standing improvement cycle
 
