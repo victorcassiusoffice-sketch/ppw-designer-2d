@@ -245,6 +245,34 @@ export function nearestDoor(world: WalkWorld, eye: Vector3, direction: Vector3, 
   return result;
 }
 
+/** Keep an operated open leaf reachable when its swing takes it out of the aim ray.
+ * A nearby visible part of the leaf/hinge must still be in reach; walls and other
+ * doors occlude it. This is visit state, never an automatic opening interaction. */
+export function interactionDoor(world: WalkWorld, eye: Vector3, direction: Vector3, retainedId: string | null, reach = 2): WalkDoor | null {
+  const aimed = nearestDoor(world, eye, direction, reach);
+  if (aimed) return aimed;
+  const retained = world.doors.find(door => door.id === retainedId);
+  if (!retained || (Math.abs(retained.angle) < .01 && Math.abs(retained.targetAngle) < .01)) return null;
+  const matrix = doorMatrix(retained);
+  const localEye = eye.clone().applyMatrix4(matrix.clone().invert());
+  // Avoid the exact wall/hinge seam, where both meshes meet.
+  for (const x of [Math.max(.08, Math.min(retained.width - .08, localEye.x)), retained.width * .5, .08, retained.width - .08]) {
+    const target = new Vector3(x, Math.max(.15, Math.min(retained.height - .15, localEye.y)), 0).applyMatrix4(matrix);
+    const delta = target.sub(eye), length = delta.length();
+    if (length > reach || length < 1e-6) continue;
+    const ray = new Ray(eye, delta.divideScalar(length));
+    if (world.bvh?.raycastFirst(ray, DoubleSide, 0, Math.max(0, length - .025))) continue;
+    let occluded = false;
+    for (const door of world.doors) {
+      if (door === retained) continue;
+      const localRay = ray.clone().applyMatrix4(doorMatrix(door).invert());
+      if (door.bvh.raycastFirst(localRay, DoubleSide, 0, Math.max(0, length - .025))) { occluded = true; break; }
+    }
+    if (!occluded) return retained;
+  }
+  return null;
+}
+
 /** Swept sphere protects the camera's near plane as well as its centre ray. */
 export function pullInCamera(world: WalkWorld, target: Vector3, desired: Vector3, radius = .18): Vector3 {
   const length = target.distanceTo(desired);
@@ -276,4 +304,50 @@ export function pullInCamera(world: WalkWorld, target: Vector3, desired: Vector3
   cast(world.bvh);
   for (const door of world.doors) cast(door.bvh, doorMatrix(door));
   return target.clone().lerp(desired, fraction);
+}
+
+/** Prefer an overhead shoulder view; in a low ceiling try bounded alternative
+ * shoulders. If no external camera sphere fits, use the clear first-person eye.
+ * Every interpolated location is swept against the world and checked against
+ * the actor capsule. Zooming back out is deliberately slower than pulling in. */
+export function followCamera(world: WalkWorld, feet: Vector3, direction: Vector3, previous: Vector3 | null, dt: number, height = WALK_HEIGHT_M): { position: Vector3; target: Vector3; firstPerson: boolean } {
+  const radius = .18;
+  const eye = feet.clone().addScaledVector(UP, Math.min(1.55, height - .1));
+  const overhead = feet.clone().addScaledVector(UP, height + radius + .08);
+  const pivot = pullInCamera(world, eye, overhead, radius);
+  const forward = new Vector3(direction.x, 0, direction.z).normalize();
+  if (forward.lengthSq() < .5) forward.set(0, 0, -1);
+  const shoulder = new Vector3(-forward.z, 0, forward.x).multiplyScalar(.6);
+  const desired = pivot.clone().addScaledVector(forward, -2.15).add(shoulder);
+  desired.y += .2 + Math.max(0, -direction.y) * .4;
+  const safe = pullInCamera(world, pivot, desired, radius);
+  const oldDistance = previous?.distanceTo(pivot) ?? safe.distanceTo(pivot);
+  const rate = safe.distanceTo(pivot) < oldDistance ? 24 : 6;
+  const interpolated = previous ? previous.clone().lerp(safe, 1 - Math.exp(-rate * Math.max(0, dt))) : safe;
+  // Moving up stairs must never interpolate the camera down through the head.
+  interpolated.y = Math.max(interpolated.y, pivot.y);
+  let position = pullInCamera(world, pivot, interpolated, radius);
+  const target = eye.clone().addScaledVector(direction, 1.4);
+  target.y -= .25;
+  const body = new Line3(feet.clone().addScaledVector(UP, WALK_RADIUS_M), feet.clone().addScaledVector(UP, height - WALK_RADIUS_M));
+  const outsideActor = (point: Vector3) => body.closestPointToPoint(point, true, new Vector3()).distanceTo(point) >= WALK_RADIUS_M + radius + .025;
+  if (!outsideActor(position)) {
+    // A ceiling can compress the overhead pivot. Search at most twelve local
+    // shoulders; no candidate may pass through architecture to avoid the body.
+    let alternative: Vector3 | null = null, best = Infinity;
+    for (let i = 0; i < 12; i++) {
+      const angle = Math.atan2(-forward.z, -forward.x) + i * Math.PI / 6;
+      const candidate = pullInCamera(world, eye, eye.clone().add(new Vector3(Math.cos(angle) * .7, 0, Math.sin(angle) * .7)), radius);
+      const distance = candidate.distanceToSquared(safe);
+      if (outsideActor(candidate) && distance < best) { alternative = candidate; best = distance; }
+    }
+    if (!alternative) return { position: eye, target: eye.clone().add(direction), firstPerson: true };
+    position = alternative;
+  }
+  // When a wall shortens the boom, preserve the navigation horizon instead of
+  // tilting down into a close-up of the head. Full boom retains body framing.
+  const horizontalDistance = Math.hypot(position.x - feet.x, position.z - feet.z);
+  const compression = Math.max(0, Math.min(1, (2.15 - horizontalDistance) / .65));
+  target.lerp(position.clone().addScaledVector(direction, 3), compression);
+  return { position, target, firstPerson: false };
 }

@@ -10,7 +10,7 @@ import type { SceneSolids } from '../designer/roomSolids';
 import type { Property } from '../store/propertyStore';
 import type { WalkCharacter } from './characters';
 import { createWalkWorld } from './scene';
-import { createWalker, doorTransform, nearestDoor, pullInCamera, stepWalker, toggleDoor } from './collision';
+import { capsuleClear, createWalker, doorTransform, followCamera, groundHeight, interactionDoor, pullInCamera, stepWalker, toggleDoor } from './collision';
 import { findWalkSpawn } from './spawn';
 
 type Host = NonNullable<ReturnType<ThreeStageHandle['beginWalk']>>;
@@ -51,6 +51,16 @@ export class WalkRuntime {
   private entryMs = 0;
   private eyeHeight = 0;
   private blockedUntil = 0;
+  private retainedDoor: string | null = null;
+  private followReady = false;
+  private escapeHeld = false;
+  private unlockPending = false;
+  private unlockedAt = -Infinity;
+  private measurementArmed = false;
+  private inputMeasure: { inputAt: number; handlerAt: number; source: string; key: string; mode: string; x: number; z: number } | null = null;
+  private disposeTestHook?: () => void;
+  private testCameraBaseline = false;
+  private testPose: { position: number[]; yaw: number; frames: number } | null = null;
   private eye = new THREE.Vector3();
   private direction = new THREE.Vector3();
   private velocity = new THREE.Vector3();
@@ -62,11 +72,22 @@ export class WalkRuntime {
   private onBlur = () => { this.clearInput(); this.paused = true; this.controls.unlock(); };
   private onFocus = () => { this.paused = false; this.last = performance.now(); };
   private onVisibility = () => document.hidden ? this.onBlur() : this.onFocus();
-  private onKeyUp = (event: KeyboardEvent) => this.keys.delete(event.code);
-  private onUnlock = () => { this.clearInput(); if (!this.disposed && !this.paused) this.onExit(); };
+  private onKeyUp = (event: KeyboardEvent) => {
+    this.keys.delete(event.code);
+    if (event.code === 'Escape') { this.escapeHeld = false; this.unlockPending = false; }
+  };
+  private onUnlock = () => {
+    this.clearInput(); this.unlockPending = !this.escapeHeld; this.unlockedAt = performance.now();
+    this.lastStatus = -Infinity;
+  };
+  private onLock = () => { this.unlockPending = false; this.lastStatus = -Infinity; };
+  private onMeasureInput = () => {
+    this.measurementArmed = true; this.inputMeasure = null;
+    this.host.renderer.domElement.removeAttribute('data-walk-input-result');
+  };
 
   constructor(private host: Host, solids: SceneSolids, property: Property,
-    private onStatus: (status: WalkStatus) => void, private onExit: () => void) {
+    private onStatus: (status: WalkStatus) => void, _onExit: () => void) {
     this.world = createWalkWorld(solids, property);
     const spawn = findWalkSpawn(this.world, property);
     if (!spawn) { this.world.dispose(); throw new Error('No safe standing space was found. Add a room or a clear entrance, then try again.'); }
@@ -78,6 +99,7 @@ export class WalkRuntime {
     this.controls = new PointerLockControls(this.look, host.renderer.domElement);
     this.controls.pointerSpeed = .8;
     this.controls.addEventListener('unlock', this.onUnlock);
+    this.controls.addEventListener('lock', this.onLock);
     this.controls.minPolarAngle = .2; this.controls.maxPolarAngle = Math.PI - .2;
     host.scene.traverse(object => {
       if (object.userData.walkDoorLeaf && object.visible) { object.visible = false; this.hidden.push(object); }
@@ -107,16 +129,63 @@ export class WalkRuntime {
     window.addEventListener('blur', this.onBlur);
     window.addEventListener('focus', this.onFocus);
     document.addEventListener('visibilitychange', this.onVisibility);
+    host.renderer.domElement.addEventListener('world-walk-measure-input', this.onMeasureInput);
+    // Vite removes this fixture bridge from production. It exists only to make
+    // the old/new camera evidence use the same valid pose in the actual scene.
+    if (import.meta.env.DEV) {
+      const canvas = host.renderer.domElement;
+      const testPose = (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        canvas.removeAttribute('data-walk-test-pose');
+        const coordinates = detail?.position;
+        let valid = Array.isArray(coordinates) && coordinates.length === 3 && coordinates.every(Number.isFinite) && Number.isFinite(detail?.yaw);
+        const position = valid ? new THREE.Vector3(...coordinates as [number, number, number]) : new THREE.Vector3();
+        if (valid) {
+          const support = groundHeight(this.world, position.x, position.z, position.y + .05, .1);
+          valid = support !== null && Math.abs(position.y - support) < .015 && capsuleClear(this.world, createWalker(this.world, position));
+        }
+        if (!valid || !this.ready) {
+          const result = { accepted: false, reason: 'Pose must have floor support and capsule clearance in a ready visit.' };
+          canvas.setAttribute('data-walk-test-pose', JSON.stringify(result));
+          canvas.dispatchEvent(new CustomEvent('world-walk-test-pose-ready', { detail: result }));
+          return;
+        }
+        this.clearInput(); this.walker = createWalker(this.world, position); this.mode = 'third';
+        this.look.rotation.set(0, detail.yaw, 0, 'YXZ'); this.actor.rotation.y = detail.yaw + Math.PI;
+        this.actor.position.copy(position); this.eyeHeight = position.y + 1.55;
+        this.follow.copy(position).add(new THREE.Vector3(0, 1.6, 0)); this.followReady = false;
+        this.testCameraBaseline = detail.baselineCamera === true;
+        this.testPose = { position: position.toArray(), yaw: detail.yaw, frames: 0 };
+        this.lastStatus = -Infinity;
+      };
+      canvas.addEventListener('world-walk-test-pose', testPose);
+      this.disposeTestHook = () => canvas.removeEventListener('world-walk-test-pose', testPose);
+    }
   }
 
-  async load(character: WalkCharacter, startedAt: number): Promise<void> {
+  async load(character: WalkCharacter, startedAt: number, onProgress?: (message: string) => void): Promise<void> {
     this.decoder.setDecoderPath('/draco/');
     const loader = new GLTFLoader().setDRACOLoader(this.decoder);
     const timeout = window.setTimeout(() => this.abort.abort(), 20000);
     try {
+      onProgress?.(`Loading ${character.label}…`);
       const response = await fetch(character.url, { signal: this.abort.signal });
       if (!response.ok) throw new Error('The character could not be loaded.');
-      const gltf = await loader.parseAsync(await response.arrayBuffer(), '');
+      let buffer: ArrayBuffer;
+      if (response.body && onProgress) {
+        const reader = response.body.getReader(), parts: Uint8Array[] = []; let length = 0;
+        let next = await reader.read();
+        while (!next.done) {
+          parts.push(next.value); length += next.value.byteLength;
+          onProgress(`Loading ${character.label}… ${Math.min(100, Math.round(length / character.bytes * 100))}%`);
+          next = await reader.read();
+        }
+        const bytes = new Uint8Array(length); let offset = 0;
+        for (const part of parts) { bytes.set(part, offset); offset += part.byteLength; }
+        buffer = bytes.buffer;
+      } else buffer = await response.arrayBuffer();
+      onProgress?.(`Preparing ${character.label}…`);
+      const gltf = await loader.parseAsync(buffer, '');
       if (this.disposed) { disposeObject(gltf.scene); return; }
       const box = new THREE.Box3().setFromObject(gltf.scene);
       const height = box.max.y - box.min.y;
@@ -143,16 +212,41 @@ export class WalkRuntime {
     const target = event.target as HTMLElement | null;
     if (target?.matches('input,textarea,select') || event.ctrlKey || event.metaKey || event.altKey) return;
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'].includes(event.code)) {
+      if (!event.repeat && !event.code.startsWith('Shift')) this.measureInput('keyboard', event.code, event.timeStamp);
       event.preventDefault(); this.keys.add(event.code);
     }
     if (event.repeat) return;
     if (event.code === 'KeyV') { event.preventDefault(); this.toggleView(); }
     if (event.code === 'KeyE') { event.preventDefault(); this.interact(); }
   }
-  clearInput(): void { this.keys.clear(); this.stick = { x: 0, y: 0 }; }
-  setStick(x: number, y: number): void { this.stick = { x, y }; }
+  clearInput(): void { this.keys.clear(); this.stick = { x: 0, y: 0 }; this.inputMeasure = null; this.measurementArmed = false; }
+  setStick(x: number, y: number): void {
+    if (y && !this.stick.y) this.measureInput('touch', 'stick');
+    this.stick = { x, y };
+  }
   setRunning(value: boolean): void { this.running = value; }
-  toggleView(): void { this.mode = this.mode === 'first' ? 'third' : 'first'; this.clearInput(); }
+  toggleView(): void { this.mode = this.mode === 'first' ? 'third' : 'first'; this.clearInput(); this.followReady = false; this.lastStatus = -Infinity; }
+  /** True means this Escape only frees the mouse; the UI exits on false. */
+  escape(): boolean {
+    if (this.escapeHeld) return true;
+    // The DOM lock is authoritative: pointerlockchange (and therefore the
+    // controls' cached isLocked) can arrive after the next distinct keypress.
+    if (document.pointerLockElement === this.host.renderer.domElement) {
+      this.escapeHeld = true; this.unlockPending = false; this.controls.unlock(); this.clearInput(); return true;
+    }
+    // Browsers may release pointer lock before delivering the same keydown.
+    if (this.unlockPending && performance.now() - this.unlockedAt < 150) {
+      this.unlockPending = false; this.escapeHeld = true; return true;
+    }
+    return false;
+  }
+  private measureInput(source: string, key: string, eventAt = performance.now()): void {
+    if (!this.measurementArmed) return;
+    this.measurementArmed = false;
+    const now = performance.now();
+    this.inputMeasure = { inputAt: Number.isFinite(eventAt) && eventAt > 0 && eventAt <= now ? eventAt : now,
+      handlerAt: now, source, key, mode: this.mode, x: this.walker.position.x, z: this.walker.position.z };
+  }
   lock(): void {
     if (!this.ready) return;
     try {
@@ -170,9 +264,11 @@ export class WalkRuntime {
   interact(): boolean {
     this.look.getWorldDirection(this.direction);
     const eye = this.walker.position.clone().add(new THREE.Vector3(0, 1.55, 0));
-    const door = nearestDoor(this.world, eye, this.direction, 2);
+    const door = interactionDoor(this.world, eye, this.direction, this.retainedDoor, 2);
     if (!door) return false;
     const allowed = toggleDoor(this.world, door.id, this.walker);
+    this.retainedDoor = door.id;
+    this.lastStatus = -Infinity;
     if (!allowed) this.blockedUntil = performance.now() + 2000;
     return allowed;
   }
@@ -207,28 +303,35 @@ export class WalkRuntime {
       this.eye.copy(this.walker.position).add(new THREE.Vector3(0, 1.55, 0));
       this.eyeHeight = THREE.MathUtils.lerp(this.eyeHeight, this.eye.y, 1 - Math.exp(-18 * dt));
       this.look.getWorldDirection(this.direction);
+      let firstPersonCamera = this.mode === 'first';
       if (this.mode === 'first') {
         this.desired.copy(this.eye); this.desired.y = this.eyeHeight;
         this.camera.position.copy(pullInCamera(this.world, this.eye, this.desired, .08));
       }
-      else {
+      else if (import.meta.env.DEV && this.testCameraBaseline) {
+        // Exact third-person camera formula from 52dfa87:src/walk/runtime.ts.
         this.desired.copy(this.eye).addScaledVector(this.direction, -3.1).add(new THREE.Vector3(0, .45, 0));
-        // A shoulder offset keeps the avatar away from the central door target.
         this.desired.add(new THREE.Vector3(.4, 0, 0).applyAxisAngle(THREE.Object3D.DEFAULT_UP, this.euler.y));
         const safe = pullInCamera(this.world, this.eye, this.desired, .18);
         this.follow.lerp(safe, 1 - Math.exp(-14 * dt));
-        // Check the smoothed location too: interpolation across a corner is not a safe path.
         this.camera.position.copy(pullInCamera(this.world, this.eye, this.follow, .18));
         if (this.camera.position.distanceTo(this.eye) < .8) this.actor.visible = false;
+        this.desired.copy(this.eye).addScaledVector(this.direction, 1.4); this.desired.y -= .45;
+      }
+      else {
+        const view = followCamera(this.world, this.walker.position, this.direction, this.followReady ? this.follow : null, dt, this.walker.height);
+        this.follow.copy(view.position); this.followReady = true;
+        this.camera.position.copy(view.position); this.desired.copy(view.target);
+        firstPersonCamera = view.firstPerson;
+        if (view.firstPerson) this.actor.visible = false;
       }
       this.camera.quaternion.copy(this.look.quaternion);
       if (this.mode === 'third') {
-        this.desired.copy(this.eye).addScaledVector(this.direction, 1.4); this.desired.y -= .45;
         this.camera.lookAt(this.desired);
       }
       const canvas = this.host.renderer.domElement;
       const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
-      const fov = aspect < .8 && this.mode === 'third' ? 95 : 65;
+      const fov = aspect < .8 && !firstPersonCamera ? 95 : 65;
       if (this.camera.aspect !== aspect || this.camera.fov !== fov) { this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
       for (const door of this.world.doors) {
         const group = this.doors.get(door.id)!; const pose = doorTransform(door);
@@ -236,11 +339,28 @@ export class WalkRuntime {
         group.position.copy(pose.position); group.quaternion.copy(pose.quaternion);
       }
       this.host.render(this.camera);
+      if (import.meta.env.DEV && this.testPose && ++this.testPose.frames === 60) {
+        const result = { accepted: true, fixture: this.testPose, baselineCamera: this.testCameraBaseline,
+          source: this.testCameraBaseline ? '52dfa87:src/walk/runtime.ts' : 'world-fix-1 followCamera',
+          position: this.walker.position.toArray(), camera: this.camera.position.toArray(),
+          quaternion: this.camera.quaternion.toArray(), fov: this.camera.fov, actorVisible: this.actor.visible };
+        canvas.setAttribute('data-walk-test-pose', JSON.stringify(result));
+        canvas.dispatchEvent(new CustomEvent('world-walk-test-pose-ready', { detail: result }));
+        this.testPose = null;
+      }
+      if (this.inputMeasure && Math.hypot(this.walker.position.x - this.inputMeasure.x, this.walker.position.z - this.inputMeasure.z) > 1e-5) {
+        const { x, z, ...sample } = this.inputMeasure;
+        const result = { ...sample, firstMovedRenderedAt: performance.now(), startPosition: [x, z], position: this.walker.position.toArray() };
+        this.inputMeasure = null;
+        canvas.setAttribute('data-walk-input-result', JSON.stringify(result));
+        canvas.dispatchEvent(new CustomEvent('world-walk-input-result', { detail: result }));
+      }
       this.totalFrames++;
       if (elapsed < 250 && this.totalFrames > 10) { this.frames.push(elapsed); if (this.frames.length > 1800) this.frames.shift(); }
       if (now - this.lastStatus > 250) {
         const sorted = [...this.frames].sort((a, b) => b - a), slow = sorted.slice(0, Math.max(1, Math.ceil(sorted.length * .01)));
-        const door = nearestDoor(this.world, this.eye, this.direction, 2);
+        const door = interactionDoor(this.world, this.eye, this.direction, this.retainedDoor, 2);
+        if (!door || (door.id === this.retainedDoor && Math.abs(door.angle) < .01 && Math.abs(door.targetAngle) < .01)) this.retainedDoor = null;
         this.onStatus({ mode: this.mode, door: door ? (door.targetAngle ? 'Close door' : 'Open door') : null,
           blocked: now < this.blockedUntil, locked: this.controls.isLocked, animation: this.animation,
           position: this.walker.position.toArray(), camera: this.camera.position.toArray(),
@@ -258,6 +378,9 @@ export class WalkRuntime {
     this.disposed = true; this.abort.abort(); cancelAnimationFrame(this.raf); this.clearInput();
     this.controls.unlock(); this.controls.dispose(); this.decoder.dispose();
     this.controls.removeEventListener('unlock', this.onUnlock);
+    this.controls.removeEventListener('lock', this.onLock);
+    this.host.renderer.domElement.removeEventListener('world-walk-measure-input', this.onMeasureInput);
+    this.disposeTestHook?.();
     window.removeEventListener('keyup', this.onKeyUp, true); window.removeEventListener('blur', this.onBlur);
     window.removeEventListener('focus', this.onFocus); document.removeEventListener('visibilitychange', this.onVisibility);
     this.mixer?.stopAllAction(); disposeObject(this.actor);

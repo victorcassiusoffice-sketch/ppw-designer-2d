@@ -10,7 +10,7 @@ import { COURTS_PRODUCTS } from '../../demo/courts';
 import { placedItemElevationCm } from '../../designer/placedItemElevation';
 import { wallJoinery } from '../../components/three/joinery';
 import { createWalkWorld } from '../scene';
-import { createWalker, groundHeight, nearestDoor, pullInCamera, setDoorAngle, stepWalker, toggleDoor } from '../collision';
+import { capsuleClear, createWalker, followCamera, groundHeight, interactionDoor, nearestDoor, pullInCamera, setDoorAngle, stepWalker, toggleDoor } from '../collision';
 import { findWalkSpawn } from '../spawn';
 import type { WalkerState, WalkWorld } from '../types';
 
@@ -220,6 +220,77 @@ describe('manual doors and camera', () => {
     expect(nearestDoor(w, new Vector3(4, 1.5, 1), new Vector3(0, 0, 1))).toBeNull();
   });
 
+  it('keeps the operated open door prompt after its leaf swings away from the aim ray, and closes it again', () => {
+    const w = world(), state = createWalker(w, new Vector3(4, .001, 1.5));
+    const eye = new Vector3(4, 1.55, 1.5), facing = new Vector3(0, 0, -1), door = w.doors[0];
+    expect(nearestDoor(w, eye, facing)?.id).toBe(door.id);
+    expect(toggleDoor(w, door.id, state)).toBe(true);
+    travel(w, state, new Vector3(), 1);
+    expect(nearestDoor(w, eye, facing)).toBeNull();
+    expect(interactionDoor(w, eye, facing, door.id)?.id).toBe(door.id);
+    expect(interactionDoor(w, eye, facing.clone().negate(), door.id)?.id).toBe(door.id);
+    expect(toggleDoor(w, door.id, state)).toBe(true);
+    travel(w, state, new Vector3(), 1);
+    expect(door.angle).toBeCloseTo(0);
+    expect(interactionDoor(w, eye, facing.clone().negate(), door.id)).toBeNull();
+  });
+
+  it('drops a retained open door beyond reach or behind a wall, without targeting an unoperated door', () => {
+    const p = property();
+    p.walls = [{ id: 'screen', a: { x: 2, y: 1.3 }, b: { x: 6, y: 1.3 }, thicknessM: .15 }];
+    const w = world(p), state = createWalker(w, new Vector3(4, .001, 3)), door = w.doors[0];
+    setDoorAngle(w, door.id, door.openDelta, state); door.targetAngle = door.openDelta;
+    expect(interactionDoor(w, new Vector3(4, 1.55, 2), new Vector3(0, 0, 1), door.id)).toBeNull();
+    expect(interactionDoor(w, new Vector3(4, 1.55, 5), new Vector3(0, 0, 1), door.id)).toBeNull();
+    expect(interactionDoor(w, new Vector3(3.8, 1.55, .6), new Vector3(0, 0, 1), null)).toBeNull();
+  });
+
+  it('keeps a shortened tight-room follow camera above the actor and inside the wall while recovering smoothly', () => {
+    const p = property(3), w = world(p), feet = new Vector3(1.5, .001, 7.65), forward = new Vector3(0, 0, -1);
+    let view = followCamera(w, feet, forward, null, 1 / 60);
+    expect(view.position.z).toBeLessThan(7.83);
+    expect(view.position.y).toBeGreaterThan(feet.y + 1.7 + .18);
+    expect(view.target.y).toBeCloseTo(view.position.y);
+    const near = view.position.distanceTo(feet);
+    feet.z = 5;
+    const first = followCamera(w, feet, forward, view.position, 1 / 60);
+    const final = followCamera(w, feet, forward, null, 1 / 60);
+    expect(first.position.distanceTo(final.position)).toBeGreaterThan(.05);
+    view = first;
+    for (let i = 0; i < 120; i++) view = followCamera(w, feet, forward, view.position, 1 / 60);
+    expect(view.position.distanceTo(final.position)).toBeLessThan(.001);
+    expect(view.position.distanceTo(feet)).toBeGreaterThan(near);
+    expect(view.position.distanceTo(feet.clone().add(new Vector3(0, 1.55, 0)))).toBeLessThan(2.5);
+  });
+
+  it('sweeps the interpolated shoulder camera at corners and raises it above the head on a stair step', () => {
+    const w = world(), feet = new Vector3(.3, .18, .3), direction = new Vector3(0, .9, 1).normalize();
+    const view = followCamera(w, feet, direction, new Vector3(-1, 1, -1), 1 / 60);
+    expect(view.position.x).toBeGreaterThan(.17);
+    expect(view.position.z).toBeGreaterThan(.17);
+    expect(view.position.y).toBeGreaterThan(feet.y + 1.7 + .18);
+  });
+
+  it('uses a clear side camera under a low ceiling and first person only when no external sphere fits', () => {
+    const lowRoom = (size: number) => {
+      const p = property(size); p.rooms[0].polygon = rectangle(size, size); p.rooms[0].openings = [];
+      const solids = buildingSolids(p, source, 'building', true);
+      solids.floors.push({ ...solids.floors[0], key: 'low-ceiling', elevationM: 1.95 });
+      const w = createWalkWorld(solids, p); worlds.push(w); return w;
+    };
+    const feet = new Vector3(1.5, .001, 2.7), w = lowRoom(3);
+    expect(capsuleClear(w, createWalker(w, feet))).toBe(true);
+    const side = followCamera(w, feet, new Vector3(0, 0, -1), null, 1 / 60);
+    expect(side.firstPerson).toBe(false);
+    expect(Math.hypot(side.position.x - feet.x, side.position.z - feet.z)).toBeGreaterThan(.4);
+    expect(side.position.y + .18).toBeLessThan(1.81);
+    const cramped = lowRoom(.55), centre = new Vector3(.275, .001, .275);
+    expect(capsuleClear(cramped, createWalker(cramped, centre))).toBe(true);
+    const fallback = followCamera(cramped, centre, new Vector3(0, 0, -1), null, 1 / 60);
+    expect(fallback.firstPerson).toBe(true);
+    expect(fallback.position.toArray()).toEqual([.275, 1.551, .275]);
+  });
+
   it('pulls the camera sphere in before a wall, door, floor, and corner grazing the centre ray', () => {
     const w = world();
     expect(pullInCamera(w, new Vector3(4, 1.4, 4), new Vector3(10, 1.4, 4)).x).toBeLessThan(7.83);
@@ -281,6 +352,14 @@ describe('safe ground spawn', () => {
       }),
     })) });
     const w = createWalkWorld(buildingSolids(p, demoSource, 'building', true), p); worlds.push(w);
+    // Reproducible camera comparison in the narrowest furnished room (office,
+    // 3 × 4 m). The fixture is accepted only when this real capsule fits.
+    const fixture = new Vector3(5.1, .001, 6.2);
+    expect(capsuleClear(w, createWalker(w, fixture))).toBe(true);
+    expect(groundHeight(w, fixture.x, fixture.z, .051, .1)).toBeCloseTo(0);
+    const camera = followCamera(w, fixture, new Vector3(1, 0, 0), null, 1 / 60);
+    expect(camera.position.y).toBeGreaterThan(fixture.y + 1.88);
+    expect(camera.position.x).toBeGreaterThan(4.68);
     expect(w.doors.every(door => !door.exterior)).toBe(true);
     const spawn = findWalkSpawn(w, p)!;
     expect(spawn).not.toBeNull();
