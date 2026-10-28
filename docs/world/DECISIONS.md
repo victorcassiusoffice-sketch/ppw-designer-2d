@@ -82,7 +82,7 @@ These decisions supersede the Stage 2 synchronous-hydration choice, per-pair cus
 | No rebase | Start-of-round fetch still 3eefbf7; PR #52 remains outside scope | Rebase and repeat full suites/measurements if explicitly required after main moves |
 
 
-## Finish round 1 — Wednesday, 28 October 2026 at 13:59:56 GMT+4
+## Finish round 0 — Wednesday, 28 October 2026 at 13:59:56 GMT+4
 
 | Choice | Reason / evidence | Cost or condition to resume |
 |---|---|---|
@@ -93,3 +93,15 @@ These decisions supersede the Stage 2 synchronous-hydration choice, per-pair cus
 | Triage all22 Lighthouse assertions before editing settings or content | Four assertions target score-null informative audits; public source maps are intentionally forbidden. Other safe content fixes remain planned | Implement isolated robots/hero fixes after base integration, run new artifacts, retain remaining reasons; never weaken thresholds |
 
 Status: **HARD STOP**, not budget exhaustion and not a merge-ready claim. One Finish startup entered; no completed Finish engineering round. No force-push, merge, main push, manual deployment, new account/key/environment variable, migration or estimate change.
+
+## Finish round1 — amended rules,28October2026
+
+| Choice | Reason / proof | Reversal cost |
+|---|---|---|
+| Merge52 normally into both publishedbranches; never rebase | Explicit18:22MU amendment supersedes the earlier integration conflict; ancestry and normal-push proof inROUNDS | No history rewrite; future fixes remain normal forward commits |
+| Reclassify stopped startup as round0 | Commander's explicit ruling; no failed engineering attempt or budget charge | None |
+| Compare against actual56d852d preview/build, permit only≤1024gzip lazy-seam growth | Same OLB shell removes prior production-shell confound; exact final emitted bytes and HTTP starts remain audited | Any other allowance requires a changed instruction |
+| Test earlier delivery of existing App/ThreeStage dependencies through HTML hints | Measured waterfall starts those requests after main evaluation; no dynamic World chunk is included | Remove the isolated build plugin if paired, byte or request proof worsens |
+| Retain human-comprehension and physical one-hand limitations | Browser scripts can prove control behavior and geometry, not invent a human study | Independent human evidence, without padding rubric scores |
+
+Historical round0 HARDSTOP above is resolved; Finish round1 is active. Production/PR merging, manual deployment, force-push and main publication remain forbidden.
