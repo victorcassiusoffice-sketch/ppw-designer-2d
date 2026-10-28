@@ -22,6 +22,11 @@ type BoundarySnapshot = {
   foundation: ReturnType<typeof foundationScenario> | null;
   foundationError: string;
   shift: string;
+  center: LonLat;
+  legs: string;
+  originText: string;
+  anchorX: string;
+  anchorY: string;
 };
 const errorText = (e: unknown) => (e instanceof Error ? e.message : 'Please check these inputs.');
 export default function SiteWorkspace({
@@ -112,7 +117,7 @@ export default function SiteWorkspace({
     setError('');
     setMessage('');
   };
-  const changePoints = (next: LonLat[]) => {
+  const rememberBoundary = () => {
     // Keep the complete checked draft so undo restores provenance and levels,
     // rather than reconstructing them from an edited outline. The history is local.
     setBoundaryHistory((history) => [
@@ -121,12 +126,20 @@ export default function SiteWorkspace({
         points: points.map((p) => [...p] as LonLat),
         closed,
         site,
-        entry,
+        entry: site ? (site.entry === 'traverse' ? 'traverse' : 'map') : entry,
         foundation,
         foundationError,
         shift,
+        center,
+        legs: site?.traverse?.map((leg) => `${leg.lengthM},${leg.bearing}`).join('\n') ?? legs,
+        originText: site?.origin.join(', ') ?? originText,
+        anchorX: site ? String(site.anchor.x) : anchorX,
+        anchorY: site ? String(site.anchor.y) : anchorY,
       },
     ]);
+  };
+  const changePoints = (next: LonLat[]) => {
+    rememberBoundary();
     setPoints(next);
     setDraft(undefined);
     setEntry('map');
@@ -142,6 +155,11 @@ export default function SiteWorkspace({
     setFoundation(previous.foundation);
     setFoundationError(previous.foundationError);
     setShift(previous.shift);
+    setCenter(previous.center);
+    setLegs(previous.legs);
+    setOriginText(previous.originText);
+    setAnchorX(previous.anchorX);
+    setAnchorY(previous.anchorY);
     setBoundaryHistory((history) => history.slice(0, -1));
     clearError();
     setMessage(
@@ -184,9 +202,13 @@ export default function SiteWorkspace({
           traverse: parsed,
           closureErrorM: result.closureErrorM,
         };
-        setPoints(boundary);
-        setCenter(origin as LonLat);
       } else next = makeSite(points, name, anchor);
+      // Commit to history only after all boundary/traverse validation succeeds.
+      rememberBoundary();
+      if (entry === 'traverse') {
+        setPoints(next.boundary);
+        setCenter(next.origin);
+      }
       setDraft(next);
       setClosed(true);
       setMessage('Boundary is ready. Add levels, review the report, then apply it to the plan.');

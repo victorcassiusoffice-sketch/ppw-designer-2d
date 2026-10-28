@@ -37,9 +37,13 @@ const button = (text: string) => {
 };
 const click = (text: string) => act(() => button(text).click());
 const input = (label: string) => app.querySelector<HTMLInputElement>(`[aria-label="${label}"]`)!;
-function edit(node: HTMLInputElement, value: string) {
+function edit(node: HTMLInputElement | HTMLTextAreaElement, value: string) {
   act(() => {
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(node, value);
+    const prototype =
+      node instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(prototype, 'value')!.set!.call(node, value);
     node.dispatchEvent(new Event('input', { bubbles: true }));
   });
 }
@@ -136,6 +140,40 @@ describe('local Site boundary undo', () => {
     expect(Number(input('Corner 1 longitude').value)).toBeCloseTo(longitude + 0.000001, 10);
     expect(button('Undo boundary change').disabled).toBe(true);
     expect(JSON.stringify(usePropertyStore.getState().property)).toBe(before);
+  });
+
+  it('restores the prior closed outline and full metadata after a replacement survey traverse', async () => {
+    await mount();
+    click('Apply site to plan');
+    const before = savedWorld();
+    click('From the surveyor’s plan');
+    edit(app.querySelector('textarea')!, '30,90\n10,180\n30,270\n10,0');
+    click('Close traverse & check');
+    click('Apply site to plan');
+    const replaced = savedWorld();
+    expect(replaced).not.toBe(before);
+    expect(JSON.parse(replaced!).entry).toBe('traverse');
+    click('Undo boundary change');
+    expect(button('Drawn boundary').getAttribute('aria-pressed')).toBe('true');
+    expect(button('Add another corner').disabled).toBe(false);
+    expect(app.querySelectorAll('.site-coordinate-row')).toHaveLength(4);
+    expect(savedWorld()).toBe(replaced);
+    click('Apply site to plan');
+    expect(savedWorld()).toBe(before);
+    expect(button('Undo boundary change').disabled).toBe(true);
+  });
+
+  it('does not add a history entry or change the checked outline when traverse validation fails', async () => {
+    await mount();
+    click('Apply site to plan');
+    const before = savedWorld();
+    click('From the surveyor’s plan');
+    edit(app.querySelector('textarea')!, '0,90\n10,180\n30,270\n10,0');
+    click('Close traverse & check');
+    expect(app.querySelector('.site-error')?.textContent).toBeTruthy();
+    expect(button('Undo boundary change').disabled).toBe(true);
+    click('Apply site to plan');
+    expect(savedWorld()).toBe(before);
   });
 
   it('undoes consecutive added corners in reverse order without losing the earlier clear action', async () => {
