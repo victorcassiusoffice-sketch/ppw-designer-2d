@@ -14,6 +14,15 @@ import SiteReport, { Metric } from './SiteReport';
 import './site.css';
 const SiteMap = lazy(() => import('./SiteMap'));
 type Tab = 'boundary' | 'levels' | 'report';
+type BoundarySnapshot = {
+  points: LonLat[];
+  closed: boolean;
+  site: GeoSite | undefined;
+  entry: 'map' | 'traverse';
+  foundation: ReturnType<typeof foundationScenario> | null;
+  foundationError: string;
+  shift: string;
+};
 const errorText = (e: unknown) => (e instanceof Error ? e.message : 'Please check these inputs.');
 export default function SiteWorkspace({
   onClose,
@@ -40,6 +49,7 @@ export default function SiteWorkspace({
     [entry, setEntry] = useState<'map' | 'traverse'>(
       initial.current?.entry === 'traverse' ? 'traverse' : 'map',
     );
+  const [boundaryHistory, setBoundaryHistory] = useState<BoundarySnapshot[]>([]);
   const [message, setMessage] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -103,9 +113,42 @@ export default function SiteWorkspace({
     setMessage('');
   };
   const changePoints = (next: LonLat[]) => {
+    // Keep the complete checked draft so undo restores provenance and levels,
+    // rather than reconstructing them from an edited outline. The history is local.
+    setBoundaryHistory((history) => [
+      ...history.slice(-49),
+      {
+        points: points.map((p) => [...p] as LonLat),
+        closed,
+        site,
+        entry,
+        foundation,
+        foundationError,
+        shift,
+      },
+    ]);
     setPoints(next);
     setDraft(undefined);
+    setEntry('map');
     clearError();
+  };
+  const undoBoundary = () => {
+    const previous = boundaryHistory[boundaryHistory.length - 1];
+    if (!previous) return;
+    setPoints(previous.points);
+    setClosed(previous.closed);
+    setDraft(previous.site ? { ...previous.site, name } : undefined);
+    setEntry(previous.entry);
+    setFoundation(previous.foundation);
+    setFoundationError(previous.foundationError);
+    setShift(previous.shift);
+    setBoundaryHistory((history) => history.slice(0, -1));
+    clearError();
+    setMessage(
+      previous.site
+        ? 'Previous boundary restored. Its checked sources and levels are retained.'
+        : 'Previous boundary restored. Close and check it before applying.',
+    );
   };
   const finishBoundary = () => {
     clearError();
@@ -418,6 +461,7 @@ export default function SiteWorkspace({
                           setDatum(sample.terrain!.verticalReference);
                           setPlatform(String(sample.terrain!.platformM));
                           setClosed(true);
+                          setBoundaryHistory([]);
                         }}
                       >
                         {sampleLocations.map((l, i) => (
@@ -487,14 +531,8 @@ export default function SiteWorkspace({
                     : 'Tap each corner, then close the boundary. Drag numbered corners to edit. North is up; you can pan and zoom the map.'}
                 </p>
                 <div className="site-actions">
-                  <button
-                    disabled={!points.length}
-                    onClick={() => {
-                      changePoints(points.slice(0, -1));
-                      setClosed(false);
-                    }}
-                  >
-                    Undo corner
+                  <button disabled={!boundaryHistory.length} onClick={undoBoundary}>
+                    Undo boundary change
                   </button>
                   <button
                     disabled={!points.length}
