@@ -2061,3 +2061,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
+
+## Finish round1: PPW install metadata image derivatives
+
+The192px and512px PNG icons referenced by the PPW-only manifest are resized derivatives of the existing repository-owned public/ppw-favicon.svg (SHA256387a1d72942349cc88a11affea9abaecd8ab30d2df1b920101fa045bf83bbf22). The source is covered by the repository MIT licence, Copyright(c)2026 Vic Bhatoolaul / Peak Performance Wellness, retained in LICENSE. Existing Sharp generates the opaque brand-background icons with the source mark inside the maskable safe circle. No external asset, new dependency, service worker or offline-capability claim is introduced. The One Live Build shell continues to use its own existing manifest and icons.
