@@ -80,3 +80,16 @@ These decisions supersede the Stage 2 synchronous-hydration choice, per-pair cus
 | Same-host medians gate; custom-domain pairs informational; retain canvas marks too | Fix 1 §1 ruling; five fresh-browser pairs/device/branch at pinned 216.198.79.3; exact gaps/profiles retained | A Commander-defined protocol, not cherry-picked warmups |
 | Leave Lighthouse untouched and list exact inherited 22 IDs | Both final code CI runs have identical error sets/values to tree-identical main; no new error | Separate authorized repair with unchanged thresholds |
 | No rebase | Start-of-round fetch still 3eefbf7; PR #52 remains outside scope | Rebase and repeat full suites/measurements if explicitly required after main moves |
+
+
+## Finish round 1 — Wednesday, 28 October 2026 at 13:59:56 GMT+4
+
+| Choice | Reason / evidence | Cost or condition to resume |
+|---|---|---|
+| Stop before the required rebase/publication; keep existing branch history intact | Finish §1A requires rebase onto open PR52, while §0.4 forbids force-push and merge. Published World tips diverge at3eefbf7; a true rebase is non-fast-forward. The explicit hard-stop rule takes precedence over inventing publication permission | A consistent authorized history/publication path, or PR52 merged externally followed by the same published-history check. A main merge alone does not make rewriting World history fast-forward |
+| Do not substitute cherry-pick, bridge merge, new PR, or branch deletion/recreation | These either fail the required rebase/existing-PR result or bypass an explicit prohibition; proof in finish/base-publication-proof.md | An explicit instruction resolving the conflicting requirements; no question or permission request sent |
+| Preserve prior passing fixes and failed evidence; do not count a blocked startup as three engineering attempts | No application code was changed and no post-PR52 measurement exists; performance and rubric passes cannot be invented | Resume from ROUNDS.md and retain every measured run |
+| Record BVH0.9.17 and refreshed provider pages without changing dependencies | New collision-method correction is relevant, but upgrade requires full suites and paired runs after the authorized base integration | Focused collision regression plus full-suite and paired performance pass |
+| Triage all22 Lighthouse assertions before editing settings or content | Four assertions target score-null informative audits; public source maps are intentionally forbidden. Other safe content fixes remain planned | Implement isolated robots/hero fixes after base integration, run new artifacts, retain remaining reasons; never weaken thresholds |
+
+Status: **HARD STOP**, not budget exhaustion and not a merge-ready claim. One Finish startup entered; no completed Finish engineering round. No force-push, merge, main push, manual deployment, new account/key/environment variable, migration or estimate change.
