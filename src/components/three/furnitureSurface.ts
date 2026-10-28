@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 export type FurnitureSurface = 'fabric' | 'wood' | 'weave' | 'stone';
 const albedoPixels = new Map<FurnitureSurface, Uint8Array>();
+const surfacePixels = new Map<FurnitureSurface, Uint8Array>();
 
 /** Visible structure for original dimensional previews. A neutral map modulates
  * the model's own colour; it is never attached to purchased paint, flooring or
@@ -108,8 +109,8 @@ export function drapedClothGeometry(width: number, depth: number, drop: number):
  * It deliberately carries no colour, so product colours remain unchanged. */
 export function furnitureSurface(kind: FurnitureSurface): THREE.DataTexture {
   const size = 128;
-  const pixels = new Uint8Array(size * size * 4);
-  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+  const pixels = surfacePixels.get(kind) ?? new Uint8Array(size * size * 4);
+  if (!surfacePixels.has(kind)) for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
     const u = x / size * Math.PI * 2, v = y / size * Math.PI * 2;
     const warp = Math.sin(v * 2 + Math.sin(u) * 0.7);
     const fibre = Math.sin(u * 32) * Math.cos(v * 32);
@@ -129,7 +130,10 @@ export function furnitureSurface(kind: FurnitureSurface): THREE.DataTexture {
     pixels[i + 2] = pixels[i];
     pixels[i + 3] = 255;
   }
-  const map = new THREE.DataTexture(pixels, size, size);
+  surfacePixels.set(kind, pixels);
+  // Reuse only deterministic CPU work. Each product still owns its texture
+  // and bytes, so disposal/editing cannot damage another item's surface.
+  const map = new THREE.DataTexture(pixels.slice(), size, size);
   map.name = `furniture-${kind}-microstructure`;
   map.wrapS = map.wrapT = THREE.RepeatWrapping;
   map.repeat.set(kind === 'fabric' ? 5 : kind === 'weave' ? 5 : 2, kind === 'fabric' ? 5 : kind === 'weave' ? 4 : 1);
