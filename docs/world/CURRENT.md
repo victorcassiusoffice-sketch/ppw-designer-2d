@@ -1,13 +1,10 @@
 # World current state
 
-## Finish round 1 — publication hard stop
+## Finish round1 — active, authorized forward merge
 
-Checked Wednesday, 28 October 2026 at 13:59:56 GMT+4. **Finish is not complete.** The finish instruction now includes PR #52 startup work, absolute first-picture targets and safe Lighthouse repairs. Those supersede the older scope exclusions below, which describe retained Fix 1 evidence.
+The28October18:22MU amendment resolves the historical round0 publication stop. PR52 remains open at56d852d1f2f5d7342b9e02194964d6b998c795c7; main remains3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2. Both World branches include52 through a normal merge/push: Walk8632686 andSite06245cc. Full merge suites4363/4414 and all three type checks pass. No history was rewritten.
 
-Main is still **3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2**. PR #52 is open/unmerged at **56d852d1f2f5d7342b9e02194964d6b998c795c7**. The required rebase of the nine/seven already-published World commits cannot be published to the existing PR branches by a normal fast-forward push. Force-push is explicitly prohibited; a merge/bridge commit is also outside the literal no-merge instruction. Cherry-picking would preserve history but would not be the required rebase. No permission is inferred and no false “includes PR #52” statement was added. See [proof](finish/base-publication-proof.md), [round log](ROUNDS.md) and [lessons](LESSONS.md).
-
-No application, dependency or test file changed in this Finish startup. No new performance, physical-device or first-use evidence is claimed; the rubric retains its measured 26 scores of 2 and four scores of 1. Completed Fix 1 fixes remain. Resume after a consistent authorized publication path exists: integrate PR #52, run the full suites, then measure all Finish gates before making further fixes. The ten-round budget is not exhausted; one startup was stopped at the explicit history-publication boundary.
-
+The comparison base is now PR52's own preview and exact56d852d build. Early closure allowance is1024gzip bytes for the lazy feature seam, separately exempting existing export aliases; zero new first-picture HTTP requests still applies. Initial full timing campaigns and source fixes are inprogress; all initial failures are retained and no new passing score is claimed. Read [ROUNDS](ROUNDS.md) for the precise resume point.
 The once-per-Finish current check is complete: [official-source review](finish/current-research.md). Latest BVH is now **0.9.17**, including a correction to the closestPointToSegment method used by Walk; installed remains **0.9.16** pending the required full-suite and paired-run proof. Provider terms were rechecked on 28 October. The read-only [Lighthouse repair plan](finish/lighthouse-plan.md) classifies all 22 inherited failures and identifies safe candidates; no repair is falsely reported as implemented.
 
 

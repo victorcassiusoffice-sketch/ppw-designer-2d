@@ -38,3 +38,7 @@ Scored 28 October 2026, Mauritius time, against final code candidates Walk `554f
 Lowest three by release impact: **first picture/static bytes 1; frame pacing/physical-device evidence 1; first-use comprehension 1**. Physical one-hand use also remains 1. Chooser is now 2 after the deployed whole-action pass. No inherited Lighthouse repair was attempted; exact 22 error IDs match main.
 
 Next three: provide a baseline extension seam that resolves the early byte contract; measure steady frame pacing on physical phones after the shader fix; run first-use and one-hand checks. Commander chooses the next authorized round.
+
+## Finish round1 candidate status
+
+The 30 scores above remain historical Fix1 scores pending the new deployed checks. The amended numeric byte ceiling passes in controlled builds (+690 gzip Walk / +935 Site); initial timing still fails, so the performance score remains1. Site's real Undo gap was corrected with nine focused UI regressions, including traverse replacement. Strict frame windows and final browser/print proof are pending. Human comprehension and physical one-hand evidence remain unperformed; no score is raised from automation alone.
