@@ -110,6 +110,8 @@ export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene:
   let disposed = false;
   let sizeKey = '';
   let preparing: Promise<void> | undefined;
+  const warmMaterials = new Map<THREE.Material, THREE.Material>();
+  const releaseWarmMaterials = () => { for (const material of warmMaterials.values()) material.dispose(); warmMaterials.clear(); };
   return {
     prepare() {
       // Start the expensive AO/denoise shader links asynchronously after the
@@ -127,7 +129,34 @@ export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene:
           let shaders: Promise<unknown>[];
           try {
             renderer.setRenderTarget(composer.readBuffer);
-            shaders = [renderer.compileAsync(quadScene, new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1))];
+            // The beauty pass uses a HalfFloat off-screen target. Its shader
+            // variant differs from the already-visible direct canvas draw;
+            // warming only AO/normal shaders leaves the first beauty draw
+            // synchronously linking every physical material during input.
+            // compileAsync polls material.currentProgram. Direct canvas draws
+            // continue during preparation, so isolate the warm-up materials
+            // to stop those draws switching its poll to another variant.
+            const originals: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
+            const clone = (material: THREE.Material) => {
+              let warm = warmMaterials.get(material);
+              if (!warm) {
+                warm = material.clone(); warm.onBeforeCompile = material.onBeforeCompile;
+                warm.customProgramCacheKey = material.customProgramCacheKey;
+                warmMaterials.set(material, warm);
+              }
+              return warm;
+            };
+            try {
+              scene.traverse(object => {
+                // Lines, points and annotation sprites also have beauty
+                // shaders whose output variant differs off screen.
+                const mesh = object as THREE.Mesh; if (!mesh.material) return;
+                originals.push([mesh, mesh.material]);
+                mesh.material = Array.isArray(mesh.material) ? mesh.material.map(clone) : clone(mesh.material);
+              });
+              shaders = [renderer.compileAsync(scene, camera)];
+            } finally { for (const [mesh, material] of originals) mesh.material = material; }
+            shaders.push(renderer.compileAsync(quadScene, new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)));
             // Public at runtime in pinned Three r186; missing from its typings.
             const normalTarget = ao.normalRenderTarget;
             shaders.push(prepareNormalMaterials(renderer, scene, camera, ao.normalMaterial, normalTarget));
@@ -153,7 +182,8 @@ export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene:
       const autoClear = renderer.autoClear;
       const clear = renderer.getClearColor(new THREE.Color());
       const alpha = renderer.getClearAlpha();
-      try { composer.render(); }
+      // Keep the warm program references until the real materials adopt them.
+      try { composer.render(); releaseWarmMaterials(); }
       finally {
         scene.overrideMaterial = override;
         renderer.autoClear = autoClear;
@@ -164,6 +194,7 @@ export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene:
     dispose() {
       if (disposed) return;
       disposed = true;
+      releaseWarmMaterials();
       beauty.dispose();
       ao.dispose();
       // These two materials are not disposed by GTAOPass r186 itself.
