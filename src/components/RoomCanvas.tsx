@@ -554,6 +554,9 @@ export function RoomCanvas({
   const ecoTrees = usePropertyStore((s) => s.property.eco?.trees);
   const gardenPlacement = useGardenEditorStore((s) => s.placement);
   const site = usePropertyStore((s) => s.property.site ?? null);
+  // A saved extension is opaque until deferred validation returns a frozen copy.
+  const geographicSite = site?.world && typeof site.world === 'object' && Object.isFrozen(site.world)
+    ? site.world as import('../site/types').GeoSite : undefined;
   const levels = useMemo(() => levelsOf({ levels: propertyLevels }), [propertyLevels]);
   const activeLevelId = activeLevelIdOf({ levels: propertyLevels, activeLevelId: propertyActiveLevelId });
   const garden = activeLevelId === GROUND_LEVEL_ID ? propertyGarden : undefined;
@@ -579,7 +582,7 @@ export function RoomCanvas({
   /** The land plot as a polygon in world metres, or null = unlimited land. */
   const sitePolygon = useMemo<Polygon | null>(() => {
     if (!site) return null;
-    if (site.world) return site.world.polygon;
+    if (site.world !== undefined) return geographicSite?.polygon ?? null;
     const ox = site.originM?.x ?? 0;
     const oy = site.originM?.y ?? 0;
     return [
@@ -588,7 +591,7 @@ export function RoomCanvas({
       { x: ox + site.widthM, y: oy + site.depthM },
       { x: ox, y: oy + site.depthM },
     ];
-  }, [site]);
+  }, [site, geographicSite]);
   // D5 — selecting an item in ANY room must also move focus to that room,
   // or the Sims loop (place → rotate / delete) is dead everywhere except
   // the active room: DetailsPanel, FloatingCluster and placementActions all
@@ -4526,14 +4529,14 @@ export function RoomCanvas({
               <Text
                 x={sitePolygon[0].x * pxPerMetre + 10 / viewport.scale}
                 y={sitePolygon[0].y * pxPerMetre + 8 / viewport.scale}
-                text={site.world ? `${site.world.name} · N ↑ · boundary drawn / typed by you` : `PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
+                text={geographicSite ? `${geographicSite.name} · N ↑ · boundary drawn / typed by you` : `PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
                 fontSize={measureFontSize(viewport.scale, 11)}
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
                 letterSpacing={1.5 / viewport.scale}
                 fill={DIM_LINE}
               />
-              {site.world && <Line points={[sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 12 / viewport.scale, sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 42 / viewport.scale, sitePolygon[0].x * pxPerMetre - 5 / viewport.scale, sitePolygon[0].y * pxPerMetre - 34 / viewport.scale, sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 42 / viewport.scale, sitePolygon[0].x * pxPerMetre + 5 / viewport.scale, sitePolygon[0].y * pxPerMetre - 34 / viewport.scale]} stroke={DIM_LINE} strokeWidth={1.5 / viewport.scale} />}
+              {geographicSite && <Line points={[sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 12 / viewport.scale, sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 42 / viewport.scale, sitePolygon[0].x * pxPerMetre - 5 / viewport.scale, sitePolygon[0].y * pxPerMetre - 34 / viewport.scale, sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 42 / viewport.scale, sitePolygon[0].x * pxPerMetre + 5 / viewport.scale, sitePolygon[0].y * pxPerMetre - 34 / viewport.scale]} stroke={DIM_LINE} strokeWidth={1.5 / viewport.scale} />}
             </Group>
           )}
 

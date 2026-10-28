@@ -311,11 +311,12 @@ export default function SiteReport({
         </p>
       ))}
       <ul className="site-source-links">
-        <li>
-          <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors, ODbL</a>;
-          map: <a href="https://openfreemap.org/">OpenFreeMap</a> /{' '}
-          <a href="https://openmaptiles.org/">OpenMapTiles</a>.
-        </li>
+        {context && (
+          <li>
+            <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors, ODbL</a> ·
+            mapped surroundings source.
+          </li>
+        )}
         {solar && (
           <li>
             <a href={solar.sourceUrl}>

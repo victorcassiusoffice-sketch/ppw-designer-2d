@@ -7,6 +7,7 @@ import { parseSurvey, terrainEstimate } from './terrain';
 import { foundationScenario } from './foundationScenario';
 import { loadPublicData, siteRequest } from './providers';
 import { sampleLocations, sampleSite } from './sample';
+import { validateWorld } from './hydration';
 import { boundaryLabel, REPORT_BANNER, type GeoSite, type LonLat } from './types';
 import { SiteDiagram } from './SiteDiagram';
 import SiteReport, { Metric } from './SiteReport';
@@ -14,12 +15,22 @@ import './site.css';
 const SiteMap = lazy(() => import('./SiteMap'));
 type Tab = 'boundary' | 'levels' | 'report';
 const errorText = (e: unknown) => (e instanceof Error ? e.message : 'Please check these inputs.');
-export default function SiteWorkspace({ onClose, demo }: { onClose: () => void; demo: boolean }) {
+export default function SiteWorkspace({
+  onClose,
+  demo,
+  previewLive = false,
+  initialWarning,
+}: {
+  onClose: () => void;
+  demo: boolean;
+  previewLive?: boolean;
+  initialWarning?: string;
+}) {
   const property = usePropertyStore((s) => s.property),
     setSite = usePropertyStore((s) => s.setSite),
     host = useRef<HTMLDivElement>(null);
   useWorkspaceFocus(host, onClose, { fallbackFocusSelector: '[aria-label="Site from the map"]' });
-  const initial = useRef(demo ? sampleSite() : property.site?.world);
+  const initial = useRef(demo ? sampleSite() : validateWorld(property.site?.world));
   const [site, setDraft] = useState<GeoSite | undefined>(initial.current),
     [points, setPoints] = useState<LonLat[]>(initial.current?.boundary ?? []),
     [center, setCenter] = useState<LonLat>(initial.current?.origin ?? [57.3776792, -20.3292161]);
@@ -231,13 +242,16 @@ export default function SiteWorkspace({ onClose, demo }: { onClose: () => void; 
       if (!site) throw new Error('Finish the boundary first.');
       const error = boundaryError(site.polygon);
       if (error) throw new Error(error);
+      const world = validateWorld(site);
+      if (!world)
+        throw new Error('Site data could not be verified. Check the boundary, source and levels.');
       const xs = site.polygon.map((p) => p.x),
         ys = site.polygon.map((p) => p.y);
       setSite({
         widthM: Math.max(...xs) - Math.min(...xs),
         depthM: Math.max(...ys) - Math.min(...ys),
         originM: { x: Math.min(...xs), y: Math.min(...ys) },
-        world: site,
+        world,
       });
       setMessage(
         'Site applied and saved with this design. Existing rooms are unchanged. Close Site to see the boundary in the plan.',
@@ -364,6 +378,16 @@ export default function SiteWorkspace({ onClose, demo }: { onClose: () => void; 
           ))}
         </nav>
         <div className="site-scroll">
+          {initialWarning && (
+            <p role="alert" className="site-error">
+              {initialWarning}
+            </p>
+          )}
+          {previewLive && (
+            <p className="site-sample-note">
+              Preview test mode · live map and public services enabled for this session.
+            </p>
+          )}
           {error && (
             <p role="alert" className="site-error">
               {error}
@@ -458,8 +482,9 @@ export default function SiteWorkspace({ onClose, demo }: { onClose: () => void; 
                 )}
                 <p className="site-muted">Satellite view: not available yet.</p>
                 <p className="site-hint">
-                  Tap each corner, then close the boundary. Drag numbered corners to edit. North is
-                  up; you can pan and zoom the map.
+                  {demo
+                    ? 'Practice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.'
+                    : 'Tap each corner, then close the boundary. Drag numbered corners to edit. North is up; you can pan and zoom the map.'}
                 </p>
                 <div className="site-actions">
                   <button

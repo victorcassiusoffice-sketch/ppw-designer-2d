@@ -1,7 +1,8 @@
 import type { GeoSite, PublicSnapshot } from './types';
+import { isOfflineDemo } from './previewMode';
 const cache = new Map<string, { expires: number; value: unknown }>();
 export function demoSiteMode() {
-  return /^\/demo(?:\/|$)/.test(window.location.pathname);
+  return isOfflineDemo();
 }
 export async function siteRequest<T>(path: string, signal?: AbortSignal): Promise<T> {
   if (demoSiteMode()) throw new Error('The demo is a local sample. Live providers are disabled.');
