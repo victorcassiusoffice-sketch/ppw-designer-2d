@@ -23,6 +23,7 @@ On a normal branch preview, open `/demo?site=1&live=1`, then choose **Site**. On
 - 99 focused tests passed across eight files: canonical normalization, geometry, original persistence regressions, provider tests, deferred hydration and route timing, subsequent imports/rehydration, subscription disposal/loops, preview fail-closed behavior, and offline credit DOM.
 - Root, API and middleware TypeScript checks passed; Site/API ESLint passed; controlled production bundle build passed; `git diff --check` passed.
 - The original three persistence tests are unchanged. No estimate implementation or estimate test was changed.
+- Independent review found that the deferred preview-access waiting screen needed its own modal focus ownership. It now blocks background Delete/Backspace, supports Escape/Cancel, aborts verification on close and hands focus/inert ownership to the workspace. Three additional regression tests passed (102 focused cases total); the changed focus/preview/defer group was rerun with 15 passes and TypeScript remained clean. This repair is entirely in the deferred entry.
 - Deployed real map/search/draw/visible-credit smoke at laptop and 390 × 844, saved-world first-picture request ordering, same-host timing pairs and current CI are pending the new branch preview. No pass is inferred from local unit tests or static closure alone.
 
 This round does not repeat the unchanged offline survey calculations, prior three-location reports or A4 PDFs. No satellite, OCR, new pricing, Lighthouse repair or PR #52 work is included.
