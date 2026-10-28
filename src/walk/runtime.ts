@@ -80,7 +80,9 @@ export class WalkRuntime {
   private onUnlock = () => {
     this.clearInput();
     this.unlockPending = !this.unlockRequested && !this.escapeHeld && !this.paused && !this.disposed;
-    this.unlockRequested = false; this.unlockedAt = performance.now();
+    // Keep our unlock intent until the next lock attempt: a queued lock event
+    // can arrive after unlock and produce a second "unlocked" notification.
+    this.unlockedAt = performance.now();
     this.lastStatus = -Infinity;
   };
   private onLock = () => { this.unlockPending = false; this.unlockRequested = false; this.lastStatus = -Infinity; };
@@ -253,6 +255,7 @@ export class WalkRuntime {
   }
   lock(): void {
     if (!this.ready) return;
+    this.unlockRequested = false;
     try {
       // Controls observes pointerlockchange. Catch the browser's asynchronous
       // denial too; dragging remains usable without pointer lock permission.
