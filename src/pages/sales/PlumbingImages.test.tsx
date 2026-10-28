@@ -46,7 +46,7 @@ describe('plumbing capture delivery', () => {
         expect(bytes.length).toBeLessThan(originalBytes.length);
       }
     }
-    expect(candidates.at(-1)).toEqual([hero.getAttribute('src'), '1280w']);
+    expect(candidates[candidates.length - 1]).toEqual([hero.getAttribute('src'), '1280w']);
     expect(hero.sizes).toContain('(max-width: 700px)');
   });
 
