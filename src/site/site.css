@@ -497,14 +497,16 @@
   }
 }
 @media print {
-  @page {
+  @page olb-site-report {
     size: A4;
-    margin: 14mm;
+    /* Keep the repeating disclaimer outside the report's content area. */
+    margin: 14mm 14mm 30mm;
   }
   body.printing-site > * {
     display: none !important;
   }
   body.printing-site > .site-backdrop {
+    page: olb-site-report;
     display: block !important;
     position: static !important;
     background: white;
@@ -566,6 +568,17 @@
     border: 1px solid #888;
     background: white;
     break-inside: avoid;
+  }
+  body.printing-site .site-report-print-footer {
+    /* Fixed print elements repeat on each page. The named page reserves 30mm
+       below the body; this footer sits in that margin, 10mm from the paper edge. */
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: -20mm;
+    margin: 0;
+    padding: 2.5mm;
+    line-height: 1.3;
   }
   body.printing-site .site-diagram {
     height: 68mm;

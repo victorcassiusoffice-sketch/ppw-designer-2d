@@ -331,7 +331,7 @@ export default function SiteReport({
           </li>
         )}
       </ul>
-      <p className="site-banner">{REPORT_BANNER}</p>
+      <p className="site-banner site-report-print-footer">{REPORT_BANNER}</p>
     </article>
   );
 }
