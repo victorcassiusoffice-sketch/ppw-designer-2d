@@ -421,8 +421,9 @@ export class WalkRuntime {
 
   dispose(): void {
     if (this.disposed) return;
+    this.disposed = true;
     this.emitFrameMeasurement(this.frameMeasurement?.finish(performance.now(), 'disposed'));
-    this.disposed = true; this.abort.abort(); cancelAnimationFrame(this.raf); this.clearInput();
+    this.abort.abort(); cancelAnimationFrame(this.raf); this.clearInput();
     this.controls.unlock(); this.controls.dispose(); this.decoder.dispose();
     this.controls.removeEventListener('unlock', this.onUnlock);
     this.controls.removeEventListener('lock', this.onLock);

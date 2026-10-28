@@ -85,6 +85,15 @@ describe('runtime frame-measurement lifecycle', () => {
     expect(results).toHaveLength(1); expect(vi.getTimerCount()).toBe(0);
   });
 
+  it('cannot re-arm from a disposal-result listener while disposal is in progress', () => {
+    canvas.addEventListener('world-walk-frame-result', () => arm(1000));
+    arm(1000); tick(); runtime.dispose();
+    expect(results).toHaveLength(1); expect(results[0].reason).toBe('disposed');
+    expect(vi.getTimerCount()).toBe(0);
+    now = 3000; vi.advanceTimersByTime(2000);
+    expect(results).toHaveLength(1);
+  });
+
   it('rejects unbounded durations and ignores re-arming instead of silently replacing an active window', () => {
     for (const duration of [0, -100, 50, Infinity, NaN, 120001]) arm(duration);
     expect(vi.getTimerCount()).toBe(0);
