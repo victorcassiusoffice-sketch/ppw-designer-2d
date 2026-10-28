@@ -2030,7 +2030,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       </div>
       {backend === 'gl' && !stageReady && <Loading3D />}
       {backend === 'gl' && stageReady && solids.floors.length > 0 && <Suspense fallback={null}>
-        <WalkLauncher property={property} onOpen={cancelObjectTurn}
+        <WalkLauncher property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
           sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
       </Suspense>}
       {removeActive && <div className="remove-build-status" role="status" data-testid="remove-3d-hud" data-target-kind={removeHover?.kind??'none'}><span>{removeTargetMessage(removeHover)}</span><button type="button" onClick={finishRemoving}>Done</button></div>}
