@@ -84,6 +84,13 @@ describe('walk runtime event lifecycle', () => {
     document.dispatchEvent(new Event('pointerlockchange'));
   });
 
+  it('does not mistake its own delayed unlock event after keyup for a new native Escape', () => {
+    runtime.lock(); document.exitPointerLock = () => { locked = null; };
+    expect(runtime.escape()).toBe(true); releaseEscape();
+    document.dispatchEvent(new Event('pointerlockchange'));
+    expect(runtime.escape()).toBe(false);
+  });
+
   it.each(['third', 'first'] as const)('reports only the first rendered moved frame after an armed keydown in %s person', mode => {
     if (mode === 'first') runtime.toggleView();
     tick(); expect(canvas.hasAttribute('data-walk-input-result')).toBe(false);

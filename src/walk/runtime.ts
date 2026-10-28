@@ -55,6 +55,7 @@ export class WalkRuntime {
   private followReady = false;
   private escapeHeld = false;
   private unlockPending = false;
+  private unlockRequested = false;
   private unlockedAt = -Infinity;
   private measurementArmed = false;
   private inputMeasure: { inputAt: number; handlerAt: number; source: string; key: string; mode: string; x: number; z: number } | null = null;
@@ -77,10 +78,12 @@ export class WalkRuntime {
     if (event.code === 'Escape') { this.escapeHeld = false; this.unlockPending = false; }
   };
   private onUnlock = () => {
-    this.clearInput(); this.unlockPending = !this.escapeHeld; this.unlockedAt = performance.now();
+    this.clearInput();
+    this.unlockPending = !this.unlockRequested && !this.escapeHeld && !this.paused && !this.disposed;
+    this.unlockRequested = false; this.unlockedAt = performance.now();
     this.lastStatus = -Infinity;
   };
-  private onLock = () => { this.unlockPending = false; this.lastStatus = -Infinity; };
+  private onLock = () => { this.unlockPending = false; this.unlockRequested = false; this.lastStatus = -Infinity; };
   private onMeasureInput = () => {
     this.measurementArmed = true; this.inputMeasure = null;
     this.host.renderer.domElement.removeAttribute('data-walk-input-result');
@@ -232,7 +235,8 @@ export class WalkRuntime {
     // The DOM lock is authoritative: pointerlockchange (and therefore the
     // controls' cached isLocked) can arrive after the next distinct keypress.
     if (document.pointerLockElement === this.host.renderer.domElement) {
-      this.escapeHeld = true; this.unlockPending = false; this.controls.unlock(); this.clearInput(); return true;
+      this.escapeHeld = true; this.unlockPending = false; this.unlockRequested = true;
+      this.controls.unlock(); this.clearInput(); return true;
     }
     // Browsers may release pointer lock before delivering the same keydown.
     if (this.unlockPending && performance.now() - this.unlockedAt < 150) {
