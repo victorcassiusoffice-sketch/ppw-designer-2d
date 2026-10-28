@@ -1,14 +1,10 @@
 # World current state
 
-## Finish round1 — active, authorized forward merge
+Finish round1 completed 28 October 2026. Neither PR is merge-ready. Authoritative measured heads: Walk`c8941925da4640cf02d6c4ecb864d3914993a180`, Site`7ed40b6bff89067623a4939f251be1ed5cd6e870`; later documentation commits do not change those application trees. Both include open PR52`56d852d1f2f5d7342b9e02194964d6b998c795c7` by forward merge. Main remains`3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. No history rewrite.
 
-The28October18:22MU amendment resolves the historical round0 publication stop. PR52 remains open at56d852d1f2f5d7342b9e02194964d6b998c795c7; main remains3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2. Both World branches include52 through a normal merge/push: Walk8632686 andSite06245cc. Full merge suites4363/4414 and all three type checks pass. No history was rewritten.
+[Round report](finish/evidence/REPORT.md), [all exact pairs/files](finish/evidence/measurements.json), [rubric](RUBRIC.md), [resume log](ROUNDS.md). Early JS passes the amended1KB seam gate (+690gzip Walk/+935Site); zero new pre-picture request paths. Desktop first-picture/loading-paint, Site phone paired wall, desktop input/FPS and repeated print banner still fail. Human comprehension and physical one-hand use remain unmeasured.
 
-The comparison base is now PR52's own preview and exact56d852d build. Early closure allowance is1024gzip bytes for the lazy feature seam, separately exempting existing export aliases; zero new first-picture HTTP requests still applies. Initial full timing campaigns and source fixes are inprogress; all initial failures are retained and no new passing score is claimed. Read [ROUNDS](ROUNDS.md) for the precise resume point.
-The once-per-Finish current check is complete: [official-source review](finish/current-research.md). Latest BVH is now **0.9.17**, including a correction to the closestPointToSegment method used by Walk; installed remains **0.9.16** pending the required full-suite and paired-run proof. Provider terms were rechecked on 28 October. The read-only [Lighthouse repair plan](finish/lighthouse-plan.md) classifies all 22 inherited failures and identifies safe candidates; no repair is falsely reported as implemented.
-
-
-Last stay-current check: **2026-10-28**. This file describes the Stage 2 branch candidates, not a production deployment. No merge or deployment is authorized. Base for both builds: `3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. Branches: `gpt/olb-walk-mode-2026-10-27` and `gpt/olb-site-map-2026-10-27`. Open candidates: [#53 Walk mode](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/53) and [#54 Site from the map](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/54). Integration evidence updated 28 October 2026 Mauritius time; Fix round 1 release check refreshed 28 October 2026.
+The once-per-Finish release/provider review was completed28October13:53MU: [primary-source evidence](finish/current-research.md). Installed versions below remain unchanged.
 
 ## Components and releases
 
@@ -74,34 +70,16 @@ No Google code path/key/environment variable; no anonymous Esri or NASA plot-sca
 
 ## Evidence status and next work
 
-Fix round 1 measured code: Walk **554fb61eb161a020d3ba5087a14066307aabdc2b**, Site **2c6743a1a00fea395556358d011fa323b81b0018**. Final documentation heads are listed in the handoff; application trees match these measured code commits. Regular CI passes **4,351 tests / 404 files** and **4,402 tests / 408 files**, root/API/middleware typechecks and secrets scans. Lighthouse still fails on exactly the same 22 error-level assertions as main 3eefbf7; settings/thresholds unchanged and repair explicitly outside this round.
+Current exact figures are in [Round1 evidence](finish/evidence/REPORT.md). Walk wall/canvas medians5,700/5,183.5ms desktop and4,594/4,577.3phone; Site5,262/5,184.2 and4,727/4,507.2. Both desktop3second and all-run1second loading-paint targets fail; phone absolute5seconds pass. Site phone original paired wall+11.407% fails; both timing definitions remain reported.
 
-Canonical Site validation/geometry now hydrate after first picture (2D: after plan paint), before any geographic figures. Saved no-world payloads do not import them; all original persistence tests remain. Retained saved-world preview trace at 017e16d (later change only loading focus): picture 4,794.5 ms, hydration request 6,656.9 ms, canonical world retained and unknown canary removed. Its 8 s polling wait expired before the successful final inspection; this is not a claim of instant hydration. Bad extensions retain the legacy plot with a warning.
+Chooser202/465ms call→decoded frame passes1second. Desktop third input median82.3ms and strict desktop58.6/59.7fps fail; phone58.525/59.95fps passes30. Current real door/Exit/pointer-lock/restoration checks pass. Site live search/edit/Undo/surveyor/source tags/attribution pass; disclaimer missing on page2 of both A4 outputs prevents print/banner pass.
 
-Preview-only tester entry: **/demo?site=1&live=1**, then Site. The existing /api/healthcheck must answer **env=preview**; production, errors and timeout stay offline. No new environment variable, code/account/login/key or production switch. Both sizes passed actual map/visible credits/explicit search/draw/report. Plain /demo?site=1 stays offline with the practice-outline hint and no map-credit DOM.
+Both quality/secrets/Vercel CI pass. Lighthouse now fixes13 of22 inherited errors, with no new failures;9 remain with reasons in [the exact classification](finish/evidence/lighthouse.json). Further safe plumbing isolation is under review; thresholds/settings unchanged.
 
-The literal static gate is **NOT PASSED**. Controlled App+ThreeStage closure: Walk +1968 raw/+744 gzip; Site +2570 raw/+953 gzip. Walk's 45 raw / 12 gzip Three aliases count zero by the Commander's ruling; the remaining integration adapters do not have an exception. Site's previous 4,350 gzip validator growth is removed, but its opaque preservation, launch/focus and plot adapters remain. No separate Walk/Site implementation chunk was requested early. Bootstrap code is still inside App and counts in the failed byte gate. The existing OLB shell preloads two fonts that the required base PPW shell does not request; unchanged middleware explains this difference. Against the custom OLB domain there are no new request paths. Whole observed-file comparisons, including route/HTML/CSS/public files, are in each fix1 report. Do not infer byte equality from equal request counts.
+Preview-only tester entry remains **/demo?site=1&live=1**, then Site. Existing healthcheck must answerenv=preview; production/errors/timeouts stay offline. No access code/account/newenvironment is needed. Deferred canonical validation remains behind first picture and before any Site figure; no-site designs keep their original path.
 
-walk: desktop original medians preview/base 5.379/4.999 s (7.6%,PASS); canvas 5.291/4.462 s (18.6%); phone original medians preview/base 5.432/4.231 s (28.4%,FAIL); canvas 5.370/4.192 s (28.1%)
-
-site: desktop original medians preview/base 5.882/5.027 s (17.0%,FAIL); canvas 5.488/4.784 s (14.7%); phone original medians preview/base 6.541/4.616 s (41.7%,FAIL); canvas 5.789/4.550 s (27.2%)
-
-Final deployed non-forced action→frame with all four decoded thumbnails: **117.0 ms desktop / 237.0 ms phone**: **PASS** against one second on both devices. The original harness's click-call→visible check is **113.0 / 233.0 ms**. DOM-event→decoded-frame timing is **74.3 / 65.4 ms**, recorded separately. Initial code ad78930 failed at 7,386 / 1,363 ms; those results and native-click repeats are retained in walk-performance-initial.json and chooser-diagnostic.json. CPU profiling identified synchronous shader first-use in the AO beauty pass and hidden plan thumbnails. The repair asynchronously warms the matching shader variants before their existing draws, with scene/target restoration and queue-lifetime regressions. Image resolution, lighting, camera, geometry and first-picture scheduling are unchanged. Entry pause remains separate.
-
-Input render submission: desktop max 31.5 ms, phone max 43.8 ms over five samples/view/device. No movement tuning was needed. Door retained-close and first Esc-unlock/second Esc-exit pass actual browser checks. Narrow office same-pose camera pairs show the compressed camera looking above the head; an impossible external camera space switches explicitly to first person while preserving world collision.
-
-Lowest three priority scores: **first picture/static bytes 1**, **frame pacing/physical validation 1**, **first-use comprehension 1**. Physical one-hand use also remains 1. Chooser is now 2 after the deployed whole-action pass. No scores of 3.
-
-Next three improvements:
-
-1. Provide a baseline extension seam and persistence support to resolve the early integration byte contract; preserve failed pairs and never count adapters under the alias exception.
-2. Measure steady frame pacing on physical phones after the shader fix, keeping entry and cold chooser results separate from ongoing movement.
-3. Test first-use controls and one-hand navigation on physical phones. Continue the four-week primary-source/version review before upgrades.
-
-Historical Fix 1 scope: absolute 3 s / 5 s work and Lighthouse repair were excluded then. The Finish instruction now includes both; neither was implemented during the stopped Finish startup. Satellite/OCR/shadows/shared walk/headset remain excluded. No merge, force-push, main push, manual deployment, migration, new environment/account/key or message was performed.
+Next three: (1) actual loading paint and redundant drawing-buffer allocation; (2) pause the covered designer during Walk, preserving restoration and strict measurements; (3) repeated A4 disclaimer plus safe remaining plumbing repairs. First-use instructions and one-hand reach remain improvement/proof gaps, never invented human studies.
 
 ## Standing improvement cycle
 
-After each authorized merge, the Claude tester scores production and saves evidence under `06-Roadmap/_handoff/test-evidence-<date>/world/`. The Commander combines the lowest scores and the next-three list into one fix-round prompt. Codex implements that round as one PR, re-scores, updates this file and `DECISIONS.md`, and hands back. Production merges remain Victor's explicit “merge <n>” instruction to the Commander.
-
-Run weekly while any rubric item is below 2; run a stay-current review every four weeks regardless. Each review checks releases of Three/MapLibre/BVH/decoders, CC0 character/prop packs, provider terms/rates, and current-demo phone performance. No scheduled automation, deployment, new account or external notification was created by writing this operating cadence. The Commander-owned cycle does not grant an agent permission to merge or spend.
+During this Finish request, run autonomous measured rounds under the amended Finish instruction, up to10, with each item marked OPEN after3 consecutive failed real rounds and a next idea. Read ROUNDS/LESSONS and fetch before every round. Only return the final handoff when all gates or the explicit limit/hard-stop rule is reached. Production merges remain Victor’s explicit action. The earlier Commander-owned weekly/four-week review cadence resumes after authorized merges; no automation/account/spending permission is created by documenting it.

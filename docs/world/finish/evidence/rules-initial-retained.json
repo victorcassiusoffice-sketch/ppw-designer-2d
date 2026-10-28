@@ -1,0 +1,587 @@
+{
+  "startedAt": "2026-10-28T17:48:57.814Z",
+  "harnessVersion": 1,
+  "allowedMeeting": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour",
+  "method": "Read-only visible-UI audit on exact current previews, desktop and phone. Initial route is /demo?view=3d&pitch=1. Walk chooser is opened without starting; Site requires documented site=1 opt-in and is opened offline (no live=1). Visible fields/links/text and all meeting-like hrefs retained. Instructional phone wording is reported separately from contact fields/links. Network writes blocked and counted.",
+  "rows": [
+    {
+      "target": "walk",
+      "device": "desktop",
+      "screens": [
+        {
+          "name": "initial-designer",
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "text": "Demo\n· Living room\nDemo · no orders\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n27 m²\n+\nFit\nShare\nCapture\n27.0 m² · 39% · 0.5 m\n36\n☀ 0 Wh · ⚡ 26.5 kWh\n−26.5 kWh\nDemo\nPreview · no orders\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n91.0 m²\nRemove\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+          "fields": [
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Plan floor",
+              "placeholder": null,
+              "labels": [
+                "Floors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric"
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "View floor",
+              "placeholder": null,
+              "labels": []
+            }
+          ],
+          "links": [
+            {
+              "text": "",
+              "ariaLabel": "Products in this design",
+              "href": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/demo"
+            }
+          ],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        },
+        {
+          "name": "walk-chooser",
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "text": "Walk mode\nExplore your design\nExit walk ×\n\nA WALK THROUGH YOUR HOME\n\nChoose your character\nMaya\nLea\nAlex\nSam\nReady in ten seconds\n\nKeyboard: WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.\n\nPhone: use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close.\n\nStart walk\n\nDoors and movement stay in this visit. Your saved design stays as it is.\n\nRoof coverings are hidden so connected roof terraces remain accessible.\n\nCharacters by Kenney · CC0",
+          "fields": [],
+          "links": [
+            {
+              "text": "Characters by Kenney · CC0",
+              "ariaLabel": null,
+              "href": "https://kenney.nl/assets/mini-characters"
+            }
+          ],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [
+            "Phone: use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close."
+          ],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "passed": true,
+      "browserClosed": true
+    },
+    {
+      "target": "walk",
+      "device": "phone",
+      "screens": [
+        {
+          "name": "initial-designer",
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n27 m²\n+\nDemo — edit rooms, products and finishes. Preview only; no orders.\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nView",
+          "fields": [
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Plan floor",
+              "placeholder": null,
+              "labels": [
+                "Ground floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric"
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "View floor",
+              "placeholder": null,
+              "labels": []
+            }
+          ],
+          "links": [],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        },
+        {
+          "name": "walk-chooser",
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "text": "Walk mode\nExit walk ×\n\nA WALK THROUGH YOUR HOME\n\nChoose your character\nMaya\nLea\nAlex\nSam\nReady in ten seconds\n\nKeyboard: WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.\n\nPhone: use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close.\n\nStart walk\n\nDoors and movement stay in this visit. Your saved design stays as it is.\n\nRoof coverings are hidden so connected roof terraces remain accessible.\n\nCharacters by Kenney · CC0",
+          "fields": [],
+          "links": [
+            {
+              "text": "Characters by Kenney · CC0",
+              "ariaLabel": null,
+              "href": "https://kenney.nl/assets/mini-characters"
+            }
+          ],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [
+            "Phone: use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close."
+          ],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "passed": true,
+      "browserClosed": true
+    },
+    {
+      "target": "site",
+      "device": "desktop",
+      "screens": [
+        {
+          "name": "initial-designer",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "text": "Demo\n· Living room\nDemo · no orders\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n27 m²\n+\nFit\nShare\nCapture\n27.0 m² · 39% · 0.5 m\n36\n☀ 0 Wh · ⚡ 26.5 kWh\n−26.5 kWh\nDemo\nPreview · no orders\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n91.0 m²\nRemove\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+          "fields": [
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Plan floor",
+              "placeholder": null,
+              "labels": [
+                "Floors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric"
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "View floor",
+              "placeholder": null,
+              "labels": []
+            }
+          ],
+          "links": [
+            {
+              "text": "",
+              "ariaLabel": "Products in this design",
+              "href": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo"
+            }
+          ],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "failure": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Site from the map', exact: true })\u001b[22m\n",
+      "blockedWrites": [],
+      "passed": false,
+      "browserClosed": true
+    },
+    {
+      "target": "site",
+      "device": "phone",
+      "screens": [
+        {
+          "name": "initial-designer",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n27 m²\n+\nDemo — edit rooms, products and finishes. Preview only; no orders.\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nView",
+          "fields": [
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Plan floor",
+              "placeholder": null,
+              "labels": [
+                "Ground floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric"
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "View floor",
+              "placeholder": null,
+              "labels": []
+            }
+          ],
+          "links": [],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "failure": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Site from the map', exact: true })\u001b[22m\n",
+      "blockedWrites": [],
+      "passed": false,
+      "browserClosed": true
+    }
+  ],
+  "healthBefore": {
+    "walk": {
+      "at": "2026-10-28T17:48:58.464Z",
+      "target": "walk",
+      "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "c8941925da4640cf02d6c4ecb864d3914993a180",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-28T17:48:59.183Z"
+      }
+    },
+    "site": {
+      "at": "2026-10-28T17:48:59.126Z",
+      "target": "site",
+      "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "7ed40b6bff89067623a4939f251be1ed5cd6e870",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-28T17:48:59.846Z"
+      }
+    }
+  },
+  "healthAfter": {
+    "walk": {
+      "at": "2026-10-28T17:50:35.513Z",
+      "target": "walk",
+      "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "c8941925da4640cf02d6c4ecb864d3914993a180",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-28T17:50:36.248Z"
+      }
+    },
+    "site": {
+      "at": "2026-10-28T17:50:36.167Z",
+      "target": "site",
+      "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "7ed40b6bff89067623a4939f251be1ed5cd6e870",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-28T17:50:36.910Z"
+      }
+    }
+  },
+  "healthStable": true,
+  "passed": false,
+  "endedAt": "2026-10-28T17:50:36.167Z"
+}

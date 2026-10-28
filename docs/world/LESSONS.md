@@ -19,3 +19,10 @@
 - Finish1: Stop dependent shell work when a Git mutation fails; resolve a conflict before continuing its verification. Site's preload conflict retained both React and its provider plugin.
 - Finish1: Changing a token suffix to a constant can accidentally leave it unchanged. Preserve the failed test run, reproduce the fixture defect, and do not change authentication behavior to reject a valid unchanged token.
 - Finish1: Replace prior bulky evidence, but preserve every original byte in a hashed archive and immutable Git links; a smaller PR must not discard slow runs.
+
+- Finish1: The browser can observe a DOM loading panel before any content is painted. Retain the legacy field and FCP; a visible-paint claim cannot precede FCP.
+- Finish1: A classic inline script injected after a stylesheet waits for that CSS before parsing the body. Inspect final emitted HTML order, not only the intended preload graph.
+- Finish1: A fullscreen Walk overlay can leave the underlying designer’s AO probe active. Diagnose both renderers and pause only the covered stage through its existing ownership handle.
+- Finish1: Automated drag can end in click-to-lock and trigger browser relock cooldown. Preserve that failure; validate actual native movement in one pointer-lock session instead of assuming delivered heading.
+- Finish1: Inspect every printed page. A banner at the start/end of a report does not cover its middle pages; reserve a repeating print margin.
+- Finish1: Keep formal input settling protocol explicit (Round1 had1000ms); a stricter zero-settle successor must be versioned and cannot replace old samples.

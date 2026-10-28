@@ -1,0 +1,35 @@
+[
+  {
+    "branch": "walk",
+    "head": "c8941925da4640cf02d6c4ecb864d3914993a180",
+    "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "ancestorExit": 0,
+    "unpublishedCommits": [],
+    "protectedImplementationAndSettingsDiff": [],
+    "modifiedBaseTests": [],
+    "finishDependencyOrEnvDiff": [],
+    "apiDiff": [],
+    "worldEvidenceBytes": 781601.0,
+    "limitBytes": 5000000,
+    "browserRules": "Pending new candidate UI verification; this static audit does not substitute for it."
+  },
+  {
+    "branch": "site",
+    "head": "7ed40b6bff89067623a4939f251be1ed5cd6e870",
+    "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "ancestorExit": 0,
+    "unpublishedCommits": [],
+    "protectedImplementationAndSettingsDiff": [],
+    "modifiedBaseTests": [],
+    "finishDependencyOrEnvDiff": [],
+    "apiDiff": [
+      "A\tapi/_lib/site/__tests__/providers.test.ts",
+      "A\tapi/_lib/site/handler.ts",
+      "A\tapi/_lib/site/providers.ts",
+      "M\tapi/orders.ts"
+    ],
+    "worldEvidenceBytes": 345605.0,
+    "limitBytes": 5000000,
+    "browserRules": "Pending new candidate UI verification; this static audit does not substitute for it."
+  }
+]

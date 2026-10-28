@@ -105,3 +105,14 @@ Status: **HARD STOP**, not budget exhaustion and not a merge-ready claim. One Fi
 | Retain human-comprehension and physical one-hand limitations | Browser scripts can prove control behavior and geometry, not invent a human study | Independent human evidence, without padding rubric scores |
 
 Historical round0 HARDSTOP above is resolved; Finish round1 is active. Production/PR merging, manual deployment, force-push and main publication remain forbidden.
+
+## Finish round1 result decisions
+
+| Choice | Reason / evidence | Next action |
+|---|---|---|
+| Keep both original wall and canvas timing gates | Site phone wall fails+11.407% while canvas passes+7.817%; do not silently choose the better definition | Improve real loading and retain every paired row |
+| Add FCP as necessary loading-paint proof without replacing DOM timestamps | All current FCPs exceed1second; DOM visibility alone is not paint | Remove parser/render-blocking startup dependencies and check actual frames |
+| Preserve background renderer quality and pause it only while covered | Diagnostic82 AO callbacks overlap Walk input stalls; no need to lower quality | Reuse existing beginWalk/release lifecycle and prove restoration |
+| Lower print/banner scores when page2 lacks the disclaimer | All6 pages were inspected; first/last banner is insufficient | Repeat footer in a reserved named-page margin |
+| Keep9 inherited Lighthouse failures visible |13 safe fixes shipped, no new failures;4 assertions are informative-null and1 public-source-map fix conflicts with policy; safe FX/LCP/CSS work remains | Isolate plumbing without changing primary output or settings; reject if graph/timing regresses |
+| No item is yet exempt under the3-round rule | Round0 was a startup conflict; Round1 is the first genuine measured round | Continue Round2, no handback yet |

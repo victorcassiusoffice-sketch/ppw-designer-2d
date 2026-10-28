@@ -1,0 +1,591 @@
+{
+  "startedAt": "2026-10-28T17:51:05.767Z",
+  "harnessVersion": 2,
+  "allowedMeeting": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour",
+  "method": "Read-only visible-UI audit on exact current previews, desktop and phone. Initial route is /demo?view=3d&pitch=1. Walk chooser is opened without starting; Site requires the established 2D plan route with site=1 and is opened offline (no live=1). This Site-only follow-up preserves the first experiment, whose attempted 3D launcher is unavailable. Visible fields/links/text and all meeting-like hrefs retained. Instructional phone wording is reported separately from contact fields/links. Network writes blocked and counted.",
+  "rows": [
+    {
+      "target": "site",
+      "device": "desktop",
+      "screens": [
+        {
+          "name": "initial-designer",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "text": "Demo\n· Living room\nDemo · no orders\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n27 m²\n+\nFit\nShare\nCapture\n27.0 m² · 39% · 0.5 m\n36\n☀ 0 Wh · ⚡ 26.5 kWh\n−26.5 kWh\nDemo\nPreview · no orders\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n91.0 m²\nRemove\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+          "fields": [
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Plan floor",
+              "placeholder": null,
+              "labels": [
+                "Floors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric"
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "View floor",
+              "placeholder": null,
+              "labels": []
+            }
+          ],
+          "links": [
+            {
+              "text": "",
+              "ariaLabel": "Products in this design",
+              "href": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo"
+            }
+          ],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        },
+        {
+          "name": "offline-site",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo?view=2d&pitch=1&site=1",
+          "text": "ONE LIVE BUILD · SITE\n\nStart with the land\n\n500.0 m² · 4 corners · north up\n\n✕\n\nEstimates from public data for planning a conversation, not a survey and not an approval.\n\n1. Boundary\n2. Levels & rules\n3. Report\n\nLocal practice sample · no live provider requests\n\nSample location\nTamarin, Mauritius\nCurepipe, Mauritius\nYork, United Kingdom\n1\n25.00 m\n2\n20.00 m\n3\n25.00 m\n4\n20.00 m\nN\n\nSatellite view: not available yet.\n\nPractice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.\n\nUndo boundary change\nClear boundary\nAdd another corner\nSite name\nDrawn boundary\nFrom the surveyor’s plan\n\nBoundary drawn by you; not a cadastral survey.\n\nAdd a corner by coordinates\nAdd coordinate corner\nEdit all corners (4)\nFit site to the plan\n\nSet the first corner in plan metres. The plot keeps its measured size and north orientation. Existing rooms stay where they are.\n\nAnchor x (m)\nAnchor y (m)\nUpdate site anchor\nClose & check boundary\n\nBoundary drawn by you; not a cadastral survey.\n\nContinue to levels →\nOffline sample\nApply site to plan\nClose",
+          "fields": [
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                "Sample location\nTamarin, Mauritius\nCurepipe, Mauritius\nYork, United Kingdom"
+              ]
+            },
+            {
+              "tag": "INPUT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                "Site name"
+              ]
+            },
+            {
+              "tag": "INPUT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": "longitude, latitude",
+              "labels": [
+                "Add a corner by coordinates"
+              ]
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 1 longitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 1 latitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 2 longitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 2 latitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 3 longitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 3 latitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 4 longitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 4 latitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                "Anchor x (m)"
+              ]
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                "Anchor y (m)"
+              ]
+            }
+          ],
+          "links": [],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "passed": true,
+      "browserClosed": true
+    },
+    {
+      "target": "site",
+      "device": "phone",
+      "screens": [
+        {
+          "name": "initial-designer",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n27 m²\n+\nDemo — edit rooms, products and finishes. Preview only; no orders.\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nView",
+          "fields": [
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Plan floor",
+              "placeholder": null,
+              "labels": [
+                "Ground floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric"
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                ""
+              ]
+            },
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "View floor",
+              "placeholder": null,
+              "labels": []
+            }
+          ],
+          "links": [],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        },
+        {
+          "name": "offline-site",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/demo?view=2d&pitch=1&site=1",
+          "text": "ONE LIVE BUILD · SITE\n\nStart with the land\n\n500.0 m² · 4 corners · north up\n\n✕\n\nEstimates from public data for planning a conversation, not a survey and not an approval.\n\n1. Boundary\n2. Levels & rules\n3. Report\n\nLocal practice sample · no live provider requests\n\nSample location\nTamarin, Mauritius\nCurepipe, Mauritius\nYork, United Kingdom\n1\n25.00 m\n2\n20.00 m\n3\n25.00 m\n4\n20.00 m\nN\n\nSatellite view: not available yet.\n\nPractice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.\n\nUndo boundary change\nClear boundary\nAdd another corner\nSite name\nDrawn boundary\nFrom the surveyor’s plan\n\nBoundary drawn by you; not a cadastral survey.\n\nAdd a corner by coordinates\nAdd coordinate corner\nEdit all corners (4)\nFit site to the plan\n\nSet the first corner in plan metres. The plot keeps its measured size and north orientation. Existing rooms stay where they are.\n\nAnchor x (m)\nAnchor y (m)\nUpdate site anchor\nClose & check boundary\n\nBoundary drawn by you; not a cadastral survey.\n\nContinue to levels →\nOffline sample\nApply site to plan\nClose",
+          "fields": [
+            {
+              "tag": "SELECT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                "Sample location\nTamarin, Mauritius\nCurepipe, Mauritius\nYork, United Kingdom"
+              ]
+            },
+            {
+              "tag": "INPUT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                "Site name"
+              ]
+            },
+            {
+              "tag": "INPUT",
+              "type": null,
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": "longitude, latitude",
+              "labels": [
+                "Add a corner by coordinates"
+              ]
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 1 longitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 1 latitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 2 longitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 2 latitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 3 longitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 3 latitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 4 longitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": "Corner 4 latitude",
+              "placeholder": null,
+              "labels": []
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                "Anchor x (m)"
+              ]
+            },
+            {
+              "tag": "INPUT",
+              "type": "number",
+              "name": null,
+              "autocomplete": null,
+              "ariaLabel": null,
+              "placeholder": null,
+              "labels": [
+                "Anchor y (m)"
+              ]
+            }
+          ],
+          "links": [],
+          "allMeetingLinks": [],
+          "priceLines": [],
+          "contactLinks": [],
+          "contactFields": [],
+          "phoneMentions": [],
+          "contactText": [],
+          "wrongMeetingLinks": [],
+          "passed": true
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "passed": true,
+      "browserClosed": true
+    }
+  ],
+  "healthBefore": {
+    "walk": {
+      "at": "2026-10-28T17:51:06.503Z",
+      "target": "walk",
+      "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "c8941925da4640cf02d6c4ecb864d3914993a180",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-28T17:51:07.238Z"
+      }
+    },
+    "site": {
+      "at": "2026-10-28T17:51:07.164Z",
+      "target": "site",
+      "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "7ed40b6bff89067623a4939f251be1ed5cd6e870",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-28T17:51:07.897Z"
+      }
+    }
+  },
+  "healthAfter": {
+    "walk": {
+      "at": "2026-10-28T17:51:35.052Z",
+      "target": "walk",
+      "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "c8941925da4640cf02d6c4ecb864d3914993a180",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-28T17:51:35.793Z"
+      }
+    },
+    "site": {
+      "at": "2026-10-28T17:51:35.675Z",
+      "target": "site",
+      "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "7ed40b6bff89067623a4939f251be1ed5cd6e870",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-28T17:51:36.406Z"
+      }
+    }
+  },
+  "healthStable": true,
+  "passed": true,
+  "endedAt": "2026-10-28T17:51:35.676Z"
+}
