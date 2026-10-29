@@ -16,6 +16,12 @@ function savedCharacter(): string {
   catch { return DEFAULT_WALK_CHARACTER_ID; }
 }
 
+function ControlsCopy({ touchFirst }: { touchFirst: boolean }): JSX.Element {
+  const touch = <p key="touch"><b>Touch:</b> Use the pad to move and turn. Drag the view to look. Tap a door button when close. Tap Exit walk to return to your design.</p>;
+  const keyboard = <p key="keyboard"><b>Keyboard and mouse:</b> WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.</p>;
+  return <>{touchFirst ? [touch, keyboard] : [keyboard, touch]}</>;
+}
+
 export default function WalkMode({ prepareVisit, onClose }: {
   prepareVisit: () => { property: Property; solids: SceneSolids };
   onClose: () => void;
@@ -33,6 +39,7 @@ export default function WalkMode({ prepareVisit, onClose }: {
   const [visit, setVisit] = useState<ReturnType<typeof prepareVisit> | null>(null);
   const [status, setStatus] = useState<WalkStatus | null>(null);
   const [size, setSize] = useState({ width: innerWidth, height: innerHeight });
+  const [touchControls, setTouchControls] = useState(() => window.matchMedia?.('(pointer: coarse)').matches ?? false);
   const startedAt = useRef(0);
   const stickPointer = useRef<number | null>(null);
   const lookPointer = useRef<{ id: number; x: number; y: number } | null>(null);
@@ -42,6 +49,14 @@ export default function WalkMode({ prepareVisit, onClose }: {
   useEffect(() => {
     const resize = () => setSize({ width: innerWidth, height: innerHeight });
     window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize);
+  }, []);
+  useEffect(() => {
+    const pointer = window.matchMedia?.('(pointer: coarse)');
+    if (!pointer) return;
+    const update = () => setTouchControls(pointer.matches);
+    update();
+    pointer.addEventListener('change', update);
+    return () => pointer.removeEventListener('change', update);
   }, []);
   const stageReady = useCallback(() => setReady(true), []);
   useEffect(() => {
@@ -109,9 +124,8 @@ export default function WalkMode({ prepareVisit, onClose }: {
             <img src={character.thumbnailDataUrl} data-thumbnail-source={character.thumbnailUrl} alt="" width="64" height="64" decoding="sync" loading="eager" /><span>{character.label}</span>
           </button>)}
         </div>
-        <div className="world-walk-controls-card"><strong>Ready in ten seconds</strong>
-          <p><b>Keyboard:</b> WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.</p>
-          <p><b>Phone:</b> use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close.</p>
+        <div className="world-walk-controls-card"><strong>How to walk</strong>
+          <ControlsCopy touchFirst={touchControls} />
         </div>
         <button type="button" className="world-walk-primary" onClick={begin}>Start walk</button>
         <p className="world-walk-small">Doors and movement stay in this visit. Your saved design stays as it is.</p>
@@ -128,15 +142,15 @@ export default function WalkMode({ prepareVisit, onClose }: {
           <button type="button" aria-pressed={running} onClick={() => { setRunning(!running); runtime.current?.setRunning(!running); }}>{running ? 'Running' : 'Walk / run'}</button>
           <button type="button" aria-expanded={help} onClick={() => { runtime.current?.clearInput(); setHelp(!help); }}>Controls</button>
         </div>
-        {help && <div className="world-walk-help"><strong>Make yourself at home</strong><p>WASD / arrows: move. Shift: run. Mouse / drag: look. V: first / third person. E: door within 2 m. Esc frees the mouse; press Esc again to exit.</p><p>On a phone, the pad moves forward / back and turns left / right with one thumb.</p><button type="button" onClick={() => setHelp(false)}>Got it</button></div>}
+        {help && <div className="world-walk-help"><strong>How to walk</strong><ControlsCopy touchFirst={touchControls} /><button type="button" onClick={() => setHelp(false)}>Got it</button></div>}
         <div className="world-walk-aim" aria-hidden="true">·</div>
-        <div className="world-walk-door" role="status">{status.blocked ? <span>Step away so the door can move safely.</span> : status.door && <button type="button" onClick={() => runtime.current?.interact()}>{status.door} <kbd>E</kbd></button>}</div>
+        <div className="world-walk-door" role="status">{status.blocked ? <span>Step away so the door can move safely.</span> : status.door && <button type="button" aria-label={status.door} onClick={() => runtime.current?.interact()}>{status.door}{!touchControls && <> <kbd aria-hidden="true">E</kbd></>}</button>}</div>
         <div className="world-walk-stick" role="application" aria-label="Move and turn with one thumb" tabIndex={0}
           onPointerDown={event => { stickPointer.current = event.pointerId; event.currentTarget.setPointerCapture(event.pointerId); moveStick(event); }}
           onPointerMove={moveStick} onPointerUp={stopStick} onPointerCancel={stopStick} onLostPointerCapture={stopStick}>
           <span className="world-walk-stick-knob" /><span className="world-walk-stick-label">Move + turn</span>
         </div>
-        <p className="world-walk-hint">{status.locked ? 'Esc frees the mouse · E doors · V view' : 'Click or drag to look · E doors · V view · Esc exits'}</p>
+        <p className="world-walk-hint">{touchControls ? 'Pad: move + turn · Drag: look · Tap doors · Exit walk: return' : status.locked ? 'Esc frees the mouse · E doors · V view' : 'Click or drag to look · E doors · V view · Esc exits'}</p>
         <a className="world-walk-credit" href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Kenney · CC0</a>
       </>}
     </section>, document.body,
