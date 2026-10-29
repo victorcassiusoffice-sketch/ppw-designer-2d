@@ -1,0 +1,197 @@
+{
+  "at": "2026-10-29T07:00:14.689Z",
+  "baseCommit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+  "label": "r2-candidate",
+  "buildLabel": "r2-final-corrected",
+  "method": "Every HTTP(S) request start through the canvas first-render mark, including unfinished responses and redirects; normalized hashes only for matching. Embedded data URLs are retained separately and never called API traffic. Base52 and both previews serve the OLB shell. Exact file bytes come from completed controlled builds/public files; API sizes remain measured response evidence.",
+  "branches": {
+    "walk": {
+      "perPair": [
+        {
+          "device": "desktop",
+          "run": 1,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 1,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 2,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 2,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 3,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 3,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 4,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 4,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 5,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 5,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        }
+      ],
+      "newRequestNames": [],
+      "missingRequestNames": [],
+      "newRequestNamesAgainstCustom": [
+        "<app>/fonts/inter-ui-latin.woff2"
+      ],
+      "featureRequestsBeforePicture": [],
+      "observedStaticRawDelta": 4866,
+      "observedStaticGzipDelta": 1695,
+      "allSameOlbShell": true,
+      "noNewRequestsEveryPair": true
+    },
+    "site": {
+      "perPair": [
+        {
+          "device": "desktop",
+          "run": 1,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 1,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 2,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 2,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 3,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 3,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 4,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 4,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 5,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 5,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        }
+      ],
+      "newRequestNames": [],
+      "missingRequestNames": [],
+      "newRequestNamesAgainstCustom": [
+        "<app>/fonts/inter-ui-latin.woff2"
+      ],
+      "featureRequestsBeforePicture": [],
+      "observedStaticRawDelta": 5819,
+      "observedStaticGzipDelta": 2156,
+      "allSameOlbShell": true,
+      "noNewRequestsEveryPair": true
+    }
+  }
+}

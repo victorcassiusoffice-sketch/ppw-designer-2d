@@ -1,35 +1,58 @@
 [
   {
     "branch": "walk",
-    "head": "c8941925da4640cf02d6c4ecb864d3914993a180",
+    "head": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
     "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "checkedAt": "2026-10-29T06:42:59.996Z",
     "ancestorExit": 0,
     "unpublishedCommits": [],
+    "protectedFileCount": 353,
     "protectedImplementationAndSettingsDiff": [],
     "modifiedBaseTests": [],
-    "finishDependencyOrEnvDiff": [],
+    "finishDependencyFieldsChanged": [],
+    "finishLockfileDiff": [],
     "apiDiff": [],
-    "worldEvidenceBytes": 781601.0,
+    "routingMatchesBasePlusAuthorizedCatchall": true,
+    "routingNote": "Vercel configuration matches base.",
+    "prohibitedNewPaths": [],
+    "worldEvidenceBytes": 2282473,
     "limitBytes": 5000000,
-    "browserRules": "Pending new candidate UI verification; this static audit does not substitute for it."
+    "workingChanges": [
+      "M docs/world/LESSONS.md",
+      " M docs/world/ROUNDS.md"
+    ],
+    "interpretation": "Protected source includes the full existing src/designer and src/data trees plus named estimator/currency panels and helpers. Existing tests/settings are compared to merged base; Finish dependency/lock changes are compared to the pre-Finish World head. Package build-script changes are reported through Git and are not dependency changes. Browser rules are a separate proof.",
+    "pass": true
   },
   {
     "branch": "site",
-    "head": "7ed40b6bff89067623a4939f251be1ed5cd6e870",
+    "head": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
     "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "checkedAt": "2026-10-29T06:43:00.321Z",
     "ancestorExit": 0,
     "unpublishedCommits": [],
+    "protectedFileCount": 353,
     "protectedImplementationAndSettingsDiff": [],
     "modifiedBaseTests": [],
-    "finishDependencyOrEnvDiff": [],
+    "finishDependencyFieldsChanged": [],
+    "finishLockfileDiff": [],
     "apiDiff": [
       "A\tapi/_lib/site/__tests__/providers.test.ts",
       "A\tapi/_lib/site/handler.ts",
       "A\tapi/_lib/site/providers.ts",
       "M\tapi/orders.ts"
     ],
-    "worldEvidenceBytes": 345605.0,
+    "routingMatchesBasePlusAuthorizedCatchall": true,
+    "routingNote": "The existing Stage2 addition routes /api/site/(.*) to existing /api/orders; all other Vercel configuration matches base.",
+    "prohibitedNewPaths": [],
+    "worldEvidenceBytes": 1846477,
     "limitBytes": 5000000,
-    "browserRules": "Pending new candidate UI verification; this static audit does not substitute for it."
+    "workingChanges": [
+      "M docs/world/LESSONS.md",
+      " M docs/world/ROUNDS.md",
+      "?? work/"
+    ],
+    "interpretation": "Protected source includes the full existing src/designer and src/data trees plus named estimator/currency panels and helpers. Existing tests/settings are compared to merged base; Finish dependency/lock changes are compared to the pre-Finish World head. Package build-script changes are reported through Git and are not dependency changes. Browser rules are a separate proof.",
+    "pass": true
   }
 ]

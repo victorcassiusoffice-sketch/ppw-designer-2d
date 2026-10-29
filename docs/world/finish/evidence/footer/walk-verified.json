@@ -1,0 +1,66 @@
+{
+  "branch": "walk",
+  "expectedHead": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+  "label": "r2-footer-corrected-v1",
+  "exitCode": 0,
+  "tests": [
+    {
+      "title": "olb: Next and Start again remain readable and operable in every theme",
+      "status": "passed",
+      "health": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T06:42:30.577Z"
+      },
+      "minimumContrast": 7.974437546477886,
+      "checks": 12
+    },
+    {
+      "title": "ppw: Next and Start again remain readable and operable in every theme",
+      "status": "passed",
+      "health": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T06:42:36.367Z"
+      },
+      "minimumContrast": 7.974437546477886,
+      "checks": 12
+    },
+    {
+      "title": "olb: Next and Start again remain readable and operable in every theme",
+      "status": "passed",
+      "health": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T06:42:40.128Z"
+      },
+      "minimumContrast": 7.974437546477886,
+      "checks": 12
+    },
+    {
+      "title": "ppw: Next and Start again remain readable and operable in every theme",
+      "status": "passed",
+      "health": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T06:42:43.639Z"
+      },
+      "minimumContrast": 7.974437546477886,
+      "checks": 12
+    }
+  ],
+  "validHeads": true,
+  "passed": true
+}

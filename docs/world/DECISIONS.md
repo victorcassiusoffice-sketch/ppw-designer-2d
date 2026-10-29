@@ -116,3 +116,16 @@ Historical round0 HARDSTOP above is resolved; Finish round1 is active. Productio
 | Lower print/banner scores when page2 lacks the disclaimer | All6 pages were inspected; first/last banner is insufficient | Repeat footer in a reserved named-page margin |
 | Keep9 inherited Lighthouse failures visible |13 safe fixes shipped, no new failures;4 assertions are informative-null and1 public-source-map fix conflicts with policy; safe FX/LCP/CSS work remains | Isolate plumbing without changing primary output or settings; reject if graph/timing regresses |
 | No item is yet exempt under the3-round rule | Round0 was a startup conflict; Round1 is the first genuine measured round | Continue Round2, no handback yet |
+
+## Finish round 2 result decisions
+
+| Choice | Reason / proof | Next action / reversal cost |
+|---|---|---|
+| Restore upstream early natural shading exactly | A numeric gzip pass hid 1,217 rendered bytes of non-seam shader warm-up; Round1 semantic pass was withdrawn | Keep actual feature work deferred; name remaining bootstrap adapters explicitly |
+| Use atomic drawing-buffer sizing without quality changes | Real browser proof removes two redundant 450×225 allocations while preserving DPR, logical/physical size, CSS and viewport behavior | Same renderer/XR assumptions remain tested; no power/antialias/shadow reduction |
+| Paint the static loader while preserving original primary assets; isolate plumbing entry | Film shows actual loader pixels before React; primary non-HTML hashes preserved; 40 formal rows have the same early paths | Preserve every slow row; do not confuse the remaining network/paint gaps with a pass |
+| Keep native margin-box disclaimer and scoped contrast repair | All eight print pages and 96 contrast checks pass on exact source | No user-controlled CSS injection; retain canonical string and screen banners |
+| Keep strict FPS and failed zero-settle input separate | Desktop windows reach exactly 60; one keyboard sample still takes 383.4 ms | Profile the reproduced 444.9 ms diagnostic stall; never hide it behind the median |
+| Preserve unresolved native phone Open tap | Better one-touch harness reaches the door but does not see Close; source cause not yet proved | Inspect actual hit targets/events/state; fix in Round3 if a product failure is established |
+| Retain seven inherited Lighthouse failures with exact causes | Fifteen fixed, no new IDs; four informative-null assertions and private maps conflict with unchanged policy; two CSS cases need separate ownership reasoning | Try isolated pitch base CSS; do not purge reachable Designer styles from initial-view coverage |
+| Continue Round3 without questions or premature final handoff | B, D, F and phone interaction remain failed/unproven after two real rounds | Apply the stated three-consecutive-round rule only when genuinely reached |
