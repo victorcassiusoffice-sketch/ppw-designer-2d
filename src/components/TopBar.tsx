@@ -1781,7 +1781,7 @@ export function TopBar({
             onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
             className={`${BTN} ${roomsMenuOpen ? BTN_ON : BTN_REST} h-11 min-w-0 flex-1 justify-start md:h-10 md:min-w-[80px] md:max-w-[190px] md:flex-none lg:min-w-[104px] xl:min-w-[128px] xl:max-w-[190px] 2xl:max-w-[190px] min-[1700px]:max-w-[260px]`}
             style={{ justifyContent: 'flex-start' }}
-            aria-label={`${property.name}${activeRoom ? ` · ${activeRoom.name}` : ""} · ${drawnRoomCount} — ${t("Open rooms list")}`}
+            aria-label={`${property.name}${activeRoom ? `· ${activeRoom.name}` : ""}· ${drawnRoomCount} — ${t("Open rooms list")}`}
             aria-expanded={roomsMenuOpen}
           >
             <Icon name="list" />
