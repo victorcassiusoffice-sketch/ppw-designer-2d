@@ -242,6 +242,17 @@ export class WalkRuntime {
         this.actions[name] = this.mixer.clipAction(clip);
       }
       this.actions.idle?.play();
+      this.mixer.update(0);
+      this.actor.position.copy(this.walker.position);
+      // Compile the newly attached character and private doors on the actual
+      // visit renderer/camera. Keep the first normal frame's follow history.
+      const initialFollow = this.follow.clone(), initialFollowReady = this.followReady;
+      this.syncView(0);
+      this.follow.copy(initialFollow); this.followReady = initialFollowReady;
+      this.host.scene.updateMatrixWorld(true); this.camera.updateMatrixWorld(true);
+      onProgress?.(`Preparing ${character.label} for your walk…`);
+      await this.prepareScene();
+      if (this.disposed || this.abort.signal.aborted) return;
       this.entryMs = performance.now() - startedAt;
       this.ready = true;
       this.last = performance.now();
@@ -249,7 +260,29 @@ export class WalkRuntime {
     } finally { window.clearTimeout(timeout); }
   }
 
+  private prepareScene(): Promise<void> {
+    const signal = this.abort.signal;
+    const cancelled = () => new Error('Walk preparation was cancelled or took too long. Exit and try again.');
+    if (signal.aborted) return Promise.reject(cancelled());
+    return new Promise((resolve, reject) => {
+      let finished = false;
+      const finish = (succeeded: boolean, error?: unknown) => {
+        if (finished) return;
+        finished = true; signal.removeEventListener('abort', onAbort);
+        if (succeeded) resolve(); else reject(error);
+      };
+      const onAbort = () => finish(false, cancelled());
+      signal.addEventListener('abort', onAbort, { once: true });
+      try {
+        // The shared load deadline also bounds this otherwise non-abortable
+        // promise. Its late resolve/reject stays handled after Exit or timeout.
+        this.host.renderer.compileAsync(this.host.scene, this.camera).then(() => finish(true), error => finish(false, error));
+      } catch (error) { finish(false, error); }
+    });
+  }
+
   keyDown(event: KeyboardEvent): void {
+    if (!this.ready || this.disposed) return;
     const target = event.target as HTMLElement | null;
     if (target?.matches('input,textarea,select') || event.ctrlKey || event.metaKey || event.altKey) return;
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'].includes(event.code)) {
@@ -262,11 +295,15 @@ export class WalkRuntime {
   }
   clearInput(): void { this.keys.clear(); this.stick = { x: 0, y: 0 }; this.inputMeasure = null; this.measurementArmed = false; }
   setStick(x: number, y: number): void {
+    if (!this.ready || this.disposed) return;
     if (y && !this.stick.y) this.measureInput('touch', 'stick');
     this.stick = { x, y };
   }
-  setRunning(value: boolean): void { this.running = value; }
-  toggleView(): void { this.mode = this.mode === 'first' ? 'third' : 'first'; this.clearInput(); this.followReady = false; this.lastStatus = -Infinity; }
+  setRunning(value: boolean): void { if (this.ready && !this.disposed) this.running = value; }
+  toggleView(): void {
+    if (!this.ready || this.disposed) return;
+    this.mode = this.mode === 'first' ? 'third' : 'first'; this.clearInput(); this.followReady = false; this.lastStatus = -Infinity;
+  }
   /** True means this Escape only frees the mouse; the UI exits on false. */
   escape(): boolean {
     if (this.escapeHeld) return true;
@@ -290,7 +327,7 @@ export class WalkRuntime {
       handlerAt: now, source, key, mode: this.mode, x: this.walker.position.x, z: this.walker.position.z };
   }
   lock(): void {
-    if (!this.ready) return;
+    if (!this.ready || this.disposed) return;
     this.unlockRequested = false;
     try {
       // Controls observes pointerlockchange. Catch the browser's asynchronous
@@ -300,11 +337,13 @@ export class WalkRuntime {
     } catch { /* Drag-look remains available. */ }
   }
   dragLook(dx: number, dy: number): void {
+    if (!this.ready || this.disposed) return;
     this.euler.setFromQuaternion(this.look.quaternion, 'YXZ');
     this.euler.y -= dx * .004; this.euler.x = THREE.MathUtils.clamp(this.euler.x - dy * .004, -1.35, 1.35);
     this.look.quaternion.setFromEuler(this.euler);
   }
   interact(): boolean {
+    if (!this.ready || this.disposed) return false;
     this.look.getWorldDirection(this.direction);
     const eye = this.walker.position.clone().add(new THREE.Vector3(0, 1.55, 0));
     const door = interactionDoor(this.world, eye, this.direction, this.retainedDoor, 2);
@@ -314,6 +353,49 @@ export class WalkRuntime {
     this.lastStatus = -Infinity;
     if (!allowed) this.blockedUntil = performance.now() + 2000;
     return allowed;
+  }
+
+  private syncView(dt: number): void {
+    this.euler.setFromQuaternion(this.look.quaternion, 'YXZ');
+    this.actor.visible = this.mode === 'third';
+    this.eye.copy(this.walker.position).add(new THREE.Vector3(0, 1.55, 0));
+    this.eyeHeight = THREE.MathUtils.lerp(this.eyeHeight, this.eye.y, 1 - Math.exp(-18 * dt));
+    this.look.getWorldDirection(this.direction);
+    let firstPersonCamera = this.mode === 'first';
+    if (this.mode === 'first') {
+      this.desired.copy(this.eye); this.desired.y = this.eyeHeight;
+      this.camera.position.copy(pullInCamera(this.world, this.eye, this.desired, .08));
+    }
+    else if (import.meta.env.DEV && this.testCameraBaseline) {
+      // Exact third-person camera formula from 52dfa87:src/walk/runtime.ts.
+      this.desired.copy(this.eye).addScaledVector(this.direction, -3.1).add(new THREE.Vector3(0, .45, 0));
+      this.desired.add(new THREE.Vector3(.4, 0, 0).applyAxisAngle(THREE.Object3D.DEFAULT_UP, this.euler.y));
+      const safe = pullInCamera(this.world, this.eye, this.desired, .18);
+      this.follow.lerp(safe, 1 - Math.exp(-14 * dt));
+      this.camera.position.copy(pullInCamera(this.world, this.eye, this.follow, .18));
+      if (this.camera.position.distanceTo(this.eye) < .8) this.actor.visible = false;
+      this.desired.copy(this.eye).addScaledVector(this.direction, 1.4); this.desired.y -= .45;
+    }
+    else {
+      const view = followCamera(this.world, this.walker.position, this.direction, this.followReady ? this.follow : null, dt, this.walker.height);
+      this.follow.copy(view.position); this.followReady = true;
+      this.camera.position.copy(view.position); this.desired.copy(view.target);
+      firstPersonCamera = view.firstPerson;
+      if (view.firstPerson) this.actor.visible = false;
+    }
+    this.camera.quaternion.copy(this.look.quaternion);
+    if (this.mode === 'third') {
+      this.camera.lookAt(this.desired);
+    }
+    const canvas = this.host.renderer.domElement;
+    const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
+    const fov = aspect < .8 && !firstPersonCamera ? 95 : 65;
+    if (this.camera.aspect !== aspect || this.camera.fov !== fov) { this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
+    for (const door of this.world.doors) {
+      const group = this.doors.get(door.id)!; const pose = doorTransform(door);
+      if (Math.abs(group.quaternion.dot(pose.quaternion)) < .999999) this.host.renderer.shadowMap.needsUpdate = true;
+      group.position.copy(pose.position); group.quaternion.copy(pose.quaternion);
+    }
   }
 
   private tick = (now: number): void => {
@@ -342,45 +424,8 @@ export class WalkRuntime {
         const delta = Math.atan2(Math.sin(angle - this.actor.rotation.y), Math.cos(angle - this.actor.rotation.y));
         this.actor.rotation.y += delta * Math.min(1, dt * 14);
       }
-      this.actor.visible = this.mode === 'third';
-      this.eye.copy(this.walker.position).add(new THREE.Vector3(0, 1.55, 0));
-      this.eyeHeight = THREE.MathUtils.lerp(this.eyeHeight, this.eye.y, 1 - Math.exp(-18 * dt));
-      this.look.getWorldDirection(this.direction);
-      let firstPersonCamera = this.mode === 'first';
-      if (this.mode === 'first') {
-        this.desired.copy(this.eye); this.desired.y = this.eyeHeight;
-        this.camera.position.copy(pullInCamera(this.world, this.eye, this.desired, .08));
-      }
-      else if (import.meta.env.DEV && this.testCameraBaseline) {
-        // Exact third-person camera formula from 52dfa87:src/walk/runtime.ts.
-        this.desired.copy(this.eye).addScaledVector(this.direction, -3.1).add(new THREE.Vector3(0, .45, 0));
-        this.desired.add(new THREE.Vector3(.4, 0, 0).applyAxisAngle(THREE.Object3D.DEFAULT_UP, this.euler.y));
-        const safe = pullInCamera(this.world, this.eye, this.desired, .18);
-        this.follow.lerp(safe, 1 - Math.exp(-14 * dt));
-        this.camera.position.copy(pullInCamera(this.world, this.eye, this.follow, .18));
-        if (this.camera.position.distanceTo(this.eye) < .8) this.actor.visible = false;
-        this.desired.copy(this.eye).addScaledVector(this.direction, 1.4); this.desired.y -= .45;
-      }
-      else {
-        const view = followCamera(this.world, this.walker.position, this.direction, this.followReady ? this.follow : null, dt, this.walker.height);
-        this.follow.copy(view.position); this.followReady = true;
-        this.camera.position.copy(view.position); this.desired.copy(view.target);
-        firstPersonCamera = view.firstPerson;
-        if (view.firstPerson) this.actor.visible = false;
-      }
-      this.camera.quaternion.copy(this.look.quaternion);
-      if (this.mode === 'third') {
-        this.camera.lookAt(this.desired);
-      }
+      this.syncView(dt);
       const canvas = this.host.renderer.domElement;
-      const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
-      const fov = aspect < .8 && !firstPersonCamera ? 95 : 65;
-      if (this.camera.aspect !== aspect || this.camera.fov !== fov) { this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
-      for (const door of this.world.doors) {
-        const group = this.doors.get(door.id)!; const pose = doorTransform(door);
-        if (Math.abs(group.quaternion.dot(pose.quaternion)) < .999999) this.host.renderer.shadowMap.needsUpdate = true;
-        group.position.copy(pose.position); group.quaternion.copy(pose.quaternion);
-      }
       this.host.render(this.camera);
       // Collect only when explicitly armed, and publish once at the deadline.
       // Unlike the historical HUD, this retains long stalls and window tails.

@@ -38,7 +38,7 @@ beforeEach(async () => {
     polygon: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 8, y: 8 }, { x: 0, y: 8 }] }] };
   const source = (p: Property): SceneInput => ({ wallHeightM: 2.7, cameraPos: { x: 8, y: 8, z: 8 }, cameraTarget: { x: 4, y: 4, z: 0 }, rooms: p.rooms.map(room => ({ ...room, items: [] })) });
   render = vi.fn();
-  const host = { scene: new Scene(), renderer: { domElement: canvas, shadowMap: { needsUpdate: false } }, render, release: vi.fn() };
+  const host = { scene: new Scene(), renderer: { domElement: canvas, shadowMap: { needsUpdate: false }, compileAsync: vi.fn(async () => {}) }, render, release: vi.fn() };
   runtime = new WalkRuntime(host as unknown as ConstructorParameters<typeof WalkRuntime>[0], buildingSolids(property, source, 'building', true), property, vi.fn(), vi.fn());
   canvas.addEventListener('world-walk-frame-result', event => results.push((event as CustomEvent<FrameMeasurementResult>).detail));
   await runtime.load(character, now);

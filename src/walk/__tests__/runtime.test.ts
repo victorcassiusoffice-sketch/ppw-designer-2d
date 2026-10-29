@@ -47,7 +47,7 @@ beforeEach(async () => {
   const source = (p: Property): SceneInput => ({ wallHeightM: 2.7, cameraPos: { x: 8, y: 8, z: 8 }, cameraTarget: { x: 4, y: 4, z: 0 },
     rooms: p.rooms.map(room => ({ ...room, items: [] })) });
   render = vi.fn(); onExit = vi.fn();
-  const host = { scene: new Scene(), renderer: { domElement: canvas, shadowMap: { needsUpdate: false } }, render, release: vi.fn() };
+  const host = { scene: new Scene(), renderer: { domElement: canvas, shadowMap: { needsUpdate: false }, compileAsync: vi.fn(async () => {}) }, render, release: vi.fn() };
   runtime = new WalkRuntime(host as unknown as ConstructorParameters<typeof WalkRuntime>[0], buildingSolids(property, source, 'building', true), property,
     status => statuses.push(status), onExit);
   await runtime.load(character, now);
