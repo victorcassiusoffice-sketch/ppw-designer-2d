@@ -3,8 +3,6 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  canvasSiteArea,
-  canvasSitePolygon,
   installCanvasSiteAdapter,
   useCanvasSiteProjection,
   type CanvasSiteProjection,
@@ -24,12 +22,12 @@ const outline = () => makeSite([
 let root: Root;
 let host: HTMLDivElement;
 let stop = () => {};
-let observed: { site: Site | null; projection?: CanvasSiteProjection; polygon: Polygon | null; area: number };
+let observed: { site: Site | null; projection?: CanvasSiteProjection; polygon?: Polygon; area?: number };
 let renderCount: number;
 function CanvasConsumer() {
   const site = usePropertyStore(state => state.property.site ?? null);
   const projection = useCanvasSiteProjection(site);
-  observed = { site, projection, polygon: canvasSitePolygon(site, projection), area: canvasSiteArea(site, projection) };
+  observed = { site, projection, polygon: projection?.polygon, area: projection?.areaM2 };
   renderCount++;
   return <><output>{projection?.label}</output><svg>{projection?.annotation({ pxPerMetre: 20, scale: 2, line: (points, width) => <polyline points={points.join(' ')} stroke="#123456" strokeWidth={width} /> })}</svg></>;
 }
@@ -59,14 +57,14 @@ afterEach(async () => {
 });
 
 describe('deferred geographic plan projection', () => {
-  it('keeps no-site and original legacy rectangle/area behavior without activation', async () => {
+  it('does not project no-site or legacy data without activation', async () => {
     await mount();
-    expect(observed.polygon).toBeNull();
-    expect(observed.area).toBe(0);
+    expect(observed.polygon).toBeUndefined();
+    expect(observed.area).toBeUndefined();
     await act(async () => usePropertyStore.getState().setSite({ ...legacy, originM: { x: -3, y: 7 } }));
     expect(observed.projection).toBeUndefined();
-    expect(observed.polygon).toEqual([{ x: -3, y: 7 }, { x: 7, y: 7 }, { x: 7, y: 17 }, { x: -3, y: 17 }]);
-    expect(observed.area).toBe(legacy.widthM * legacy.depthM);
+    expect(observed.polygon).toBeUndefined();
+    expect(observed.area).toBeUndefined();
     expect(host.textContent).toBe('');
     expect(host.querySelector('polyline')).toBeNull();
   });
@@ -75,8 +73,8 @@ describe('deferred geographic plan projection', () => {
     const world = outline();
     await mount({ ...legacy, world });
     expect(observed.projection).toBeUndefined();
-    expect(observed.polygon).toBeNull();
-    expect(observed.area).toBe(0);
+    expect(observed.polygon).toBeUndefined();
+    expect(observed.area).toBeUndefined();
     expect(Object.isFrozen(world)).toBe(false);
     expect(host.textContent).toBe('');
     expect(host.querySelector('polyline')).toBeNull();
@@ -86,7 +84,7 @@ describe('deferred geographic plan projection', () => {
     const world = validateWorld(outline())!;
     await mount({ ...legacy, world });
     expect(Object.isFrozen(world)).toBe(true);
-    expect(observed.polygon).toBeNull();
+    expect(observed.polygon).toBeUndefined();
     await act(async () => hydrateCurrentSite());
     expect(observed.polygon).toBe(world.polygon);
     expect(observed.projection).toBeDefined();
@@ -125,12 +123,12 @@ describe('deferred geographic plan projection', () => {
     Object.freeze(invalid);
     await act(async () => usePropertyStore.getState().setSite({ ...legacy, world: invalid }));
     expect(observed.projection).toBeUndefined();
-    expect(observed.polygon).toBeNull();
-    expect(observed.area).toBe(0);
+    expect(observed.polygon).toBeUndefined();
+    expect(observed.area).toBeUndefined();
     await act(async () => hydrateCurrentSite());
     expect(observed.site).toEqual(legacy);
-    expect(observed.polygon).toEqual([{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 10 }, { x: 0, y: 10 }]);
-    expect(observed.area).toBe(100);
+    expect(observed.polygon).toBeUndefined();
+    expect(observed.area).toBeUndefined();
     expect(host.querySelector('polyline')).toBeNull();
   });
 
@@ -143,15 +141,15 @@ describe('deferred geographic plan projection', () => {
     expect(observed.projection?.label).toContain('Curepipe');
     expect(observed.area).toBeCloseTo(500, 5);
     await act(async () => usePropertyStore.getState().setSite(null));
-    expect(observed.polygon).toBeNull();
-    expect(observed.area).toBe(0);
+    expect(observed.polygon).toBeUndefined();
+    expect(observed.area).toBeUndefined();
     expect(host.querySelector('polyline')).toBeNull();
     stop();
     stop();
     await act(async () => usePropertyStore.getState().setSite({ ...legacy, world: sampleSite(2) }));
     expect(Object.isFrozen(observed.site?.world)).toBe(false);
-    expect(observed.polygon).toBeNull();
-    expect(observed.area).toBe(0);
+    expect(observed.polygon).toBeUndefined();
+    expect(observed.area).toBeUndefined();
     await act(async () => root.unmount());
     root = createRoot(host);
     const before = renderCount;

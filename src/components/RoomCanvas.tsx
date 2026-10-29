@@ -58,7 +58,7 @@ import { productVisible, serviceFixtureDiscipline } from '../designer/discipline
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
-import { canvasSiteArea, canvasSitePolygon, useCanvasSiteProjection } from './canvasSiteBridge';
+import { useCanvasSiteProjection } from './canvasSiteBridge';
 import type { PlacedItem } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
 import { useCart } from '../store/cartStore';
@@ -589,9 +589,18 @@ export function RoomCanvas({
     [allRooms, belowLevelId],
   );
   /** The land plot as a polygon in world metres, or null = unlimited land. */
-  const sitePolygon = useMemo<Polygon | null>(
-    () => canvasSitePolygon(site, siteProjection), [site, siteProjection],
-  );
+  const sitePolygon = useMemo<Polygon | null>(() => {
+    if (!site) return null;
+    if (site.world !== undefined) return siteProjection?.polygon ?? null;
+    const ox = site.originM?.x ?? 0;
+    const oy = site.originM?.y ?? 0;
+    return [
+      { x: ox, y: oy },
+      { x: ox + site.widthM, y: oy },
+      { x: ox + site.widthM, y: oy + site.depthM },
+      { x: ox, y: oy + site.depthM },
+    ];
+  }, [site, siteProjection]);
   // D5 — selecting an item in ANY room must also move focus to that room,
   // or the Sims loop (place → rotate / delete) is dead everywhere except
   // the active room: DetailsPanel, FloatingCluster and placementActions all
@@ -623,7 +632,7 @@ export function RoomCanvas({
   /** Site area + built area, for the capacity readout. */
   const capacity = useMemo(() => {
     const built = drawnRooms.reduce((sum, r) => sum + polygonArea(r.polygon), 0);
-    const plot = canvasSiteArea(site, siteProjection);
+    const plot = site?.world !== undefined ? siteProjection?.areaM2 ?? 0 : site ? site.widthM * site.depthM : 0;
     return { built, plot, pct: plot > 0 ? Math.round((built / plot) * 100) : 0 };
   }, [drawnRooms, site, siteProjection]);
 

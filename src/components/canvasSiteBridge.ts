@@ -26,20 +26,3 @@ export function installCanvasSiteAdapter(next: Adapter | undefined): void {
 export function useCanvasSiteProjection(site: Site | null): CanvasSiteProjection | undefined {
   return useSyncExternalStore(subscribe, snapshot, snapshot)?.(site);
 }
-
-/** Original rectangular plot fallback; an opaque extension remains withheld. */
-export function canvasSitePolygon(site: Site | null, projection?: CanvasSiteProjection): Polygon | null {
-  if (!site) return null;
-  if (site.world !== undefined) return projection?.polygon ?? null;
-  const ox = site.originM?.x ?? 0;
-  const oy = site.originM?.y ?? 0;
-  return [
-    { x: ox, y: oy },
-    { x: ox + site.widthM, y: oy },
-    { x: ox + site.widthM, y: oy + site.depthM },
-    { x: ox, y: oy + site.depthM },
-  ];
-}
-export function canvasSiteArea(site: Site | null, projection?: CanvasSiteProjection): number {
-  return site?.world !== undefined ? projection?.areaM2 ?? 0 : site ? site.widthM * site.depthM : 0;
-}
