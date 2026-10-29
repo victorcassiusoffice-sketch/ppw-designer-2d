@@ -1,75 +1,90 @@
-# Round2 Walk interaction and frame evidence
+# Round 3 Walk input, frames and functional evidence
 
-Exact deployed head: `d78064f9f57ed6e060d9782036b4a8b7a7e95451`. All seven before/after health pairs matched. No source changes during the exclusive campaign or later diagnostic lease. The initial five checks released at06:52:28Z; the later two diagnostics released at07:06:35Z. All owned browsers/processes closed and the shared lock was absent at each release.
+Exact source: `52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e`. Every selected proof has exact preview health before and after; all five required files remain unchanged. Full-precision values below use the same zero-settle input and strict40s frame protocols as Round2. Missing observations remain UNPROVEN; failed samples are never dropped.
 
-## Gate results
+| Gate | Result |
+| --- | --- |
+| chooserUnder1Second | PASS |
+| laptopInputUnder50 | PASS |
+| strictFps | FAIL |
+| originalBackgroundOwnership | PASS |
+| desktopFunctional | PASS |
+| phoneFunctional | FAIL |
 
-Chooser, original designer pause/restoration, all four strict FPS windows, and desktop functional checks PASS. Laptop input and phone door functional check FAIL; every failed sample remains in the evidence.
+## Preparation experiment and entry cost
 
-| Device/view | Completed frames /40s | Strict FPS |1% low FPS |Longest interval ms |Unfinished tail ms |Result |
-|---|---:|---:|---:|---:|---:|---|
-|desktop third|2400|60|47.47774479592525|31.399999976158142|2.100000023841858|PASS|
-|desktop first|2400|60|48.51425102150114|34|13.699999928474426|PASS|
-|phone third|2340|58.5|16.091183375016048|349.7999999523163|5.700000047683716|PASS|
-|phone first|2374|59.35|26.49299040396077|215.89999997615814|15.599999904632568|PASS|
+Decision: **retain**. Retain provisionally for the completed Round3 source comparison, with attribution unresolved and a matched-delivery current/omit-preparation experiment planned for Round4. The normal total entry increases are retained, but slower resource delivery confounds the desktop comparison and existing observations do not establish the net first-visible-ready cost of compilation. The source-injected diagnostic measures a preparation await, not its additive counterfactual cost: first rendering may otherwise perform some of this work. Finish step5 has no tradeoff exemption; an attributable worsening must be reverted, and this decision does not claim no-regression compliance is proven.
 
-Every frame window has40000 active milliseconds and zero paused time. Every completed interval, armed partial interval and unfinished tail remains in raw evidence. The unchanged FPS protocol explicitly warms3s initially and1s after the view switch. Independent rAF and historical HUD values remain separate in JSON; neither replaces completed renders. No screenshot or interval deletion occurred.
+Observed benefit: Current measured laptop input outcomes improve from a Round2 maximum383.4ms failure to all10 samples below50ms (maximum36.39999997615814ms). This is an observed result, not proof that compileAsync caused the improvement. The independent strict59.825fps third-person failure remains failed.
 
-## Zero-settle input v3
+| Device | Round2 raw entry ms | Current raw entry ms | Delta ms |
+| --- | --- | --- | --- |
+| desktop | 2836.899999976158 | 5990.399999976158 | 3153.5 |
+| phone | 2977.100000023842 | 3736.7000000476837 | 759.6000000238419 |
 
-Round2 removes Round1's explicit1000ms post-ready and400ms view-switch waits. It retains native event timestamps and measures through the first changed-position render submission, not display photon latency. Five keyboard samples per view/device and five additional native-touch samples per phone view are preserved.
+Round2 costs are read directly from the original d78064f input proof, not rounded display text. Start-to-ready includes actual preparation. compileAsync does not prove the cause of earlier GPU stalls, and the measured sample is not a controlled causal isolation of every intervening change.
 
-**desktop** chooser event→decoded frame 48.300000071525574ms; original call→visible 137ms; call→decoded 152ms. Entry Start→ready 2836.899999976158ms is separate.
+## Every input sample
 
-- Keyboard third: `[13.5,9.200000047683716,9.5,8.399999976158142,383.39999997615814]`; median9.5, max383.39999997615814ms.
-- Keyboard first: `[25.700000047683716,11,6.299999952316284,8.600000023841858,11.399999976158142]`; median11, max25.700000047683716ms.
+| Device | Kind | View | Round2 values ms | Current values ms | Current maximum | Under50 |
+| --- | --- | --- | --- | --- | --- | --- |
+| desktop | keyboard | third | 13.5, 9.200000047683716, 9.5, 8.399999976158142, 383.39999997615814 | 36.39999997615814, 16, 6.899999976158142, 17.799999952316284, 14.100000023841858 | 36.39999997615814 | 5 |
+| desktop | keyboard | first | 25.700000047683716, 11, 6.299999952316284, 8.600000023841858, 11.399999976158142 | 5.5, 10.399999976158142, 11.600000023841858, 13.100000023841858, 15.899999976158142 | 15.899999976158142 | 5 |
+| phone | keyboard | third | 18, 7.299999952316284, 7.399999976158142, 11.299999952316284, 10.100000023841858 | 38.799999952316284, 11.099999904632568, 13, 12.100000023841858, 12 | 38.799999952316284 | 5 |
+| phone | keyboard | first | 7.299999952316284, 11.199999928474426, 339.1999999284744, 9.600000023841858, 15.700000047683716 | 3.799999952316284, 6.700000047683716, 11.5, 235.69999992847443, 12.100000023841858 | 235.69999992847443 | 4 |
+| phone | nativeTouch | third | 54.200000047683716, 44.10000002384186, 44.40000009536743, 46.5, 44.10000002384186 | 59.10000002384186, 385.3000000715256, 39, 311.5, 42.199999928474426 | 385.3000000715256 | 2 |
+| phone | nativeTouch | first | 38.5, 43.199999928474426, 44.89999997615814, 39.89999997615814, 117.89999997615814 | 54.60000002384186, 187.10000002384186, 38.700000047683716, 43.300000071525574, 41.60000002384186 | 187.10000002384186 | 3 |
 
-**phone** chooser event→decoded frame 49.39999997615814ms; original call→visible 152ms; call→decoded 157ms. Entry Start→ready 2977.100000023842ms is separate.
+The compact retains event-to-handler and handler-to-render arrays and exact timestamps for every sample. Phone native touch follows keyboard sampling; its50ms comparison is informational. No post-ready or view-switch delay was added. Outliers remain in diagnostic.stalls; no cause is inferred from duration alone.
 
-- Keyboard third: `[18,7.299999952316284,7.399999976158142,11.299999952316284,10.100000023841858]`; median10.100000023841858, max18ms.
-- Keyboard first: `[7.299999952316284,11.199999928474426,339.1999999284744,9.600000023841858,15.700000047683716]`; median11.199999928474426, max339.1999999284744ms.
-- Native touch third: `[54.200000047683716,44.10000002384186,44.40000009536743,46.5,44.10000002384186]`; median44.40000009536743, max54.200000047683716ms.
-- Native touch first: `[38.5,43.199999928474426,44.89999997615814,39.89999997615814,117.89999997615814]`; median43.199999928474426, max117.89999997615814ms.
+## Completed-render frame windows
 
-Laptop third-person sample4 is383.39999997615814ms: event9789.700000047684, handler9789.899999976158, rendered10173.100000023842. Only0.19999992847442627ms is event dispatch;383.2000000476837ms follows the handler. The phone339.1999999284744ms keyboard stall is similarly post-handler. Conversely, phone native-touch117.89999997615814ms is103.19999992847443ms before its handler and14.700000047683716ms handler→render. These distinct mechanisms are not conflated. Phone timing is diagnostic; the hard<50ms requirement specifies laptop.
+| Device | View | Frames | Active ms | Paused ms | FPS | 1% low | Max interval ms | Max tail ms | Gate |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| desktop | third | 2393 | 40000 | 0 | 59.825 | 35.37214443004173 | 131 | 2.600000023841858 | FAIL |
+| desktop | first | 2400 | 40000 | 0 | 60 | 46.15384615384615 | 24.199999928474426 | 13.899999976158142 | PASS |
+| phone | third | 2400 | 40000 | 0 | 60 | 43.81161006141584 | 25.5 | 1.100000023841858 | PASS |
+| phone | first | 2400 | 40000 | 0 | 60 | 48.533872610284504 | 21.899999976158142 | 1.8000000715255737 | PASS |
 
-No resource request overlapped either formal keyboard stall. Last desktop completion was Draco WASM at8864.899999976158ms, before the late input. The separate profile below locates a GPU wait signature but cannot prove the exact operation behind either formal sample.
+All original completed intervals and tails remain in the raw frame file. Independent rAF cadence and historical HUD values remain separate; neither replaces completed-render FPS. Initial3s warm-up and first-person1s switch wait are unchanged and do not apply to input measurements.
 
-## Original designer ownership and functional behavior
+## Original scene and functional behavior
 
-On both viewports the original frame count is2 before chooser and remains2 during chooser,750ms later, after Start, at ready and after movement. After Exit it resumes to10 desktop /3 phone. Saved property is8821bytes with SHA25619b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c; both editing/rendered camera strings restore exactly. Zero errors or attempted writes.
+| Device | Original pause/resume | Exact restoration | Background overall |
+| --- | --- | --- | --- |
+| desktop | PASS | PASS | PASS |
+| phone | PASS | PASS | PASS |
 
-Desktop native movement/stop, actual door approach/open/close in both views, five pointer-lock Escape cycles and exact restoration all pass. Phone native touch movement/stop and Exit/restoration pass, but phone v1 fails at “Heading probe blocked” before reaching a door. The fixed140ms keyboard pulse and220ms status wait did not observe>.025m displacement; original probe coordinates were not persisted before the assertion. Screenshot shows a valid scene, with no page/console/HTTP error. Cause is unresolved. That failed check remains failed alongside the separate v2 below.
+| Device | Check | Result | Failure |
+| --- | --- | --- | --- |
+| desktop | movement-restore | PASS |  |
+| desktop | doors-both-views | PASS |  |
+| desktop | five-escape-cycles | PASS |  |
+| phone | single-touch-movement-stop-restore | PASS |  |
+| phone | single-touch-controls | PASS |  |
+| phone | single-touch-doors-both-views | FAIL | Error: Door Open door attempt 1: click-not-observed; all evidence retained |
+| phone | native-exit | PASS |  |
 
-The original phone door harness still used keyboard movement/E, so that campaign does not prove a fully one-pointer route. Human10-second comprehension and physical one-hand comfort remain unmeasured. Original frame stability also does not prove asynchronous detail/shader work stopped.
+Desktop evidence retains both door views, five actual Escape cycles, and saved property/editing/rendered camera restoration. Native phone v6 retains click/hit-target/status evidence, the bounded safety-retreat rule, one-contact/key counters, and the legacy final-only run assertion separately. Current success would not erase earlier no-click failures or establish their cause.
 
-## Separate retained phone correction and bounded profile
+## Sources and limitations
 
-A later exclusive diagnostic lease ran native-touch phone v2 and a15-second desktop CPU/trace profile. Both processes/browsers closed; lock absent and no matching processes at07:06:35Z. Formal timings and FPS above are unchanged.
+- [input](results/r3-walk-input-v3/walk-performance-walk.json)
+- [frames](results/r3-walk-frames-v2/walk-framerate-walk.json)
+- [background](results/r3-walk-background-v1/background-ownership.json)
+- [desktop](results/r3-walk-functional-desktop-v2/walk-functional-walk.json)
+- [phone](results/r3-walk-functional-phone-v6/walk-functional-walk.json)
 
-Phone v2 uses at most one active native touch and zero keyboard events. It passes movement/stop/restoration, run toggle and animation, view switching, Controls and Exit. The bounded movement probe logs every position/event before assertions, and this attempt successfully reaches an Open door prompt. Native tap at(195,607) produces pointerdown/up and touchstart/end, but Close door does not appear within30seconds; the screenshot still shows Open door. No errors or writes occurred. Click-event delivery and immediate post-tap status were not recorded, so the cause is unresolved. Both phone failures remain in the compact JSON; neither is turned into a pass.
+- Every current failure remains; earlier v3/v4 no-click phone failures and the heavily instrumented v5 pass on unchanged old application code remain separate.
+- Native touch latencies are informational; the under50ms hard input target applies to laptop.
+- Chooser decoded-frame timing is a render opportunity, not a photon measurement.
+- No physical-phone, first-time-human comprehension or one-hand ergonomics study was performed.
+- Normal total entry is5990.399999976158ms desktop and3736.7000000476837ms phone versus2836.899999976158 and2977.100000023842 in Round2; none of these increases is discarded.
+- Retained resource comparison has last-selected-response to ready-observation gaps200.10000002384186→362.2999999523163ms desktop and176.20000004768372→982ms phone; these combine decode, setup, preparation, rendering and observation.
+- Injected diagnosticv2 records preparation await228.80000007152557ms desktop and362.09999990463257ms phone, with source-response interception and no normal-source timing claim. It measures setup/promise waiting/resumption, not pure GPU time or net added ready delay.
+- First rendered-status observation followed the diagnostic await by34ms desktop and481.10000002384186ms phone; compilation does not establish that all cold work is prepared.
+- There is no measured causal link between the load-only wait and the isolated131ms frame interval32.55seconds into the formal desktop window.
+- The current phone formalv6 no-click failure remains failed. A later native-contact diagnostic pass is separate and does not replace it.
+- Round4 must retain all matched-delivery comparison cases and reverse preparation if a net worsening is attributable; no hidden settling, quality reduction or threshold change is allowed.
 
-Source review shows that a delivered click may reject an unsafe door swing and display Step away for2seconds. v2 did not observe this transient status, so its timeout does not distinguish click delivery, changed reach, or a correct safety rejection. A later bounded diagnostic must capture button bounds/hit target, click and status changes, without bypassing collision safety.
-
-The separate profile reproduces444.89999997615814ms input delay at event18030.900000095367→handler18031.200000047684→moved-render18475.800000071526. Renderer-main sampled idle is438.413ms. No renderer-main task>=50ms overlaps it; the resumed private Walk tick is6.253ms. Current deployed snippets map runtime-CPxmO2GM.js:column68413 to the Walk tick and ThreeStage-Xk2UXML6.js:column79420 to the existing beginWalk.render method, rather than assuming old minified symbols.
-
-A CrGpuMain task lasts495.856ms, with nested WebGL/CommandBuffer flush495.814/495.812ms and only about1.2ms thread CPU. It spans17972.717→18468.529ms; Walk resumes at18469.847ms. Trace/navigation mark agreement is0.018999952317244606ms. This supports a GPU/driver wait or scheduling stall rather than a long collision/HUD JavaScript task. The trace does not expose the underlying GL command or establish shader compilation as its cause. Original frames remain3 and paused in chooser/ready/window-end snapshots. All CPU samples, trace events, source snippets and clock evidence are retained.
-
-The long PutChanged batch identifies handler .WebGL-0x3224048cbc00, on current GL context0x5, with put_offset22799. The earlier three same-handler batches end at offsets7369,13640,20269. Its start17972.719ms precedes the failing input by58.18100009536743ms and overlaps the preceding Walk tick17969.399–17972.900ms, so it processes earlier client commands. Offsets do not disclose GL opcodes.
-
-- Handler `.WebGL-0x322401136c00`: 287 batches, first9435.561ms, last14336.486ms; 280 before chooser and 0 after ready; current context(s) 0x4.
-- Handler `.WebGL-0x3224048cbc00`: 4523 batches, first12934.972ms, last32908.413ms; 0 before chooser and 4269 after ready; current context(s) 0x5.
-
-Exactly two WebGL handlers appear. The earlier original-designer handler has zero batches after ready. The later handler begins after private stage creation and continues throughout the private Walk visit; this supports private Walk context ownership by lifecycle inference. The trace contains no direct canvas-to-handler or route-id binding and does not identify the driver operation, shader or texture responsible. Deferred compileAsync on the selected avatar/private scene is only a reversible Round3 hypothesis; it has not been implemented or measured.
-
-## Proof paths
-
-- background: `results/r2-walk-background-v1/background-ownership.json`
-- input: `results/r2-walk-input-v3/walk-performance-walk.json`
-- frames: `results/r2-walk-frames-v2/walk-framerate-walk.json`
-- desktop: `results/r2-walk-functional-desktop-v2/walk-functional-walk.json`
-- phone: `results/r2-walk-functional-phone-v1/walk-functional-walk.json`
-- phoneCorrected: `results/r2-walk-functional-phone-touch-v2/walk-functional-walk.json`
-- profile: `results/r2-walk-input-stall-profile-v2/input-stall-profile-summary.json`
-
-The compact JSON preserves the Round1 top-level input/frames/functional schema and adds explicit protocol, background ownership, tails, diagnostic limitations and release evidence. All raw keyboard/touch values and failed functional evidence remain intact.
+Campaign release: {"atUtc":"2026-10-29T18:49:13.0660400Z","allFiveProcessesExited":true,"allBrowsersClosed":true,"sharedLockAbsent":true,"matchingHarnessOrPlaywrightProcesses":0}. This recorded release does not assert that a later coordinator campaign has also stopped.

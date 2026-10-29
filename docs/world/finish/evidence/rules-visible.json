@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-10-29T07:06:58.521Z",
+  "startedAt": "2026-10-29T19:22:23.317Z",
   "harnessVersion": 3,
   "allowedMeeting": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour",
   "method": "Read-only visible-UI audit on exact current previews, desktop and phone. Initial route is /demo?view=3d&pitch=1. Walk chooser is opened without starting; Site requires the established 2D plan route with site=1 and is opened offline (no live=1). Both previews are checked; Site uses its established 2D launcher. Earlier failed route experiments remain in Round1 evidence. Visible fields/links/text and all meeting-like hrefs retained. Instructional phone wording is reported separately from contact fields/links. Network writes blocked and counted.",
@@ -119,7 +119,7 @@
         {
           "name": "walk-chooser",
           "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
-          "text": "Walk mode\nExplore your design\nExit walk ×\n\nA WALK THROUGH YOUR HOME\n\nChoose your character\nMaya\nLea\nAlex\nSam\nReady in ten seconds\n\nKeyboard: WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.\n\nPhone: use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close.\n\nStart walk\n\nDoors and movement stay in this visit. Your saved design stays as it is.\n\nRoof coverings are hidden so connected roof terraces remain accessible.\n\nCharacters by Kenney · CC0",
+          "text": "Walk mode\nExplore your design\nExit walk ×\n\nA WALK THROUGH YOUR HOME\n\nChoose your character\nMaya\nLea\nAlex\nSam\nHow to walk\n\nKeyboard and mouse: WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.\n\nTouch: Use the pad to move and turn. Drag the view to look. Tap a door button when close. Tap Exit walk to return to your design.\n\nStart walk\n\nDoors and movement stay in this visit. Your saved design stays as it is.\n\nRoof coverings are hidden so connected roof terraces remain accessible.\n\nCharacters by Kenney · CC0",
           "fields": [],
           "links": [
             {
@@ -132,9 +132,7 @@
           "priceLines": [],
           "contactLinks": [],
           "contactFields": [],
-          "phoneMentions": [
-            "Phone: use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close."
-          ],
+          "phoneMentions": [],
           "contactText": [],
           "wrongMeetingLinks": [],
           "passed": true
@@ -256,7 +254,7 @@
         {
           "name": "walk-chooser",
           "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/demo?view=3d&pitch=1",
-          "text": "Walk mode\nExit walk ×\n\nA WALK THROUGH YOUR HOME\n\nChoose your character\nMaya\nLea\nAlex\nSam\nReady in ten seconds\n\nKeyboard: WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.\n\nPhone: use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close.\n\nStart walk\n\nDoors and movement stay in this visit. Your saved design stays as it is.\n\nRoof coverings are hidden so connected roof terraces remain accessible.\n\nCharacters by Kenney · CC0",
+          "text": "Walk mode\nExit walk ×\n\nA WALK THROUGH YOUR HOME\n\nChoose your character\nMaya\nLea\nAlex\nSam\nHow to walk\n\nTouch: Use the pad to move and turn. Drag the view to look. Tap a door button when close. Tap Exit walk to return to your design.\n\nKeyboard and mouse: WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.\n\nStart walk\n\nDoors and movement stay in this visit. Your saved design stays as it is.\n\nRoof coverings are hidden so connected roof terraces remain accessible.\n\nCharacters by Kenney · CC0",
           "fields": [],
           "links": [
             {
@@ -269,9 +267,7 @@
           "priceLines": [],
           "contactLinks": [],
           "contactFields": [],
-          "phoneMentions": [
-            "Phone: use one thumb to move and turn on the pad. Drag the open view to look. Tap the door button when close."
-          ],
+          "phoneMentions": [],
           "contactText": [],
           "wrongMeetingLinks": [],
           "passed": true
@@ -807,7 +803,7 @@
   ],
   "healthBefore": {
     "walk": {
-      "at": "2026-10-29T07:06:59.226Z",
+      "at": "2026-10-29T19:22:24.020Z",
       "target": "walk",
       "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
       "status": 200,
@@ -815,13 +811,13 @@
         "ok": true,
         "service": "ppw-designer-2d",
         "env": "preview",
-        "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+        "commit": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
         "sentryConfigured": true,
-        "timestamp": "2026-10-29T07:07:00.303Z"
+        "timestamp": "2026-10-29T19:22:24.120Z"
       }
     },
     "site": {
-      "at": "2026-10-29T07:06:59.916Z",
+      "at": "2026-10-29T19:22:24.700Z",
       "target": "site",
       "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
       "status": 200,
@@ -829,15 +825,15 @@
         "ok": true,
         "service": "ppw-designer-2d",
         "env": "preview",
-        "commit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+        "commit": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
         "sentryConfigured": true,
-        "timestamp": "2026-10-29T07:07:01.019Z"
+        "timestamp": "2026-10-29T19:22:24.797Z"
       }
     }
   },
   "healthAfter": {
     "walk": {
-      "at": "2026-10-29T07:07:43.745Z",
+      "at": "2026-10-29T19:22:56.837Z",
       "target": "walk",
       "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
       "status": 200,
@@ -845,13 +841,13 @@
         "ok": true,
         "service": "ppw-designer-2d",
         "env": "preview",
-        "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+        "commit": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
         "sentryConfigured": true,
-        "timestamp": "2026-10-29T07:07:44.852Z"
+        "timestamp": "2026-10-29T19:22:56.935Z"
       }
     },
     "site": {
-      "at": "2026-10-29T07:07:45.734Z",
+      "at": "2026-10-29T19:22:57.432Z",
       "target": "site",
       "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
       "status": 200,
@@ -859,13 +855,13 @@
         "ok": true,
         "service": "ppw-designer-2d",
         "env": "preview",
-        "commit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+        "commit": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
         "sentryConfigured": true,
-        "timestamp": "2026-10-29T07:07:46.837Z"
+        "timestamp": "2026-10-29T19:22:57.541Z"
       }
     }
   },
   "healthStable": true,
   "passed": true,
-  "endedAt": "2026-10-29T07:07:45.734Z"
+  "endedAt": "2026-10-29T19:22:57.432Z"
 }

@@ -1,8 +1,7 @@
 {
-  "at": "2026-10-29T07:00:14.689Z",
+  "at": "2026-10-29T19:22:03.944Z",
   "baseCommit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
-  "label": "r2-candidate",
-  "buildLabel": "r2-final-corrected",
+  "label": "r3-candidate",
   "method": "Every HTTP(S) request start through the canvas first-render mark, including unfinished responses and redirects; normalized hashes only for matching. Embedded data URLs are retained separately and never called API traffic. Base52 and both previews serve the OLB shell. Exact file bytes come from completed controlled builds/public files; API sizes remain measured response evidence.",
   "branches": {
     "walk": {
@@ -90,14 +89,10 @@
       ],
       "newRequestNames": [],
       "missingRequestNames": [],
-      "newRequestNamesAgainstCustom": [
-        "<app>/fonts/inter-ui-latin.woff2"
-      ],
       "featureRequestsBeforePicture": [],
-      "observedStaticRawDelta": 4866,
-      "observedStaticGzipDelta": 1695,
-      "allSameOlbShell": true,
-      "noNewRequestsEveryPair": true
+      "noNewRequestsEveryPair": true,
+      "observedStaticRawDelta": 4418,
+      "observedStaticGzipDelta": 1640
     },
     "site": {
       "perPair": [
@@ -184,14 +179,10 @@
       ],
       "newRequestNames": [],
       "missingRequestNames": [],
-      "newRequestNamesAgainstCustom": [
-        "<app>/fonts/inter-ui-latin.woff2"
-      ],
       "featureRequestsBeforePicture": [],
-      "observedStaticRawDelta": 5819,
-      "observedStaticGzipDelta": 2156,
-      "allSameOlbShell": true,
-      "noNewRequestsEveryPair": true
+      "noNewRequestsEveryPair": true,
+      "observedStaticRawDelta": 5867,
+      "observedStaticGzipDelta": 2225
     }
   }
 }

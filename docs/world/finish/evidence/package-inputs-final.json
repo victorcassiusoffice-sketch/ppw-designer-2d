@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "heads": {
+    "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "walk": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+    "site": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447"
+  },
+  "inputs": {
+    "summary": "results/r3-candidate/summary.json",
+    "network": "results/r3-candidate/network-audit.json",
+    "loads": "results/r3-candidate/load-all.json",
+    "attribution": "build-attribution-final-v5.json",
+    "semantic": "semantic-gate-final-v5.json",
+    "buildBase": "builds/r3-final-v5/base/audit.json",
+    "buildWalk": "builds/r3-final-v5/walk/audit.json",
+    "buildSite": "builds/r3-final-v5/site/audit.json",
+    "startup": "startup-analysis-final.json",
+    "lighthouse": "lighthouse-classification-final-52fa408-7a73b25.json",
+    "themeWalk": "theme-tests/r3-theme-final-v4/walk/verified.json",
+    "themeSite": "theme-tests/r3-theme-final-v4/site/verified.json",
+    "themeWalkReview": "theme-tests/r3-theme-final-v4/walk/visual-review.json",
+    "themeSiteReview": "theme-tests/r3-theme-final-v4/site/visual-review.json",
+    "walk": "R3-WALK-INPUT-FRAMES-FUNCTIONAL.json",
+    "walkReview": "R3-WALK-INPUT-FRAMES-FUNCTIONAL.md",
+    "siteDirectory": "site-g-7a73b25-20261029",
+    "sitePlan": "results/r3-site-plan-7a73b25-v2/plan-projection.json",
+    "sitePlanReview": "results/r3-site-plan-7a73b25-v2/visual-review.json",
+    "printDirectory": "site-print-7a73b25-20261029",
+    "rules": "rules-audit-round-end.json",
+    "visibleRules": "results/r3-rules/visible-rules.json",
+    "ci": "ci-status-final-52fa408-7a73b25.json",
+    "publication": "source-publication-final-v5.json"
+  },
+  "walkProofs": {
+    "background": "results/r3-walk-background-v1/background-ownership.json",
+    "input": "results/r3-walk-input-v3/walk-performance-walk.json",
+    "frames": "results/r3-walk-frames-v2/walk-framerate-walk.json",
+    "desktop": "results/r3-walk-functional-desktop-v2/walk-functional-walk.json",
+    "phone": "results/r3-walk-functional-phone-v6/walk-functional-walk.json"
+  },
+  "walkHarnesses": {
+    "background": {
+      "path": "harness/walk-background.mjs",
+      "sha256": "24f0646cd7a06421303f5fb3c5c7732c3772a7b457f27e8615ff45803f7e304c"
+    },
+    "input": {
+      "path": "harness/walk-performance.mjs",
+      "sha256": "18538c1f624468cf708c6b8e23bfc1396ec0d2a198f6d0ecdc3f6fbe5b2e41c0"
+    },
+    "frames": {
+      "path": "harness/walk-framerate.mjs",
+      "sha256": "e0f0c9bfc65268ff2796415c81222e653c71d70eb40e60ec9f71381f68fc994e"
+    },
+    "desktop": {
+      "path": "harness/walk-functional-lock.mjs",
+      "sha256": "8b77895f352adf7552661d2ec42a4e1fd1a348f5a3e8fe355715255e9aa0335c"
+    },
+    "phone": {
+      "path": "harness/walk-functional-phone-current.mjs",
+      "sha256": "9e7b6d15821f5b8e05c210d9b002cd2b097c8b0e5c0d498af11b149e77523601"
+    },
+    "lib": {
+      "path": "harness/lib.mjs",
+      "sha256": "94e5aadab69ae764cbdf8ec5fd6d5c2941c0b5043c711fbc4e85e3039b5c8b6f"
+    },
+    "config": {
+      "path": "run-config.mjs",
+      "sha256": "368e88c550f01617991450846e588388ee951f10809d069a834262d02e9a1d8b"
+    }
+  },
+  "retainedDocsBytes": {
+    "walk": 864789,
+    "site": 428793
+  }
+}

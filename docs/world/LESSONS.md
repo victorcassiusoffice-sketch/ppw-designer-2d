@@ -37,3 +37,13 @@
 - Finish2: Functional navigation needs bounded observable progress and retained pre-assertion evidence; a fixed pulse can fail without identifying why. Native phone tests must actually use touch throughout when claiming one-pointer operation.
 - Finish2: responseStart includes connection/TLS setup. Retain that decomposition and do not call it pure server latency; FCP-before-CSS-completion is not evidence that CSS blocked paint.
 - Finish2: Original first-use and one-hand criteria are human behavior; scripts prove geometry and interaction, not comprehension or physical comfort. Remove unmeasured promises, retain score limitations.
+
+- Finish3: Do not revert a small base-relative difference as unrelated cleanup before checking its commit history and regression tests. Restoring two room-label spaces removed the proven Round1 accessibility fix; both its unchanged test and actual Lighthouse caught the regression. Restore the tested behavior, preserve the failure, and classify existing accessibility repairs separately from feature bootstrap.
+- Finish3: Contrast checks can pass while excluded label spans and generated counters remain unreadable. Inspect actual screenshots and every text style affected by a background change; retain the numerical pass and visual failure separately, then extend the regression to the missed selectors.
+
+- Finish3: Thousands of sequential browser round trips can exhaust a broad visual test before its checks finish. Batch reads from each stable DOM state, prove exact per-node equivalence, and preserve selectors, compositing, contrast thresholds, timeout and all failed attempts; a faster harness is not a changed product result.
+
+- Finish3: A native button can receive trusted down/up without a click. Record target continuity, default prevention and implicit capture/release; distinguish finite native contact from a near-zero-duration automated tap without declaring the duration alone causal.
+- Finish3: Correct DOM text/bounds do not prove painted text. Inspect interaction states and pixels; preserve a blank capture even when later frames pass, and keep automated and visual gate results separate.
+- Finish3: An exact deployed Git head can have different generated chunk filenames from a local controlled build. Bind response instrumentation to retained, reviewed deployed bytes and their SHA, not a guessed local filename; retain a no-injection attempt as invalid instrumentation.
+- Finish3: A measured preparation await is not its additive counterfactual cost, and an improved outcome does not prove its cause. Retain all entry/touch/FPS changes; use matched delivery to assess net regression and obey the no-tradeoff reversion rule.
