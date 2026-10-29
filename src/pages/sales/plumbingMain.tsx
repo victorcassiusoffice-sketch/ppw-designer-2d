@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { AppPreferencesProvider } from '../../i18n/AppPreferences';
 import { BrowserRouter } from 'react-router-dom';
 // Match the original cascade: preferences/tactile, reset/fonts, brand, sales.
-import '../../index.css';
+import './plumbingBase.css';
 import '../../brand/olb.css';
 import PlumbingPitchPage from './PlumbingPitchPage';
 import { startPlumbingDiagnostics } from './plumbingStartup';
