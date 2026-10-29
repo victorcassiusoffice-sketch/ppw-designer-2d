@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { DoubleSide, Ray, Vector3 } from 'three';
+import { DoubleSide, Ray, Scene, Vector3 } from 'three';
 import type { Property } from '../../store/propertyStore';
 import type { SceneInput } from '../../designer/roomView3d';
 import { buildingSolids } from '../../designer/buildingScene';
@@ -10,6 +10,7 @@ import { COURTS_PRODUCTS } from '../../demo/courts';
 import { placedItemElevationCm } from '../../designer/placedItemElevation';
 import { wallJoinery } from '../../components/three/joinery';
 import { createWalkWorld } from '../scene';
+import { hideStaticDoorLeaves } from '../stageSurface';
 import { capsuleClear, createWalker, followCamera, groundHeight, interactionDoor, nearestDoor, pullInCamera, setDoorAngle, stepWalker, toggleDoor } from '../collision';
 import { findWalkSpawn } from '../spawn';
 import type { WalkerState, WalkWorld } from '../types';
@@ -200,16 +201,18 @@ describe('manual doors and camera', () => {
     expect(tip.z).toBeCloseTo(flipFacing ? -1.1 : 1.1);
   });
 
-  it('preserves the arch in a curved door collider and marks its original leaf for replacement', () => {
+  it('preserves the arch in a curved door collider and defers original-leaf replacement', () => {
     const p = property(); p.rooms[0].openings![0].shape = 'arch'; p.rooms[0].openings![0].heightM = 2.2;
     const w = world(p), door = w.doors[0];
     expect(door.bvh.raycastFirst(new Ray(new Vector3(.55, 2.1, 1), new Vector3(0, 0, -1)), DoubleSide)).not.toBeNull();
     expect(door.bvh.raycastFirst(new Ray(new Vector3(.02, 2.1, 1), new Vector3(0, 0, -1)), DoubleSide)).toBeNull();
     const solids = buildingSolids(p, source, 'building', true), wall = solids.walls.find(wall => wall.openings.some(o => o.id === 'entry'))!;
     const joinery = wallJoinery(wall.lengthM, wall.thicknessM, wall.heightM, wall.openings);
-    const leaves: string[] = [];
-    joinery.traverse(object => { if (object.userData.walkDoorLeaf) leaves.push(object.userData.openingId); });
-    expect(leaves).toEqual(['entry']);
+    const scene = new Scene(); scene.add(joinery);
+    const leaves = hideStaticDoorLeaves(scene);
+    expect(leaves).toHaveLength(1);
+    expect(leaves[0].visible).toBe(false);
+    expect(leaves[0].userData).toEqual({});
     joinery.traverse(object => { const mesh = object as import('three').Mesh; if (mesh.isMesh) mesh.geometry.dispose(); });
   });
 

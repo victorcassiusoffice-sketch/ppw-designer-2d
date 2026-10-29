@@ -230,9 +230,19 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
   return root;
 }
 
+export interface ThreeStageSurface {
+  scene: THREE.Scene;
+  renderer: THREE.WebGLRenderer;
+  fill: { readonly current: THREE.DirectionalLight | null };
+  sky: { readonly current: THREE.Mesh | null };
+  bounds: { readonly current: { centre: THREE.Vector3; radius: number } };
+  fogClearance: number;
+  release(): void;
+}
+
 export interface ThreeStageHandle {
   /** A private deferred viewer may render its own camera without changing the design. */
-  beginWalk(): { scene: THREE.Scene; renderer: THREE.WebGLRenderer; render(camera: THREE.PerspectiveCamera): void; release(): void } | null;
+  beginWalk(): ThreeStageSurface | null;
   viewHover(x:number|null,y?:number):void;
   hitErase(x:number,y:number):ThreeEraseTarget|null;
   setEraseHover(target:ThreeEraseTarget|null,floorOutline?:readonly {x:number;y:number}[]):void;
@@ -1708,20 +1718,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if (!scene || !renderer) return null;
         walkOwnsFrames.current = true;
         return {
-          scene, renderer,
-          render(view) {
-            if (fillRef.current) {
-              fillRef.current.position.copy(view.position).add(new THREE.Vector3(0, 4, 0));
-              fillRef.current.target.position.copy(view.position);
-              fillRef.current.target.updateMatrixWorld();
-            }
-            if (skyRef.current) skyRef.current.position.set(view.position.x, 0, view.position.z);
-            if (scene.fog instanceof THREE.Fog) {
-              scene.fog.near = view.position.distanceTo(boundsRef.current.centre) + boundsRef.current.radius + FOG_CLEARANCE_M;
-              scene.fog.far = scene.fog.near + Math.max(60, boundsRef.current.radius * 8);
-            }
-            renderer.render(scene, view);
-          },
+          scene, renderer, fill: fillRef, sky: skyRef,
+          bounds: boundsRef, fogClearance: FOG_CLEARANCE_M,
           release() { walkOwnsFrames.current = false; requestRender(); },
         };
       },

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
-import { AnimationClip, BoxGeometry, DirectionalLight, Fog, Group, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene } from 'three';
+import { AnimationClip, BoxGeometry, DirectionalLight, Fog, Group, Mesh, MeshStandardMaterial, Object3D, PerspectiveCamera, Scene, Vector3 } from 'three';
 import { buildingSolids } from '../../designer/buildingScene';
 import type { SceneInput } from '../../designer/roomView3d';
 import type { Property } from '../../store/propertyStore';
@@ -26,7 +26,7 @@ let now: number, frame: FrameRequestCallback | undefined, statuses: WalkStatus[]
 let compile: ReturnType<typeof vi.fn<(scene: Scene, camera: PerspectiveCamera) => Promise<void>>>;
 let render: ReturnType<typeof vi.fn>, release: ReturnType<typeof vi.fn>, request: ReturnType<typeof vi.fn>;
 let compilation: ReturnType<typeof deferred<void>>, entered: ReturnType<typeof deferred<void>>;
-let renderer: { domElement: HTMLCanvasElement; shadowMap: { enabled: boolean; type: number; needsUpdate: boolean }; toneMapping: number; toneMappingExposure: number; outputColorSpace: string; compileAsync: typeof compile };
+let renderer: { domElement: HTMLCanvasElement; shadowMap: { enabled: boolean; type: number; needsUpdate: boolean }; toneMapping: number; toneMappingExposure: number; outputColorSpace: string; compileAsync: typeof compile; render: typeof render };
 let assetGeometryDispose: MockInstance<() => void>, assetMaterialDispose: MockInstance<() => void>, originalDispose: MockInstance<() => void>;
 
 beforeEach(() => {
@@ -47,7 +47,9 @@ beforeEach(() => {
   scene = new Scene(); scene.fog = new Fog('#d8e1d9', 30, 100);
   light = new DirectionalLight(0xffffff, 2); light.castShadow = true; light.shadow.mapSize.set(2048, 2048); scene.add(light);
   original = new Mesh(new BoxGeometry(1, 2, .1), new MeshStandardMaterial({ color: '#ab9988' }));
-  original.userData.walkDoorLeaf = true; scene.add(original); originalDispose = vi.spyOn(original.material, 'dispose');
+  const originalJoinery = new Group(); originalJoinery.userData.joinery = 'door';
+  originalJoinery.add(...Array.from({ length: 6 }, () => new Object3D()), original); scene.add(originalJoinery);
+  originalDispose = vi.spyOn(original.material, 'dispose');
   asset = new Group(); asset.name = 'selected-avatar';
   const mesh = new Mesh(new BoxGeometry(.4, 1.7, .3), new MeshStandardMaterial({ color: '#456789', roughness: .72 }));
   mesh.position.y = .85; asset.add(mesh);
@@ -65,8 +67,8 @@ beforeEach(() => {
   compilation = deferred<void>(); entered = deferred<void>();
   compile = vi.fn(() => { entered.resolve(); return compilation.promise; });
   render = vi.fn(); release = vi.fn();
-  renderer = { domElement: canvas, shadowMap: { enabled: true, type: 1, needsUpdate: false }, toneMapping: 0, toneMappingExposure: 1, outputColorSpace: 'srgb', compileAsync: compile };
-  runtime = new WalkRuntime({ scene, renderer, render, release } as unknown as ConstructorParameters<typeof WalkRuntime>[0],
+  renderer = { domElement: canvas, shadowMap: { enabled: true, type: 1, needsUpdate: false }, toneMapping: 0, toneMappingExposure: 1, outputColorSpace: 'srgb', compileAsync: compile, render };
+  runtime = new WalkRuntime({ scene, renderer, fill: { current: null }, sky: { current: null }, bounds: { current: { centre: new Vector3(), radius: 4 } }, fogClearance: 3, release } as unknown as ConstructorParameters<typeof WalkRuntime>[0],
     buildingSolids(property, source, 'building', true), property, value => statuses.push(value), vi.fn());
 });
 afterEach(() => {
@@ -92,7 +94,7 @@ describe('selected Walk scene preparation', () => {
     expect(preparedScene).toBe(scene); expect(camera).toBeInstanceOf(PerspectiveCamera);
     expect(scene.getObjectByName('selected-avatar')).toBe(asset);
     expect(asset.parent?.position.length()).toBeGreaterThan(1);
-    const door = scene.children.find(child => child instanceof Group && child !== asset.parent)!;
+    const door = scene.children.find(child => child instanceof Group && child !== asset.parent && child !== original.parent)!;
     expect(door.position.length()).toBeGreaterThan(1);
     expect(camera.position.length()).toBeGreaterThan(1); expect(camera.fov).toBe(expectedFov); expect(camera.aspect).toBe(width / height);
     expect(quality()).toEqual(beforeQuality); expect(original.visible).toBe(false);
@@ -102,10 +104,13 @@ describe('selected Walk scene preparation', () => {
     now = 1450; compilation.resolve(); await loading;
     expect(request).toHaveBeenCalledOnce(); expect(statuses).toEqual([]);
     frame!(now);
-    expect(render).toHaveBeenCalledWith(camera); expect(pose(camera)).toEqual(preparedPose);
+    expect(render).toHaveBeenCalledWith(scene, camera); expect(pose(camera)).toEqual(preparedPose);
     expect(asset.parent!.position.toArray()).toEqual(actorPosition); expect(door.position.toArray()).toEqual(doorPosition);
     expect(statuses[0]).toMatchObject({ entryMs: 450, mode: 'third', animation: 'idle', frames: 1 });
-    expect(quality()).toEqual(beforeQuality); expect(assetGeometryDispose).not.toHaveBeenCalled(); expect(assetMaterialDispose).not.toHaveBeenCalled();
+    expect((scene.fog as Fog).near).toBeCloseTo(camera.position.length() + 7);
+    expect((scene.fog as Fog).far - (scene.fog as Fog).near).toBeCloseTo(60);
+    expect(quality()).toEqual({ ...beforeQuality, fog: scene.fog?.toJSON() });
+    expect(assetGeometryDispose).not.toHaveBeenCalled(); expect(assetMaterialDispose).not.toHaveBeenCalled();
     runtime.dispose();
     expect(release).toHaveBeenCalledOnce(); expect(original.visible).toBe(true); expect(originalDispose).not.toHaveBeenCalled();
     expect(JSON.stringify(property)).toBe(saved); expect(localStorage.getItem('preparation-design')).toBe(saved);

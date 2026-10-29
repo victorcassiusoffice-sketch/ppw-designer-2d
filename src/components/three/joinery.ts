@@ -113,8 +113,6 @@ export function doorObject(o: WallOpeningSolid, thicknessM: number, wallHeightM:
     const lw = w - 2 * lining - 0.006;
     const lh = h - lining - 0.008;
     const leafMesh = box(lw, lh, DOOR_LEAF_THICKNESS_M, leaf, cx, o.bottomM + lh / 2 + 0.004, zLeaf, true);
-    leafMesh.userData.walkDoorLeaf = true;
-    leafMesh.userData.openingId = o.id;
     g.add(leafMesh);
     // Six raised panels (two columns, three rows) on both faces read as a panelled door.
     const px = lw * 0.36;
@@ -187,8 +185,6 @@ export function wallJoinery(lengthM: number, thicknessM: number, heightM: number
         if (profile.length >= 3) {
           const shape = new THREE.Shape(profile.map(p => new THREE.Vector2(p.x, p.y)));
           const leaf = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: DOOR_LEAF_THICKNESS_M, bevelEnabled: false }), joineryMaterials().leaf);
-          leaf.userData.walkDoorLeaf = true;
-          leaf.userData.openingId = o.id;
           leaf.position.z = (thicknessM - DOOR_LEAF_THICKNESS_M) / 2;
           leaf.castShadow = true;
           leaf.receiveShadow = true;

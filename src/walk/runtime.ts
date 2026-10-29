@@ -13,6 +13,7 @@ import { createWalkWorld } from './scene';
 import { capsuleClear, createWalker, doorTransform, followCamera, groundHeight, interactionDoor, pullInCamera, stepWalker, toggleDoor } from './collision';
 import { findWalkSpawn } from './spawn';
 import { WalkFrameMeasurement, type FrameMeasurementResult } from './frameMeasurement';
+import { hideStaticDoorLeaves, renderWalkSurface } from './stageSurface';
 
 type Host = NonNullable<ReturnType<ThreeStageHandle['beginWalk']>>;
 export interface WalkStatus {
@@ -141,13 +142,7 @@ export class WalkRuntime {
     this.controls.addEventListener('unlock', this.onUnlock);
     this.controls.addEventListener('lock', this.onLock);
     this.controls.minPolarAngle = .2; this.controls.maxPolarAngle = Math.PI - .2;
-    host.scene.traverse(object => {
-      if (object.userData.walkDoorLeaf && object.visible) { object.visible = false; this.hidden.push(object); }
-      if (object.userData.joinery === 'door') {
-        // Existing joinery keeps its six frame/lining parts; private hinged leaves replace the rest.
-        for (const child of object.children.slice(6)) if (child.visible) { child.visible = false; this.hidden.push(child); }
-      }
-    });
+    this.hidden = hideStaticDoorLeaves(host.scene);
     const material = new THREE.MeshStandardMaterial({ color: '#e3dccd', roughness: .72 });
     const handleMaterial = new THREE.MeshStandardMaterial({ color: '#657477', metalness: .65, roughness: .3 });
     for (const door of this.world.doors) {
@@ -426,7 +421,7 @@ export class WalkRuntime {
       }
       this.syncView(dt);
       const canvas = this.host.renderer.domElement;
-      this.host.render(this.camera);
+      renderWalkSurface(this.host, this.camera);
       // Collect only when explicitly armed, and publish once at the deadline.
       // Unlike the historical HUD, this retains long stalls and window tails.
       if (this.frameMeasurement) this.emitFrameMeasurement(this.frameMeasurement.rendered(performance.now()));
