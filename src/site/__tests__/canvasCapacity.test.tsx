@@ -21,8 +21,12 @@ vi.mock('react-konva', async () => {
   };
 });
 const original = usePropertyStore.getState().property;
+const withRoom = { ...original, activeRoomId: 'under-label', rooms: [{
+  id: 'under-label', name: 'Room beneath annotation', placedItems: [],
+  polygon: [{ x: 1, y: 1 }, { x: 3, y: 1 }, { x: 3, y: 3 }, { x: 1, y: 3 }],
+}] };
 const legacy = { widthM: 10, depthM: 10, originM: { x: 0, y: 0 } };
-type DrawingProps = { children?: ReactNode; name?: string; points?: number[]; text?: string };
+type DrawingProps = { children?: ReactNode; name?: string; points?: number[]; text?: string; listening?: boolean };
 function drawingNode(children: ReactNode, accepts: (props: DrawingProps) => boolean): DrawingProps | undefined {
   for (const child of Children.toArray(children)) {
     if (!isValidElement<DrawingProps>(child)) continue;
@@ -55,27 +59,39 @@ afterEach(async () => {
 describe('actual RoomCanvas capacity readout', () => {
   it('shows the legacy rectangular quantity but no pending-world quantity, then shows canonical concave area', async () => {
     await act(async () => {
-      usePropertyStore.setState({ property: { ...original, site: legacy } });
+      usePropertyStore.setState({ property: { ...withRoom, site: legacy } });
       root.render(<MemoryRouter><RoomCanvas /></MemoryRouter>);
     });
     expect(capacityText()).toContain('Plot 100 m²');
     const transform = JSON.parse(host.querySelector('[data-view-transform]')!.getAttribute('data-view-transform')!);
     expect(drawingNode(siteDrawing()!.children, props => Boolean(props.points))?.points?.map(value => value / transform.pxPerMetre))
       .toEqual([0, 0, 10, 0, 10, 10, 0, 10]);
+    expect(drawingNode(siteDrawing()!.children, props => Boolean(props.text))?.text).toBe('PLOT 10 × 10 m · 100 m²');
+    expect(drawingNode(canvas.children, props => props.name === 'site-annotation')).toBeUndefined();
     const world = makeSite([
       { x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 4 },
       { x: 4, y: 4 }, { x: 4, y: 10 }, { x: 0, y: 10 },
     ].map(point => toLonLat(point, [57.3776792, -20.3292161])), 'Concave plot', { x: 0, y: 0 });
-    await act(async () => usePropertyStore.setState({ property: { ...original, site: { ...legacy, world } } }));
+    await act(async () => usePropertyStore.setState({ property: { ...withRoom, site: { ...legacy, world } } }));
     expect(capacityText()).toBeUndefined();
     expect(siteDrawing()).toBeUndefined();
+    expect(drawingNode(canvas.children, props => props.name === 'site-annotation')).toBeUndefined();
     await act(async () => hydrateCurrentSite());
     expect(capacityText()).toContain('Plot 64 m²');
     expect(capacityText()).not.toContain('Plot 100 m²');
     const accepted = usePropertyStore.getState().property.site!.world as ReturnType<typeof makeSite>;
     expect(drawingNode(siteDrawing()!.children, props => Boolean(props.points))?.points)
       .toEqual(accepted.polygon.flatMap(point => [point.x * transform.pxPerMetre, point.y * transform.pxPerMetre]));
-    expect(drawingNode(siteDrawing()!.children, props => Boolean(props.text))?.text)
-      .toBe('Concave plot · N ↑ · boundary drawn / typed by you');
+    // The real RoomCanvas places the annotation after all room/item layers.
+    // It cannot take room pointer events, and legacy text stays in its old layer.
+    const layers = Children.toArray(canvas.children).filter(isValidElement<DrawingProps>);
+    const roomLayer = layers.findIndex(layer => drawingNode(layer.props.children, props => props.name === 'room-poly'));
+    const annotationLayer = layers.findIndex(layer => layer.props.name === 'site-annotation');
+    expect(roomLayer).toBeGreaterThanOrEqual(0);
+    expect(annotationLayer).toBe(layers.length - 1);
+    expect(annotationLayer).toBeGreaterThan(roomLayer);
+    expect(layers[annotationLayer].props.listening).toBe(false);
+    expect(drawingNode(siteDrawing()!.children, props => Boolean(props.text))).toBeUndefined();
+    expect(usePropertyStore.getState().property.rooms).toEqual(withRoom.rooms);
   });
 });

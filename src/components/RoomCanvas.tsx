@@ -4538,17 +4538,16 @@ export function RoomCanvas({
                 strokeWidth={1.5}
                 dash={[10, 6]}
               />
-              <Text
+              {!siteProjection && <Text
                 x={sitePolygon[0].x * pxPerMetre + 10 / viewport.scale}
                 y={sitePolygon[0].y * pxPerMetre + 8 / viewport.scale}
-                text={siteProjection?.label ?? `PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
+                text={`PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
                 fontSize={measureFontSize(viewport.scale, 11)}
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
                 letterSpacing={1.5 / viewport.scale}
                 fill={DIM_LINE}
-              />
-              {siteProjection?.annotation({ pxPerMetre, scale: viewport.scale, line: (points, width) => <Line points={points} stroke={DIM_LINE} strokeWidth={width} /> })}
+              />}
             </Group>
           )}
 
@@ -5540,6 +5539,7 @@ export function RoomCanvas({
           closed={removeHover.kind==='item'||removeHover.kind==='floor'}
           fill={removeHover.kind==='item'||removeHover.kind==='floor'?'rgba(208,100,65,0.22)':undefined}
           stroke="#c66441" strokeWidth={4/viewport.scale} dash={[8/viewport.scale,5/viewport.scale]} /></Layer>}
+        {visible.landscape && siteProjection?.annotation({ pxPerMetre, viewport, size: stageSize, container: containerRef.current, Layer, Rect, Line, Text, ink: buildPalette.ink, paper: buildPalette.ground })}
       </Stage>}
       {viewMode !== '3d' && <OpeningSelectionEditor />}
 

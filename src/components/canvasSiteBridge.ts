@@ -1,12 +1,23 @@
 import { useSyncExternalStore, type ReactNode } from 'react';
-import type { Polygon } from '../lib/geometry';
+import type { Polygon, Viewport } from '../lib/geometry';
 import type { Site } from '../store/propertyStore';
 
 export interface CanvasSiteProjection {
   polygon: Polygon;
   areaM2: number;
   label: string;
-  annotation: (view: { pxPerMetre: number; scale: number; line: (points: number[], width: number) => ReactNode }) => ReactNode;
+  annotation: (view: {
+    pxPerMetre: number;
+    viewport: Viewport;
+    size: { width: number; height: number };
+    container: HTMLElement | null;
+    Layer: typeof import('react-konva').Layer;
+    Rect: typeof import('react-konva').Rect;
+    Line: typeof import('react-konva').Line;
+    Text: typeof import('react-konva').Text;
+    ink: string;
+    paper: string;
+  }) => ReactNode;
 }
 type Adapter = (site: Site | null) => CanvasSiteProjection | undefined;
 let adapter: Adapter | undefined;

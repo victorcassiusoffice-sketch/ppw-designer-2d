@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { act } from 'react';
+import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Layer, Rect, Line, Text } from 'react-konva';
 import {
   installCanvasSiteAdapter,
   useCanvasSiteProjection,
@@ -12,6 +13,14 @@ import { usePropertyStore, type Site } from '../../store/propertyStore';
 import { hydrateCurrentSite, startSiteHydration, validateWorld } from '../hydration';
 import { makeSite, toLonLat } from '../geometry';
 import { sampleSite } from '../sample';
+
+vi.mock('react-konva', () => ({
+  Layer: ({ children }: { children: ReactNode }) => <g>{children}</g>,
+  Rect: ({ fill }: { fill: string }) => <rect fill={fill} />,
+  Line: ({ points, stroke, strokeWidth }: { points: number[]; stroke: string; strokeWidth: number }) =>
+    <polyline points={points.join(' ')} stroke={stroke} strokeWidth={strokeWidth} />,
+  Text: ({ text }: { text: string }) => <text>{text}</text>,
+}));
 
 const original = usePropertyStore.getState().property;
 const legacy: Site = { widthM: 10, depthM: 10, originM: { x: 0, y: 0 } };
@@ -29,7 +38,9 @@ function CanvasConsumer() {
   const projection = useCanvasSiteProjection(site);
   observed = { site, projection, polygon: projection?.polygon, area: projection?.areaM2 };
   renderCount++;
-  return <><output>{projection?.label}</output><svg>{projection?.annotation({ pxPerMetre: 20, scale: 2, line: (points, width) => <polyline points={points.join(' ')} stroke="#123456" strokeWidth={width} /> })}</svg></>;
+  return <><output>{projection?.label}</output><svg>{projection?.annotation({ pxPerMetre: 20,
+    viewport: { x: 0, y: 0, scale: 2 }, size: { width: 800, height: 600 }, container: null,
+    Layer, Rect, Line, Text, ink: '#123456', paper: '#faf9f5' })}</svg></>;
 }
 async function mount(site?: Site) {
   await act(async () => {
@@ -104,9 +115,13 @@ describe('deferred geographic plan projection', () => {
     expect(isRectInsidePolygon({ x: 1, y: 1, w: 1, h: 1 }, observed.polygon!)).toBe(true);
     expect(host.querySelector('output')?.textContent).toBe('Concave plot · N ↑ · boundary drawn / typed by you');
     const arrow = host.querySelector('polyline')!;
-    expect(arrow.getAttribute('points')).toBe('0 -6 0 -21 -2.5 -17 0 -21 2.5 -17');
+    const points = arrow.getAttribute('points')!.split(' ').map(Number);
+    expect(points.every(coordinate => coordinate >= 4)).toBe(true);
+    expect(points[3]).toBeLessThan(points[1]); // North stays up, inside the drawable area.
+    expect(host.querySelector('text')?.textContent?.replace(/\s+/g, ' ')).toBe(observed.projection?.label);
     expect(arrow.getAttribute('stroke')).toBe('#123456');
     expect(arrow.getAttribute('stroke-width')).toBe('0.75');
+    expect(host.querySelector('rect')?.getAttribute('fill')).toBe('#faf9f5');
     expect(usePropertyStore.getState().property.rooms).toBe(rooms);
     const projection = observed.projection;
     const before = renderCount;
