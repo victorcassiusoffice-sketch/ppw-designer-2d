@@ -5,8 +5,11 @@ test.use({ launchOptions: { args: ['--host-resolver-rules=MAP *.vercel.app 216.1
 // Include transparent ancestor surfaces and the retained PPW ivory gradient.
 // The new dark surfaces and enquiry status backgrounds are opaque.
 type TextPseudo = '::before' | '::placeholder' | null;
-async function contrast(locator: Locator, pseudo: TextPseudo = null) {
-  return locator.evaluate((element, pseudo) => {
+async function contrasts(locator: Locator, pseudo: TextPseudo = null, onlyOwnText = false) {
+  return locator.evaluateAll((elements, { pseudo, onlyOwnText }) => elements.filter(element =>
+    !onlyOwnText || (!element.closest('[aria-hidden="true"]') &&
+      Array.from(element.childNodes).some(child => child.nodeType === 3 && child.textContent?.trim())),
+  ).map(element => {
     const rgba = (value: string): number[] => {
       const channels = value.match(/[\d.]+/g)!.map(Number);
       return [channels[0], channels[1], channels[2], channels[3] ?? 1];
@@ -50,7 +53,13 @@ async function contrast(locator: Locator, pseudo: TextPseudo = null) {
     return { color: style.color, background: style.backgroundColor, gradients, ratio,
       fontSize: style.fontSize, fontWeight: style.fontWeight, content: style.content, display: style.display,
       outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth };
-  }, pseudo);
+  }), { pseudo, onlyOwnText });
+}
+
+async function contrast(locator: Locator, pseudo: TextPseudo = null) {
+  const values = await contrasts(locator, pseudo);
+  expect(values).toHaveLength(1);
+  return values[0];
 }
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -84,13 +93,14 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         expect(reading.ratio, label).toBeGreaterThanOrEqual(4.5);
       };
       const measureText = async (label: string) => {
-        const text = page.locator('.sales-content :is(h1, h2, h3, p, span, strong, em, a, summary, label, li, figcaption, button)');
-        expect(await text.count()).toBeGreaterThan(0);
-        for (let index = 0; index < await text.count(); index++) {
-          const node = text.nth(index);
-          if (!await node.isVisible() || await node.evaluate(element => !!element.closest('[aria-hidden="true"]'))) continue;
-          if (!await node.evaluate(element => Array.from(element.childNodes).some(child => child.nodeType === 3 && child.textContent?.trim()))) continue;
-          await measure(node, `${label}/text/${index}`);
+        // Playwright applies the same visibility predicate as isVisible(). Read
+        // this stable chapter in one round trip, retaining every own-text node.
+        const text = page.locator('.sales-content :is(h1, h2, h3, p, span, strong, em, a, summary, label, li, figcaption, button)').filter({ visible: true });
+        const values = await contrasts(text, null, true);
+        expect(values.length).toBeGreaterThan(0);
+        for (const [index, reading] of values.entries()) {
+          readings.push({ label: `${label}/text/${index}`, ...reading });
+          expect(reading.ratio, `${label}/text/${index}`).toBeGreaterThanOrEqual(4.5);
         }
       };
       const measurePlaceholders = async (label: string, count: number) => {
