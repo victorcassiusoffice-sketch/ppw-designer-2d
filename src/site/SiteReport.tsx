@@ -64,6 +64,13 @@ export default function SiteReport({
     v.toLocaleString('en-GB', { maximumFractionDigits: d, minimumFractionDigits: d });
   return (
     <article className="site-report" aria-label="Site planning report">
+      {/* This stylesheet contains only the trusted constant, never site input.
+          Raw style text also preserves CSS quotes in static PDF rendering. */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `@media print { @page olb-site-report { @bottom-center { content: ${JSON.stringify(REPORT_BANNER)}; } } }`,
+        }}
+      />
       <p className="site-banner">{REPORT_BANNER}</p>
       <h2>{site.name || 'Site report'}</h2>
       <p>{boundaryLabel(site)}</p>

@@ -63,9 +63,24 @@ try {
       await page.getByRole('button', { name: 'Print / save PDF', exact: true }).click();
       row.printButtonLifecycle = await page.evaluate(() => window.__sitePrintActive === true && !document.body.classList.contains('printing-site'));
       await page.evaluate(() => document.body.classList.add('printing-site'));
+      await page.emulateMedia({ media: 'print' });
+      row.printLayout = await page.evaluate(() => {
+        const selectors = ['html', 'body', '.site-backdrop', '.site-workspace', '.site-scroll', '.site-report', '.site-report-print-footer'];
+        return selectors.map(selector => {
+          const element = document.querySelector(selector), style = getComputedStyle(element), rect = element.getBoundingClientRect();
+          return { selector, rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+            position: style.position, top: style.top, bottom: style.bottom, height: style.height,
+            minHeight: style.minHeight, display: style.display, overflow: style.overflow,
+            transform: style.transform, filter: style.filter, perspective: style.perspective,
+            contain: style.contain, page: style.page };
+        });
+      });
       const pdf = path.join(output, `report-${name}-a4.pdf`);
       try { await page.pdf({ path: pdf, format: 'A4', preferCSSPageSize: true, printBackground: true }); }
-      finally { await page.evaluate(() => document.body.classList.remove('printing-site')); }
+      finally {
+        await page.evaluate(() => document.body.classList.remove('printing-site'));
+        await page.emulateMedia({ media: 'screen' });
+      }
       row.screenAfter = await screenState();
       row.screenUnchanged = JSON.stringify(row.screenBefore) === JSON.stringify(row.screenAfter) && row.screenBefore.position === 'static' && row.screenBefore.bannerCount === 2 && row.screenBefore.overflowPx === 0;
       row.pdf = await inspectSiteReportPdf(pdf, row.screenBefore.text, args.get('--python'));
