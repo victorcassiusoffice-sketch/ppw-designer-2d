@@ -20,12 +20,13 @@ function deferred<T>() {
 }
 const character: WalkCharacter = { id: 'selected', label: 'Selected', url: '/selected.glb', thumbnailUrl: '', thumbnailDataUrl: '',
   heightM: 1.7, bytes: 1, licence: 'CC0-1.0', source: 'test', clips: { idle: 'idle', walk: 'walk', run: 'run' } };
+type LoadedCharacter = { scene: Group; animations: AnimationClip[] };
 let runtime: WalkRuntime, scene: Scene, canvas: HTMLCanvasElement, originalCanvas: HTMLCanvasElement;
 let asset: Group, original: Mesh<BoxGeometry, MeshStandardMaterial>, light: DirectionalLight, property: Property, saved: string;
 let now: number, frame: FrameRequestCallback | undefined, statuses: WalkStatus[];
 let compile: ReturnType<typeof vi.fn<(scene: Scene, camera: PerspectiveCamera) => Promise<void>>>;
 let render: ReturnType<typeof vi.fn>, release: ReturnType<typeof vi.fn>, request: ReturnType<typeof vi.fn>;
-let compilation: ReturnType<typeof deferred<void>>, entered: ReturnType<typeof deferred<void>>;
+let decoding: ReturnType<typeof deferred<LoadedCharacter>>, entered: ReturnType<typeof deferred<void>>;
 let renderer: { domElement: HTMLCanvasElement; shadowMap: { enabled: boolean; type: number; needsUpdate: boolean }; toneMapping: number; toneMappingExposure: number; outputColorSpace: string; compileAsync: typeof compile; render: typeof render };
 let assetGeometryDispose: MockInstance<() => void>, assetMaterialDispose: MockInstance<() => void>, originalDispose: MockInstance<() => void>;
 
@@ -54,7 +55,8 @@ beforeEach(() => {
   const mesh = new Mesh(new BoxGeometry(.4, 1.7, .3), new MeshStandardMaterial({ color: '#456789', roughness: .72 }));
   mesh.position.y = .85; asset.add(mesh);
   assetGeometryDispose = vi.spyOn(mesh.geometry, 'dispose'); assetMaterialDispose = vi.spyOn(mesh.material, 'dispose');
-  loader.parse.mockResolvedValue({ scene: asset, animations: ['idle', 'walk', 'run'].map(name => new AnimationClip(name, 1, [])) });
+  decoding = deferred<LoadedCharacter>(); entered = deferred<void>();
+  loader.parse.mockReset().mockImplementation(() => { entered.resolve(); return decoding.promise; });
   property = { id: 'preparation', name: 'Preparation', activeRoomId: 'room', rooms: [{ id: 'room', name: 'Room', placedItems: [],
     polygon: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 8, y: 8 }, { x: 0, y: 8 }],
     openings: [{ id: 'entry', edgeIndex: 0, offsetM: 4, widthM: 1.1, kind: 'door', flipFacing: false, flipHand: false }] }] };
@@ -62,10 +64,9 @@ beforeEach(() => {
     rooms: value.rooms.map(room => ({ ...room, items: [] })) });
   saved = JSON.stringify(property); localStorage.setItem('preparation-design', saved);
   // jsdom schedules a storage-event task for the fixture write. Drain it
-  // before load so the timer assertions concern runtime preparation only.
+  // before load so the timer assertions concern runtime loading only.
   vi.advanceTimersByTime(0);
-  compilation = deferred<void>(); entered = deferred<void>();
-  compile = vi.fn(() => { entered.resolve(); return compilation.promise; });
+  compile = vi.fn<(scene: Scene, camera: PerspectiveCamera) => Promise<void>>(async () => { throw new Error('A separate compilation stage must not delay the first draw.'); });
   render = vi.fn(); release = vi.fn();
   renderer = { domElement: canvas, shadowMap: { enabled: true, type: 1, needsUpdate: false }, toneMapping: 0, toneMappingExposure: 1, outputColorSpace: 'srgb', compileAsync: compile, render };
   runtime = new WalkRuntime({ scene, renderer, fill: { current: null }, sky: { current: null }, bounds: { current: { centre: new Vector3(), radius: 4 } }, fogClearance: 3, release } as unknown as ConstructorParameters<typeof WalkRuntime>[0],
@@ -76,33 +77,39 @@ afterEach(() => {
   vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers();
 });
 async function start() {
-  const loading = runtime.load(character, now);
+  const progress = vi.fn();
+  const loading = runtime.load(character, now, progress);
   const settlement = loading.then(() => ({ fulfilled: true, reason: undefined as unknown }), reason => ({ fulfilled: false, reason }));
   await entered.promise;
-  return { loading, settlement };
+  return { loading, settlement, progress };
 }
+const decodedAsset = () => ({ scene: asset, animations: ['idle', 'walk', 'run'].map(name => new AnimationClip(name, 1, [])) });
 const pose = (camera: PerspectiveCamera) => ({ position: camera.position.toArray(), quaternion: camera.quaternion.toArray(), fov: camera.fov, aspect: camera.aspect, near: camera.near, far: camera.far });
 const quality = () => ({ enabled: renderer.shadowMap.enabled, type: renderer.shadowMap.type, mapSize: light.shadow.mapSize.toArray(), toneMapping: renderer.toneMapping, exposure: renderer.toneMappingExposure, colorSpace: renderer.outputColorSpace, fog: scene.fog?.toJSON() });
 
-describe('selected Walk scene preparation', () => {
-  it.each([[1280, 800, 65], [390, 844, 95]])('prepares the actual scene/camera at %sx%s before readiness without changing quality', async (width, height, expectedFov) => {
+describe('selected Walk scene loading and first-render readiness', () => {
+  it.each([[1280, 800, 65], [390, 844, 95]])('poses the actual scene/camera at %sx%s and publishes status only after its first draw', async (width, height, expectedFov) => {
     Object.defineProperty(canvas, 'clientWidth', { value: width }); Object.defineProperty(canvas, 'clientHeight', { value: height });
     const beforeQuality = quality(), originalCamera = { ...originalCanvas.dataset };
-    const { loading } = await start();
-    expect(compile).toHaveBeenCalledOnce();
-    const [preparedScene, camera] = compile.mock.calls[0];
-    expect(preparedScene).toBe(scene); expect(camera).toBeInstanceOf(PerspectiveCamera);
+    const cameraUpdate = vi.spyOn(PerspectiveCamera.prototype, 'updateMatrixWorld');
+    const { loading, progress } = await start();
+    expect(request).not.toHaveBeenCalled(); expect(render).not.toHaveBeenCalled(); expect(statuses).toEqual([]);
+    now = 1450; decoding.resolve(decodedAsset()); await loading;
+    const camera = cameraUpdate.mock.contexts[cameraUpdate.mock.contexts.length - 1] as PerspectiveCamera;
+    expect(camera).toBeInstanceOf(PerspectiveCamera); expect(compile).not.toHaveBeenCalled();
     expect(scene.getObjectByName('selected-avatar')).toBe(asset);
     expect(asset.parent?.position.length()).toBeGreaterThan(1);
     const door = scene.children.find(child => child instanceof Group && child !== asset.parent && child !== original.parent)!;
     expect(door.position.length()).toBeGreaterThan(1);
     expect(camera.position.length()).toBeGreaterThan(1); expect(camera.fov).toBe(expectedFov); expect(camera.aspect).toBe(width / height);
+    expect(new Vector3().setFromMatrixPosition(camera.matrixWorld).toArray()).toEqual(camera.position.toArray());
+    expect(asset.parent!.getWorldPosition(new Vector3()).toArray()).toEqual(asset.parent!.position.toArray());
     expect(quality()).toEqual(beforeQuality); expect(original.visible).toBe(false);
     expect(fetch).toHaveBeenCalledOnce(); expect(fetch).toHaveBeenCalledWith('/selected.glb', expect.any(Object));
-    expect(request).not.toHaveBeenCalled(); expect(render).not.toHaveBeenCalled(); expect(statuses).toEqual([]);
+    expect(progress.mock.calls.map(([message]) => message)).toEqual(['Loading Selected…', 'Preparing Selected…']);
+    expect(request).toHaveBeenCalledOnce(); expect(render).not.toHaveBeenCalled(); expect(statuses).toEqual([]);
     const preparedPose = pose(camera), actorPosition = asset.parent!.position.toArray(), doorPosition = door.position.toArray();
-    now = 1450; compilation.resolve(); await loading;
-    expect(request).toHaveBeenCalledOnce(); expect(statuses).toEqual([]);
+    render.mockImplementation(() => { expect(statuses).toEqual([]); });
     frame!(now);
     expect(render).toHaveBeenCalledWith(scene, camera); expect(pose(camera)).toEqual(preparedPose);
     expect(asset.parent!.position.toArray()).toEqual(actorPosition); expect(door.position.toArray()).toEqual(doorPosition);
@@ -117,51 +124,80 @@ describe('selected Walk scene preparation', () => {
     expect({ ...originalCanvas.dataset }).toEqual(originalCamera); expect(vi.getTimerCount()).toBe(0);
   });
 
-  it('ignores movement, view, look and interaction while preparation is pending, keeping Escape available', async () => {
-    const { loading } = await start(), camera = compile.mock.calls[0][1], before = pose(camera);
+  it('ignores movement, view, look and interaction while decoding is pending, keeping Escape available', async () => {
+    const { loading } = await start();
     runtime.keyDown(new KeyboardEvent('keydown', { code: 'KeyW' })); runtime.keyDown(new KeyboardEvent('keydown', { code: 'KeyV' }));
     runtime.setStick(1, -1); runtime.setRunning(true); runtime.toggleView(); runtime.dragLook(200, 50); runtime.lock();
     expect(runtime.interact()).toBe(false); expect(runtime.escape()).toBe(false);
-    expect(canvas.requestPointerLock).not.toHaveBeenCalled(); expect(pose(camera)).toEqual(before);
-    compilation.resolve(); await loading; frame!(now);
-    expect(statuses[0]).toMatchObject({ mode: 'third', animation: 'idle' }); expect(pose(camera)).toEqual(before);
+    expect(canvas.requestPointerLock).not.toHaveBeenCalled(); expect(request).not.toHaveBeenCalled(); expect(statuses).toEqual([]);
+    decoding.resolve(decodedAsset()); await loading; frame!(now);
+    expect(statuses[0]).toMatchObject({ mode: 'third', animation: 'idle' });
     const position = statuses[0].position;
     runtime.keyDown(new KeyboardEvent('keydown', { code: 'KeyW' })); now += 300; frame!(now);
     expect(statuses[statuses.length - 1].animation).toBe('walk');
     expect(statuses[statuses.length - 1].position).not.toEqual(position);
   });
 
-  it.each(['resolve', 'reject'] as const)('disposes once while pending and ignores late compilation %s', async completion => {
+  it.each(['resolve', 'reject'] as const)('disposes once while decoding is pending and handles its late %s without readiness', async completion => {
     const { settlement } = await start();
     runtime.dispose(); runtime.dispose();
+    const error = new Error('late decoding failure');
+    if (completion === 'resolve') decoding.resolve(decodedAsset()); else decoding.reject(error);
     const result = await settlement;
-    expect(result.fulfilled).toBe(false); expect(String(result.reason)).toContain('cancelled');
-    if (completion === 'resolve') compilation.resolve(); else compilation.reject(new Error('late compilation failure'));
-    await Promise.resolve(); await Promise.resolve();
+    expect(result).toEqual(completion === 'resolve' ? { fulfilled: true, reason: undefined } : { fulfilled: false, reason: error });
     expect(request).not.toHaveBeenCalled(); expect(statuses).toEqual([]); expect(render).not.toHaveBeenCalled();
-    expect(release).toHaveBeenCalledOnce(); expect(assetGeometryDispose).toHaveBeenCalledOnce(); expect(assetMaterialDispose).toHaveBeenCalledOnce();
+    expect(compile).not.toHaveBeenCalled(); expect(release).toHaveBeenCalledOnce();
+    expect(assetGeometryDispose).toHaveBeenCalledTimes(completion === 'resolve' ? 1 : 0);
+    expect(assetMaterialDispose).toHaveBeenCalledTimes(completion === 'resolve' ? 1 : 0);
     expect(original.visible).toBe(true); expect(originalDispose).not.toHaveBeenCalled(); expect(vi.getTimerCount()).toBe(0);
   });
 
-  it('uses the existing load deadline to reject a compile that never settles', async () => {
+  it('keeps the existing fetch deadline and propagates its abort without readiness', async () => {
+    const error = new DOMException('The request was aborted.', 'AbortError');
+    let signal: AbortSignal | undefined;
+    vi.mocked(fetch).mockImplementation((_url, options) => new Promise((_resolve, reject) => {
+      signal = options?.signal ?? undefined;
+      signal?.addEventListener('abort', () => reject(error), { once: true });
+    }));
+    const settlement = runtime.load(character, now).then(() => ({ fulfilled: true, reason: undefined as unknown }), reason => ({ fulfilled: false, reason }));
+    expect(signal?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(signal?.aborted).toBe(true); expect(await settlement).toEqual({ fulfilled: false, reason: error });
+    expect(loader.parse).not.toHaveBeenCalled(); expect(compile).not.toHaveBeenCalled();
+    expect(request).not.toHaveBeenCalled(); expect(statuses).toEqual([]); expect(vi.getTimerCount()).toBe(0);
+    runtime.dispose(); runtime.dispose(); expect(release).toHaveBeenCalledOnce(); expect(original.visible).toBe(true);
+  });
+
+  it('rejects and disposes a decoded asset returned after the load deadline without scheduling a frame', async () => {
     const { settlement } = await start();
     await vi.advanceTimersByTimeAsync(20000);
+    decoding.resolve(decodedAsset());
     const result = await settlement;
     expect(result.fulfilled).toBe(false); expect(String(result.reason)).toContain('took too long');
-    expect(request).not.toHaveBeenCalled(); expect(statuses).toEqual([]); expect(vi.getTimerCount()).toBe(0);
+    expect(request).not.toHaveBeenCalled(); expect(render).not.toHaveBeenCalled(); expect(statuses).toEqual([]); expect(vi.getTimerCount()).toBe(0);
+    expect(scene.getObjectByName('selected-avatar')).toBeUndefined(); expect(compile).not.toHaveBeenCalled();
+    expect(assetGeometryDispose).toHaveBeenCalledOnce(); expect(assetMaterialDispose).toHaveBeenCalledOnce();
     // The modal's existing error path owns release, just as for fetch/decode failures.
-    runtime.dispose(); runtime.dispose(); compilation.resolve(); await Promise.resolve();
+    runtime.dispose(); runtime.dispose();
     expect(release).toHaveBeenCalledOnce(); expect(assetMaterialDispose).toHaveBeenCalledOnce();
   });
 
-  it.each(['throw', 'reject'] as const)('propagates a synchronous/asynchronous compile %s without publishing readiness', async failure => {
-    const error = new Error('preparation failed');
-    if (failure === 'throw') compile.mockImplementation(() => { entered.resolve(); throw error; });
+  it.each(['throw', 'reject'] as const)('propagates a synchronous/asynchronous decode %s without publishing readiness', async failure => {
+    const error = new Error('decoding failed');
+    if (failure === 'throw') loader.parse.mockImplementation(() => { entered.resolve(); throw error; });
     const { settlement } = await start();
-    if (failure === 'reject') compilation.reject(error);
+    if (failure === 'reject') decoding.reject(error);
     expect(await settlement).toEqual({ fulfilled: false, reason: error });
-    expect(request).not.toHaveBeenCalled(); expect(render).not.toHaveBeenCalled(); expect(statuses).toEqual([]);
+    expect(request).not.toHaveBeenCalled(); expect(render).not.toHaveBeenCalled(); expect(statuses).toEqual([]); expect(compile).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0); runtime.dispose(); runtime.dispose();
-    expect(release).toHaveBeenCalledOnce(); expect(assetMaterialDispose).toHaveBeenCalledOnce(); expect(originalDispose).not.toHaveBeenCalled();
+    expect(release).toHaveBeenCalledOnce(); expect(assetMaterialDispose).not.toHaveBeenCalled(); expect(originalDispose).not.toHaveBeenCalled();
+  });
+
+  it('does not publish first-frame readiness when the actual renderer throws', async () => {
+    const { loading } = await start(); decoding.resolve(decodedAsset()); await loading;
+    const error = new Error('first draw failed'); render.mockImplementation(() => { throw error; });
+    expect(() => frame!(now)).toThrow(error);
+    expect(statuses).toEqual([]); expect(request).toHaveBeenCalledOnce(); expect(compile).not.toHaveBeenCalled();
+    runtime.dispose(); runtime.dispose(); expect(release).toHaveBeenCalledOnce(); expect(assetMaterialDispose).toHaveBeenCalledOnce();
   });
 });

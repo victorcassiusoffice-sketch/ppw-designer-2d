@@ -223,6 +223,10 @@ export class WalkRuntime {
       onProgress?.(`Preparing ${character.label}…`);
       const gltf = await loader.parseAsync(buffer, '');
       if (this.disposed) { disposeObject(gltf.scene); return; }
+      if (this.abort.signal.aborted) {
+        disposeObject(gltf.scene);
+        throw new Error('Walk preparation was cancelled or took too long. Exit and try again.');
+      }
       const box = new THREE.Box3().setFromObject(gltf.scene);
       const height = box.max.y - box.min.y;
       const scale = this.walker.height / Math.max(.1, height);
@@ -239,41 +243,18 @@ export class WalkRuntime {
       this.actions.idle?.play();
       this.mixer.update(0);
       this.actor.position.copy(this.walker.position);
-      // Compile the newly attached character and private doors on the actual
-      // visit renderer/camera. Keep the first normal frame's follow history.
+      // Pose the selected character and private doors before the first draw,
+      // preserving the normal frame's follow history.
       const initialFollow = this.follow.clone(), initialFollowReady = this.followReady;
       this.syncView(0);
       this.follow.copy(initialFollow); this.followReady = initialFollowReady;
       this.host.scene.updateMatrixWorld(true); this.camera.updateMatrixWorld(true);
-      onProgress?.(`Preparing ${character.label} for your walk…`);
-      await this.prepareScene();
       if (this.disposed || this.abort.signal.aborted) return;
       this.entryMs = performance.now() - startedAt;
       this.ready = true;
       this.last = performance.now();
       this.raf = requestAnimationFrame(this.tick);
     } finally { window.clearTimeout(timeout); }
-  }
-
-  private prepareScene(): Promise<void> {
-    const signal = this.abort.signal;
-    const cancelled = () => new Error('Walk preparation was cancelled or took too long. Exit and try again.');
-    if (signal.aborted) return Promise.reject(cancelled());
-    return new Promise((resolve, reject) => {
-      let finished = false;
-      const finish = (succeeded: boolean, error?: unknown) => {
-        if (finished) return;
-        finished = true; signal.removeEventListener('abort', onAbort);
-        if (succeeded) resolve(); else reject(error);
-      };
-      const onAbort = () => finish(false, cancelled());
-      signal.addEventListener('abort', onAbort, { once: true });
-      try {
-        // The shared load deadline also bounds this otherwise non-abortable
-        // promise. Its late resolve/reject stays handled after Exit or timeout.
-        this.host.renderer.compileAsync(this.host.scene, this.camera).then(() => finish(true), error => finish(false, error));
-      } catch (error) { finish(false, error); }
-    });
   }
 
   keyDown(event: KeyboardEvent): void {
