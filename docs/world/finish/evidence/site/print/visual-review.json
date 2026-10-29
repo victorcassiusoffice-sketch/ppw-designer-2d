@@ -1,0 +1,28 @@
+{
+  "sourceHead": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+  "scope": "Normal-source Chromium desktop and touch viewport emulation; no performance or physical-device claim",
+  "automatedPassed": true,
+  "visualPassed": true,
+  "inspectedPages": [
+    "page-laptop-1.png",
+    "page-laptop-2.png",
+    "page-laptop-3.png",
+    "page-laptop-4.png",
+    "page-phone-1.png",
+    "page-phone-2.png",
+    "page-phone-3.png",
+    "page-phone-4.png"
+  ],
+  "disclaimerEveryPage": true,
+  "overlapOrClipping": false,
+  "minimumBodyFooterGapMm": 17.991665917013755,
+  "attemptedNetworkWrites": 0,
+  "providerRequests": 0,
+  "javaScriptErrors": 0,
+  "consoleErrors": 0,
+  "httpErrors": 0,
+  "screenUnchanged": true,
+  "warning": "PDF font-bounding-box warnings retained; no visible missing glyph",
+  "processesClosed": true,
+  "earlierFailuresPreserved": true
+}

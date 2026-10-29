@@ -1,0 +1,2676 @@
+{
+  "at": "2026-10-29T07:00:14.609Z",
+  "label": "r2-candidate",
+  "buildLabel": "r2-final-corrected",
+  "baseCommit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+  "bundles": {
+    "walk": {
+      "baseCommit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+      "candidateCommit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+      "baseCount": 28,
+      "candidateCount": 28,
+      "files": [
+        {
+          "name": "assets/App.js",
+          "base": {
+            "file": "assets/App-DknD37rJ.js",
+            "bytes": 1079141,
+            "gzipBytes": 330157,
+            "sha256": "b9cad162a3b4260713b4be39b08572311607ddd7b220e423fcaf824c1e996dba",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/propertyStore-C5e7ZzCd.js",
+              "assets/designsApi-C8Utq6Kf.js",
+              "assets/showcaseSafety-DFBXsUeQ.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js",
+              "assets/LocaleThemeControls-CS9Zxink.js",
+              "assets/types-BR-OoGj9.js",
+              "assets/RequireMerchant-BvJGo3r3.js",
+              "assets/downloadJson-DhXa1J4E.js",
+              "assets/vendor-router-YSxUxVSZ.js",
+              "assets/cartStore-C07ffxsA.js",
+              "assets/currency-CLScbmN-.js",
+              "assets/quotedProducts-2NCXztC6.js",
+              "assets/CurrencySwitcher-CL0kYB8t.js",
+              "assets/renderQualityStore-BBxCd5KC.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/vendor-konva-CbK8OvmD.js",
+              "assets/buildSkinStore-B-kjly2M.js",
+              "assets/commission-BSjTNLTx.js"
+            ],
+            "dynamicImports": [
+              "assets/ServicesThreeEditor-BIsfzWJ6.js",
+              "assets/CityThreeView-Cl1EtCH3.js",
+              "assets/SharedProjectWorkbench-vyOFINNy.js",
+              "assets/AiProviderDraft-Dus139CC.js",
+              "assets/modelSnapshot-57aqsZYo.js",
+              "assets/modelSnapshot-57aqsZYo.js",
+              "assets/html2canvas.esm-CBrSDip1.js"
+            ]
+          },
+          "candidate": {
+            "file": "assets/App-CLaXIEqg.js",
+            "bytes": 1080050,
+            "gzipBytes": 330521,
+            "sha256": "209e5073c15d84da174dd2d5c4b2ba28b5dabfdf8ea7d054dede78e9efadef42",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-ViCgdYyv.js",
+              "assets/buildingServices-CWW_lony.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/propertyStore-BJgwuwPN.js",
+              "assets/designsApi-C3UClA8B.js",
+              "assets/showcaseSafety-DFBXsUeQ.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js",
+              "assets/LocaleThemeControls-DIiP_-tO.js",
+              "assets/types-BR-OoGj9.js",
+              "assets/RequireMerchant-BvJGo3r3.js",
+              "assets/downloadJson-DhXa1J4E.js",
+              "assets/vendor-router-YSxUxVSZ.js",
+              "assets/cartStore-BGND-bzx.js",
+              "assets/currency-CuA93Ig4.js",
+              "assets/quotedProducts-2NCXztC6.js",
+              "assets/CurrencySwitcher-Bksw2QxB.js",
+              "assets/renderQualityStore-BPhTqrAi.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/vendor-konva-CbK8OvmD.js",
+              "assets/buildSkinStore-B56sqD6r.js",
+              "assets/commission-BSjTNLTx.js"
+            ],
+            "dynamicImports": [
+              "assets/ServicesThreeEditor-CFAmZsKD.js",
+              "assets/CityThreeView-ClorAEqW.js",
+              "assets/SharedProjectWorkbench-C7QbqEae.js",
+              "assets/AiProviderDraft-Cvgyff_O.js",
+              "assets/WalkLauncher-0zy7NQD8.js",
+              "assets/modelSnapshot-D4_s9lD3.js",
+              "assets/modelSnapshot-D4_s9lD3.js",
+              "assets/html2canvas.esm-CBrSDip1.js"
+            ]
+          },
+          "rawDelta": 909,
+          "gzipDelta": 364
+        },
+        {
+          "name": "assets/CurrencySwitcher.js",
+          "base": {
+            "file": "assets/CurrencySwitcher-CL0kYB8t.js",
+            "bytes": 2642,
+            "gzipBytes": 1450,
+            "sha256": "048d62d9d359e8d2a0c4581a0a69d39db161dd7be2ed464a4629d7e7513d3735",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-DHOW9Yxw.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/CurrencySwitcher-Bksw2QxB.js",
+            "bytes": 2642,
+            "gzipBytes": 1448,
+            "sha256": "8bc6adb2d61f6fc65b7972044c6aeb19604f7330933988beabd8b862b60a56cf",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-ViCgdYyv.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -2
+        },
+        {
+          "name": "assets/LocaleThemeControls.js",
+          "base": {
+            "file": "assets/LocaleThemeControls-CS9Zxink.js",
+            "bytes": 3170,
+            "gzipBytes": 1310,
+            "sha256": "79e673fe10bb3fcdfdc50dc6a1bde4612e18ab2d234f2c667570ac5bb567cc28",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/buildSkinStore-B-kjly2M.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/LocaleThemeControls-DIiP_-tO.js",
+            "bytes": 3170,
+            "gzipBytes": 1309,
+            "sha256": "8bc3a1b7fa56e966b0b29b424d84ef5507108e92ed3be91118e4fc34444d49ad",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-ViCgdYyv.js",
+              "assets/buildSkinStore-B56sqD6r.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -1
+        },
+        {
+          "name": "assets/RequireMerchant.js",
+          "base": {
+            "file": "assets/RequireMerchant-BvJGo3r3.js",
+            "bytes": 5153,
+            "gzipBytes": 2292,
+            "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-router-YSxUxVSZ.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/RequireMerchant-BvJGo3r3.js",
+            "bytes": 5153,
+            "gzipBytes": 2292,
+            "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-router-YSxUxVSZ.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/ThreeStage.js",
+          "base": {
+            "file": "assets/ThreeStage-Z2WEYbA1.js",
+            "bytes": 94211,
+            "gzipBytes": 33027,
+            "sha256": "eb64f02d72e64c5b2deb8f2df01d1fc8b238d3a7d1b04389b0afc5983eccd084",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-three-CjQotlrx.js",
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/renderQualityStore-BBxCd5KC.js",
+              "assets/productSurfaceLighting-BQZxIn0h.js",
+              "assets/buildSkinStore-B-kjly2M.js",
+              "assets/serviceFixtureMeshes-dDaBzpGO.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js",
+              "assets/types-BR-OoGj9.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/vendor-router-YSxUxVSZ.js",
+              "assets/merchantFurniture-ZuMdbwJD.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/ThreeStage-D1KyljsT.js",
+            "bytes": 94770,
+            "gzipBytes": 33186,
+            "sha256": "7850fb5251a8c6e978386b72862eb606ee942a32c774f8e756bde52d26fd4fa3",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-three-DFSP7WXy.js",
+              "assets/buildingServices-CWW_lony.js",
+              "assets/renderQualityStore-BPhTqrAi.js",
+              "assets/productSurfaceLighting-DnzCSDT9.js",
+              "assets/buildSkinStore-B56sqD6r.js",
+              "assets/serviceFixtureMeshes-DTCQy3Rs.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 559,
+          "gzipDelta": 159
+        },
+        {
+          "name": "assets/buildSkinStore.js",
+          "base": {
+            "file": "assets/buildSkinStore-B-kjly2M.js",
+            "bytes": 744,
+            "gzipBytes": 463,
+            "sha256": "3a7bfa3ce00d0119a3ade174a1a40b800814a36807c8f229c987ca85a12bd8ca",
+            "type": "chunk",
+            "imports": [
+              "assets/main-DHOW9Yxw.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/buildSkinStore-B56sqD6r.js",
+            "bytes": 744,
+            "gzipBytes": 462,
+            "sha256": "9339a40d3f623188d92ac66dc58769f12ba51a4377c97e17623618b20015b7c7",
+            "type": "chunk",
+            "imports": [
+              "assets/main-ViCgdYyv.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -1
+        },
+        {
+          "name": "assets/buildingServices.js",
+          "base": {
+            "file": "assets/buildingServices-DV1gAOMk.js",
+            "bytes": 175717,
+            "gzipBytes": 51252,
+            "sha256": "338f54e90cae8dd3fef99ff2cbd9ccc15e2613f982ed9307aa1c13e6214ab6a0",
+            "type": "chunk",
+            "imports": [
+              "assets/types-BR-OoGj9.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/merchantFurniture-ZuMdbwJD.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js"
+            ],
+            "dynamicImports": [
+              "assets/sofapColourMatch-DvLtg7hz.js"
+            ]
+          },
+          "candidate": {
+            "file": "assets/buildingServices-CWW_lony.js",
+            "bytes": 175726,
+            "gzipBytes": 51254,
+            "sha256": "1ed5326174c1651c7b2e76ecd162e8509662b7ec48bdaf554714799ab02e4b80",
+            "type": "chunk",
+            "imports": [
+              "assets/types-BR-OoGj9.js",
+              "assets/main-ViCgdYyv.js",
+              "assets/merchantFurniture-ZuMdbwJD.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js"
+            ],
+            "dynamicImports": [
+              "assets/sofapColourMatch-DvLtg7hz.js"
+            ]
+          },
+          "rawDelta": 9,
+          "gzipDelta": 2
+        },
+        {
+          "name": "assets/buildingServicesCatalog.js",
+          "base": {
+            "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
+            "bytes": 6105,
+            "gzipBytes": 2573,
+            "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
+            "bytes": 6105,
+            "gzipBytes": 2573,
+            "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/cartStore.js",
+          "base": {
+            "file": "assets/cartStore-C07ffxsA.js",
+            "bytes": 12564,
+            "gzipBytes": 4556,
+            "sha256": "71878b9442c1d05a40d947641c664b8e45160c22b8a3ef5863ff19bcd319eed8",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/propertyStore-C5e7ZzCd.js",
+              "assets/buildingServices-DV1gAOMk.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/cartStore-BGND-bzx.js",
+            "bytes": 12564,
+            "gzipBytes": 4551,
+            "sha256": "d770c249abe2aa1156f4ab4e01711326ab43c85b86210a83932560eb23480ef5",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-ViCgdYyv.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/propertyStore-BJgwuwPN.js",
+              "assets/buildingServices-CWW_lony.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -5
+        },
+        {
+          "name": "assets/commission.js",
+          "base": {
+            "file": "assets/commission-BSjTNLTx.js",
+            "bytes": 52,
+            "gzipBytes": 72,
+            "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/commission-BSjTNLTx.js",
+            "bytes": 52,
+            "gzipBytes": 72,
+            "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/currency.js",
+          "base": {
+            "file": "assets/currency-CLScbmN-.js",
+            "bytes": 325,
+            "gzipBytes": 257,
+            "sha256": "336aa2ad7502e81c307213a95d5cf138f7f33b04ae12b026802870cc322359f0",
+            "type": "chunk",
+            "imports": [
+              "assets/main-DHOW9Yxw.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/currency-CuA93Ig4.js",
+            "bytes": 325,
+            "gzipBytes": 254,
+            "sha256": "79418448b2a3feb3f385ad48529be09928c955537e6fa81c8748eb1e23c7fb92",
+            "type": "chunk",
+            "imports": [
+              "assets/main-ViCgdYyv.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -3
+        },
+        {
+          "name": "assets/designsApi.js",
+          "base": {
+            "file": "assets/designsApi-C8Utq6Kf.js",
+            "bytes": 16071,
+            "gzipBytes": 5352,
+            "sha256": "b739ecc2becbb0c119efb592bf4b7244558bb57a776cfd371aac56a5aaaae07d",
+            "type": "chunk",
+            "imports": [
+              "assets/main-DHOW9Yxw.js",
+              "assets/propertyStore-C5e7ZzCd.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/showcaseSafety-DFBXsUeQ.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/designsApi-C3UClA8B.js",
+            "bytes": 16071,
+            "gzipBytes": 5348,
+            "sha256": "6f8925adcf4682394b8a6cad53e56d8fbb626f0dfad045a13055a83f3cfa2ee2",
+            "type": "chunk",
+            "imports": [
+              "assets/main-ViCgdYyv.js",
+              "assets/propertyStore-BJgwuwPN.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/buildingServices-CWW_lony.js",
+              "assets/showcaseSafety-DFBXsUeQ.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -4
+        },
+        {
+          "name": "assets/downloadJson.js",
+          "base": {
+            "file": "assets/downloadJson-DhXa1J4E.js",
+            "bytes": 276,
+            "gzipBytes": 233,
+            "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/downloadJson-DhXa1J4E.js",
+            "bytes": 276,
+            "gzipBytes": 233,
+            "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/main.js",
+          "base": {
+            "file": "assets/main-DHOW9Yxw.js",
+            "bytes": 87363,
+            "gzipBytes": 31445,
+            "sha256": "9484401a68ee15addb1f8ac09f710de102809a72967be9fc135653285b1ffeec",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-router-YSxUxVSZ.js"
+            ],
+            "dynamicImports": [
+              "assets/ThreeStage-Z2WEYbA1.js",
+              "assets/App-DknD37rJ.js",
+              "assets/CartPage-ClZ-jlCr.js",
+              "assets/CheckoutPage-B6Tn0TY7.js",
+              "assets/OrderSuccessPage-BidnMixe.js",
+              "assets/OrderCancelledPage-If8WaV9L.js",
+              "assets/OrderPendingPage-B_zQ0O_k.js",
+              "assets/OrdersPage-CvOWRGUH.js",
+              "assets/SuppliersPage-CDp_z_ZX.js",
+              "assets/SuppliersSignupCompletePage-CGibStLu.js",
+              "assets/AdminLayout-B6XH245W.js",
+              "assets/AdminMerchantsPage-BObkhb80.js",
+              "assets/RequireAdmin-DTR4Jl8k.js",
+              "assets/MerchantsListPage-BAr8shu8.js",
+              "assets/MerchantDetailPage-U1BbHm3M.js",
+              "assets/OrdersListPage-lUchrPDy.js",
+              "assets/PayoutsListPage-OhXzdByh.js",
+              "assets/ProductsListPage-CYf14Tb-.js",
+              "assets/SuppliersListPage-B-xTxMWH.js",
+              "assets/DashboardPage-8UfHVPC8.js",
+              "assets/AuditLogPage-x28-CSQo.js",
+              "assets/PublicProductsPage-D2oMdXAH.js",
+              "assets/ProductDetailPage-5LNBUh0K.js",
+              "assets/MarketplaceCartPage-Bl_hXd4q.js",
+              "assets/MarketplaceCheckoutPage-DY8lPIwh.js",
+              "assets/OrderTrackPage-CN84lk7q.js",
+              "assets/GumroadReturnPage-BG_EzyOK.js",
+              "assets/MerchantAgentPage-kHCVhgZW.js",
+              "assets/MerchantDashboardPage-B8qQnC7v.js",
+              "assets/MerchantOnboardingPage-Dpwg32D0.js",
+              "assets/MerchantAddProductPage-CMt09diz.js",
+              "assets/RequireMerchant-BvJGo3r3.js",
+              "assets/MyDesignsPage-B8kfswtM.js",
+              "assets/DemoDesignerPage-BtX7evLt.js",
+              "assets/DeveloperPitchPage-WXv3fnCY.js",
+              "assets/ConstructionPitchPage-BJQviuNx.js",
+              "assets/MerchantPitchPage-C_gFSBsJ.js",
+              "assets/PlumbingPitchPage-DQmjOirS.js",
+              "assets/EmployeeStarterPage-CR5J8dCf.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/MerchantConnectPage-C5bjaT7E.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/OlbHomePage-BNpC04fL.js"
+            ]
+          },
+          "candidate": {
+            "file": "assets/main-ViCgdYyv.js",
+            "bytes": 87364,
+            "gzipBytes": 31418,
+            "sha256": "71d79ee4c1907f49df8bc5aa2634d1b50ab6d031194dcd42d4771b35834e9199",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-router-YSxUxVSZ.js"
+            ],
+            "dynamicImports": [
+              "assets/ThreeStage-D1KyljsT.js",
+              "assets/App-CLaXIEqg.js",
+              "assets/CartPage-C00RpU8f.js",
+              "assets/CheckoutPage-CZ_2oqao.js",
+              "assets/OrderSuccessPage-CPepnkIW.js",
+              "assets/OrderCancelledPage-C4lyzV7y.js",
+              "assets/OrderPendingPage-DGc37p3T.js",
+              "assets/OrdersPage-qxCwagdh.js",
+              "assets/SuppliersPage-CDp_z_ZX.js",
+              "assets/SuppliersSignupCompletePage-CGibStLu.js",
+              "assets/AdminLayout-kYDlrmyd.js",
+              "assets/AdminMerchantsPage-aKIKHrcc.js",
+              "assets/RequireAdmin-DjtVLhRS.js",
+              "assets/MerchantsListPage-DTbM5aUX.js",
+              "assets/MerchantDetailPage-BUbJLwGe.js",
+              "assets/OrdersListPage-CbSzrTha.js",
+              "assets/PayoutsListPage-l4AjN5Ip.js",
+              "assets/ProductsListPage-DpvBS8Of.js",
+              "assets/SuppliersListPage-BRlJLQ7d.js",
+              "assets/DashboardPage-B-laYa5T.js",
+              "assets/AuditLogPage-BaGCdIAB.js",
+              "assets/PublicProductsPage-DYdz-3An.js",
+              "assets/ProductDetailPage-D690RtZn.js",
+              "assets/MarketplaceCartPage-3cl7Plku.js",
+              "assets/MarketplaceCheckoutPage-CoIk5jiK.js",
+              "assets/OrderTrackPage-ljXJamc-.js",
+              "assets/GumroadReturnPage-BG_EzyOK.js",
+              "assets/MerchantAgentPage-kHCVhgZW.js",
+              "assets/MerchantDashboardPage-B8qQnC7v.js",
+              "assets/MerchantOnboardingPage-Dpwg32D0.js",
+              "assets/MerchantAddProductPage-CMt09diz.js",
+              "assets/RequireMerchant-BvJGo3r3.js",
+              "assets/MyDesignsPage-DKNu3MFG.js",
+              "assets/DemoDesignerPage-DBx9qD33.js",
+              "assets/DeveloperPitchPage-C-2UZyeA.js",
+              "assets/ConstructionPitchPage-BSbof_Ht.js",
+              "assets/MerchantPitchPage-B2zOeP0x.js",
+              "assets/PlumbingPitchPage-BSBkn_eS.js",
+              "assets/EmployeeStarterPage-BX9pi1r4.js",
+              "assets/StudioPage-Ci48Vvo6.js",
+              "assets/StudioPage-Ci48Vvo6.js",
+              "assets/StudioPage-Ci48Vvo6.js",
+              "assets/MerchantConnectPage-C5bjaT7E.js",
+              "assets/StudioPage-Ci48Vvo6.js",
+              "assets/StudioPage-Ci48Vvo6.js",
+              "assets/StudioPage-Ci48Vvo6.js",
+              "assets/OlbHomePage-YTBJwK3z.js"
+            ]
+          },
+          "rawDelta": 1,
+          "gzipDelta": -27
+        },
+        {
+          "name": "assets/merchantFurniture.js",
+          "base": {
+            "file": "assets/merchantFurniture-ZuMdbwJD.js",
+            "bytes": 2710,
+            "gzipBytes": 1372,
+            "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/merchantFurniture-ZuMdbwJD.js",
+            "bytes": 2710,
+            "gzipBytes": 1372,
+            "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/middleware.js",
+          "base": {
+            "file": "assets/middleware-BoNmX9tp.js",
+            "bytes": 3758,
+            "gzipBytes": 1361,
+            "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/middleware-BoNmX9tp.js",
+            "bytes": 3758,
+            "gzipBytes": 1361,
+            "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/productImageSafety.js",
+          "base": {
+            "file": "assets/productImageSafety-CDXX3Z8N.js",
+            "bytes": 434,
+            "gzipBytes": 292,
+            "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/productImageSafety-CDXX3Z8N.js",
+            "bytes": 434,
+            "gzipBytes": 292,
+            "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/productSurfaceLighting.js",
+          "base": {
+            "file": "assets/productSurfaceLighting-BQZxIn0h.js",
+            "bytes": 37588,
+            "gzipBytes": 14024,
+            "sha256": "1f758e13d22a8ce896cf03405a992c952abcaeff772f02a95f1b50381451bf50",
+            "type": "chunk",
+            "imports": [
+              "assets/renderQualityStore-BBxCd5KC.js",
+              "assets/vendor-three-CjQotlrx.js",
+              "assets/buildingServices-DV1gAOMk.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/productSurfaceLighting-DnzCSDT9.js",
+            "bytes": 37588,
+            "gzipBytes": 14025,
+            "sha256": "7c43849277bc675babe78110a3388bc41c909de10083d2c45842d53669e8c3e7",
+            "type": "chunk",
+            "imports": [
+              "assets/renderQualityStore-BPhTqrAi.js",
+              "assets/vendor-three-DFSP7WXy.js",
+              "assets/buildingServices-CWW_lony.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 1
+        },
+        {
+          "name": "assets/propertyStore.js",
+          "base": {
+            "file": "assets/propertyStore-C5e7ZzCd.js",
+            "bytes": 88628,
+            "gzipBytes": 29836,
+            "sha256": "9f29a33e19d4697b48a5fee5ecc9ace0da3f4f135359ed55eda3fa53acaaf50f",
+            "type": "chunk",
+            "imports": [
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/propertyStore-BJgwuwPN.js",
+            "bytes": 88628,
+            "gzipBytes": 29834,
+            "sha256": "402d84c32bf6389e21591f6c033cb07bc5b73eb09b5f26958c3a9e5c7381540e",
+            "type": "chunk",
+            "imports": [
+              "assets/buildingServices-CWW_lony.js",
+              "assets/main-ViCgdYyv.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -2
+        },
+        {
+          "name": "assets/quotedProducts.js",
+          "base": {
+            "file": "assets/quotedProducts-2NCXztC6.js",
+            "bytes": 392,
+            "gzipBytes": 265,
+            "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/quotedProducts-2NCXztC6.js",
+            "bytes": 392,
+            "gzipBytes": 265,
+            "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/renderQualityStore.js",
+          "base": {
+            "file": "assets/renderQualityStore-BBxCd5KC.js",
+            "bytes": 27262,
+            "gzipBytes": 10881,
+            "sha256": "5be2c16f73657f72fa7196d8ad24a5d0a966d9e2fb7d6962e5c8575493d0b735",
+            "type": "chunk",
+            "imports": [
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/renderQualityStore-BPhTqrAi.js",
+            "bytes": 27262,
+            "gzipBytes": 10879,
+            "sha256": "afc072f4cee28552566e4f3e070216468397a46b76cb6783875eb5b84eb68d4d",
+            "type": "chunk",
+            "imports": [
+              "assets/buildingServices-CWW_lony.js",
+              "assets/main-ViCgdYyv.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -2
+        },
+        {
+          "name": "assets/serviceFixtureMeshes.js",
+          "base": {
+            "file": "assets/serviceFixtureMeshes-dDaBzpGO.js",
+            "bytes": 4351,
+            "gzipBytes": 1883,
+            "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-three-CjQotlrx.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/serviceFixtureMeshes-DTCQy3Rs.js",
+            "bytes": 4351,
+            "gzipBytes": 1881,
+            "sha256": "1fe8fe0b6325cc6d2eb0e1944903bf9509da8d26ca6bacfe84e2909a1472c917",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-three-DFSP7WXy.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -2
+        },
+        {
+          "name": "assets/showcaseSafety.js",
+          "base": {
+            "file": "assets/showcaseSafety-DFBXsUeQ.js",
+            "bytes": 179,
+            "gzipBytes": 162,
+            "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/showcaseSafety-DFBXsUeQ.js",
+            "bytes": 179,
+            "gzipBytes": 162,
+            "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/types.js",
+          "base": {
+            "file": "assets/types-BR-OoGj9.js",
+            "bytes": 54910,
+            "gzipBytes": 12621,
+            "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/types-BR-OoGj9.js",
+            "bytes": 54910,
+            "gzipBytes": 12621,
+            "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/vendor-konva.js",
+          "base": {
+            "file": "assets/vendor-konva-CbK8OvmD.js",
+            "bytes": 292561,
+            "gzipBytes": 89264,
+            "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/vendor-konva-CbK8OvmD.js",
+            "bytes": 292561,
+            "gzipBytes": 89264,
+            "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/vendor-react.js",
+          "base": {
+            "file": "assets/vendor-react-CS4MHxMm.js",
+            "bytes": 142362,
+            "gzipBytes": 45622,
+            "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/vendor-react-CS4MHxMm.js",
+            "bytes": 142362,
+            "gzipBytes": 45622,
+            "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/vendor-router.js",
+          "base": {
+            "file": "assets/vendor-router-YSxUxVSZ.js",
+            "bytes": 21566,
+            "gzipBytes": 8036,
+            "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/vendor-router-YSxUxVSZ.js",
+            "bytes": 21566,
+            "gzipBytes": 8036,
+            "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/vendor-three.js",
+          "base": {
+            "file": "assets/vendor-three-CjQotlrx.js",
+            "bytes": 744964,
+            "gzipBytes": 191245,
+            "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/vendor-three-DFSP7WXy.js",
+            "bytes": 745009,
+            "gzipBytes": 191257,
+            "sha256": "8ed6b3f62f6fb67636da4b44ffef183c2184775dec0950f5645945695c625219",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 45,
+          "gzipDelta": 12
+        }
+      ],
+      "earlyRawDelta": 1523,
+      "earlyGzipDelta": 489,
+      "numericCeilingBytes": 1024,
+      "insideCeilingWithoutAliasException": true,
+      "aliasReview": [
+        {
+          "name": "assets/vendor-three.js",
+          "rawDelta": 45,
+          "gzipDelta": 12,
+          "note": "Only alias-only growth is exempt; source/module export review required. Do not automatically exempt other Three changes."
+        }
+      ],
+      "newEarlyChunks": [],
+      "missingEarlyChunks": [],
+      "earlyFeatureModules": [],
+      "semanticGate": "Numeric size alone is insufficient: inspect changes to confirm the allowed seam and that feature implementation waits for canvas render."
+    },
+    "site": {
+      "baseCommit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+      "candidateCommit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+      "baseCount": 28,
+      "candidateCount": 28,
+      "files": [
+        {
+          "name": "assets/App.js",
+          "base": {
+            "file": "assets/App-DknD37rJ.js",
+            "bytes": 1079141,
+            "gzipBytes": 330157,
+            "sha256": "b9cad162a3b4260713b4be39b08572311607ddd7b220e423fcaf824c1e996dba",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/propertyStore-C5e7ZzCd.js",
+              "assets/designsApi-C8Utq6Kf.js",
+              "assets/showcaseSafety-DFBXsUeQ.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js",
+              "assets/LocaleThemeControls-CS9Zxink.js",
+              "assets/types-BR-OoGj9.js",
+              "assets/RequireMerchant-BvJGo3r3.js",
+              "assets/downloadJson-DhXa1J4E.js",
+              "assets/vendor-router-YSxUxVSZ.js",
+              "assets/cartStore-C07ffxsA.js",
+              "assets/currency-CLScbmN-.js",
+              "assets/quotedProducts-2NCXztC6.js",
+              "assets/CurrencySwitcher-CL0kYB8t.js",
+              "assets/renderQualityStore-BBxCd5KC.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/vendor-konva-CbK8OvmD.js",
+              "assets/buildSkinStore-B-kjly2M.js",
+              "assets/commission-BSjTNLTx.js"
+            ],
+            "dynamicImports": [
+              "assets/ServicesThreeEditor-BIsfzWJ6.js",
+              "assets/CityThreeView-Cl1EtCH3.js",
+              "assets/SharedProjectWorkbench-vyOFINNy.js",
+              "assets/AiProviderDraft-Dus139CC.js",
+              "assets/modelSnapshot-57aqsZYo.js",
+              "assets/modelSnapshot-57aqsZYo.js",
+              "assets/html2canvas.esm-CBrSDip1.js"
+            ]
+          },
+          "candidate": {
+            "file": "assets/App-D4j7unXI.js",
+            "bytes": 1081589,
+            "gzipBytes": 331094,
+            "sha256": "8059c21fba75049593f1f6ef83edfafe312213c292b0a7004baeda437d5ee7e0",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-yJsxzgTk.js",
+              "assets/buildingServices-B6nXQE9A.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/propertyStore-CnfHXXmb.js",
+              "assets/designsApi-DR6O8vwh.js",
+              "assets/showcaseSafety-DFBXsUeQ.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js",
+              "assets/LocaleThemeControls-CsgxvJPK.js",
+              "assets/types-BR-OoGj9.js",
+              "assets/RequireMerchant-BvJGo3r3.js",
+              "assets/downloadJson-DhXa1J4E.js",
+              "assets/vendor-router-YSxUxVSZ.js",
+              "assets/cartStore-edzrSiHc.js",
+              "assets/currency-FtKe3rJv.js",
+              "assets/quotedProducts-2NCXztC6.js",
+              "assets/CurrencySwitcher-CchYJzAr.js",
+              "assets/renderQualityStore-BqmeX9tP.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/vendor-konva-CbK8OvmD.js",
+              "assets/buildSkinStore-DVSJ0vty.js",
+              "assets/commission-BSjTNLTx.js"
+            ],
+            "dynamicImports": [
+              "assets/ServicesThreeEditor-DbxlFsKw.js",
+              "assets/CityThreeView-D2zcFuS4.js",
+              "assets/SharedProjectWorkbench-LQGc9-Zq.js",
+              "assets/SiteEntry-CUWBzSr-.js",
+              "assets/hydration-C1r0u8Km.js",
+              "assets/AiProviderDraft-Ccay0wM7.js",
+              "assets/modelSnapshot-BkjbHmJN.js",
+              "assets/modelSnapshot-BkjbHmJN.js",
+              "assets/html2canvas.esm-CBrSDip1.js"
+            ]
+          },
+          "rawDelta": 2448,
+          "gzipDelta": 937
+        },
+        {
+          "name": "assets/CurrencySwitcher.js",
+          "base": {
+            "file": "assets/CurrencySwitcher-CL0kYB8t.js",
+            "bytes": 2642,
+            "gzipBytes": 1450,
+            "sha256": "048d62d9d359e8d2a0c4581a0a69d39db161dd7be2ed464a4629d7e7513d3735",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-DHOW9Yxw.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/CurrencySwitcher-CchYJzAr.js",
+            "bytes": 2642,
+            "gzipBytes": 1448,
+            "sha256": "d983cd3958c5cb62a9f2b4c0b35d86f78bbcecaba341eb9ffe5473dd8fe339eb",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-yJsxzgTk.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -2
+        },
+        {
+          "name": "assets/LocaleThemeControls.js",
+          "base": {
+            "file": "assets/LocaleThemeControls-CS9Zxink.js",
+            "bytes": 3170,
+            "gzipBytes": 1310,
+            "sha256": "79e673fe10bb3fcdfdc50dc6a1bde4612e18ab2d234f2c667570ac5bb567cc28",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/buildSkinStore-B-kjly2M.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/LocaleThemeControls-CsgxvJPK.js",
+            "bytes": 3170,
+            "gzipBytes": 1309,
+            "sha256": "cc8e48d61667edb0cc6187ac8eb133ee59fbeb3a46e9ff1e049a0b5eb20842a0",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-yJsxzgTk.js",
+              "assets/buildSkinStore-DVSJ0vty.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -1
+        },
+        {
+          "name": "assets/RequireMerchant.js",
+          "base": {
+            "file": "assets/RequireMerchant-BvJGo3r3.js",
+            "bytes": 5153,
+            "gzipBytes": 2292,
+            "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-router-YSxUxVSZ.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/RequireMerchant-BvJGo3r3.js",
+            "bytes": 5153,
+            "gzipBytes": 2292,
+            "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-router-YSxUxVSZ.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/ThreeStage.js",
+          "base": {
+            "file": "assets/ThreeStage-Z2WEYbA1.js",
+            "bytes": 94211,
+            "gzipBytes": 33027,
+            "sha256": "eb64f02d72e64c5b2deb8f2df01d1fc8b238d3a7d1b04389b0afc5983eccd084",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-three-CjQotlrx.js",
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/renderQualityStore-BBxCd5KC.js",
+              "assets/productSurfaceLighting-BQZxIn0h.js",
+              "assets/buildSkinStore-B-kjly2M.js",
+              "assets/serviceFixtureMeshes-dDaBzpGO.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js",
+              "assets/types-BR-OoGj9.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/vendor-router-YSxUxVSZ.js",
+              "assets/merchantFurniture-ZuMdbwJD.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/ThreeStage-DOwuZPjg.js",
+            "bytes": 94200,
+            "gzipBytes": 33035,
+            "sha256": "d0189ac3e74b3f94695fec801eb3f39273e152dde186d190917557d172cc7eaa",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-three-CjQotlrx.js",
+              "assets/buildingServices-B6nXQE9A.js",
+              "assets/renderQualityStore-BqmeX9tP.js",
+              "assets/productSurfaceLighting-C2RHMv6U.js",
+              "assets/buildSkinStore-DVSJ0vty.js",
+              "assets/serviceFixtureMeshes-dDaBzpGO.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js",
+              "assets/types-BR-OoGj9.js",
+              "assets/main-yJsxzgTk.js",
+              "assets/vendor-router-YSxUxVSZ.js",
+              "assets/merchantFurniture-ZuMdbwJD.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": -11,
+          "gzipDelta": 8
+        },
+        {
+          "name": "assets/buildSkinStore.js",
+          "base": {
+            "file": "assets/buildSkinStore-B-kjly2M.js",
+            "bytes": 744,
+            "gzipBytes": 463,
+            "sha256": "3a7bfa3ce00d0119a3ade174a1a40b800814a36807c8f229c987ca85a12bd8ca",
+            "type": "chunk",
+            "imports": [
+              "assets/main-DHOW9Yxw.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/buildSkinStore-DVSJ0vty.js",
+            "bytes": 744,
+            "gzipBytes": 463,
+            "sha256": "2553c4aa235f447659e2a359b2ecde28cab7d108f867366d5b51e94ca918729f",
+            "type": "chunk",
+            "imports": [
+              "assets/main-yJsxzgTk.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/buildingServices.js",
+          "base": {
+            "file": "assets/buildingServices-DV1gAOMk.js",
+            "bytes": 175717,
+            "gzipBytes": 51252,
+            "sha256": "338f54e90cae8dd3fef99ff2cbd9ccc15e2613f982ed9307aa1c13e6214ab6a0",
+            "type": "chunk",
+            "imports": [
+              "assets/types-BR-OoGj9.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/merchantFurniture-ZuMdbwJD.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js"
+            ],
+            "dynamicImports": [
+              "assets/sofapColourMatch-DvLtg7hz.js"
+            ]
+          },
+          "candidate": {
+            "file": "assets/buildingServices-B6nXQE9A.js",
+            "bytes": 175717,
+            "gzipBytes": 51251,
+            "sha256": "ad4d312ed54d72a9f1d51215e4ff968f8fb516d2ee53653a77d0ce52e8188aa5",
+            "type": "chunk",
+            "imports": [
+              "assets/types-BR-OoGj9.js",
+              "assets/main-yJsxzgTk.js",
+              "assets/merchantFurniture-ZuMdbwJD.js",
+              "assets/productImageSafety-CDXX3Z8N.js",
+              "assets/buildingServicesCatalog-gFhvLWEg.js"
+            ],
+            "dynamicImports": [
+              "assets/sofapColourMatch-DvLtg7hz.js"
+            ]
+          },
+          "rawDelta": 0,
+          "gzipDelta": -1
+        },
+        {
+          "name": "assets/buildingServicesCatalog.js",
+          "base": {
+            "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
+            "bytes": 6105,
+            "gzipBytes": 2573,
+            "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
+            "bytes": 6105,
+            "gzipBytes": 2573,
+            "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/cartStore.js",
+          "base": {
+            "file": "assets/cartStore-C07ffxsA.js",
+            "bytes": 12564,
+            "gzipBytes": 4556,
+            "sha256": "71878b9442c1d05a40d947641c664b8e45160c22b8a3ef5863ff19bcd319eed8",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/propertyStore-C5e7ZzCd.js",
+              "assets/buildingServices-DV1gAOMk.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/cartStore-edzrSiHc.js",
+            "bytes": 12564,
+            "gzipBytes": 4555,
+            "sha256": "83326d883152e1638ba48fdc5c431d5ebc8b862f6db4e175bf5f86d96a61fedc",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/main-yJsxzgTk.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/propertyStore-CnfHXXmb.js",
+              "assets/buildingServices-B6nXQE9A.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -1
+        },
+        {
+          "name": "assets/commission.js",
+          "base": {
+            "file": "assets/commission-BSjTNLTx.js",
+            "bytes": 52,
+            "gzipBytes": 72,
+            "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/commission-BSjTNLTx.js",
+            "bytes": 52,
+            "gzipBytes": 72,
+            "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/currency.js",
+          "base": {
+            "file": "assets/currency-CLScbmN-.js",
+            "bytes": 325,
+            "gzipBytes": 257,
+            "sha256": "336aa2ad7502e81c307213a95d5cf138f7f33b04ae12b026802870cc322359f0",
+            "type": "chunk",
+            "imports": [
+              "assets/main-DHOW9Yxw.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/currency-FtKe3rJv.js",
+            "bytes": 325,
+            "gzipBytes": 254,
+            "sha256": "05fd85fc243adbb0cf3d6ac9a4c5ce941f9851eff9c7461ecbe22dc2d0e3e993",
+            "type": "chunk",
+            "imports": [
+              "assets/main-yJsxzgTk.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -3
+        },
+        {
+          "name": "assets/designsApi.js",
+          "base": {
+            "file": "assets/designsApi-C8Utq6Kf.js",
+            "bytes": 16071,
+            "gzipBytes": 5352,
+            "sha256": "b739ecc2becbb0c119efb592bf4b7244558bb57a776cfd371aac56a5aaaae07d",
+            "type": "chunk",
+            "imports": [
+              "assets/main-DHOW9Yxw.js",
+              "assets/propertyStore-C5e7ZzCd.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/showcaseSafety-DFBXsUeQ.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/designsApi-DR6O8vwh.js",
+            "bytes": 16071,
+            "gzipBytes": 5351,
+            "sha256": "42b7e1c969031ae0153a5c2ae38507aefa66d5ed7dd68effa0aba78879a135a2",
+            "type": "chunk",
+            "imports": [
+              "assets/main-yJsxzgTk.js",
+              "assets/propertyStore-CnfHXXmb.js",
+              "assets/middleware-BoNmX9tp.js",
+              "assets/buildingServices-B6nXQE9A.js",
+              "assets/showcaseSafety-DFBXsUeQ.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -1
+        },
+        {
+          "name": "assets/downloadJson.js",
+          "base": {
+            "file": "assets/downloadJson-DhXa1J4E.js",
+            "bytes": 276,
+            "gzipBytes": 233,
+            "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/downloadJson-DhXa1J4E.js",
+            "bytes": 276,
+            "gzipBytes": 233,
+            "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/main.js",
+          "base": {
+            "file": "assets/main-DHOW9Yxw.js",
+            "bytes": 87363,
+            "gzipBytes": 31445,
+            "sha256": "9484401a68ee15addb1f8ac09f710de102809a72967be9fc135653285b1ffeec",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-router-YSxUxVSZ.js"
+            ],
+            "dynamicImports": [
+              "assets/ThreeStage-Z2WEYbA1.js",
+              "assets/App-DknD37rJ.js",
+              "assets/CartPage-ClZ-jlCr.js",
+              "assets/CheckoutPage-B6Tn0TY7.js",
+              "assets/OrderSuccessPage-BidnMixe.js",
+              "assets/OrderCancelledPage-If8WaV9L.js",
+              "assets/OrderPendingPage-B_zQ0O_k.js",
+              "assets/OrdersPage-CvOWRGUH.js",
+              "assets/SuppliersPage-CDp_z_ZX.js",
+              "assets/SuppliersSignupCompletePage-CGibStLu.js",
+              "assets/AdminLayout-B6XH245W.js",
+              "assets/AdminMerchantsPage-BObkhb80.js",
+              "assets/RequireAdmin-DTR4Jl8k.js",
+              "assets/MerchantsListPage-BAr8shu8.js",
+              "assets/MerchantDetailPage-U1BbHm3M.js",
+              "assets/OrdersListPage-lUchrPDy.js",
+              "assets/PayoutsListPage-OhXzdByh.js",
+              "assets/ProductsListPage-CYf14Tb-.js",
+              "assets/SuppliersListPage-B-xTxMWH.js",
+              "assets/DashboardPage-8UfHVPC8.js",
+              "assets/AuditLogPage-x28-CSQo.js",
+              "assets/PublicProductsPage-D2oMdXAH.js",
+              "assets/ProductDetailPage-5LNBUh0K.js",
+              "assets/MarketplaceCartPage-Bl_hXd4q.js",
+              "assets/MarketplaceCheckoutPage-DY8lPIwh.js",
+              "assets/OrderTrackPage-CN84lk7q.js",
+              "assets/GumroadReturnPage-BG_EzyOK.js",
+              "assets/MerchantAgentPage-kHCVhgZW.js",
+              "assets/MerchantDashboardPage-B8qQnC7v.js",
+              "assets/MerchantOnboardingPage-Dpwg32D0.js",
+              "assets/MerchantAddProductPage-CMt09diz.js",
+              "assets/RequireMerchant-BvJGo3r3.js",
+              "assets/MyDesignsPage-B8kfswtM.js",
+              "assets/DemoDesignerPage-BtX7evLt.js",
+              "assets/DeveloperPitchPage-WXv3fnCY.js",
+              "assets/ConstructionPitchPage-BJQviuNx.js",
+              "assets/MerchantPitchPage-C_gFSBsJ.js",
+              "assets/PlumbingPitchPage-DQmjOirS.js",
+              "assets/EmployeeStarterPage-CR5J8dCf.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/MerchantConnectPage-C5bjaT7E.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/StudioPage-BtMUdwIp.js",
+              "assets/OlbHomePage-BNpC04fL.js"
+            ]
+          },
+          "candidate": {
+            "file": "assets/main-yJsxzgTk.js",
+            "bytes": 87354,
+            "gzipBytes": 31430,
+            "sha256": "a829a6960f6602a5a7cc5b61c00ccbd1df807517102725d9b51fe476b7dddbef",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js",
+              "assets/vendor-router-YSxUxVSZ.js"
+            ],
+            "dynamicImports": [
+              "assets/ThreeStage-DOwuZPjg.js",
+              "assets/App-D4j7unXI.js",
+              "assets/CartPage-BFKAytYg.js",
+              "assets/CheckoutPage-CUjKLlIb.js",
+              "assets/OrderSuccessPage-DRm04wWZ.js",
+              "assets/OrderCancelledPage-CKPiTyBe.js",
+              "assets/OrderPendingPage-BsYKjnZr.js",
+              "assets/OrdersPage-Avj-mI0i.js",
+              "assets/SuppliersPage-CDp_z_ZX.js",
+              "assets/SuppliersSignupCompletePage-CGibStLu.js",
+              "assets/AdminLayout-CRY2IBmD.js",
+              "assets/AdminMerchantsPage-CE0WTTda.js",
+              "assets/RequireAdmin-akPmLgUj.js",
+              "assets/MerchantsListPage-BgAj9yHo.js",
+              "assets/MerchantDetailPage-zE22EOO_.js",
+              "assets/OrdersListPage-DMtAZ60t.js",
+              "assets/PayoutsListPage-C8bytF_7.js",
+              "assets/ProductsListPage-BIDXOZrT.js",
+              "assets/SuppliersListPage-CPfH1wjA.js",
+              "assets/DashboardPage-C-F1FPb0.js",
+              "assets/AuditLogPage-Bh0ytStT.js",
+              "assets/PublicProductsPage-C3r_nyCq.js",
+              "assets/ProductDetailPage-COEoGeVe.js",
+              "assets/MarketplaceCartPage-Dyn36915.js",
+              "assets/MarketplaceCheckoutPage-BqnTbI5R.js",
+              "assets/OrderTrackPage-nzguZByx.js",
+              "assets/GumroadReturnPage-BG_EzyOK.js",
+              "assets/MerchantAgentPage-kHCVhgZW.js",
+              "assets/MerchantDashboardPage-B8qQnC7v.js",
+              "assets/MerchantOnboardingPage-Dpwg32D0.js",
+              "assets/MerchantAddProductPage-CMt09diz.js",
+              "assets/RequireMerchant-BvJGo3r3.js",
+              "assets/MyDesignsPage-DHlvCmP4.js",
+              "assets/DemoDesignerPage-DSpEowE1.js",
+              "assets/DeveloperPitchPage-CogP_0fh.js",
+              "assets/ConstructionPitchPage-DVcDH8pe.js",
+              "assets/MerchantPitchPage-CNUZwowZ.js",
+              "assets/PlumbingPitchPage-FuTh7LZ6.js",
+              "assets/EmployeeStarterPage-an6uporu.js",
+              "assets/StudioPage-BJtW5Rvv.js",
+              "assets/StudioPage-BJtW5Rvv.js",
+              "assets/StudioPage-BJtW5Rvv.js",
+              "assets/MerchantConnectPage-C5bjaT7E.js",
+              "assets/StudioPage-BJtW5Rvv.js",
+              "assets/StudioPage-BJtW5Rvv.js",
+              "assets/StudioPage-BJtW5Rvv.js",
+              "assets/OlbHomePage-EoTM5Lfp.js"
+            ]
+          },
+          "rawDelta": -9,
+          "gzipDelta": -15
+        },
+        {
+          "name": "assets/merchantFurniture.js",
+          "base": {
+            "file": "assets/merchantFurniture-ZuMdbwJD.js",
+            "bytes": 2710,
+            "gzipBytes": 1372,
+            "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/merchantFurniture-ZuMdbwJD.js",
+            "bytes": 2710,
+            "gzipBytes": 1372,
+            "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/middleware.js",
+          "base": {
+            "file": "assets/middleware-BoNmX9tp.js",
+            "bytes": 3758,
+            "gzipBytes": 1361,
+            "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/middleware-BoNmX9tp.js",
+            "bytes": 3758,
+            "gzipBytes": 1361,
+            "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/productImageSafety.js",
+          "base": {
+            "file": "assets/productImageSafety-CDXX3Z8N.js",
+            "bytes": 434,
+            "gzipBytes": 292,
+            "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/productImageSafety-CDXX3Z8N.js",
+            "bytes": 434,
+            "gzipBytes": 292,
+            "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/productSurfaceLighting.js",
+          "base": {
+            "file": "assets/productSurfaceLighting-BQZxIn0h.js",
+            "bytes": 37588,
+            "gzipBytes": 14024,
+            "sha256": "1f758e13d22a8ce896cf03405a992c952abcaeff772f02a95f1b50381451bf50",
+            "type": "chunk",
+            "imports": [
+              "assets/renderQualityStore-BBxCd5KC.js",
+              "assets/vendor-three-CjQotlrx.js",
+              "assets/buildingServices-DV1gAOMk.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/productSurfaceLighting-C2RHMv6U.js",
+            "bytes": 37588,
+            "gzipBytes": 14023,
+            "sha256": "061c6dd39c8c6b64847dd3a54836a47c16970e76ece6a4d87f586824a26f2e3b",
+            "type": "chunk",
+            "imports": [
+              "assets/renderQualityStore-BqmeX9tP.js",
+              "assets/vendor-three-CjQotlrx.js",
+              "assets/buildingServices-B6nXQE9A.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": -1
+        },
+        {
+          "name": "assets/propertyStore.js",
+          "base": {
+            "file": "assets/propertyStore-C5e7ZzCd.js",
+            "bytes": 88628,
+            "gzipBytes": 29836,
+            "sha256": "9f29a33e19d4697b48a5fee5ecc9ace0da3f4f135359ed55eda3fa53acaaf50f",
+            "type": "chunk",
+            "imports": [
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/propertyStore-CnfHXXmb.js",
+            "bytes": 88676,
+            "gzipBytes": 29856,
+            "sha256": "0d59552d38cc524a6247544b5bcda56f0223a1145ef9ace1e9164bb662a00abc",
+            "type": "chunk",
+            "imports": [
+              "assets/buildingServices-B6nXQE9A.js",
+              "assets/main-yJsxzgTk.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 48,
+          "gzipDelta": 20
+        },
+        {
+          "name": "assets/quotedProducts.js",
+          "base": {
+            "file": "assets/quotedProducts-2NCXztC6.js",
+            "bytes": 392,
+            "gzipBytes": 265,
+            "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/quotedProducts-2NCXztC6.js",
+            "bytes": 392,
+            "gzipBytes": 265,
+            "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/renderQualityStore.js",
+          "base": {
+            "file": "assets/renderQualityStore-BBxCd5KC.js",
+            "bytes": 27262,
+            "gzipBytes": 10881,
+            "sha256": "5be2c16f73657f72fa7196d8ad24a5d0a966d9e2fb7d6962e5c8575493d0b735",
+            "type": "chunk",
+            "imports": [
+              "assets/buildingServices-DV1gAOMk.js",
+              "assets/main-DHOW9Yxw.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/renderQualityStore-BqmeX9tP.js",
+            "bytes": 27262,
+            "gzipBytes": 10881,
+            "sha256": "b1c8a120ec1d516ecb248d680ceb4551ea5a58405733963d0ef0b0efdfbc3700",
+            "type": "chunk",
+            "imports": [
+              "assets/buildingServices-B6nXQE9A.js",
+              "assets/main-yJsxzgTk.js",
+              "assets/middleware-BoNmX9tp.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/serviceFixtureMeshes.js",
+          "base": {
+            "file": "assets/serviceFixtureMeshes-dDaBzpGO.js",
+            "bytes": 4351,
+            "gzipBytes": 1883,
+            "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-three-CjQotlrx.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/serviceFixtureMeshes-dDaBzpGO.js",
+            "bytes": 4351,
+            "gzipBytes": 1883,
+            "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-three-CjQotlrx.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/showcaseSafety.js",
+          "base": {
+            "file": "assets/showcaseSafety-DFBXsUeQ.js",
+            "bytes": 179,
+            "gzipBytes": 162,
+            "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/showcaseSafety-DFBXsUeQ.js",
+            "bytes": 179,
+            "gzipBytes": 162,
+            "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/types.js",
+          "base": {
+            "file": "assets/types-BR-OoGj9.js",
+            "bytes": 54910,
+            "gzipBytes": 12621,
+            "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/types-BR-OoGj9.js",
+            "bytes": 54910,
+            "gzipBytes": 12621,
+            "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/vendor-konva.js",
+          "base": {
+            "file": "assets/vendor-konva-CbK8OvmD.js",
+            "bytes": 292561,
+            "gzipBytes": 89264,
+            "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/vendor-konva-CbK8OvmD.js",
+            "bytes": 292561,
+            "gzipBytes": 89264,
+            "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/vendor-react.js",
+          "base": {
+            "file": "assets/vendor-react-CS4MHxMm.js",
+            "bytes": 142362,
+            "gzipBytes": 45622,
+            "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/vendor-react-CS4MHxMm.js",
+            "bytes": 142362,
+            "gzipBytes": 45622,
+            "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/vendor-router.js",
+          "base": {
+            "file": "assets/vendor-router-YSxUxVSZ.js",
+            "bytes": 21566,
+            "gzipBytes": 8036,
+            "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js"
+            ],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/vendor-router-YSxUxVSZ.js",
+            "bytes": 21566,
+            "gzipBytes": 8036,
+            "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96",
+            "type": "chunk",
+            "imports": [
+              "assets/vendor-react-CS4MHxMm.js"
+            ],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        },
+        {
+          "name": "assets/vendor-three.js",
+          "base": {
+            "file": "assets/vendor-three-CjQotlrx.js",
+            "bytes": 744964,
+            "gzipBytes": 191245,
+            "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "candidate": {
+            "file": "assets/vendor-three-CjQotlrx.js",
+            "bytes": 744964,
+            "gzipBytes": 191245,
+            "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2",
+            "type": "chunk",
+            "imports": [],
+            "dynamicImports": []
+          },
+          "rawDelta": 0,
+          "gzipDelta": 0
+        }
+      ],
+      "earlyRawDelta": 2476,
+      "earlyGzipDelta": 940,
+      "numericCeilingBytes": 1024,
+      "insideCeilingWithoutAliasException": true,
+      "aliasReview": [
+        {
+          "name": "assets/vendor-three.js",
+          "rawDelta": 0,
+          "gzipDelta": 0,
+          "note": "Only alias-only growth is exempt; source/module export review required. Do not automatically exempt other Three changes."
+        }
+      ],
+      "newEarlyChunks": [],
+      "missingEarlyChunks": [],
+      "earlyFeatureModules": [
+        {
+          "id": "src/site/SiteLoading.tsx",
+          "renderedLength": 853,
+          "renderedExports": [
+            "default"
+          ],
+          "chunk": "assets/App-D4j7unXI.js",
+          "early": true
+        },
+        {
+          "id": "src/site/SiteLaunchButton.tsx",
+          "renderedLength": 2632,
+          "renderedExports": [
+            "SiteLaunchButton"
+          ],
+          "chunk": "assets/App-D4j7unXI.js",
+          "early": true
+        }
+      ],
+      "semanticGate": "Numeric size alone is insufficient: inspect changes to confirm the allowed seam and that feature implementation waits for canvas render."
+    }
+  },
+  "timings": {
+    "walk": {
+      "source": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round2\\results\\r2-candidate\\load-all.json",
+      "method": "Native D3D11; no CPU/network throttle; fresh browser process and profile per row; base, candidate(s), custom-domain interleaved for each run/device; all HTTPS hosts pinned to216.198.79.3. Both legacy navigation→observed loading-3d disappearance and exact canvas render timestamp are retained. Loading visibility separately observes #52 HTML startup and React-only loading. Historical reactLoadingSeen is the legacy loading-3d selector, which also matches #52 HTML; actualReactLoadingSeen excludes #designer-startup. Phone390×844 is touch emulation, not hardware. Formal pass requires both timing definitions unless a defect is proved; custom-domain results are informational.",
+      "healthBefore": [
+        {
+          "at": "2026-10-29T06:52:54.859Z",
+          "target": "base",
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:52:55.964Z"
+          }
+        },
+        {
+          "at": "2026-10-29T06:52:55.505Z",
+          "target": "walk",
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:52:56.607Z"
+          }
+        },
+        {
+          "at": "2026-10-29T06:52:57.648Z",
+          "target": "site",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:52:58.742Z"
+          }
+        }
+      ],
+      "healthAfter": [
+        {
+          "at": "2026-10-29T06:59:20.246Z",
+          "target": "base",
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:59:21.343Z"
+          }
+        },
+        {
+          "at": "2026-10-29T06:59:23.351Z",
+          "target": "walk",
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:59:24.445Z"
+          }
+        },
+        {
+          "at": "2026-10-29T06:59:28.060Z",
+          "target": "site",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:59:29.161Z"
+          }
+        }
+      ],
+      "healthStable": true,
+      "rows": [
+        {
+          "device": "desktop",
+          "complete": true,
+          "pairs": [
+            {
+              "run": 1,
+              "baseWallMs": 5257,
+              "previewWallMs": 5768,
+              "customWallMs": 13581,
+              "baseCanvasMs": 5136.700000047684,
+              "previewCanvasMs": 5639.299999952316,
+              "customCanvasMs": 13534.800000071526,
+              "previewLoadingSeenMs": 1376.6999999284744,
+              "previewHtmlLoadingSeenMs": 1376.6999999284744,
+              "previewReactLoadingSeenMs": 1376.6999999284744,
+              "baseFcpMs": 2884,
+              "previewFcpMs": 1444,
+              "customFcpMs": 11864,
+              "startedAt": {
+                "base": "2026-10-29T06:52:57.821Z",
+                "candidate": "2026-10-29T06:53:06.395Z",
+                "custom": "2026-10-29T06:53:27.409Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 2,
+              "baseWallMs": 6685,
+              "previewWallMs": 4426,
+              "customWallMs": 5497,
+              "baseCanvasMs": 6612.899999976158,
+              "previewCanvasMs": 4294.199999928474,
+              "customCanvasMs": 5443,
+              "previewLoadingSeenMs": 943.7999999523163,
+              "previewHtmlLoadingSeenMs": 943.7999999523163,
+              "previewReactLoadingSeenMs": 943.7999999523163,
+              "baseFcpMs": 3928,
+              "previewFcpMs": 1472,
+              "customFcpMs": 3780,
+              "startedAt": {
+                "base": "2026-10-29T06:54:22.620Z",
+                "candidate": "2026-10-29T06:54:32.545Z",
+                "custom": "2026-10-29T06:54:46.568Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 3,
+              "baseWallMs": 4332,
+              "previewWallMs": 3687,
+              "customWallMs": 8925,
+              "baseCanvasMs": 4204.200000047684,
+              "previewCanvasMs": 3558.899999976158,
+              "customCanvasMs": 8893.300000071526,
+              "previewLoadingSeenMs": 667.6999999284744,
+              "previewHtmlLoadingSeenMs": 667.6999999284744,
+              "previewReactLoadingSeenMs": 667.6999999284744,
+              "baseFcpMs": 1088,
+              "previewFcpMs": 732,
+              "customFcpMs": 7656,
+              "startedAt": {
+                "base": "2026-10-29T06:55:38.388Z",
+                "candidate": "2026-10-29T06:55:45.948Z",
+                "custom": "2026-10-29T06:56:00.804Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 4,
+              "baseWallMs": 10042,
+              "previewWallMs": 3411,
+              "customWallMs": 4127,
+              "baseCanvasMs": 9528.399999976158,
+              "previewCanvasMs": 3287.2000000476837,
+              "customCanvasMs": 4083.600000023842,
+              "previewLoadingSeenMs": 653.3000000715256,
+              "previewHtmlLoadingSeenMs": 653.3000000715256,
+              "previewReactLoadingSeenMs": 653.3000000715256,
+              "baseFcpMs": 3980,
+              "previewFcpMs": 752,
+              "customFcpMs": 2376,
+              "startedAt": {
+                "base": "2026-10-29T06:56:53.943Z",
+                "candidate": "2026-10-29T06:57:06.857Z",
+                "custom": "2026-10-29T06:57:19.932Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 5,
+              "baseWallMs": 3461,
+              "previewWallMs": 4299,
+              "customWallMs": 8315,
+              "baseCanvasMs": 3336.899999976158,
+              "previewCanvasMs": 4165.899999976158,
+              "customCanvasMs": 8293.899999976158,
+              "previewLoadingSeenMs": 701.7999999523163,
+              "previewHtmlLoadingSeenMs": 701.7999999523163,
+              "previewReactLoadingSeenMs": 701.7999999523163,
+              "baseFcpMs": 1252,
+              "previewFcpMs": 1288,
+              "customFcpMs": 6628,
+              "startedAt": {
+                "base": "2026-10-29T06:58:07.887Z",
+                "candidate": "2026-10-29T06:58:14.686Z",
+                "custom": "2026-10-29T06:58:29.916Z"
+              },
+              "failures": []
+            }
+          ],
+          "medians": {
+            "baseWallMs": 5257,
+            "previewWallMs": 4299,
+            "customWallMs": 8315,
+            "baseCanvasMs": 5136.700000047684,
+            "previewCanvasMs": 4165.899999976158,
+            "customCanvasMs": 8293.899999976158
+          },
+          "absoluteLimitMs": 3000,
+          "wallRatio": 0.817766787140955,
+          "canvasRatio": 0.811007066781686,
+          "gates": {
+            "absoluteWall": false,
+            "absoluteCanvas": false,
+            "pairedWall": true,
+            "pairedCanvas": true,
+            "loadingWithinOneSecondEveryRun": false,
+            "loadingPaintWithinOneSecondEveryRun": false
+          },
+          "allTimingGatesPass": false
+        },
+        {
+          "device": "phone",
+          "complete": true,
+          "pairs": [
+            {
+              "run": 1,
+              "baseWallMs": 3641,
+              "previewWallMs": 3365,
+              "customWallMs": 7197,
+              "baseCanvasMs": 3506.5,
+              "previewCanvasMs": 3238.600000023842,
+              "customCanvasMs": 7156.100000023842,
+              "previewLoadingSeenMs": 676.3000000715256,
+              "previewHtmlLoadingSeenMs": 676.3000000715256,
+              "previewReactLoadingSeenMs": 676.3000000715256,
+              "baseFcpMs": 1200,
+              "previewFcpMs": 744,
+              "customFcpMs": 5920,
+              "startedAt": {
+                "base": "2026-10-29T06:53:49.550Z",
+                "candidate": "2026-10-29T06:53:56.493Z",
+                "custom": "2026-10-29T06:54:10.275Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 2,
+              "baseWallMs": 7786,
+              "previewWallMs": 5368,
+              "customWallMs": 4132,
+              "baseCanvasMs": 7694.699999928474,
+              "previewCanvasMs": 5239.300000071526,
+              "customCanvasMs": 4082,
+              "previewLoadingSeenMs": 2213.9000000953674,
+              "previewHtmlLoadingSeenMs": 2213.9000000953674,
+              "previewReactLoadingSeenMs": 2213.9000000953674,
+              "baseFcpMs": 3084,
+              "previewFcpMs": 2280,
+              "customFcpMs": 2380,
+              "startedAt": {
+                "base": "2026-10-29T06:55:03.020Z",
+                "candidate": "2026-10-29T06:55:13.902Z",
+                "custom": "2026-10-29T06:55:29.023Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 3,
+              "baseWallMs": 4209,
+              "previewWallMs": 4149,
+              "customWallMs": 8973,
+              "baseCanvasMs": 4142.899999976158,
+              "previewCanvasMs": 4019.1999999284744,
+              "customCanvasMs": 8949.799999952316,
+              "previewLoadingSeenMs": 675.1999999284744,
+              "previewHtmlLoadingSeenMs": 675.1999999284744,
+              "previewReactLoadingSeenMs": 675.1999999284744,
+              "baseFcpMs": 1084,
+              "previewFcpMs": 740,
+              "customFcpMs": 7276,
+              "startedAt": {
+                "base": "2026-10-29T06:56:17.645Z",
+                "candidate": "2026-10-29T06:56:25.183Z",
+                "custom": "2026-10-29T06:56:40.244Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 4,
+              "baseWallMs": 6122,
+              "previewWallMs": 7254,
+              "customWallMs": 4434,
+              "baseCanvasMs": 6054.299999952316,
+              "previewCanvasMs": 7166.299999952316,
+              "customCanvasMs": 4392.799999952316,
+              "previewLoadingSeenMs": 3740.899999976158,
+              "previewHtmlLoadingSeenMs": 3740.899999976158,
+              "previewReactLoadingSeenMs": 3740.899999976158,
+              "baseFcpMs": 2804,
+              "previewFcpMs": 3808,
+              "customFcpMs": 2372,
+              "startedAt": {
+                "base": "2026-10-29T06:57:31.835Z",
+                "candidate": "2026-10-29T06:57:41.298Z",
+                "custom": "2026-10-29T06:57:58.168Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 5,
+              "baseWallMs": 3721,
+              "previewWallMs": 3818,
+              "customWallMs": 5199,
+              "baseCanvasMs": 3686,
+              "previewCanvasMs": 3745.1999999284744,
+              "customCanvasMs": 3781.600000023842,
+              "previewLoadingSeenMs": 647.0999999046326,
+              "previewHtmlLoadingSeenMs": 647.0999999046326,
+              "previewReactLoadingSeenMs": 647.0999999046326,
+              "baseFcpMs": 1216,
+              "previewFcpMs": 712,
+              "customFcpMs": 2120,
+              "startedAt": {
+                "base": "2026-10-29T06:58:47.291Z",
+                "candidate": "2026-10-29T06:58:54.329Z",
+                "custom": "2026-10-29T06:59:07.911Z"
+              },
+              "failures": []
+            }
+          ],
+          "medians": {
+            "baseWallMs": 4209,
+            "previewWallMs": 4149,
+            "customWallMs": 5199,
+            "baseCanvasMs": 4142.899999976158,
+            "previewCanvasMs": 4019.1999999284744,
+            "customCanvasMs": 4392.799999952316
+          },
+          "absoluteLimitMs": 5000,
+          "wallRatio": 0.9857448325017819,
+          "canvasRatio": 0.9701416881777509,
+          "gates": {
+            "absoluteWall": true,
+            "absoluteCanvas": true,
+            "pairedWall": true,
+            "pairedCanvas": true,
+            "loadingWithinOneSecondEveryRun": false,
+            "loadingPaintWithinOneSecondEveryRun": false
+          },
+          "allTimingGatesPass": false
+        }
+      ]
+    },
+    "site": {
+      "source": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round2\\results\\r2-candidate\\load-all.json",
+      "method": "Native D3D11; no CPU/network throttle; fresh browser process and profile per row; base, candidate(s), custom-domain interleaved for each run/device; all HTTPS hosts pinned to216.198.79.3. Both legacy navigation→observed loading-3d disappearance and exact canvas render timestamp are retained. Loading visibility separately observes #52 HTML startup and React-only loading. Historical reactLoadingSeen is the legacy loading-3d selector, which also matches #52 HTML; actualReactLoadingSeen excludes #designer-startup. Phone390×844 is touch emulation, not hardware. Formal pass requires both timing definitions unless a defect is proved; custom-domain results are informational.",
+      "healthBefore": [
+        {
+          "at": "2026-10-29T06:52:54.859Z",
+          "target": "base",
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:52:55.964Z"
+          }
+        },
+        {
+          "at": "2026-10-29T06:52:55.505Z",
+          "target": "walk",
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:52:56.607Z"
+          }
+        },
+        {
+          "at": "2026-10-29T06:52:57.648Z",
+          "target": "site",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:52:58.742Z"
+          }
+        }
+      ],
+      "healthAfter": [
+        {
+          "at": "2026-10-29T06:59:20.246Z",
+          "target": "base",
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:59:21.343Z"
+          }
+        },
+        {
+          "at": "2026-10-29T06:59:23.351Z",
+          "target": "walk",
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:59:24.445Z"
+          }
+        },
+        {
+          "at": "2026-10-29T06:59:28.060Z",
+          "target": "site",
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+          "status": 200,
+          "body": {
+            "ok": true,
+            "service": "ppw-designer-2d",
+            "env": "preview",
+            "commit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+            "sentryConfigured": true,
+            "timestamp": "2026-10-29T06:59:29.161Z"
+          }
+        }
+      ],
+      "healthStable": true,
+      "rows": [
+        {
+          "device": "desktop",
+          "complete": true,
+          "pairs": [
+            {
+              "run": 1,
+              "baseWallMs": 5257,
+              "previewWallMs": 9015,
+              "customWallMs": 13581,
+              "baseCanvasMs": 5136.700000047684,
+              "previewCanvasMs": 8895.900000095367,
+              "customCanvasMs": 13534.800000071526,
+              "previewLoadingSeenMs": 3455.4000000953674,
+              "previewHtmlLoadingSeenMs": 3455.4000000953674,
+              "previewReactLoadingSeenMs": 3455.4000000953674,
+              "baseFcpMs": 2884,
+              "previewFcpMs": 3528,
+              "customFcpMs": 11864,
+              "startedAt": {
+                "base": "2026-10-29T06:52:57.821Z",
+                "candidate": "2026-10-29T06:53:15.049Z",
+                "custom": "2026-10-29T06:53:27.409Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 2,
+              "baseWallMs": 6685,
+              "previewWallMs": 3222,
+              "customWallMs": 5497,
+              "baseCanvasMs": 6612.899999976158,
+              "previewCanvasMs": 3096.7999999523163,
+              "customCanvasMs": 5443,
+              "previewLoadingSeenMs": 719.3999999761581,
+              "previewHtmlLoadingSeenMs": 719.3999999761581,
+              "previewReactLoadingSeenMs": 719.3999999761581,
+              "baseFcpMs": 3928,
+              "previewFcpMs": 1232,
+              "customFcpMs": 3780,
+              "startedAt": {
+                "base": "2026-10-29T06:54:22.620Z",
+                "candidate": "2026-10-29T06:54:40.098Z",
+                "custom": "2026-10-29T06:54:46.568Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 3,
+              "baseWallMs": 4332,
+              "previewWallMs": 5018,
+              "customWallMs": 8925,
+              "baseCanvasMs": 4204.200000047684,
+              "previewCanvasMs": 4888.399999976158,
+              "customCanvasMs": 8893.300000071526,
+              "previewLoadingSeenMs": 1424.3999999761581,
+              "previewHtmlLoadingSeenMs": 1424.3999999761581,
+              "previewReactLoadingSeenMs": 1424.3999999761581,
+              "baseFcpMs": 1088,
+              "previewFcpMs": 1492,
+              "customFcpMs": 7656,
+              "startedAt": {
+                "base": "2026-10-29T06:55:38.388Z",
+                "candidate": "2026-10-29T06:55:52.569Z",
+                "custom": "2026-10-29T06:56:00.804Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 4,
+              "baseWallMs": 10042,
+              "previewWallMs": 3373,
+              "customWallMs": 4127,
+              "baseCanvasMs": 9528.399999976158,
+              "previewCanvasMs": 3255.100000023842,
+              "customCanvasMs": 4083.600000023842,
+              "previewLoadingSeenMs": 667.1999999284744,
+              "previewHtmlLoadingSeenMs": 667.1999999284744,
+              "previewReactLoadingSeenMs": 667.1999999284744,
+              "baseFcpMs": 3980,
+              "previewFcpMs": 732,
+              "customFcpMs": 2376,
+              "startedAt": {
+                "base": "2026-10-29T06:56:53.943Z",
+                "candidate": "2026-10-29T06:57:13.444Z",
+                "custom": "2026-10-29T06:57:19.932Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 5,
+              "baseWallMs": 3461,
+              "previewWallMs": 4838,
+              "customWallMs": 8315,
+              "baseCanvasMs": 3336.899999976158,
+              "previewCanvasMs": 4718.800000071526,
+              "customCanvasMs": 8293.899999976158,
+              "previewLoadingSeenMs": 1475.3000000715256,
+              "previewHtmlLoadingSeenMs": 1475.3000000715256,
+              "previewReactLoadingSeenMs": 1475.3000000715256,
+              "baseFcpMs": 1252,
+              "previewFcpMs": 1540,
+              "customFcpMs": 6628,
+              "startedAt": {
+                "base": "2026-10-29T06:58:07.887Z",
+                "candidate": "2026-10-29T06:58:21.862Z",
+                "custom": "2026-10-29T06:58:29.916Z"
+              },
+              "failures": []
+            }
+          ],
+          "medians": {
+            "baseWallMs": 5257,
+            "previewWallMs": 4838,
+            "customWallMs": 8315,
+            "baseCanvasMs": 5136.700000047684,
+            "previewCanvasMs": 4718.800000071526,
+            "customCanvasMs": 8293.899999976158
+          },
+          "absoluteLimitMs": 3000,
+          "wallRatio": 0.9202967471942173,
+          "canvasRatio": 0.9186442657791425,
+          "gates": {
+            "absoluteWall": false,
+            "absoluteCanvas": false,
+            "pairedWall": true,
+            "pairedCanvas": true,
+            "loadingWithinOneSecondEveryRun": false,
+            "loadingPaintWithinOneSecondEveryRun": false
+          },
+          "allTimingGatesPass": false
+        },
+        {
+          "device": "phone",
+          "complete": true,
+          "pairs": [
+            {
+              "run": 1,
+              "baseWallMs": 3641,
+              "previewWallMs": 4409,
+              "customWallMs": 7197,
+              "baseCanvasMs": 3506.5,
+              "previewCanvasMs": 4352,
+              "customCanvasMs": 7156.100000023842,
+              "previewLoadingSeenMs": 648.3999999761581,
+              "previewHtmlLoadingSeenMs": 648.3999999761581,
+              "previewReactLoadingSeenMs": 648.3999999761581,
+              "baseFcpMs": 1200,
+              "previewFcpMs": 716,
+              "customFcpMs": 5920,
+              "startedAt": {
+                "base": "2026-10-29T06:53:49.550Z",
+                "candidate": "2026-10-29T06:54:03.019Z",
+                "custom": "2026-10-29T06:54:10.275Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 2,
+              "baseWallMs": 7786,
+              "previewWallMs": 3554,
+              "customWallMs": 4132,
+              "baseCanvasMs": 7694.699999928474,
+              "previewCanvasMs": 3432,
+              "customCanvasMs": 4082,
+              "previewLoadingSeenMs": 666.3999999761581,
+              "previewHtmlLoadingSeenMs": 666.3999999761581,
+              "previewReactLoadingSeenMs": 666.3999999761581,
+              "baseFcpMs": 3084,
+              "previewFcpMs": 732,
+              "customFcpMs": 2380,
+              "startedAt": {
+                "base": "2026-10-29T06:55:03.020Z",
+                "candidate": "2026-10-29T06:55:22.195Z",
+                "custom": "2026-10-29T06:55:29.023Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 3,
+              "baseWallMs": 4209,
+              "previewWallMs": 4858,
+              "customWallMs": 8973,
+              "baseCanvasMs": 4142.899999976158,
+              "previewCanvasMs": 4788.299999952316,
+              "customCanvasMs": 8949.799999952316,
+              "previewLoadingSeenMs": 686,
+              "previewHtmlLoadingSeenMs": 686,
+              "previewReactLoadingSeenMs": 686,
+              "baseFcpMs": 1084,
+              "previewFcpMs": 752,
+              "customFcpMs": 7276,
+              "startedAt": {
+                "base": "2026-10-29T06:56:17.645Z",
+                "candidate": "2026-10-29T06:56:32.286Z",
+                "custom": "2026-10-29T06:56:40.244Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 4,
+              "baseWallMs": 6122,
+              "previewWallMs": 3566,
+              "customWallMs": 4434,
+              "baseCanvasMs": 6054.299999952316,
+              "previewCanvasMs": 3447,
+              "customCanvasMs": 4392.799999952316,
+              "previewLoadingSeenMs": 689.1999999284744,
+              "previewHtmlLoadingSeenMs": 689.1999999284744,
+              "previewReactLoadingSeenMs": 689.1999999284744,
+              "baseFcpMs": 2804,
+              "previewFcpMs": 1040,
+              "customFcpMs": 2372,
+              "startedAt": {
+                "base": "2026-10-29T06:57:31.835Z",
+                "candidate": "2026-10-29T06:57:51.418Z",
+                "custom": "2026-10-29T06:57:58.168Z"
+              },
+              "failures": []
+            },
+            {
+              "run": 5,
+              "baseWallMs": 3721,
+              "previewWallMs": 3710,
+              "customWallMs": 5199,
+              "baseCanvasMs": 3686,
+              "previewCanvasMs": 3579.8000000715256,
+              "customCanvasMs": 3781.600000023842,
+              "previewLoadingSeenMs": 665.6000000238419,
+              "previewHtmlLoadingSeenMs": 665.6000000238419,
+              "previewReactLoadingSeenMs": 665.6000000238419,
+              "baseFcpMs": 1216,
+              "previewFcpMs": 1248,
+              "customFcpMs": 2120,
+              "startedAt": {
+                "base": "2026-10-29T06:58:47.291Z",
+                "candidate": "2026-10-29T06:59:01.335Z",
+                "custom": "2026-10-29T06:59:07.911Z"
+              },
+              "failures": []
+            }
+          ],
+          "medians": {
+            "baseWallMs": 4209,
+            "previewWallMs": 3710,
+            "customWallMs": 5199,
+            "baseCanvasMs": 4142.899999976158,
+            "previewCanvasMs": 3579.8000000715256,
+            "customCanvasMs": 4392.799999952316
+          },
+          "absoluteLimitMs": 5000,
+          "wallRatio": 0.8814445236398194,
+          "canvasRatio": 0.8640807164286193,
+          "gates": {
+            "absoluteWall": true,
+            "absoluteCanvas": true,
+            "pairedWall": true,
+            "pairedCanvas": true,
+            "loadingWithinOneSecondEveryRun": true,
+            "loadingPaintWithinOneSecondEveryRun": false
+          },
+          "allTimingGatesPass": false
+        }
+      ]
+    }
+  }
+}

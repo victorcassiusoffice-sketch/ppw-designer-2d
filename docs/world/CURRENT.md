@@ -1,10 +1,10 @@
 # World current state
 
-Finish round1 completed 28 October 2026. Neither PR is merge-ready. Authoritative measured heads: Walk`c8941925da4640cf02d6c4ecb864d3914993a180`, Site`7ed40b6bff89067623a4939f251be1ed5cd6e870`; later documentation commits do not change those application trees. Both include open PR52`56d852d1f2f5d7342b9e02194964d6b998c795c7` by forward merge. Main remains`3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. No history rewrite.
+Finish round 2 completed 29 October 2026 at 11:28 MU. Both PRs remain review candidates with failed gates. Measured application heads: Walk `d78064f9f57ed6e060d9782036b4a8b7a7e95451`, Site `b3727b1d20fff6be3ac448dfe8bf11e9261ad500`. Both include PR #52 `56d852d1f2f5d7342b9e02194964d6b998c795c7` by normal forward merge; main remains `3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`. Later evidence commits do not change those application trees.
 
-[Round report](finish/evidence/REPORT.md), [all exact pairs/files](finish/evidence/measurements.json), [rubric](RUBRIC.md), [resume log](ROUNDS.md). Early JS passes the amended1KB seam gate (+690gzip Walk/+935Site); zero new pre-picture request paths. Desktop first-picture/loading-paint, Site phone paired wall, desktop input/FPS and repeated print banner still fail. Human comprehension and physical one-hand use remain unmeasured.
+[Current report](finish/evidence/REPORT.md), [all pairs](finish/evidence/timings-and-static.json), [rubric](RUBRIC.md), [round log](ROUNDS.md). The paired and 1 KB seam gates pass: +489/+940 gzip bytes, same 36 early HTTP paths. Desktop absolute startup and all-run loading paint still fail. Walk strict FPS, Site print and contrast are repaired; laptop input and the new phone door-tap follow-up remain unresolved.
 
-The once-per-Finish release/provider review was completed28October13:53MU: [primary-source evidence](finish/current-research.md). Installed versions below remain unchanged.
+The once-per-Finish release/provider review was completed 28 October at 13:53 MU: [primary sources](finish/current-research.md). No library upgrade was made.
 
 ## Components and releases
 
@@ -70,16 +70,18 @@ No Google code path/key/environment variable; no anonymous Esri or NASA plot-sca
 
 ## Evidence status and next work
 
-Current exact figures are in [Round1 evidence](finish/evidence/REPORT.md). Walk wall/canvas medians5,700/5,183.5ms desktop and4,594/4,577.3phone; Site5,262/5,184.2 and4,727/4,507.2. Both desktop3second and all-run1second loading-paint targets fail; phone absolute5seconds pass. Site phone original paired wall+11.407% fails; both timing definitions remain reported.
+Five fresh interleaved runs per device: Walk wall/canvas medians 4,299/4,165.9 ms desktop and 4,149/4,019.2 phone; Site 4,838/4,718.8 and 3,710/3,579.8. Base is 5,257/5,136.7 desktop and 4,209/4,142.9 phone. All paired median comparisons pass; both desktop medians miss 3 seconds; phone medians satisfy 5 seconds. Only 9/20 candidate FCPs meet one second. Six candidate HTML response starts already exceed that second, including connection/TLS time; this is not all attributed to server processing.
 
-Chooser202/465ms call→decoded frame passes1second. Desktop third input median82.3ms and strict desktop58.6/59.7fps fail; phone58.525/59.95fps passes30. Current real door/Exit/pointer-lock/restoration checks pass. Site live search/edit/Undo/surveyor/source tags/attribution pass; disclaimer missing on page2 of both A4 outputs prevents print/banner pass.
+Chooser 152/157 ms passes. Desktop strict FPS is 60/60, phone 58.5/59.35, with lows and stalls retained. Original designer frames pause while covered and resume after Exit. Laptop zero-settle third-person input has one 383.4 ms sample and a diagnostic reproduces 444.9 ms. Desktop door/Exit/restoration passes; native one-pointer phone movement/run/view/Controls/Exit passes, but its door tap does not produce the expected Close prompt. No human comprehension or physical ergonomics evidence is invented.
 
-Both quality/secrets/Vercel CI pass. Lighthouse now fixes13 of22 inherited errors, with no new failures;9 remain with reasons in [the exact classification](finish/evidence/lighthouse.json). Further safe plumbing isolation is under review; thresholds/settings unchanged.
+Site's fresh seven-case live/offline suite passes search/draw/edit/Undo/survey/source tags/attribution and the preview-live production guard. All eight actual A4 pages pass visual and text/bounds inspection, complete disclaimer included. Both brands/devices/themes pass 96 button contrast checks, minimum 7.9744:1. Quality, secrets and Vercel checks pass both exact heads. Lighthouse fixes 15/22 inherited errors; seven remain with reasons in [the classification](finish/evidence/lighthouse-classification.json), no new IDs and no settings/threshold changes.
 
-Preview-only tester entry remains **/demo?site=1&live=1**, then Site. Existing healthcheck must answerenv=preview; production/errors/timeouts stay offline. No access code/account/newenvironment is needed. Deferred canonical validation remains behind first picture and before any Site figure; no-site designs keep their original path.
+Preview-only tester entry remains **/demo?site=1&live=1**, then Site. Existing healthcheck must report env=preview; production/errors/timeouts stay offline. All eight final visible-rule screens pass; protected estimators/data/currency, old tests and thresholds are unchanged. Evidence replaces prior bulk and stays below 5 MB per PR.
 
-Next three: (1) actual loading paint and redundant drawing-buffer allocation; (2) pause the covered designer during Walk, preserving restoration and strict measurements; (3) repeated A4 disclaimer plus safe remaining plumbing repairs. First-use instructions and one-hand reach remain improvement/proof gaps, never invented human studies.
+Next three: (1) diagnose and fix the reproduced input stall and native phone door interaction; (2) diagnose startup network/native graphics/paint timing without lowering quality or changing the gate; (3) safely trim only the isolated pitch's base CSS and improve device-specific controls copy. Keep human-proof limitations visible.
 
 ## Standing improvement cycle
 
-During this Finish request, run autonomous measured rounds under the amended Finish instruction, up to10, with each item marked OPEN after3 consecutive failed real rounds and a next idea. Read ROUNDS/LESSONS and fetch before every round. Only return the final handoff when all gates or the explicit limit/hard-stop rule is reached. Production merges remain Victor’s explicit action. The earlier Commander-owned weekly/four-week review cadence resumes after authorized merges; no automation/account/spending permission is created by documenting it.
+Continue measured rounds under the amended Finish instruction, up to 10. An item failing three consecutive real rounds is recorded OPEN with all three attempts and a next idea, then left for the final handoff. Read ROUNDS/LESSONS and fetch before every round. Never rebase or force-push; no production merge, manual deploy, account, key, environment addition or spending. No final handoff yet.
+
+The diagnostic input trace finds the renderer main thread mostly idle for 438 ms while the private Walk GPU context has a 496 ms command-buffer flush; the following Walk tick takes 6.253 ms. The exact graphics operation is unknown. This supports a bounded deferred scene-preparation experiment, not a claim that shader compilation caused the stall. The phone result also does not distinguish an undelivered tap from a valid short-lived collision-safety rejection; Round3 must capture actual click/status events.

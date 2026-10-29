@@ -26,3 +26,14 @@
 - Finish1: Automated drag can end in click-to-lock and trigger browser relock cooldown. Preserve that failure; validate actual native movement in one pointer-lock session instead of assuming delivered heading.
 - Finish1: Inspect every printed page. A banner at the start/end of a report does not cover its middle pages; reserve a repeating print margin.
 - Finish1: Keep formal input settling protocol explicit (Round1 had1000ms); a stricter zero-settle successor must be versioned and cannot replace old samples.
+
+- Finish2: Chromium host resolver rules do not pin Playwright's Node API request client. Use the pinned browser for preview health proof; keep failed harness setup/DNS attempts separate from application measurements.
+- Finish2: A passing net gzip total does not prove the seam-only rule. Per-module comparison found1217 rendered bytes of prior Walk beauty-shader warm-up inside the early ThreeStage closure. Round1 numeric/request results remain valid, but its semantic GateC pass claim is withdrawn; restore upstream shading and keep actual World implementation deferred.
+
+- Finish2: A fixed-position print footer can repeat near the top and overlap content despite a reserved bottom margin. Use native named-page margin content and inspect every actual exported page; preserve the failed output.
+- Finish2: A source theme change must run the repository's existing generator and reproducibility tests. The first omitted generated stylesheet failed correctly; keep that failure and its repair.
+- Finish2: Pausing a covered renderer must acquire ownership before opening, release exactly once after overlay removal, and restore both saved and rendered camera state. Frame stability does not prove every asynchronous shader timer stopped.
+- Finish2: Low input medians do not satisfy an every-sample <50 ms gate. Separate event-dispatch delay from handler-to-render stalls and profile a reproduced outlier before changing code.
+- Finish2: Functional navigation needs bounded observable progress and retained pre-assertion evidence; a fixed pulse can fail without identifying why. Native phone tests must actually use touch throughout when claiming one-pointer operation.
+- Finish2: responseStart includes connection/TLS setup. Retain that decomposition and do not call it pure server latency; FCP-before-CSS-completion is not evidence that CSS blocked paint.
+- Finish2: Original first-use and one-hand criteria are human behavior; scripts prove geometry and interaction, not comprehension or physical comfort. Remove unmeasured promises, retain score limitations.
