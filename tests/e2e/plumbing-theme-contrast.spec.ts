@@ -4,8 +4,8 @@ test.use({ launchOptions: { args: ['--host-resolver-rules=MAP *.vercel.app 216.1
 
 // Include transparent ancestor surfaces and the retained PPW ivory gradient.
 // The new dark surfaces and enquiry status backgrounds are opaque.
-async function contrast(locator: Locator) {
-  return locator.evaluate(element => {
+async function contrast(locator: Locator, pseudo: '::before' | null = null) {
+  return locator.evaluate((element, pseudo) => {
     const rgba = (value: string): number[] => {
       const channels = value.match(/[\d.]+/g)!.map(Number);
       return [channels[0], channels[1], channels[2], channels[3] ?? 1];
@@ -35,15 +35,21 @@ async function contrast(locator: Locator) {
         gradients++;
       }
     }
-    const style = getComputedStyle(element), ink = rgba(style.color);
+    const style = getComputedStyle(element, pseudo);
+    if (pseudo) {
+      if (style.opacity !== '1' || style.backgroundImage !== 'none') throw Error('Unmodelled pseudo-element surface');
+      surfaces = surfaces.map(surface => composite(rgba(style.backgroundColor), surface));
+    }
+    const ink = rgba(style.color);
     if (ink[3] !== 1) throw Error('Contrast model requires opaque text');
     const text = luminance(ink), backgrounds = surfaces.map(luminance);
     const low = Math.min(...backgrounds), high = Math.max(...backgrounds);
     const ratio = text >= low && text <= high ? 1 : Math.min(...backgrounds.map(background =>
       (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05)));
     return { color: style.color, background: style.backgroundColor, gradients, ratio,
+      fontSize: style.fontSize, fontWeight: style.fontWeight, content: style.content, display: style.display,
       outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth };
-  });
+  }, pseudo);
 }
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -67,9 +73,13 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await page.goto('/api/healthcheck');
       await info.attach('health.json', { body: await page.locator('body').innerText(), contentType: 'application/json' });
       await page.goto(`/pitch/plumbing?brand=${brand}`);
-      const measure = async (element: Locator, label: string) => {
-        const reading = await contrast(element);
+      const measure = async (element: Locator, label: string, pseudo: '::before' | null = null) => {
+        const reading = await contrast(element, pseudo);
         readings.push({ label, ...reading });
+        if (pseudo) {
+          expect(reading.content, label).not.toMatch(/^(none|normal)$/);
+          expect(reading.display, label).not.toBe('none');
+        }
         expect(reading.ratio, label).toBeGreaterThanOrEqual(4.5);
       };
       try {
@@ -89,11 +99,36 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
           await close.press('Enter');
           await expect(page.locator('details.locale-theme-controls')).not.toHaveAttribute('open');
           await expect(page.locator('details.locale-theme-controls > summary')).toBeFocused();
-          for (const selector of ['.sales-surface h2', '.sales-surface p']) {
-            const nodes = page.locator(selector);
-            for (let index = 0; index < await nodes.count(); index++) await measure(nodes.nth(index), `${theme}/${selector}/${index}`);
+          for (const chapter of [1, 2, 3, 4]) {
+            await page.locator('[role="tab"]').nth(chapter).click();
+            const commonText = page.locator('.sales-surface :is(h2, p, span, strong, a), .sales-content summary, .sales-content .sales-button');
+            expect(await commonText.count()).toBeGreaterThan(0);
+            if (chapter === 2) await expect(page.locator('.sales-surface .sales-status')).toHaveCount(3);
+            if (chapter === 4) await expect(page.locator('.sales-surface .sales-number')).toHaveCount(4);
+            for (let index = 0; index < await commonText.count(); index++) {
+              const node = commonText.nth(index);
+              await expect(node).toBeVisible();
+              await measure(node, `${theme}/chapter-${chapter + 1}/card-text/${index}`);
+            }
+            if (chapter === 1) {
+              const steps = page.locator('.sales-surface .sales-steps li');
+              await expect(steps).toHaveCount(4);
+              for (let index = 0; index < await steps.count(); index++) {
+                await measure(steps.nth(index), `${theme}/step-counter/${index}`, '::before');
+              }
+            }
+            const actions = page.locator('.sales-content .sales-button');
+            for (let index = 0; index < await actions.count(); index++) {
+              const action = actions.nth(index);
+              for (const state of ['rest', 'hover', 'focus']) {
+                await page.mouse.move(0, 0);
+                if (state === 'hover') await action.hover();
+                if (state === 'focus') await action.focus();
+                await measure(action, `${theme}/chapter-${chapter + 1}/action-${index}/${state}`);
+              }
+            }
+            await info.attach(`${theme}-chapter-${chapter + 1}.png`, { body: await page.locator('.sales-content').screenshot(), contentType: 'image/png' });
           }
-          await info.attach(`${theme}-catalogue.png`, { body: await page.locator('.sales-content').screenshot(), contentType: 'image/png' });
           await page.locator('[role="tab"]').last().click();
           const form = page.locator('form.pitch-enquiry');
           await form.locator('[name="name"]').fill('Contrast Fixture');

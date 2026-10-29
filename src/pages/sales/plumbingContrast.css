@@ -27,3 +27,16 @@
 :root[data-ui-theme] .sales-plumbing .pitch-enquiry .pitch-enquiry-result.is-success {
   color: #275d3e !important;
 }
+
+/* Keep small card labels and ordered steps readable on their actual surfaces.
+ * Ivory OLB already has readable labels; its established palette is retained. */
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-surface :is(.sales-status, .sales-number),
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-surface .sales-steps li::before,
+:root:not([data-brand='olb'])[data-ui-theme='ivory']
+  .sales-plumbing .sales-surface .sales-number,
+:root:not([data-brand='olb'])[data-ui-theme='ivory']
+  .sales-plumbing .sales-surface .sales-steps li::before {
+  color: var(--ui-muted);
+}
