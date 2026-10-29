@@ -1,0 +1,79 @@
+{
+  "at": "2026-10-29T10:38:12.323745+00:00",
+  "branches": {
+    "walk": {
+      "head": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+      "checks": [
+        {
+          "name": "Secrets scan",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40858112340",
+          "runId": 40858112340
+        },
+        {
+          "name": "Quality gates",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40858112336",
+          "runId": 40858112336
+        },
+        {
+          "name": "Vercel",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://vercel.com/victor-ppw/ppw-designer-2d/3y5eZoq6PqZoatZCg1dpXJYaNfCe"
+        }
+      ],
+      "lighthouse": {
+        "name": "Lighthouse CI",
+        "status": "completed",
+        "conclusion": "failure",
+        "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40858112348",
+        "runId": 40858112348
+      },
+      "fullSuite": {
+        "passedTests": 4448,
+        "passedFiles": 422,
+        "proof": "work\\world-finish\\round3\\lighthouse-final-walk-52fa408\\quality-full.log"
+      }
+    },
+    "site": {
+      "head": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
+      "checks": [
+        {
+          "name": "Secrets scan",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40858117662",
+          "runId": 40858117662
+        },
+        {
+          "name": "Quality gates",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40858117650",
+          "runId": 40858117650
+        },
+        {
+          "name": "Vercel",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://vercel.com/victor-ppw/ppw-designer-2d/BR9FWm9Gb38t47ro6838g8kMp7Pi"
+        }
+      ],
+      "lighthouse": {
+        "name": "Lighthouse CI",
+        "status": "completed",
+        "conclusion": "failure",
+        "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40858117694",
+        "runId": 40858117694
+      },
+      "fullSuite": {
+        "passedTests": 4485,
+        "passedFiles": 424,
+        "proof": "work\\world-finish\\round3\\lighthouse-final-site-7a73b25\\quality-full.log"
+      }
+    }
+  }
+}

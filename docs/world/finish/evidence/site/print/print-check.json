@@ -1,7 +1,7 @@
 {
-  "at": "2026-10-29T06:38:57.348Z",
+  "at": "2026-10-29T18:55:54.040Z",
   "origin": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app",
-  "expectedSha": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+  "expectedSha": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
   "note": "Offline Site on the normal preview. Desktop and touch viewport emulation, not a physical phone. All attempted writes are blocked. Actual PDFs are checked page by page; rendered pages require a separate recorded visual inspection.",
   "visualInspection": "Pending: inspect every rendered page.",
   "rows": [
@@ -20,9 +20,9 @@
         "ok": true,
         "service": "ppw-designer-2d",
         "env": "preview",
-        "commit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+        "commit": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
         "sentryConfigured": true,
-        "timestamp": "2026-10-29T06:39:02.236Z"
+        "timestamp": "2026-10-29T18:55:54.856Z"
       },
       "screenBefore": {
         "text": "Estimates from public data for planning a conversation, not a survey and not an approval.",
@@ -194,7 +194,7 @@
       },
       "screenUnchanged": true,
       "pdf": {
-        "file": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round2\\site-print-b3727b1-20261029\\report-laptop-a4.pdf",
+        "file": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round3\\site-print-7a73b25-20261029\\report-laptop-a4.pdf",
         "pages": [
           {
             "page": 1,
@@ -281,9 +281,9 @@
         "ok": true,
         "service": "ppw-designer-2d",
         "env": "preview",
-        "commit": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+        "commit": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
         "sentryConfigured": true,
-        "timestamp": "2026-10-29T06:39:27.937Z"
+        "timestamp": "2026-10-29T18:56:24.549Z"
       },
       "screenBefore": {
         "text": "Estimates from public data for planning a conversation, not a survey and not an approval.",
@@ -455,7 +455,7 @@
       },
       "screenUnchanged": true,
       "pdf": {
-        "file": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round2\\site-print-b3727b1-20261029\\report-phone-a4.pdf",
+        "file": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round3\\site-print-7a73b25-20261029\\report-phone-a4.pdf",
         "pages": [
           {
             "page": 1,

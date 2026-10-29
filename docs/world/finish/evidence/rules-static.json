@@ -1,9 +1,9 @@
 [
   {
     "branch": "walk",
-    "head": "d78064f9f57ed6e060d9782036b4a8b7a7e95451",
+    "head": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
     "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
-    "checkedAt": "2026-10-29T06:42:59.996Z",
+    "checkedAt": "2026-10-29T19:25:02.872Z",
     "ancestorExit": 0,
     "unpublishedCommits": [],
     "protectedFileCount": 353,
@@ -15,7 +15,7 @@
     "routingMatchesBasePlusAuthorizedCatchall": true,
     "routingNote": "Vercel configuration matches base.",
     "prohibitedNewPaths": [],
-    "worldEvidenceBytes": 2282473,
+    "worldEvidenceBytes": 4224367,
     "limitBytes": 5000000,
     "workingChanges": [
       "M docs/world/LESSONS.md",
@@ -26,9 +26,9 @@
   },
   {
     "branch": "site",
-    "head": "b3727b1d20fff6be3ac448dfe8bf11e9261ad500",
+    "head": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
     "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
-    "checkedAt": "2026-10-29T06:43:00.321Z",
+    "checkedAt": "2026-10-29T19:25:03.249Z",
     "ancestorExit": 0,
     "unpublishedCommits": [],
     "protectedFileCount": 353,
@@ -45,7 +45,7 @@
     "routingMatchesBasePlusAuthorizedCatchall": true,
     "routingNote": "The existing Stage2 addition routes /api/site/(.*) to existing /api/orders; all other Vercel configuration matches base.",
     "prohibitedNewPaths": [],
-    "worldEvidenceBytes": 1846477,
+    "worldEvidenceBytes": 3788371,
     "limitBytes": 5000000,
     "workingChanges": [
       "M docs/world/LESSONS.md",
