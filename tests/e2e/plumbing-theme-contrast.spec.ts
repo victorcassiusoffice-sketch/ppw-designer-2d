@@ -4,7 +4,8 @@ test.use({ launchOptions: { args: ['--host-resolver-rules=MAP *.vercel.app 216.1
 
 // Include transparent ancestor surfaces and the retained PPW ivory gradient.
 // The new dark surfaces and enquiry status backgrounds are opaque.
-async function contrast(locator: Locator, pseudo: '::before' | null = null) {
+type TextPseudo = '::before' | '::placeholder' | null;
+async function contrast(locator: Locator, pseudo: TextPseudo = null) {
   return locator.evaluate((element, pseudo) => {
     const rgba = (value: string): number[] => {
       const channels = value.match(/[\d.]+/g)!.map(Number);
@@ -73,14 +74,42 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await page.goto('/api/healthcheck');
       await info.attach('health.json', { body: await page.locator('body').innerText(), contentType: 'application/json' });
       await page.goto(`/pitch/plumbing?brand=${brand}`);
-      const measure = async (element: Locator, label: string, pseudo: '::before' | null = null) => {
+      const measure = async (element: Locator, label: string, pseudo: TextPseudo = null) => {
         const reading = await contrast(element, pseudo);
         readings.push({ label, ...reading });
-        if (pseudo) {
+        if (pseudo === '::before') {
           expect(reading.content, label).not.toMatch(/^(none|normal)$/);
           expect(reading.display, label).not.toBe('none');
         }
         expect(reading.ratio, label).toBeGreaterThanOrEqual(4.5);
+      };
+      const measureText = async (label: string) => {
+        const text = page.locator('.sales-content :is(h1, h2, h3, p, span, strong, em, a, summary, label, li, figcaption, button)');
+        expect(await text.count()).toBeGreaterThan(0);
+        for (let index = 0; index < await text.count(); index++) {
+          const node = text.nth(index);
+          if (!await node.isVisible() || await node.evaluate(element => !!element.closest('[aria-hidden="true"]'))) continue;
+          if (!await node.evaluate(element => Array.from(element.childNodes).some(child => child.nodeType === 3 && child.textContent?.trim()))) continue;
+          await measure(node, `${label}/text/${index}`);
+        }
+      };
+      const measurePlaceholders = async (label: string, count: number) => {
+        const fields = page.locator('.pitch-enquiry :is(input, textarea)[placeholder]');
+        await expect(fields).toHaveCount(count);
+        for (let index = 0; index < count; index++) {
+          await expect(fields.nth(index)).toBeVisible();
+          await expect(fields.nth(index)).toHaveValue('');
+          await measure(fields.nth(index), `${label}/placeholder/${index}`, '::placeholder');
+        }
+      };
+      const capture = async (name: string) => {
+        // Functional capture readiness only: never used as first-picture timing.
+        // A missing image fails this run; no retry or replacement screenshot.
+        await expect.poll(() => page.locator('.sales-plumbing img').evaluateAll(images =>
+          images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0)),
+        { timeout: 15000 }).toBe(true);
+        await page.locator('.sales-plumbing img').evaluateAll(images => Promise.all(images.map(image => (image as HTMLImageElement).decode())));
+        await info.attach(name, { body: await page.locator('.sales-plumbing').screenshot(), contentType: 'image/png' });
       };
       try {
         for (const theme of ['ivory', 'ocean', 'slate']) {
@@ -99,17 +128,26 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
           await close.press('Enter');
           await expect(page.locator('details.locale-theme-controls')).not.toHaveAttribute('open');
           await expect(page.locator('details.locale-theme-controls > summary')).toBeFocused();
-          for (const chapter of [1, 2, 3, 4]) {
+          const skip = page.locator('.sales-skip');
+          await skip.focus();
+          await expect(skip).toBeFocused();
+          await measure(skip, `${theme}/skip-link/focus`);
+          await info.attach(`${theme}-skip-focus.png`, { body: await skip.screenshot(), contentType: 'image/png' });
+          await skip.press('Enter');
+          await expect(page.locator('#sales-content')).toBeFocused();
+          for (const chapter of [0, 1, 2, 3, 4, 5]) {
             await page.locator('[role="tab"]').nth(chapter).click();
-            const commonText = page.locator('.sales-surface :is(h2, p, span, strong, a), .sales-content summary, .sales-content .sales-button');
-            expect(await commonText.count()).toBeGreaterThan(0);
-            if (chapter === 2) await expect(page.locator('.sales-surface .sales-status')).toHaveCount(3);
-            if (chapter === 4) await expect(page.locator('.sales-surface .sales-number')).toHaveCount(4);
-            for (let index = 0; index < await commonText.count(); index++) {
-              const node = commonText.nth(index);
-              await expect(node).toBeVisible();
-              await measure(node, `${theme}/chapter-${chapter + 1}/card-text/${index}`);
+            const tabNumbers = page.locator('.sales-tabs button span');
+            await expect(tabNumbers).toHaveCount(6);
+            for (let index = 0; index < 6; index++) await measure(tabNumbers.nth(index), `${theme}/chapter-${chapter + 1}/tab-number/${index}`);
+            if (chapter === 2) {
+              await expect(page.locator('.sales-surface .sales-status')).toHaveCount(3);
+              await page.locator('.sales-details summary').click();
+              await expect(page.locator('.sales-links a')).toHaveCount(2);
             }
+            if (chapter === 4) await expect(page.locator('.sales-surface .sales-number')).toHaveCount(4);
+            if (chapter === 5) await expect(page.locator('form.pitch-enquiry')).toBeVisible();
+            await measureText(`${theme}/chapter-${chapter + 1}`);
             if (chapter === 1) {
               const steps = page.locator('.sales-surface .sales-steps li');
               await expect(steps).toHaveCount(4);
@@ -127,7 +165,20 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
                 await measure(action, `${theme}/chapter-${chapter + 1}/action-${index}/${state}`);
               }
             }
-            await info.attach(`${theme}-chapter-${chapter + 1}.png`, { body: await page.locator('.sales-content').screenshot(), contentType: 'image/png' });
+            await capture(`${theme}-chapter-${chapter + 1}.png`);
+            if (chapter === 5) {
+              await measurePlaceholders(`${theme}/project`, 5);
+              const purposes = page.locator('.pitch-enquiry .pitch-segment button');
+              await expect(purposes).toHaveCount(3);
+              for (const index of [1, 2]) {
+                await purposes.nth(index).click();
+                await expect(purposes.nth(index)).toHaveAttribute('aria-pressed', 'true');
+                await measureText(`${theme}/form-purpose-${index}`);
+                await measurePlaceholders(`${theme}/form-purpose-${index}`, index === 2 ? 7 : 5);
+              }
+              await capture(`${theme}-physical-meeting.png`);
+              await purposes.first().click();
+            }
           }
           await page.locator('[role="tab"]').last().click();
           const form = page.locator('form.pitch-enquiry');

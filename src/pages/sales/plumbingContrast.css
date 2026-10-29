@@ -40,3 +40,32 @@
   .sales-plumbing .sales-surface .sales-steps li::before {
   color: var(--ui-muted);
 }
+
+/* Caption, disclosure and focused skip-link ink already follows the theme.
+ * Their pale backgrounds must follow it too; the demo image stays intact. */
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing :is(.sales-demo, .sales-callout, .sales-skip) {
+  background: var(--ui-surface);
+}
+
+/* These small labels sit outside the cards repaired above. Selected tabs keep
+ * their existing on-accent ink; only the inactive numbers need muted ink. */
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-tabs button[aria-selected='false'] span,
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-hero .sales-number {
+  color: var(--ui-muted);
+}
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-links a,
+:root:not([data-brand='olb']):is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .pitch-enquiry .pitch-fine a {
+  color: var(--ui-accent);
+}
+
+/* Retain labels and values; give the measured low-contrast placeholder themes
+ * readable secondary ink without changing the global form reset. */
+:root:is([data-ui-theme='ivory'], [data-ui-theme='slate'])
+  .sales-plumbing .pitch-enquiry :is(input, textarea)::placeholder {
+  color: var(--ui-muted);
+}
