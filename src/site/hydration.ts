@@ -1,10 +1,17 @@
 import { normaliseSite, usePropertyStore, type Site } from '../store/propertyStore';
 import { normaliseGeoSite, type GeoSite } from './types';
+import { installCanvasSiteAdapter } from '../components/canvasSiteBridge';
+import { projectSiteForCanvas } from './planAdapter';
 
 // JSON cannot carry frozen objects. Only canonical, detached copies are frozen
 // for the plan overlay; a persisted or newly imported extension starts inert.
 const accepted = new WeakSet<object>();
 const warnings = new Map<string, string>();
+const planProjection = (site: Site | null) => {
+  const world = site?.world;
+  return world && typeof world === 'object' && accepted.has(world)
+    ? projectSiteForCanvas(world as GeoSite) : undefined;
+};
 function freezeTree<T>(value: T): T {
   if (value && typeof value === 'object') {
     for (const child of Object.values(value)) freezeTree(child);
@@ -35,6 +42,7 @@ export function siteHydrationWarning(): string | undefined {
 
 /** Runs only after the caller's first-picture/plan-paint boundary or explicit Site entry. */
 export function hydrateCurrentSite(): void {
+  installCanvasSiteAdapter(planProjection);
   const { property } = usePropertyStore.getState();
   const raw = property.site?.world;
   if (raw === undefined || (raw !== null && typeof raw === 'object' && accepted.has(raw))) return;
