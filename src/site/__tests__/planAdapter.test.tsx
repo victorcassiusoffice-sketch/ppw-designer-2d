@@ -40,7 +40,7 @@ function CanvasConsumer() {
   renderCount++;
   return <><output>{projection?.label}</output><svg>{projection?.annotation({ pxPerMetre: 20,
     viewport: { x: 0, y: 0, scale: 2 }, size: { width: 800, height: 600 }, container: null,
-    Layer, Rect, Line, Text, ink: '#123456', paper: '#faf9f5' })}</svg></>;
+    Layer, Rect, Line, Text, palette: { ink: '#123456', ground: '#faf9f5' } })}</svg></>;
 }
 async function mount(site?: Site) {
   await act(async () => {

@@ -15,8 +15,7 @@ export interface CanvasSiteProjection {
     Rect: typeof import('react-konva').Rect;
     Line: typeof import('react-konva').Line;
     Text: typeof import('react-konva').Text;
-    ink: string;
-    paper: string;
+    palette: { ink: string; ground: string };
   }) => ReactNode;
 }
 type Adapter = (site: Site | null) => CanvasSiteProjection | undefined;

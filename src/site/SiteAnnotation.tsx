@@ -25,12 +25,12 @@ export function SiteAnnotation({ label, anchor, view }: {
   }, []);
   const layout = layoutSiteAnnotation(label, anchor, view, measureAnnotationText, topInset);
   if (!layout) return null;
-  const { Rect, Text, Line, ink, paper } = view;
+  const { Rect, Text, Line, palette } = view;
   return <>
-    <Rect name="site-provenance-backing" {...layout.backing} fill={paper} />
+    <Rect name="site-provenance-backing" {...layout.backing} fill={palette.ground} />
     <Text name="site-provenance" x={layout.x} y={layout.y} width={layout.width}
       text={layout.text} fontSize={layout.fontSize} lineHeight={layout.lineHeight}
-      fontStyle="bold" fontFamily="Inter, sans-serif" wrap="none" fill={ink} />
-    <Line name="site-north-arrow" points={layout.points} stroke={ink} strokeWidth={layout.strokeWidth} />
+      fontStyle="bold" fontFamily="Inter, sans-serif" wrap="none" fill={palette.ink} />
+    <Line name="site-north-arrow" points={layout.points} stroke={palette.ink} strokeWidth={layout.strokeWidth} />
   </>;
 }

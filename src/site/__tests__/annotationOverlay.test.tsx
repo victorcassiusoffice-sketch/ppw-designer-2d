@@ -59,7 +59,7 @@ describe('deferred annotation overlay', () => {
     const projection = projectSiteForCanvas(world);
     const view = { pxPerMetre: 30, viewport: { x: -10000, y: -10000, scale: 1 },
       size: { width: 390, height: 268.5 }, container, Layer, Rect, Line, Text,
-      ink: BUILD_SKIN_PALETTES.natural.ink, paper: BUILD_SKIN_PALETTES.natural.ground };
+      palette: BUILD_SKIN_PALETTES.natural };
     const render = async (height = 268.5) => act(async () => root.render(<svg>
       <rect data-room="underneath" x={0} y={0} width={390} height={height} fill="#111" />
       {projection.annotation({ ...view, size: { width: 390, height } })}
@@ -72,8 +72,8 @@ describe('deferred annotation overlay', () => {
     expect(host.querySelector('g')?.getAttribute('data-listening')).toBe('false');
     expect(host.querySelector('svg')?.lastElementChild?.tagName).toBe('g');
     expect(host.querySelector('g')?.firstElementChild?.tagName).toBe('rect');
-    expect(host.querySelector('g rect')?.getAttribute('fill')).toBe(view.paper);
-    expect(host.querySelector('text')?.getAttribute('fill')).toBe(view.ink);
+    expect(host.querySelector('g rect')?.getAttribute('fill')).toBe(view.palette.ground);
+    expect(host.querySelector('text')?.getAttribute('fill')).toBe(view.palette.ink);
     await act(async () => { advance = 13; resolveFonts(); await fonts.ready; });
     expect(lineCount()).toBeGreaterThan(initialLines);
     expect(context.font).toBe('bold 11px Inter, sans-serif');

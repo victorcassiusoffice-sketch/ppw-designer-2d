@@ -5539,7 +5539,7 @@ export function RoomCanvas({
           closed={removeHover.kind==='item'||removeHover.kind==='floor'}
           fill={removeHover.kind==='item'||removeHover.kind==='floor'?'rgba(208,100,65,0.22)':undefined}
           stroke="#c66441" strokeWidth={4/viewport.scale} dash={[8/viewport.scale,5/viewport.scale]} /></Layer>}
-        {visible.landscape && siteProjection?.annotation({ pxPerMetre, viewport, size: stageSize, container: containerRef.current, Layer, Rect, Line, Text, ink: buildPalette.ink, paper: buildPalette.ground })}
+        {visible.landscape && siteProjection?.annotation({ pxPerMetre, viewport, size: stageSize, container: containerRef.current, Layer, Rect, Line, Text, palette: buildPalette })}
       </Stage>}
       {viewMode !== '3d' && <OpeningSelectionEditor />}
 
