@@ -159,6 +159,18 @@
   border-top: 1px solid var(--sales-edge);
   color: var(--sales-muted)
 }
+:root[data-brand='olb'][data-ui-theme] body .sales-footer button {
+  color: var(--ui-ink);
+  background: var(--ui-surface);
+  border-color: var(--ui-line)
+}
+:root[data-brand='olb'][data-ui-theme] body .sales-footer button:hover {
+  background: var(--ui-raised);
+  border-color: var(--ui-line)
+}
+:root[data-brand='olb'][data-ui-theme] body .sales-footer button:focus-visible {
+  outline-color: var(--ui-accent)
+}
 :root[data-brand='olb'] .sales-demo {
   border: 1px solid #DDD6C8;
   background: #EEE7D9
