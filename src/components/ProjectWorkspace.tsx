@@ -133,6 +133,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
     const previous = document.activeElement as HTMLElement | null;
     closeRef.current?.focus();
     const key = (event: KeyboardEvent) => {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopImmediatePropagation();

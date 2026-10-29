@@ -88,6 +88,7 @@ import { performRedo, performUndo } from '../lib/undoIntent';
 // sit beside "£2,931.78" again (toolbar audit 2026-08-29).
 import { formatCurrency } from '../lib/currency';
 import { isPitchEmbed } from '../demo/pitchEmbed';
+import { DEMO_PAGE_READY_EVENT, isDemoPagePending } from '../demo/useDemoMode';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
@@ -454,6 +455,15 @@ export function RoomCanvas({
 }: RoomCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [demoPageReady, setDemoPageReady] = useState(() => !isDemoPagePending());
+  useEffect(() => {
+    const ready = () => setDemoPageReady(true);
+    // A demo sets its requested view after its saved page has loaded. Do not
+    // mount the default Plan for that first frame and queue hidden 3D snapshots.
+    if (!isDemoPagePending()) ready();
+    else window.addEventListener(DEMO_PAGE_READY_EVENT, ready, { once: true });
+    return () => window.removeEventListener(DEMO_PAGE_READY_EVENT, ready);
+  }, []);
   // Designer 3-Bug Fix (2026-05-28, Bug 3) — ref to the placed-items Konva
   // layer so we can force a repaint when the item set changes (see effect).
   const itemsLayerRef = useRef<Konva.Layer>(null);
@@ -861,6 +871,7 @@ export function RoomCanvas({
   useEffect(() => {
     if (!pendingProductId) return;
     function onKey(e: KeyboardEvent) {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
       if (e.key === 'Escape') {
@@ -4227,7 +4238,10 @@ export function RoomCanvas({
           card is the only thing over the canvas and the `snap-unit-*`
           testids still exist exactly once at any width. */}
 
-      <Stage
+      {/* Keep the shared placement bridge and Plan camera alive in House view,
+          but unmount its drawing tree: product snapshot hooks otherwise create
+          a second WebGL renderer while the visible 3D scene is starting. */}
+      {viewMode === 'plan' && demoPageReady && <Stage
         listening={!eraseActive}
         ref={stageRef}
         width={stageSize.width}
@@ -5523,7 +5537,7 @@ export function RoomCanvas({
           closed={removeHover.kind==='item'||removeHover.kind==='floor'}
           fill={removeHover.kind==='item'||removeHover.kind==='floor'?'rgba(208,100,65,0.22)':undefined}
           stroke="#c66441" strokeWidth={4/viewport.scale} dash={[8/viewport.scale,5/viewport.scale]} /></Layer>}
-      </Stage>
+      </Stage>}
       {viewMode !== '3d' && <OpeningSelectionEditor />}
 
       {/* Measure popover (units brief D10). Says out loud what it does:
@@ -5804,6 +5818,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   }, []);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       if (!rotationRun.current) return;
       if (event.key === 'Escape' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z')) {
         event.preventDefault(); event.stopImmediatePropagation(); cancelTurn();

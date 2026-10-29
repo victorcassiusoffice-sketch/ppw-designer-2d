@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 import { readdir } from 'node:fs/promises';
+import { firstPicturePreload } from './tools/firstPicturePreload';
 
 // Sentry source-map upload runs only when an auth token is present
 // (so local builds don't try to publish). SENTRY_AUTH_TOKEN +
@@ -15,6 +16,16 @@ const sentryEnabled =
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    firstPicturePreload(),
+    {
+      name: 'defer-walk-collision-math',
+      enforce: 'pre',
+      resolveId(source, importer) {
+        if (source === 'three' && importer?.replace(/\\/g, '/').includes('/node_modules/three-mesh-bvh/')) {
+          return path.resolve(__dirname, 'src/walk/threeCollision.ts');
+        }
+      },
+    },
     react(),
     ...(sentryEnabled
       ? [
@@ -116,6 +127,9 @@ export default defineConfig({
           const path = id.replace(/\\/g, '/');
           if (/\/node_modules\/(react|react-dom|scheduler)\//.test(path)) return 'vendor-react';
           if (/\/node_modules\/(konva|react-konva)\//.test(path)) return 'vendor-konva';
+          // Walk-only helpers must not grow the first-picture Three dependency.
+          if (/\/three\/examples\/jsm\/controls\/PointerLockControls\.js$/.test(path)) return 'walk-controls';
+          if (/\/node_modules\/three\/src\//.test(path)) return 'walk-animation';
           // 3D Mode (2026-09-17): three rides in its own chunk, pulled in by
           // the lazy ThreeStage the first time a 3D view opens — the 2D
           // designer's first paint never carries it.

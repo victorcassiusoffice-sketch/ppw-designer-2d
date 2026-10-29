@@ -1,0 +1,14 @@
+{
+  "kind": "lossless-gzip-evidence-index",
+  "expectedHeads": {
+    "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "walk": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+    "site": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447"
+  },
+  "dataFile": "SOURCE-MANIFEST.json.gz",
+  "originalBytes": 1035787,
+  "originalSha256": "dbccfd813a1c471bc4eb8344de6a08df5836bc08a1651c0254e00128a3cb4efe",
+  "compressedBytes": 87158,
+  "compressedSha256": "c7d7ddabaf83699e542fbc1ac7da2343b625c3b0a32c5be9c88c20e86565b96a",
+  "preservation": "Decompress dataFile for the complete generated table. All entries and failure observations are retained; this index is not the table itself."
+}

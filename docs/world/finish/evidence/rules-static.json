@@ -1,0 +1,58 @@
+[
+  {
+    "branch": "walk",
+    "head": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+    "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "checkedAt": "2026-10-29T19:25:02.872Z",
+    "ancestorExit": 0,
+    "unpublishedCommits": [],
+    "protectedFileCount": 353,
+    "protectedImplementationAndSettingsDiff": [],
+    "modifiedBaseTests": [],
+    "finishDependencyFieldsChanged": [],
+    "finishLockfileDiff": [],
+    "apiDiff": [],
+    "routingMatchesBasePlusAuthorizedCatchall": true,
+    "routingNote": "Vercel configuration matches base.",
+    "prohibitedNewPaths": [],
+    "worldEvidenceBytes": 4224367,
+    "limitBytes": 5000000,
+    "workingChanges": [
+      "M docs/world/LESSONS.md",
+      " M docs/world/ROUNDS.md"
+    ],
+    "interpretation": "Protected source includes the full existing src/designer and src/data trees plus named estimator/currency panels and helpers. Existing tests/settings are compared to merged base; Finish dependency/lock changes are compared to the pre-Finish World head. Package build-script changes are reported through Git and are not dependency changes. Browser rules are a separate proof.",
+    "pass": true
+  },
+  {
+    "branch": "site",
+    "head": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
+    "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "checkedAt": "2026-10-29T19:25:03.249Z",
+    "ancestorExit": 0,
+    "unpublishedCommits": [],
+    "protectedFileCount": 353,
+    "protectedImplementationAndSettingsDiff": [],
+    "modifiedBaseTests": [],
+    "finishDependencyFieldsChanged": [],
+    "finishLockfileDiff": [],
+    "apiDiff": [
+      "A\tapi/_lib/site/__tests__/providers.test.ts",
+      "A\tapi/_lib/site/handler.ts",
+      "A\tapi/_lib/site/providers.ts",
+      "M\tapi/orders.ts"
+    ],
+    "routingMatchesBasePlusAuthorizedCatchall": true,
+    "routingNote": "The existing Stage2 addition routes /api/site/(.*) to existing /api/orders; all other Vercel configuration matches base.",
+    "prohibitedNewPaths": [],
+    "worldEvidenceBytes": 3788371,
+    "limitBytes": 5000000,
+    "workingChanges": [
+      "M docs/world/LESSONS.md",
+      " M docs/world/ROUNDS.md",
+      "?? work/"
+    ],
+    "interpretation": "Protected source includes the full existing src/designer and src/data trees plus named estimator/currency panels and helpers. Existing tests/settings are compared to merged base; Finish dependency/lock changes are compared to the pre-Finish World head. Package build-script changes are reported through Git and are not dependency changes. Browser rules are a separate proof.",
+    "pass": true
+  }
+]

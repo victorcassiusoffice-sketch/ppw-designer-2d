@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
-import { PitchEnquiryForm } from '../pitch/PitchEnquiryForm';
 import { BUILDING_SERVICES_SOURCES } from '../../data/buildingServicesCatalog';
 import { Kicker, OpenLink, SalesShell } from './SalesShell';
 import { useChapter } from './salesNavigation';
 import { MEETING } from './salesPack';
-import '../pitch/pitch.css';
-import '../pitch/pitch-tactile.css';
+import hero from './plumbingHero.json';
+
+const PlumbingEnquiryForm = lazy(() => import('./PlumbingEnquiryForm'));
 
 const CHAPTERS = [
   'The opportunity',
@@ -48,7 +48,13 @@ export default function PlumbingPitchPage() {
           </div>
           <figure className="sales-shot">
             <img
-              src="/showcase/plumbing-workspace.jpg"
+              src={hero.src}
+              srcSet={hero.srcSet}
+              sizes={hero.sizes}
+              width={hero.width}
+              height={hero.height}
+              {...{ fetchpriority: 'high' }}
+              decoding="async"
               alt="Actual Room Designer Plumbing and Electric workspace, with a measured floor, sink, toilet and coloured service routes"
             />
             <figcaption>
@@ -141,6 +147,9 @@ export default function PlumbingPitchPage() {
                 <button className="sales-start-demo" onClick={() => setLive(true)}>
                   <img
                     src="/showcase/building-services-3d.jpg"
+                    width={1280}
+                    height={900}
+                    decoding="async"
                     alt="Actual Building services 3D editor with measured pipe routes, raised equipment and editable dimensions"
                   />
                   <span>Launch interactive workspace →</span>
@@ -365,7 +374,9 @@ export default function PlumbingPitchPage() {
             </p>
           </aside>
           <div className="sales-surface pitch-app sales-contact-form">
-            <PitchEnquiryForm audience="merchants" />
+            <Suspense fallback={<p role="status">Loading form…</p>}>
+              <PlumbingEnquiryForm />
+            </Suspense>
           </div>
         </div>
       )}

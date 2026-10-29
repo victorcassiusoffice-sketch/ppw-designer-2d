@@ -34,6 +34,9 @@ export function OpeningSelectionEditor() {
   useEffect(() => {
     if (!selectedId) return;
     const handle = (e: KeyboardEvent) => {
+      // This capture listener can predate Walk's focus owner. Never let it
+      // remove a saved opening or consume the foreground visit's Escape.
+      if (document.querySelector('[data-world-walk="true"]')) return;
       const input = e.target instanceof HTMLElement && !!e.target.closest('input,textarea,select,[contenteditable="true"]');
       if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); select(null); }
       else if (!input && (e.key === 'Delete' || e.key === 'Backspace')) {

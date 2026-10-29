@@ -79,7 +79,7 @@ function page(destination: string, message = '', status = 200, extra: Record<str
  */
 /** Public pitches, the demo and the embed. /studio and the designer shell stay gated. */
 export function opensWithoutStudioCode(pathname: string): boolean {
-  if (pathname === '/favicon.ico' || pathname === '/ppw-favicon.svg') return true;
+  if (pathname === '/favicon.ico' || pathname === '/ppw-favicon.svg' || pathname === '/robots.txt') return true;
   // Logos, icons, the social card and the self-hosted fonts: the passcode page and
   // the open pages (/demo, /embed) draw them before anyone has entered the code.
   if (pathname.startsWith('/brand/')) return true;

@@ -1,0 +1,34 @@
+[
+  {
+    "package": "three",
+    "latest": "0.186.1",
+    "publishedAt": "2026-09-24T14:42:21.301Z",
+    "source": "https://registry.npmjs.org/three",
+    "checked": "2026-10-27",
+    "installedWalk": "0.186.0"
+  },
+  {
+    "package": "maplibre-gl",
+    "latest": "6.16.0",
+    "publishedAt": "2026-10-25T13:17:01.849Z",
+    "source": "https://registry.npmjs.org/maplibre-gl",
+    "checked": "2026-10-27",
+    "installedWalk": "not installed"
+  },
+  {
+    "package": "three-mesh-bvh",
+    "latest": "0.9.16",
+    "publishedAt": "2026-10-08T05:46:08.08Z",
+    "source": "https://registry.npmjs.org/three-mesh-bvh",
+    "checked": "2026-10-27",
+    "installedWalk": "0.9.16"
+  },
+  {
+    "package": "draco3dgltf",
+    "latest": "1.5.9",
+    "publishedAt": "2026-10-16T19:27:04.932Z",
+    "source": "https://registry.npmjs.org/draco3dgltf",
+    "checked": "2026-10-27",
+    "installedWalk": "1.5.7"
+  }
+]

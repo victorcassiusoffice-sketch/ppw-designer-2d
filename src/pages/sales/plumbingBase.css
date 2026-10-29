@@ -1,0 +1,33 @@
+/* Standalone plumbing base. Keep the global browser reset, typography and
+ * shell body styles compatible; plumbingBase.test.ts checks their semantics.
+ * Designer utilities remain owned by the unchanged primary app stylesheet. */
+@tailwind base;
+
+/* Same existing Inter 4.1 files and ranges. See public/fonts/OFL-inter.txt. */
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-weight: 100 900;
+  font-display: swap; src: url('/fonts/inter-variable.woff2') format('woff2');
+  unicode-range: U+0250-02FF, U+0370-052F, U+0E3F, U+1D00-1DFF, U+1F00-1FFF, U+2C00-2FFF, U+A000-FEFF, U+1F12F-1F149, U+1F16A-1F16B, U+1F850-1F852;
+}
+@font-face {
+  font-family: 'Inter'; font-style: normal; font-weight: 100 900;
+  font-display: swap; src: url('/fonts/inter-ui-latin.woff2') format('woff2');
+  unicode-range: U+0000-024F, U+0300-036F, U+1E00-1EFF, U+2000-2BFF;
+}
+@font-face {
+  font-family: 'Inter'; font-style: italic; font-weight: 100 900;
+  font-display: swap; src: url('/fonts/inter-variable-italic.woff2') format('woff2');
+}
+i:empty { font-style: normal; }
+:root {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+html, body, #root { min-height: 100%; margin: 0; padding: 0; }
+.bg-ppw-sand { --tw-bg-opacity: 1; background-color: rgb(245 241 234 / var(--tw-bg-opacity, 1)); }
+.text-ppw-ink { --tw-text-opacity: 1; color: rgb(14 27 31 / var(--tw-text-opacity, 1)); }
+.antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
