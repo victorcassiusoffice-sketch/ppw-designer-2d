@@ -1,0 +1,108 @@
+{
+  "branch": "walk",
+  "expectedHead": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+  "label": "r3-theme-final-v4",
+  "normalSource": true,
+  "styleInjection": false,
+  "healthProof": [
+    {
+      "phase": "before",
+      "at": "2026-10-29T10:36:15.864Z",
+      "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "transport": {
+        "pinnedAddress": "216.198.79.3",
+        "host": "ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app",
+        "tlsServername": "ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app"
+      },
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T10:36:16.587Z"
+      }
+    },
+    {
+      "phase": "after",
+      "at": "2026-10-29T10:37:52.509Z",
+      "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+      "transport": {
+        "pinnedAddress": "216.198.79.3",
+        "host": "ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app",
+        "tlsServername": "ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app"
+      },
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T10:37:53.006Z"
+      }
+    }
+  ],
+  "exitCode": 0,
+  "tests": [
+    {
+      "title": "plumbing-theme-contrast.spec.ts > 1280px > olb: nested pitch text and actions stay readable in every theme",
+      "status": "passed",
+      "health": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T10:36:25.414Z"
+      },
+      "minimumContrast": 5.08307486250463,
+      "checks": 771
+    },
+    {
+      "title": "plumbing-theme-contrast.spec.ts > 1280px > ppw: nested pitch text and actions stay readable in every theme",
+      "status": "passed",
+      "health": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T10:36:48.841Z"
+      },
+      "minimumContrast": 4.641486685179161,
+      "checks": 771
+    },
+    {
+      "title": "plumbing-theme-contrast.spec.ts > 390px > olb: nested pitch text and actions stay readable in every theme",
+      "status": "passed",
+      "health": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T10:37:11.072Z"
+      },
+      "minimumContrast": 5.08307486250463,
+      "checks": 771
+    },
+    {
+      "title": "plumbing-theme-contrast.spec.ts > 390px > ppw: nested pitch text and actions stay readable in every theme",
+      "status": "passed",
+      "health": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T10:37:31.699Z"
+      },
+      "minimumContrast": 4.641486685179161,
+      "checks": 771
+    }
+  ],
+  "validHeads": true,
+  "passed": true
+}

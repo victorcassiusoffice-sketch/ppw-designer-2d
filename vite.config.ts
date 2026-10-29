@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 import { readdir } from 'node:fs/promises';
+import { firstPicturePreload } from './tools/firstPicturePreload';
 
 // Sentry source-map upload runs only when an auth token is present
 // (so local builds don't try to publish). SENTRY_AUTH_TOKEN +
@@ -15,7 +16,39 @@ const sentryEnabled =
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    firstPicturePreload(),
     react(),
+    {
+      name: 'site-local-providers',
+      configureServer(server) {
+        server.middlewares.use('/api/site', async (req, res) => {
+          const { handleSiteRequest } = await import('./api/_lib/site/handler');
+          const originalUrl = `/api/site${req.url ?? ''}`;
+          const segments = (req.url ?? '').split('?')[0].split('/').filter(Boolean);
+          const adapter = {
+            setHeader: (name: string, value: string) => {
+              res.setHeader(name, value);
+            },
+            status: (code: number) => {
+              res.statusCode = code;
+              return adapter;
+            },
+            end: (payload?: string) => {
+              res.end(payload);
+            },
+            json: (body: unknown) => {
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify(body));
+            },
+          };
+          await handleSiteRequest(
+            segments,
+            { method: req.method, url: originalUrl, headers: req.headers },
+            adapter,
+          );
+        });
+      },
+    },
     ...(sentryEnabled
       ? [
           sentryVitePlugin({
@@ -27,7 +60,7 @@ export default defineConfig({
               filesToDeleteAfterUpload: ['./dist/**/*.map'],
             },
             telemetry: false,
-            // OMS Wave 1.10 — tag deploys with the Vercel commit SHA so
+            // OMS Wave 1.10 â€” tag deploys with the Vercel commit SHA so
             // error frames link back to the exact build.
             release: {
               name:
@@ -56,7 +89,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // V-RENDER-3 (2026-05-27) — visible build-stamp so Vic can confirm the
+  // V-RENDER-3 (2026-05-27) â€” visible build-stamp so Vic can confirm the
   // new bundle actually landed on his iPhone after the cache-header fix.
   // Vercel sets VERCEL_GIT_COMMIT_SHA at build; local falls back to a
   // timestamp. Surfaced bottom-left in App.tsx.
@@ -69,7 +102,7 @@ export default defineConfig({
         ? process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7)
         : `dev-${new Date().toISOString().slice(0, 16).replace('T', ' ')}`,
     ),
-    // VITE_TEST_HOOKS (preview-only) → compiled to a literal boolean so the
+    // VITE_TEST_HOOKS (preview-only) â†’ compiled to a literal boolean so the
     // window.__designer test-hook dynamic import is dead-code-eliminated from
     // the PRODUCTION bundle (true only for a `VITE_TEST_HOOKS=1` preview build).
     __TEST_HOOKS__: JSON.stringify(
@@ -96,7 +129,7 @@ export default defineConfig({
       // SVG-to-PDF rendering. We never use those code paths (we render
       // SVG -> PNG ourselves before calling addImage), so mark them
       // external and Rollup will drop them.
-      // V-RENDER-4 (2026-05-27) — html2canvas REMOVED from this list: it
+      // V-RENDER-4 (2026-05-27) â€” html2canvas REMOVED from this list: it
       // is now a real dependency used by the "Capture full screen" button
       // (dynamically imported in RoomCanvas, so it stays in its own lazy
       // chunk and out of the main bundle). Leaving it external here would
@@ -117,7 +150,7 @@ export default defineConfig({
           if (/\/node_modules\/(react|react-dom|scheduler)\//.test(path)) return 'vendor-react';
           if (/\/node_modules\/(konva|react-konva)\//.test(path)) return 'vendor-konva';
           // 3D Mode (2026-09-17): three rides in its own chunk, pulled in by
-          // the lazy ThreeStage the first time a 3D view opens — the 2D
+          // the lazy ThreeStage the first time a 3D view opens â€” the 2D
           // designer's first paint never carries it.
           if (/\/node_modules\/three\//.test(path)) return 'vendor-three';
           if (/\/node_modules\/react-router/.test(path)) return 'vendor-router';

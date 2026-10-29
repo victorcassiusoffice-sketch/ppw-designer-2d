@@ -1511,6 +1511,12 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
 
   const { resource, segments } = parseSegments(req);
 
+  if (resource === 'site') {
+    const { handleSiteRequest } = await import('./_lib/site/handler.js');
+    await handleSiteRequest(segments, req, res);
+    return;
+  }
+
   if (resource === 'shared-projects') {
     await handleSharedSpecs(segments, req, res, () => readJsonBody(req));
     return;

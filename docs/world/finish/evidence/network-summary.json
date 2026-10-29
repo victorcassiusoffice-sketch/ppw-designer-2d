@@ -1,0 +1,188 @@
+{
+  "at": "2026-10-29T19:22:03.944Z",
+  "baseCommit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+  "label": "r3-candidate",
+  "method": "Every HTTP(S) request start through the canvas first-render mark, including unfinished responses and redirects; normalized hashes only for matching. Embedded data URLs are retained separately and never called API traffic. Base52 and both previews serve the OLB shell. Exact file bytes come from completed controlled builds/public files; API sizes remain measured response evidence.",
+  "branches": {
+    "walk": {
+      "perPair": [
+        {
+          "device": "desktop",
+          "run": 1,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 1,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 2,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 2,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 3,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 3,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 4,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 4,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 5,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 5,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        }
+      ],
+      "newRequestNames": [],
+      "missingRequestNames": [],
+      "featureRequestsBeforePicture": [],
+      "noNewRequestsEveryPair": true,
+      "observedStaticRawDelta": 4418,
+      "observedStaticGzipDelta": 1640
+    },
+    "site": {
+      "perPair": [
+        {
+          "device": "desktop",
+          "run": 1,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 1,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 2,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 2,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 3,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 3,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 4,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 4,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "desktop",
+          "run": 5,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        },
+        {
+          "device": "phone",
+          "run": 5,
+          "baseCount": 36,
+          "candidateCount": 36,
+          "newNames": [],
+          "missingNames": []
+        }
+      ],
+      "newRequestNames": [],
+      "missingRequestNames": [],
+      "featureRequestsBeforePicture": [],
+      "noNewRequestsEveryPair": true,
+      "observedStaticRawDelta": 5867,
+      "observedStaticGzipDelta": 2225
+    }
+  }
+}

@@ -58,6 +58,7 @@ import { productVisible, serviceFixtureDiscipline } from '../designer/discipline
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
+import { useCanvasSiteProjection } from './canvasSiteBridge';
 import type { PlacedItem } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
 import { useCart } from '../store/cartStore';
@@ -88,6 +89,7 @@ import { performRedo, performUndo } from '../lib/undoIntent';
 // sit beside "£2,931.78" again (toolbar audit 2026-08-29).
 import { formatCurrency } from '../lib/currency';
 import { isPitchEmbed } from '../demo/pitchEmbed';
+import { DEMO_PAGE_READY_EVENT, isDemoPagePending } from '../demo/useDemoMode';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
@@ -454,6 +456,15 @@ export function RoomCanvas({
 }: RoomCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [demoPageReady, setDemoPageReady] = useState(() => !isDemoPagePending());
+  useEffect(() => {
+    const ready = () => setDemoPageReady(true);
+    // A demo sets its requested view after its saved page has loaded. Do not
+    // mount the default Plan for that first frame and queue hidden 3D snapshots.
+    if (!isDemoPagePending()) ready();
+    else window.addEventListener(DEMO_PAGE_READY_EVENT, ready, { once: true });
+    return () => window.removeEventListener(DEMO_PAGE_READY_EVENT, ready);
+  }, []);
   // Designer 3-Bug Fix (2026-05-28, Bug 3) — ref to the placed-items Konva
   // layer so we can force a repaint when the item set changes (see effect).
   const itemsLayerRef = useRef<Konva.Layer>(null);
@@ -554,6 +565,7 @@ export function RoomCanvas({
   const ecoTrees = usePropertyStore((s) => s.property.eco?.trees);
   const gardenPlacement = useGardenEditorStore((s) => s.placement);
   const site = usePropertyStore((s) => s.property.site ?? null);
+  const siteProjection = useCanvasSiteProjection(site);
   const levels = useMemo(() => levelsOf({ levels: propertyLevels }), [propertyLevels]);
   const activeLevelId = activeLevelIdOf({ levels: propertyLevels, activeLevelId: propertyActiveLevelId });
   const garden = activeLevelId === GROUND_LEVEL_ID ? propertyGarden : undefined;
@@ -579,6 +591,7 @@ export function RoomCanvas({
   /** The land plot as a polygon in world metres, or null = unlimited land. */
   const sitePolygon = useMemo<Polygon | null>(() => {
     if (!site) return null;
+    if (site.world !== undefined) return siteProjection?.polygon ?? null;
     const ox = site.originM?.x ?? 0;
     const oy = site.originM?.y ?? 0;
     return [
@@ -587,7 +600,7 @@ export function RoomCanvas({
       { x: ox + site.widthM, y: oy + site.depthM },
       { x: ox, y: oy + site.depthM },
     ];
-  }, [site]);
+  }, [site, siteProjection]);
   // D5 — selecting an item in ANY room must also move focus to that room,
   // or the Sims loop (place → rotate / delete) is dead everywhere except
   // the active room: DetailsPanel, FloatingCluster and placementActions all
@@ -619,9 +632,9 @@ export function RoomCanvas({
   /** Site area + built area, for the capacity readout. */
   const capacity = useMemo(() => {
     const built = drawnRooms.reduce((sum, r) => sum + polygonArea(r.polygon), 0);
-    const plot = site ? site.widthM * site.depthM : 0;
+    const plot = site?.world !== undefined ? siteProjection?.areaM2 ?? 0 : site ? site.widthM * site.depthM : 0;
     return { built, plot, pct: plot > 0 ? Math.round((built / plot) * 100) : 0 };
-  }, [drawnRooms, site]);
+  }, [drawnRooms, site, siteProjection]);
 
   const pushToast = useToastStore((s) => s.push);
   // Energy readout (eco / solar 2026-09-04): one chip, only once something
@@ -3522,7 +3535,7 @@ export function RoomCanvas({
           </span>
           {/* Land capacity (Sims world 2026-08-29): how much of the locked
               plot is built on this level. Only while a plot is locked. */}
-          {site && (
+          {site && sitePolygon && (
             <span
               className="border-l border-white/25 pl-2"
               data-testid="plot-capacity"
@@ -4227,7 +4240,10 @@ export function RoomCanvas({
           card is the only thing over the canvas and the `snap-unit-*`
           testids still exist exactly once at any width. */}
 
-      <Stage
+      {/* Keep the shared placement bridge and Plan camera alive in House view,
+          but unmount its drawing tree: product snapshot hooks otherwise create
+          a second WebGL renderer while the visible 3D scene is starting. */}
+      {viewMode === 'plan' && demoPageReady && <Stage
         listening={!eraseActive}
         ref={stageRef}
         width={stageSize.width}
@@ -4525,13 +4541,14 @@ export function RoomCanvas({
               <Text
                 x={sitePolygon[0].x * pxPerMetre + 10 / viewport.scale}
                 y={sitePolygon[0].y * pxPerMetre + 8 / viewport.scale}
-                text={`PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
+                text={siteProjection?.label ?? `PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
                 fontSize={measureFontSize(viewport.scale, 11)}
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
                 letterSpacing={1.5 / viewport.scale}
                 fill={DIM_LINE}
               />
+              {siteProjection?.annotation({ pxPerMetre, scale: viewport.scale, line: (points, width) => <Line points={points} stroke={DIM_LINE} strokeWidth={width} /> })}
             </Group>
           )}
 
@@ -5523,7 +5540,7 @@ export function RoomCanvas({
           closed={removeHover.kind==='item'||removeHover.kind==='floor'}
           fill={removeHover.kind==='item'||removeHover.kind==='floor'?'rgba(208,100,65,0.22)':undefined}
           stroke="#c66441" strokeWidth={4/viewport.scale} dash={[8/viewport.scale,5/viewport.scale]} /></Layer>}
-      </Stage>
+      </Stage>}
       {viewMode !== '3d' && <OpeningSelectionEditor />}
 
       {/* Measure popover (units brief D10). Says out loud what it does:

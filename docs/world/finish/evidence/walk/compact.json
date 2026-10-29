@@ -1,0 +1,14 @@
+{
+  "kind": "lossless-gzip-evidence-index",
+  "expectedHeads": {
+    "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+    "walk": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
+    "site": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447"
+  },
+  "dataFile": "compact.json.gz",
+  "originalBytes": 222267,
+  "originalSha256": "67792cea82daafaef3507f968060c28cdedc15fdd6488135687f977ab360428f",
+  "compressedBytes": 16412,
+  "compressedSha256": "e80db664de89dbdcae17a10087694d2b7e49f146b1efb266de5b82379009b942",
+  "preservation": "Decompress dataFile for the complete byte-identical original evidence. This small index is not the evidence record itself."
+}

@@ -1,0 +1,32 @@
+{
+  "sourceHead": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
+  "visualPassed": true,
+  "automatedPassed": true,
+  "disclaimerEveryPage": true,
+  "overlapOrClipping": false,
+  "screenUnchanged": true,
+  "scope": "Direct visual inspection of all eight actual A4 pages generated from the exact-head normal preview: four laptop and four phone pages.",
+  "inspectedPages": [
+    "page-laptop-1.png",
+    "page-laptop-2.png",
+    "page-laptop-3.png",
+    "page-laptop-4.png",
+    "page-phone-1.png",
+    "page-phone-2.png",
+    "page-phone-3.png",
+    "page-phone-4.png"
+  ],
+  "everyPageDisclaimer": true,
+  "noOverlap": true,
+  "noClipping": true,
+  "minimumBodyFooterGapMm": 17.991665917013755,
+  "findings": [
+    "Every page has the full canonical disclaimer in the reserved footer margin, clearly separated from report text.",
+    "Boundary geometry, north arrow, numeric values, source tags, table rows and unavailable-state explanations are readable. No footer/body overlap or clipped report text was observed.",
+    "Both final pages contain a large unused body region after the sources section. The end-of-report banner and repeated footer remain distinct and readable.",
+    "PDF extraction/Poppler Type3 font bounding-box warnings are retained in print-check.json. They did not correspond to visible corruption in any of the eight inspected page images."
+  ],
+  "limitations": [
+    "This confirms the generated A4 portrait PDFs and emulated viewports, not every PDF viewer or physical printer."
+  ]
+}

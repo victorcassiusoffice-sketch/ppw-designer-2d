@@ -1,0 +1,532 @@
+{
+  "at": "2026-10-29T18:55:54.040Z",
+  "origin": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app",
+  "expectedSha": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
+  "note": "Offline Site on the normal preview. Desktop and touch viewport emulation, not a physical phone. All attempted writes are blocked. Actual PDFs are checked page by page; rendered pages require a separate recorded visual inspection.",
+  "visualInspection": "Pending: inspect every rendered page.",
+  "rows": [
+    {
+      "device": "laptop",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "blockedWrites": [],
+      "healthcheck": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T18:55:54.856Z"
+      },
+      "screenBefore": {
+        "text": "Estimates from public data for planning a conversation, not a survey and not an approval.",
+        "position": "static",
+        "margin": "10px 0px",
+        "padding": "11px 14px",
+        "fontSize": "13px",
+        "bannerCount": 2,
+        "overflowPx": 0
+      },
+      "printButtonLifecycle": true,
+      "printLayout": [
+        {
+          "selector": "html",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 2621.078125
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "2621.08px",
+          "minHeight": "100%",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": "body",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 1280,
+            "height": 2601.078125
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "2601.08px",
+          "minHeight": "100%",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": ".site-backdrop",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 1280,
+            "height": 2601.078125
+          },
+          "position": "static",
+          "top": "0px",
+          "bottom": "0px",
+          "height": "2601.08px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "olb-site-report"
+        },
+        {
+          "selector": ".site-workspace",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 1280,
+            "height": 2601.078125
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "2601.08px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": ".site-scroll",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 1280,
+            "height": 2601.078125
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "2601.08px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": ".site-report",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 1280,
+            "height": 2601.078125
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "2601.08px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": ".site-report-print-footer",
+          "rect": {
+            "x": 0,
+            "y": 2568.484375,
+            "width": 1280,
+            "height": 42.59375
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "42.5938px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        }
+      ],
+      "screenAfter": {
+        "text": "Estimates from public data for planning a conversation, not a survey and not an approval.",
+        "position": "static",
+        "margin": "10px 0px",
+        "padding": "11px 14px",
+        "fontSize": "13px",
+        "bannerCount": 2,
+        "overflowPx": 0
+      },
+      "screenUnchanged": true,
+      "pdf": {
+        "file": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round3\\site-print-7a73b25-20261029\\report-laptop-a4.pdf",
+        "pages": [
+          {
+            "page": 1,
+            "widthPt": 594.95996,
+            "heightPt": 841.91998,
+            "completeBannerCount": 2,
+            "footerCount": 1,
+            "bodyBottomPt": 756.8806099212599,
+            "bodyTextBottomPt": 692.999971125,
+            "footerTopPt": 793.4999669375,
+            "footerBottomPt": 802.4999665624999,
+            "gapMm": 35.4541651894097,
+            "errors": [],
+            "passed": true
+          },
+          {
+            "page": 2,
+            "widthPt": 594.95996,
+            "heightPt": 841.91998,
+            "completeBannerCount": 1,
+            "footerCount": 1,
+            "bodyBottomPt": 756.8806099212599,
+            "bodyTextBottomPt": 612.7499744687499,
+            "footerTopPt": 793.4999669375,
+            "footerBottomPt": 802.4999665624999,
+            "gapMm": 63.76458067647571,
+            "errors": [],
+            "passed": true
+          },
+          {
+            "page": 3,
+            "widthPt": 594.95996,
+            "heightPt": 841.91998,
+            "completeBannerCount": 1,
+            "footerCount": 1,
+            "bodyBottomPt": 756.8806099212599,
+            "bodyTextBottomPt": 742.4999690625003,
+            "footerTopPt": 793.4999669375,
+            "footerBottomPt": 802.4999665624999,
+            "gapMm": 17.991665917013755,
+            "errors": [],
+            "passed": true
+          },
+          {
+            "page": 4,
+            "widthPt": 594.95996,
+            "heightPt": 841.91998,
+            "completeBannerCount": 2,
+            "footerCount": 1,
+            "bodyBottomPt": 756.8806099212599,
+            "bodyTextBottomPt": 143.2499940312499,
+            "footerTopPt": 793.4999669375,
+            "footerBottomPt": 802.4999665624999,
+            "gapMm": 229.39374044192706,
+            "errors": [],
+            "passed": true
+          }
+        ],
+        "passed": true,
+        "extractionWarnings": "Could not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats"
+      },
+      "inactivePageName": "auto",
+      "renderWarnings": "Syntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph",
+      "renderedPages": [
+        "page-laptop-1.png",
+        "page-laptop-2.png",
+        "page-laptop-3.png",
+        "page-laptop-4.png"
+      ],
+      "passed": true
+    },
+    {
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "blockedWrites": [],
+      "healthcheck": {
+        "ok": true,
+        "service": "ppw-designer-2d",
+        "env": "preview",
+        "commit": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447",
+        "sentryConfigured": true,
+        "timestamp": "2026-10-29T18:56:24.549Z"
+      },
+      "screenBefore": {
+        "text": "Estimates from public data for planning a conversation, not a survey and not an approval.",
+        "position": "static",
+        "margin": "10px 0px",
+        "padding": "11px 14px",
+        "fontSize": "13px",
+        "bannerCount": 2,
+        "overflowPx": 0
+      },
+      "printButtonLifecycle": true,
+      "printLayout": [
+        {
+          "selector": "html",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 3232.171875
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "3232.17px",
+          "minHeight": "100%",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": "body",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 390,
+            "height": 3212.171875
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "3212.17px",
+          "minHeight": "100%",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": ".site-backdrop",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 390,
+            "height": 3212.171875
+          },
+          "position": "static",
+          "top": "0px",
+          "bottom": "0px",
+          "height": "3212.17px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "olb-site-report"
+        },
+        {
+          "selector": ".site-workspace",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 390,
+            "height": 3212.171875
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "3212.17px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": ".site-scroll",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 390,
+            "height": 3212.171875
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "3212.17px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": ".site-report",
+          "rect": {
+            "x": 0,
+            "y": 10,
+            "width": 390,
+            "height": 3212.171875
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "3212.17px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        },
+        {
+          "selector": ".site-report-print-footer",
+          "rect": {
+            "x": 0,
+            "y": 3160.984375,
+            "width": 390,
+            "height": 61.1875
+          },
+          "position": "static",
+          "top": "auto",
+          "bottom": "auto",
+          "height": "61.1875px",
+          "minHeight": "0px",
+          "display": "block",
+          "overflow": "visible",
+          "transform": "none",
+          "filter": "none",
+          "perspective": "none",
+          "contain": "none",
+          "page": "auto"
+        }
+      ],
+      "screenAfter": {
+        "text": "Estimates from public data for planning a conversation, not a survey and not an approval.",
+        "position": "static",
+        "margin": "10px 0px",
+        "padding": "11px 14px",
+        "fontSize": "13px",
+        "bannerCount": 2,
+        "overflowPx": 0
+      },
+      "screenUnchanged": true,
+      "pdf": {
+        "file": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round3\\site-print-7a73b25-20261029\\report-phone-a4.pdf",
+        "pages": [
+          {
+            "page": 1,
+            "widthPt": 594.95996,
+            "heightPt": 841.91998,
+            "completeBannerCount": 2,
+            "footerCount": 1,
+            "bodyBottomPt": 756.8806099212599,
+            "bodyTextBottomPt": 692.999971125,
+            "footerTopPt": 793.4999669375,
+            "footerBottomPt": 802.4999665624999,
+            "gapMm": 35.4541651894097,
+            "errors": [],
+            "passed": true
+          },
+          {
+            "page": 2,
+            "widthPt": 594.95996,
+            "heightPt": 841.91998,
+            "completeBannerCount": 1,
+            "footerCount": 1,
+            "bodyBottomPt": 756.8806099212599,
+            "bodyTextBottomPt": 612.7499744687499,
+            "footerTopPt": 793.4999669375,
+            "footerBottomPt": 802.4999665624999,
+            "gapMm": 63.76458067647571,
+            "errors": [],
+            "passed": true
+          },
+          {
+            "page": 3,
+            "widthPt": 594.95996,
+            "heightPt": 841.91998,
+            "completeBannerCount": 1,
+            "footerCount": 1,
+            "bodyBottomPt": 756.8806099212599,
+            "bodyTextBottomPt": 742.4999690625003,
+            "footerTopPt": 793.4999669375,
+            "footerBottomPt": 802.4999665624999,
+            "gapMm": 17.991665917013755,
+            "errors": [],
+            "passed": true
+          },
+          {
+            "page": 4,
+            "widthPt": 594.95996,
+            "heightPt": 841.91998,
+            "completeBannerCount": 2,
+            "footerCount": 1,
+            "bodyBottomPt": 756.8806099212599,
+            "bodyTextBottomPt": 143.2499940312499,
+            "footerTopPt": 793.4999669375,
+            "footerBottomPt": 802.4999665624999,
+            "gapMm": 229.39374044192706,
+            "errors": [],
+            "passed": true
+          }
+        ],
+        "passed": true,
+        "extractionWarnings": "Could not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats\r\nCould not get FontBBox from font descriptor because None cannot be parsed as 4 floats"
+      },
+      "inactivePageName": "auto",
+      "renderWarnings": "Syntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph\r\nSyntax Warning: Bad bounding box in Type 3 glyph",
+      "renderedPages": [
+        "page-phone-1.png",
+        "page-phone-2.png",
+        "page-phone-3.png",
+        "page-phone-4.png"
+      ],
+      "passed": true
+    }
+  ],
+  "automatedPassed": true
+}

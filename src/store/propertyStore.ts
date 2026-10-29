@@ -229,6 +229,8 @@ export interface Site {
   widthM: number;
   depthM: number;
   originM: Vertex;
+  /** Opaque saved extension; only the deferred Site validator may interpret it. */
+  world?: unknown;
 }
 
 /** Plot side lengths are clamped to this range by `setSite`. */
@@ -466,7 +468,9 @@ export function normaliseSite(site: unknown): Site | undefined {
       && typeof o.y === 'number' && Number.isFinite(o.y)
       ? { x: o.x, y: o.y }
       : { x: 0, y: 0 };
-  return { widthM, depthM, originM };
+  // Preserve unknown saved data through early loads/writes without importing
+  // Site implementation. It remains inert until validation after first paint.
+  return { widthM, depthM, originM, ...(s.world === undefined ? {} : { world: s.world }) };
 }
 
 /** Whether a light-emitting item is lit. Absent = on (see `PlacedItem.lightOn`). */
