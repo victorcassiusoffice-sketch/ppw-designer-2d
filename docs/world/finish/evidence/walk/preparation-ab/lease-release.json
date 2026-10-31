@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-29T19:59:05.1223218Z",
+  "sourceHead": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+  "label": "r4-prepare-ab-v1",
+  "diagnosticOnly": true,
+  "normalSource": false,
+  "sourceInjection": true,
+  "executedContexts": 8,
+  "allEligible": true,
+  "browserClosed": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "ownedProcesses": [],
+  "sharedLockExists": false,
+  "released": true
+}

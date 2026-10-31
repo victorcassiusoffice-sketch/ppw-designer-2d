@@ -1,14 +1,1663 @@
 {
-  "kind": "lossless-gzip-evidence-index",
-  "expectedHeads": {
-    "base": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
-    "walk": "52fa4088e99eafaaaea33e5ad8feb0cbc617fd9e",
-    "site": "7a73b25a2a32556d9d5cf5381d72e7c7bf611447"
+  "at": "2026-10-31T12:24:10.923Z",
+  "origin": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app",
+  "expectedSha": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+  "note": "Normal preview with no access code. Headless desktop/touch viewport on laptop, not a physical phone. All non-GET/HEAD/OPTIONS network requests are intercepted and blocked; service workers are disabled. Live provider responses are not substituted. One separately labelled production-env negative test substitutes only healthcheck JSON. Two labelled initial-focus cases deliberately delay the SiteEntry JavaScript response.",
+  "rows": [
+    {
+      "case": "delayed-initial-entry-focus",
+      "device": "laptop",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "note": "SiteEntry JavaScript is deliberately held until after Escape; app state is read only. Diagnostic keyboard listener records propagation without editing the design.",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CR93DchF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BsrfFmWA.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-BLTDhKmB.css"
+      ],
+      "delayedEntryRequests": 1,
+      "dialogBox": {
+        "x": 256,
+        "y": 160,
+        "width": 768,
+        "height": 480
+      },
+      "loadingMessage": "Opening Site… Cancel",
+      "focusedCancel": true,
+      "backgroundInert": true,
+      "backgroundClickAttempted": true,
+      "backgroundKeysReceived": 0,
+      "backgroundUnchanged": true,
+      "closedOnEscape": true,
+      "inertRestored": true,
+      "focusRestored": true,
+      "workspaceAfterCancel": 0,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "delayed-initial-entry-focus",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "note": "SiteEntry JavaScript is deliberately held until after Escape; app state is read only. Diagnostic keyboard listener records propagation without editing the design.",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CR93DchF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BsrfFmWA.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-BLTDhKmB.css"
+      ],
+      "delayedEntryRequests": 1,
+      "dialogBox": {
+        "x": 78,
+        "y": 168.796875,
+        "width": 234,
+        "height": 506.40625
+      },
+      "loadingMessage": "Opening Site… Cancel",
+      "focusedCancel": true,
+      "backgroundInert": true,
+      "backgroundClickAttempted": true,
+      "backgroundKeysReceived": 0,
+      "backgroundUnchanged": true,
+      "closedOnEscape": true,
+      "inertRestored": true,
+      "focusRestored": true,
+      "workspaceAfterCancel": 0,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "live-map",
+      "device": "laptop",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [
+        "https://tiles.openfreemap.org/styles/liberty",
+        "https://tiles.openfreemap.org/planet",
+        "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json",
+        "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf",
+        "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/site/search?q=Tamarin%20Mauritius"
+      ],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CR93DchF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BsrfFmWA.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-BLTDhKmB.css",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteMap-BDoEfmOF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteMap-Y3Rwdjno.css",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/maplibre-gl-worker-GrpJo12C.js"
+      ],
+      "previewModeNote": [
+        "Preview test mode · live map and public services enabled for this session."
+      ],
+      "searchRequestsBeforeTyping": 0,
+      "searchRequestsBeforeSubmit": 0,
+      "searchResults": [
+        "Tamarin, Tamarin VCA, Black River, Mauritius",
+        "Tamarin VCA, Black River, Mauritius",
+        "Tourelle du Tamarin, Tamarin VCA, Black River, Mauritius",
+        "Tamarin River, Tamarin VCA, Black River, Mauritius",
+        "Tamarin River, Tamarin VCA, Black River, Mauritius"
+      ],
+      "searchError": [],
+      "searchRequestsAfterSubmit": 1,
+      "searchPassed": true,
+      "attribution": [
+        {
+          "text": "OpenFreeMap",
+          "href": "https://openfreemap.org/",
+          "x": 78,
+          "y": 625.109375,
+          "width": 69.390625,
+          "height": 15,
+          "visible": true
+        },
+        {
+          "text": "OpenMapTiles",
+          "href": "https://openmaptiles.org/",
+          "x": 163.21875,
+          "y": 625.109375,
+          "width": 70.203125,
+          "height": 15,
+          "visible": true
+        },
+        {
+          "text": "OpenStreetMap",
+          "href": "https://www.openstreetmap.org/copyright",
+          "x": 288.296875,
+          "y": 625.109375,
+          "width": 76.953125,
+          "height": 15,
+          "visible": true
+        }
+      ],
+      "mapBox": {
+        "x": 69,
+        "y": 238.109375,
+        "width": 608.90625,
+        "height": 380
+      },
+      "cornerCount": 4,
+      "boundaryCheck": [
+        "Boundary is ready. Add levels, review the report, then apply it to the plan.",
+        "Boundary drawn by you; not a cadastral survey."
+      ],
+      "boundaryError": [],
+      "mapErrors": [],
+      "cornersBeforeEdit": [
+        [
+          "57.37718835575092",
+          "-20.328928823664455"
+        ],
+        [
+          "57.37816467983188",
+          "-20.328928823664455"
+        ],
+        [
+          "57.37816467983188",
+          "-20.329502275431366"
+        ],
+        [
+          "57.37718835575092",
+          "-20.329502275431366"
+        ]
+      ],
+      "cornersAfterEdit": [
+        [
+          "57.37719835575092",
+          "-20.328928823664455"
+        ],
+        [
+          "57.37816467983188",
+          "-20.328928823664455"
+        ],
+        [
+          "57.37816467983188",
+          "-20.329502275431366"
+        ],
+        [
+          "57.37718835575092",
+          "-20.329502275431366"
+        ]
+      ],
+      "applyDisabledDuringEdit": true,
+      "cornersAfterKeyboardUndo": [
+        [
+          "57.37718835575092",
+          "-20.328928823664455"
+        ],
+        [
+          "57.37816467983188",
+          "-20.328928823664455"
+        ],
+        [
+          "57.37816467983188",
+          "-20.329502275431366"
+        ],
+        [
+          "57.37718835575092",
+          "-20.329502275431366"
+        ]
+      ],
+      "editUndoPassed": true,
+      "cornersAfterRemoval": [
+        [
+          "57.37718835575092",
+          "-20.328928823664455"
+        ],
+        [
+          "57.37816467983188",
+          "-20.328928823664455"
+        ],
+        [
+          "57.37718835575092",
+          "-20.329502275431366"
+        ]
+      ],
+      "removeUndoPassed": true,
+      "cornersAfterClear": [],
+      "clearUndoPassed": true,
+      "report": "Estimates from public data for planning a conversation, not a survey and not an approval.\n\nMy site\n\nBoundary drawn by you; not a cadastral survey.\n\n1\n101.96 m\n2\n63.49 m\n3\n101.96 m\n4\n63.49 m\nN\nBoundary & orientation\nArea\n6,472.73 m²\ndrawn\nMauritius measure\n153.346 perches · 1.5335 arpents\ndrawn\nApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.\nPerimeter\n330.88 m\ndrawn\nShortest / longest side\n63.49 / 101.96 m\ndrawn\nFirst corner (WGS84)\n-20.328929, 57.377188\ndrawn\nNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.\nPlan anchor\nx -5.00 m · y -5.00 m\ndrawn\nApplying a site does not move any existing room.\nLevels & terrain\nLowest / highest input level\nUnavailable\nunavailable\nBest-fit slope\nUnavailable\nunavailable\nDownhill aspect\nUnavailable / level plane\nunavailable\nPublic terrain\nUnavailable\nunavailable\nPublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.\nPlatform scenario\nPlatform level\nUnavailable\nunavailable\nCut / fill\nUnavailable\nunavailable\nSupply survey points/contours or type what-if corner levels to calculate.\nExisting foundation scenario\nExisting / scenario concrete\nUnavailable\nunavailable\nRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.\nSun & mapped surroundings\nPVGIS annual solar yield\nUnavailable\nunavailable\n1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.\nPVGIS optimal tilt\nUnavailable\nunavailable\nWithin 100 m of the boundary\nUnavailable\nunavailable\nOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.\nWaterways / power features\nUnavailable\nunavailable\nMapped public features only; buried services and connection capacity require utility confirmation.\nMapped land use nearby\nUnavailable\nunavailable\nPlanning conversation\nSetback envelope\nUnavailable\nunavailable\nNo plot-specific planning rules verified. No buildable area or approval is inferred.\nIllustrative buildable footprint\nUnavailable\nunavailable\nNo plot-specific planning rules verified. No buildable area or approval is inferred.\nSources & unresolved checks\n\nSources accompany every number. Boundaries and survey-plan transcription have not been checked against the cadastre. Confirm boundaries, datum, services, ground conditions and current planning rules with the relevant professionals.\n\nEstimates from public data for planning a conversation, not a survey and not an approval.",
+      "reportChecks": {
+        "metrics": [
+          {
+            "label": "Area",
+            "value": "6,472.73 m²drawn",
+            "source": "drawn"
+          },
+          {
+            "label": "Mauritius measure",
+            "value": "153.346 perches · 1.5335 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+            "source": "drawn"
+          },
+          {
+            "label": "Perimeter",
+            "value": "330.88 mdrawn",
+            "source": "drawn"
+          },
+          {
+            "label": "Shortest / longest side",
+            "value": "63.49 / 101.96 mdrawn",
+            "source": "drawn"
+          },
+          {
+            "label": "First corner (WGS84)",
+            "value": "-20.328929, 57.377188drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+            "source": "drawn"
+          },
+          {
+            "label": "Plan anchor",
+            "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+            "source": "drawn"
+          },
+          {
+            "label": "Lowest / highest input level",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Best-fit slope",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Downhill aspect",
+            "value": "Unavailable / level planeunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Public terrain",
+            "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Platform level",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Cut / fill",
+            "value": "UnavailableunavailableSupply survey points/contours or type what-if corner levels to calculate.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Existing / scenario concrete",
+            "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+            "source": "unavailable"
+          },
+          {
+            "label": "PVGIS annual solar yield",
+            "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+            "source": "unavailable"
+          },
+          {
+            "label": "PVGIS optimal tilt",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Within 100 m of the boundary",
+            "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Waterways / power features",
+            "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Mapped land use nearby",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Setback envelope",
+            "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Illustrative buildable footprint",
+            "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+            "source": "unavailable"
+          }
+        ],
+        "everyNumberTagged": true,
+        "banners": [
+          "Estimates from public data for planning a conversation, not a survey and not an approval.",
+          "Estimates from public data for planning a conversation, not a survey and not an approval."
+        ],
+        "overflowPx": 0
+      },
+      "documentOverflowPx": 0,
+      "mapRequested": true,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "live-map",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [
+        "https://tiles.openfreemap.org/styles/liberty",
+        "https://tiles.openfreemap.org/planet",
+        "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.json",
+        "https://tiles.openfreemap.org/sprites/ofm_f384/ofm.png",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/planet/20261025_080012_pt/14/10803/9137.pbf",
+        "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Italic/0-255.pbf",
+        "https://tiles.openfreemap.org/fonts/Noto%20Sans%20Regular/0-255.pbf",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/site/search?q=Tamarin%20Mauritius"
+      ],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CR93DchF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BsrfFmWA.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-BLTDhKmB.css",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteMap-BDoEfmOF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteMap-Y3Rwdjno.css",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/maplibre-gl-worker-GrpJo12C.js"
+      ],
+      "previewModeNote": [
+        "Preview test mode · live map and public services enabled for this session."
+      ],
+      "searchRequestsBeforeTyping": 0,
+      "searchRequestsBeforeSubmit": 0,
+      "searchResults": [
+        "Tamarin, Tamarin VCA, Black River, Mauritius",
+        "Tamarin VCA, Black River, Mauritius",
+        "Tourelle du Tamarin, Tamarin VCA, Black River, Mauritius",
+        "Tamarin River, Tamarin VCA, Black River, Mauritius",
+        "Tamarin River, Tamarin VCA, Black River, Mauritius"
+      ],
+      "searchError": [],
+      "searchRequestsAfterSubmit": 1,
+      "searchPassed": true,
+      "attribution": [
+        {
+          "text": "OpenFreeMap",
+          "href": "https://openfreemap.org/",
+          "x": 26,
+          "y": 526.640625,
+          "width": 63.078125,
+          "height": 14,
+          "visible": true
+        },
+        {
+          "text": "OpenMapTiles",
+          "href": "https://openmaptiles.org/",
+          "x": 103.484375,
+          "y": 526.640625,
+          "width": 63.8125,
+          "height": 14,
+          "visible": true
+        },
+        {
+          "text": "OpenStreetMap",
+          "href": "https://www.openstreetmap.org/copyright",
+          "x": 217.203125,
+          "y": 526.640625,
+          "width": 69.96875,
+          "height": 14,
+          "visible": true
+        }
+      ],
+      "mapBox": {
+        "x": 17,
+        "y": 229.640625,
+        "width": 356,
+        "height": 290
+      },
+      "cornerCount": 4,
+      "boundaryCheck": [
+        "Boundary is ready. Add levels, review the report, then apply it to the plan.",
+        "Boundary drawn by you; not a cadastral survey."
+      ],
+      "boundaryError": [],
+      "mapErrors": [],
+      "cornersBeforeEdit": [
+        [
+          "57.37739488584364",
+          "-20.32899657534024"
+        ],
+        [
+          "57.37796351415486",
+          "-20.32899657534024"
+        ],
+        [
+          "57.37796351415486",
+          "-20.329434209584846"
+        ],
+        [
+          "57.37739488584364",
+          "-20.329434209584846"
+        ]
+      ],
+      "cornersAfterEdit": [
+        [
+          "57.377404885843646",
+          "-20.32899657534024"
+        ],
+        [
+          "57.37796351415486",
+          "-20.32899657534024"
+        ],
+        [
+          "57.37796351415486",
+          "-20.329434209584846"
+        ],
+        [
+          "57.37739488584364",
+          "-20.329434209584846"
+        ]
+      ],
+      "applyDisabledDuringEdit": true,
+      "cornersAfterKeyboardUndo": [
+        [
+          "57.37739488584364",
+          "-20.32899657534024"
+        ],
+        [
+          "57.37796351415486",
+          "-20.32899657534024"
+        ],
+        [
+          "57.37796351415486",
+          "-20.329434209584846"
+        ],
+        [
+          "57.37739488584364",
+          "-20.329434209584846"
+        ]
+      ],
+      "editUndoPassed": true,
+      "cornersAfterRemoval": [
+        [
+          "57.37739488584364",
+          "-20.32899657534024"
+        ],
+        [
+          "57.37796351415486",
+          "-20.32899657534024"
+        ],
+        [
+          "57.37739488584364",
+          "-20.329434209584846"
+        ]
+      ],
+      "removeUndoPassed": true,
+      "cornersAfterClear": [],
+      "clearUndoPassed": true,
+      "report": "Estimates from public data for planning a conversation, not a survey and not an approval.\n\nMy site\n\nBoundary drawn by you; not a cadastral survey.\n\n1\n59.38 m\n2\n48.45 m\n3\n59.38 m\n4\n48.45 m\nN\nBoundary & orientation\nArea\n2,876.98 m²\ndrawn\nMauritius measure\n68.159 perches · 0.6816 arpents\ndrawn\nApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.\nPerimeter\n215.66 m\ndrawn\nShortest / longest side\n48.45 / 59.38 m\ndrawn\nFirst corner (WGS84)\n-20.328997, 57.377395\ndrawn\nNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.\nPlan anchor\nx -5.00 m · y -5.00 m\ndrawn\nApplying a site does not move any existing room.\nLevels & terrain\nLowest / highest input level\nUnavailable\nunavailable\nBest-fit slope\nUnavailable\nunavailable\nDownhill aspect\nUnavailable / level plane\nunavailable\nPublic terrain\nUnavailable\nunavailable\nPublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.\nPlatform scenario\nPlatform level\nUnavailable\nunavailable\nCut / fill\nUnavailable\nunavailable\nSupply survey points/contours or type what-if corner levels to calculate.\nExisting foundation scenario\nExisting / scenario concrete\nUnavailable\nunavailable\nRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.\nSun & mapped surroundings\nPVGIS annual solar yield\nUnavailable\nunavailable\n1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.\nPVGIS optimal tilt\nUnavailable\nunavailable\nWithin 100 m of the boundary\nUnavailable\nunavailable\nOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.\nWaterways / power features\nUnavailable\nunavailable\nMapped public features only; buried services and connection capacity require utility confirmation.\nMapped land use nearby\nUnavailable\nunavailable\nPlanning conversation\nSetback envelope\nUnavailable\nunavailable\nNo plot-specific planning rules verified. No buildable area or approval is inferred.\nIllustrative buildable footprint\nUnavailable\nunavailable\nNo plot-specific planning rules verified. No buildable area or approval is inferred.\nSources & unresolved checks\n\nSources accompany every number. Boundaries and survey-plan transcription have not been checked against the cadastre. Confirm boundaries, datum, services, ground conditions and current planning rules with the relevant professionals.\n\nEstimates from public data for planning a conversation, not a survey and not an approval.",
+      "reportChecks": {
+        "metrics": [
+          {
+            "label": "Area",
+            "value": "2,876.98 m²drawn",
+            "source": "drawn"
+          },
+          {
+            "label": "Mauritius measure",
+            "value": "68.159 perches · 0.6816 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+            "source": "drawn"
+          },
+          {
+            "label": "Perimeter",
+            "value": "215.66 mdrawn",
+            "source": "drawn"
+          },
+          {
+            "label": "Shortest / longest side",
+            "value": "48.45 / 59.38 mdrawn",
+            "source": "drawn"
+          },
+          {
+            "label": "First corner (WGS84)",
+            "value": "-20.328997, 57.377395drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+            "source": "drawn"
+          },
+          {
+            "label": "Plan anchor",
+            "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+            "source": "drawn"
+          },
+          {
+            "label": "Lowest / highest input level",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Best-fit slope",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Downhill aspect",
+            "value": "Unavailable / level planeunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Public terrain",
+            "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Platform level",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Cut / fill",
+            "value": "UnavailableunavailableSupply survey points/contours or type what-if corner levels to calculate.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Existing / scenario concrete",
+            "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+            "source": "unavailable"
+          },
+          {
+            "label": "PVGIS annual solar yield",
+            "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+            "source": "unavailable"
+          },
+          {
+            "label": "PVGIS optimal tilt",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Within 100 m of the boundary",
+            "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Waterways / power features",
+            "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Mapped land use nearby",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Setback envelope",
+            "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Illustrative buildable footprint",
+            "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+            "source": "unavailable"
+          }
+        ],
+        "everyNumberTagged": true,
+        "banners": [
+          "Estimates from public data for planning a conversation, not a survey and not an approval.",
+          "Estimates from public data for planning a conversation, not a survey and not an approval."
+        ],
+        "overflowPx": 0
+      },
+      "documentOverflowPx": 0,
+      "mapRequested": true,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "offline",
+      "device": "laptop",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CR93DchF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BsrfFmWA.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-BLTDhKmB.css"
+      ],
+      "hint": "Practice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.",
+      "mapCanvasCount": 0,
+      "mapCreditCount": 0,
+      "sampleReports": [
+        {
+          "name": "Tamarin, Mauritius · practice plot",
+          "metrics": [
+            {
+              "label": "Area",
+              "value": "500.00 m²drawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Mauritius measure",
+              "value": "11.846 perches · 0.1185 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+              "source": "drawn"
+            },
+            {
+              "label": "Perimeter",
+              "value": "90.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Shortest / longest side",
+              "value": "20.00 / 25.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "First corner (WGS84)",
+              "value": "-20.329216, 57.377679drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+              "source": "drawn"
+            },
+            {
+              "label": "Plan anchor",
+              "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+              "source": "drawn"
+            },
+            {
+              "label": "Lowest / highest input level",
+              "value": "100.00 / 102.00 mtyped what-ifFictional local datum 100 m; not a surveyed or sea-level elevation",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Best-fit slope",
+              "value": "8.00% · 4.57°typed what-ifLeast-squares plane; residual RMS 0.000 m. Local breaks may be steeper.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Downhill aspect",
+              "value": "270.0° from northtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Public terrain",
+              "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Platform level",
+              "value": "101.00 mtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Cut / fill",
+              "value": "125.00 m³ cut · 125.00 m³ filltyped what-ifPiecewise linear terrain, clipped to the boundary. 2 clipped triangles; 500.00 m² covered. In-situ geometry only; no bulking, compaction, retaining wall, soil or disposal allowance.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Existing / scenario concrete",
+              "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS annual solar yield",
+              "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS optimal tilt",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Within 100 m of the boundary",
+              "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Waterways / power features",
+              "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Mapped land use nearby",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Setback envelope",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Illustrative buildable footprint",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            }
+          ],
+          "everyNumberTagged": true,
+          "banners": [
+            "Estimates from public data for planning a conversation, not a survey and not an approval.",
+            "Estimates from public data for planning a conversation, not a survey and not an approval."
+          ],
+          "overflowPx": 0
+        },
+        {
+          "name": "Curepipe, Mauritius · practice plot",
+          "metrics": [
+            {
+              "label": "Area",
+              "value": "500.00 m²drawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Mauritius measure",
+              "value": "11.846 perches · 0.1185 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+              "source": "drawn"
+            },
+            {
+              "label": "Perimeter",
+              "value": "90.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Shortest / longest side",
+              "value": "20.00 / 25.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "First corner (WGS84)",
+              "value": "-20.316200, 57.523100drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+              "source": "drawn"
+            },
+            {
+              "label": "Plan anchor",
+              "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+              "source": "drawn"
+            },
+            {
+              "label": "Lowest / highest input level",
+              "value": "100.00 / 102.00 mtyped what-ifFictional local datum 100 m; not a surveyed or sea-level elevation",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Best-fit slope",
+              "value": "8.00% · 4.57°typed what-ifLeast-squares plane; residual RMS 0.000 m. Local breaks may be steeper.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Downhill aspect",
+              "value": "270.0° from northtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Public terrain",
+              "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Platform level",
+              "value": "101.00 mtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Cut / fill",
+              "value": "125.00 m³ cut · 125.00 m³ filltyped what-ifPiecewise linear terrain, clipped to the boundary. 2 clipped triangles; 500.00 m² covered. In-situ geometry only; no bulking, compaction, retaining wall, soil or disposal allowance.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Existing / scenario concrete",
+              "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS annual solar yield",
+              "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS optimal tilt",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Within 100 m of the boundary",
+              "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Waterways / power features",
+              "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Mapped land use nearby",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Setback envelope",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Illustrative buildable footprint",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            }
+          ],
+          "everyNumberTagged": true,
+          "banners": [
+            "Estimates from public data for planning a conversation, not a survey and not an approval.",
+            "Estimates from public data for planning a conversation, not a survey and not an approval."
+          ],
+          "overflowPx": 0
+        },
+        {
+          "name": "York, United Kingdom · practice plot",
+          "metrics": [
+            {
+              "label": "Area",
+              "value": "500.00 m²drawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Mauritius measure",
+              "value": "11.846 perches · 0.1185 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+              "source": "drawn"
+            },
+            {
+              "label": "Perimeter",
+              "value": "90.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Shortest / longest side",
+              "value": "20.00 / 25.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "First corner (WGS84)",
+              "value": "53.965400, -1.082700drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+              "source": "drawn"
+            },
+            {
+              "label": "Plan anchor",
+              "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+              "source": "drawn"
+            },
+            {
+              "label": "Lowest / highest input level",
+              "value": "100.00 / 102.00 mtyped what-ifFictional local datum 100 m; not a surveyed or sea-level elevation",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Best-fit slope",
+              "value": "8.00% · 4.57°typed what-ifLeast-squares plane; residual RMS 0.000 m. Local breaks may be steeper.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Downhill aspect",
+              "value": "270.0° from northtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Public terrain",
+              "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Platform level",
+              "value": "101.00 mtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Cut / fill",
+              "value": "125.00 m³ cut · 125.00 m³ filltyped what-ifPiecewise linear terrain, clipped to the boundary. 2 clipped triangles; 500.00 m² covered. In-situ geometry only; no bulking, compaction, retaining wall, soil or disposal allowance.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Existing / scenario concrete",
+              "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS annual solar yield",
+              "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS optimal tilt",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Within 100 m of the boundary",
+              "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Waterways / power features",
+              "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Mapped land use nearby",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Setback envelope",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Illustrative buildable footprint",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            }
+          ],
+          "everyNumberTagged": true,
+          "banners": [
+            "Estimates from public data for planning a conversation, not a survey and not an approval.",
+            "Estimates from public data for planning a conversation, not a survey and not an approval."
+          ],
+          "overflowPx": 0
+        }
+      ],
+      "printButtonOwnsClass": true,
+      "pdf": "report-laptop-a4.pdf",
+      "traverseErrors": [],
+      "traverseReport": {
+        "metrics": [
+          {
+            "label": "Area",
+            "value": "500.00 m²drawn",
+            "source": "drawn"
+          },
+          {
+            "label": "Mauritius measure",
+            "value": "11.846 perches · 0.1185 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+            "source": "drawn"
+          },
+          {
+            "label": "Perimeter",
+            "value": "90.00 mdrawn",
+            "source": "drawn"
+          },
+          {
+            "label": "Shortest / longest side",
+            "value": "20.00 / 25.00 mdrawn",
+            "source": "drawn"
+          },
+          {
+            "label": "First corner (WGS84)",
+            "value": "-20.329216, 57.377679drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+            "source": "drawn"
+          },
+          {
+            "label": "Plan anchor",
+            "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+            "source": "drawn"
+          },
+          {
+            "label": "Traverse closure error",
+            "value": "0.0000 mdrawnUnadjusted endpoint-to-start residual. Any remaining gap is a separate closing edge; no bearing or length was silently corrected.",
+            "source": "drawn"
+          },
+          {
+            "label": "Lowest / highest input level",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Best-fit slope",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Downhill aspect",
+            "value": "Unavailable / level planeunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Public terrain",
+            "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Platform level",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Cut / fill",
+            "value": "UnavailableunavailableSupply survey points/contours or type what-if corner levels to calculate.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Existing / scenario concrete",
+            "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+            "source": "unavailable"
+          },
+          {
+            "label": "PVGIS annual solar yield",
+            "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+            "source": "unavailable"
+          },
+          {
+            "label": "PVGIS optimal tilt",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Within 100 m of the boundary",
+            "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Waterways / power features",
+            "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Mapped land use nearby",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Setback envelope",
+            "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Illustrative buildable footprint",
+            "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+            "source": "unavailable"
+          }
+        ],
+        "everyNumberTagged": true,
+        "banners": [
+          "Estimates from public data for planning a conversation, not a survey and not an approval.",
+          "Estimates from public data for planning a conversation, not a survey and not an approval."
+        ],
+        "overflowPx": 0
+      },
+      "closure": {
+        "label": "Traverse closure error",
+        "value": "0.0000 mdrawnUnadjusted endpoint-to-start residual. Any remaining gap is a separate closing edge; no bearing or length was silently corrected.",
+        "source": "drawn"
+      },
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "offline",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CR93DchF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BsrfFmWA.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-BLTDhKmB.css"
+      ],
+      "hint": "Practice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.",
+      "mapCanvasCount": 0,
+      "mapCreditCount": 0,
+      "sampleReports": [
+        {
+          "name": "Tamarin, Mauritius · practice plot",
+          "metrics": [
+            {
+              "label": "Area",
+              "value": "500.00 m²drawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Mauritius measure",
+              "value": "11.846 perches · 0.1185 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+              "source": "drawn"
+            },
+            {
+              "label": "Perimeter",
+              "value": "90.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Shortest / longest side",
+              "value": "20.00 / 25.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "First corner (WGS84)",
+              "value": "-20.329216, 57.377679drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+              "source": "drawn"
+            },
+            {
+              "label": "Plan anchor",
+              "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+              "source": "drawn"
+            },
+            {
+              "label": "Lowest / highest input level",
+              "value": "100.00 / 102.00 mtyped what-ifFictional local datum 100 m; not a surveyed or sea-level elevation",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Best-fit slope",
+              "value": "8.00% · 4.57°typed what-ifLeast-squares plane; residual RMS 0.000 m. Local breaks may be steeper.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Downhill aspect",
+              "value": "270.0° from northtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Public terrain",
+              "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Platform level",
+              "value": "101.00 mtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Cut / fill",
+              "value": "125.00 m³ cut · 125.00 m³ filltyped what-ifPiecewise linear terrain, clipped to the boundary. 2 clipped triangles; 500.00 m² covered. In-situ geometry only; no bulking, compaction, retaining wall, soil or disposal allowance.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Existing / scenario concrete",
+              "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS annual solar yield",
+              "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS optimal tilt",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Within 100 m of the boundary",
+              "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Waterways / power features",
+              "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Mapped land use nearby",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Setback envelope",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Illustrative buildable footprint",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            }
+          ],
+          "everyNumberTagged": true,
+          "banners": [
+            "Estimates from public data for planning a conversation, not a survey and not an approval.",
+            "Estimates from public data for planning a conversation, not a survey and not an approval."
+          ],
+          "overflowPx": 0
+        },
+        {
+          "name": "Curepipe, Mauritius · practice plot",
+          "metrics": [
+            {
+              "label": "Area",
+              "value": "500.00 m²drawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Mauritius measure",
+              "value": "11.846 perches · 0.1185 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+              "source": "drawn"
+            },
+            {
+              "label": "Perimeter",
+              "value": "90.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Shortest / longest side",
+              "value": "20.00 / 25.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "First corner (WGS84)",
+              "value": "-20.316200, 57.523100drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+              "source": "drawn"
+            },
+            {
+              "label": "Plan anchor",
+              "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+              "source": "drawn"
+            },
+            {
+              "label": "Lowest / highest input level",
+              "value": "100.00 / 102.00 mtyped what-ifFictional local datum 100 m; not a surveyed or sea-level elevation",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Best-fit slope",
+              "value": "8.00% · 4.57°typed what-ifLeast-squares plane; residual RMS 0.000 m. Local breaks may be steeper.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Downhill aspect",
+              "value": "270.0° from northtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Public terrain",
+              "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Platform level",
+              "value": "101.00 mtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Cut / fill",
+              "value": "125.00 m³ cut · 125.00 m³ filltyped what-ifPiecewise linear terrain, clipped to the boundary. 2 clipped triangles; 500.00 m² covered. In-situ geometry only; no bulking, compaction, retaining wall, soil or disposal allowance.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Existing / scenario concrete",
+              "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS annual solar yield",
+              "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS optimal tilt",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Within 100 m of the boundary",
+              "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Waterways / power features",
+              "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Mapped land use nearby",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Setback envelope",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Illustrative buildable footprint",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            }
+          ],
+          "everyNumberTagged": true,
+          "banners": [
+            "Estimates from public data for planning a conversation, not a survey and not an approval.",
+            "Estimates from public data for planning a conversation, not a survey and not an approval."
+          ],
+          "overflowPx": 0
+        },
+        {
+          "name": "York, United Kingdom · practice plot",
+          "metrics": [
+            {
+              "label": "Area",
+              "value": "500.00 m²drawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Mauritius measure",
+              "value": "11.846 perches · 0.1185 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+              "source": "drawn"
+            },
+            {
+              "label": "Perimeter",
+              "value": "90.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "Shortest / longest side",
+              "value": "20.00 / 25.00 mdrawn",
+              "source": "drawn"
+            },
+            {
+              "label": "First corner (WGS84)",
+              "value": "53.965400, -1.082700drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+              "source": "drawn"
+            },
+            {
+              "label": "Plan anchor",
+              "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+              "source": "drawn"
+            },
+            {
+              "label": "Lowest / highest input level",
+              "value": "100.00 / 102.00 mtyped what-ifFictional local datum 100 m; not a surveyed or sea-level elevation",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Best-fit slope",
+              "value": "8.00% · 4.57°typed what-ifLeast-squares plane; residual RMS 0.000 m. Local breaks may be steeper.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Downhill aspect",
+              "value": "270.0° from northtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Public terrain",
+              "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Platform level",
+              "value": "101.00 mtyped what-if",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Cut / fill",
+              "value": "125.00 m³ cut · 125.00 m³ filltyped what-ifPiecewise linear terrain, clipped to the boundary. 2 clipped triangles; 500.00 m² covered. In-situ geometry only; no bulking, compaction, retaining wall, soil or disposal allowance.",
+              "source": "typed what-if"
+            },
+            {
+              "label": "Existing / scenario concrete",
+              "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS annual solar yield",
+              "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+              "source": "unavailable"
+            },
+            {
+              "label": "PVGIS optimal tilt",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Within 100 m of the boundary",
+              "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Waterways / power features",
+              "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Mapped land use nearby",
+              "value": "Unavailableunavailable",
+              "source": "unavailable"
+            },
+            {
+              "label": "Setback envelope",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            },
+            {
+              "label": "Illustrative buildable footprint",
+              "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+              "source": "unavailable"
+            }
+          ],
+          "everyNumberTagged": true,
+          "banners": [
+            "Estimates from public data for planning a conversation, not a survey and not an approval.",
+            "Estimates from public data for planning a conversation, not a survey and not an approval."
+          ],
+          "overflowPx": 0
+        }
+      ],
+      "printButtonOwnsClass": true,
+      "pdf": "report-phone-a4.pdf",
+      "traverseErrors": [],
+      "traverseReport": {
+        "metrics": [
+          {
+            "label": "Area",
+            "value": "500.00 m²drawn",
+            "source": "drawn"
+          },
+          {
+            "label": "Mauritius measure",
+            "value": "11.846 perches · 0.1185 arpentsdrawnApproximate conversion: 1 perche = 42.21 m²; 1 arpent = 4,221 m². Confirm the title's unit definition.",
+            "source": "drawn"
+          },
+          {
+            "label": "Perimeter",
+            "value": "90.00 mdrawn",
+            "source": "drawn"
+          },
+          {
+            "label": "Shortest / longest side",
+            "value": "20.00 / 25.00 mdrawn",
+            "source": "drawn"
+          },
+          {
+            "label": "First corner (WGS84)",
+            "value": "-20.329216, 57.377679drawnNorth is up. Plan x = east; plan y = south. Dimensions use WGS84 local tangent metres, not map pixels.",
+            "source": "drawn"
+          },
+          {
+            "label": "Plan anchor",
+            "value": "x -5.00 m · y -5.00 mdrawnApplying a site does not move any existing room.",
+            "source": "drawn"
+          },
+          {
+            "label": "Traverse closure error",
+            "value": "0.0000 mdrawnUnadjusted endpoint-to-start residual. Any remaining gap is a separate closing edge; no bearing or length was silently corrected.",
+            "source": "drawn"
+          },
+          {
+            "label": "Lowest / highest input level",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Best-fit slope",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Downhill aspect",
+            "value": "Unavailable / level planeunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Public terrain",
+            "value": "UnavailableunavailablePublic terrain, about 30 m grid; not a survey. Native data can be coarser; neighbouring corners can share a cell. Never used for cut/fill or foundation depth.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Platform level",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Cut / fill",
+            "value": "UnavailableunavailableSupply survey points/contours or type what-if corner levels to calculate.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Existing / scenario concrete",
+            "value": "UnavailableunavailableRun an explicit datum-shift scenario below. Terrain never supplies a founding depth.",
+            "source": "unavailable"
+          },
+          {
+            "label": "PVGIS annual solar yield",
+            "value": "Unavailableunavailable1 kWp crystalline-silicon system; 14% losses, optimal orientation. Model estimate, not a roof shading or output guarantee.",
+            "source": "unavailable"
+          },
+          {
+            "label": "PVGIS optimal tilt",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Within 100 m of the boundary",
+            "value": "UnavailableunavailableOpenStreetMap mapped ways, not addresses or a complete census. A road can consist of several ways. Missing data is not evidence of absence.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Waterways / power features",
+            "value": "UnavailableunavailableMapped public features only; buried services and connection capacity require utility confirmation.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Mapped land use nearby",
+            "value": "Unavailableunavailable",
+            "source": "unavailable"
+          },
+          {
+            "label": "Setback envelope",
+            "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+            "source": "unavailable"
+          },
+          {
+            "label": "Illustrative buildable footprint",
+            "value": "UnavailableunavailableNo plot-specific planning rules verified. No buildable area or approval is inferred.",
+            "source": "unavailable"
+          }
+        ],
+        "everyNumberTagged": true,
+        "banners": [
+          "Estimates from public data for planning a conversation, not a survey and not an approval.",
+          "Estimates from public data for planning a conversation, not a survey and not an approval."
+        ],
+        "overflowPx": 0
+      },
+      "closure": {
+        "label": "Traverse closure error",
+        "value": "0.0000 mdrawnUnadjusted endpoint-to-start residual. Any remaining gap is a separate closing edge; no bearing or length was silently corrected.",
+        "source": "drawn"
+      },
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    },
+    {
+      "case": "production-env-negative-simulation",
+      "device": "phone",
+      "note": "Only healthcheck is deliberately mocked to production; this is not a claim that the unmerged code runs on production.",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "providerRequests": [],
+      "implementationRequests": [
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-CR93DchF.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/hydration-BsrfFmWA.js",
+        "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/SiteEntry-BLTDhKmB.css"
+      ],
+      "hint": "Practice outline; the demo has no map. Edit the coordinates or try the surveyor’s-plan entry.",
+      "mapCanvasCount": 0,
+      "passed": true,
+      "networkWrites": {
+        "attemptedCount": 0,
+        "blockedCount": 0,
+        "transmittedCount": 0,
+        "attempted": []
+      }
+    }
+  ],
+  "healthcheck": {
+    "ok": true,
+    "service": "ppw-designer-2d",
+    "env": "preview",
+    "commit": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+    "sentryConfigured": true,
+    "timestamp": "2026-10-31T12:24:12.427Z"
   },
-  "dataFile": "preview-smoke.json.gz",
-  "originalBytes": 72706,
-  "originalSha256": "0265d7070fb33437c35923c346bb09a97995dc4b38aac1afa4ce2e65e951fb00",
-  "compressedBytes": 5244,
-  "compressedSha256": "85c0493a688d7fad64838cd587fb4081f86bec476e7c248c24fc457b21357813",
-  "preservation": "Decompress dataFile for the complete byte-identical original evidence. This small index is not the evidence record itself."
+  "networkWrites": {
+    "attemptedCount": 0,
+    "blockedCount": 0,
+    "transmittedCount": 0
+  },
+  "passed": true
 }
