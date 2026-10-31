@@ -7,8 +7,8 @@ import type { Property } from '../../store/propertyStore';
 const blank = (): Property => ({ id: 'p', name: 'Project', activeRoomId: 'r', rooms: [{ id: 'r', name: 'Room', polygon: [], placedItems: [] }] });
 describe('estimate evidence, not accuracy claims', () => {
   it('inventories distinct real implementation and test files, without counting helper names as engines', () => {
-    expect(ESTIMATE_ENGINE_EVIDENCE).toHaveLength(11);
-    expect(new Set(ESTIMATE_ENGINE_EVIDENCE.map(engine => engine.module)).size).toBe(11);
+    expect(ESTIMATE_ENGINE_EVIDENCE).toHaveLength(12);
+    expect(new Set(ESTIMATE_ENGINE_EVIDENCE.map(engine => engine.module)).size).toBe(12);
     for (const engine of ESTIMATE_ENGINE_EVIDENCE) {
       expect(existsSync(engine.module)).toBe(true);
       expect(existsSync(engine.testFile)).toBe(true);

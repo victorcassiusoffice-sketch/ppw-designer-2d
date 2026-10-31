@@ -4,6 +4,7 @@ import { normaliseBuildingServices, serviceRunLengthM, type BuildingServices } f
 import { resolveServiceConnections } from '../designer/serviceConnections';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
 import { normaliseFoundation, type FoundationModel } from '../designer/foundation';
+import { normaliseShade, SHADE_MAX_ANCHORS, SHADE_MIN_ANCHORS, type ShadeAnchor, type ShadeModel, type ShadeSail } from '../designer/shade';
 import { normaliseMaterialsSettings, type MaterialsSettings } from '../designer/materials';
 import { withMasonryThickness, inheritMasonryRoom } from '../designer/masonryDimensions';
 /**
@@ -331,6 +332,8 @@ export interface Property {
   engineering?: EngineeringInputs;
   city?: CityModel;
   foundation?: FoundationModel;
+  /** Tensioned shade sails between posts and wall brackets; absent = none. */
+  shade?: ShadeModel;
   services?: BuildingServices;
   /** Versioned estimating assumptions; persisted with every save and history snapshot. */
   materials?: MaterialsSettings;
@@ -677,6 +680,16 @@ export interface PropertyState {
   /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
   setServices: (services: BuildingServices) => boolean;
   setFoundation: (foundation: FoundationModel) => boolean;
+  /** Replace the whole shade model; an invalid model is rejected, never clamped. */
+  setShade: (shade: ShadeModel) => boolean;
+  /** Add one sail (3 to 6 fixing points) to the enabled model. */
+  addShadeSail: (sail: ShadeSail) => boolean;
+  updateShadeSail: (id: string, patch: Partial<Omit<ShadeSail, 'id' | 'anchors'>>) => boolean;
+  removeShadeSail: (id: string) => boolean;
+  /** Move or re-specify one fixing point; the sail keeps its other points. */
+  updateShadeAnchor: (sailId: string, anchorId: string, patch: Partial<Omit<ShadeAnchor, 'id'>>) => boolean;
+  addShadeAnchor: (sailId: string, anchor: ShadeAnchor, afterAnchorId?: string) => boolean;
+  removeShadeAnchor: (sailId: string, anchorId: string) => boolean;
   setCity: (city: CityModel) => boolean;
   setEco: (eco: EcoModel) => boolean;
   setEngineering: (engineering: EngineeringInputs) => boolean;
@@ -1685,6 +1698,67 @@ export const usePropertyStore = create<PropertyState>()(
         set(s => ({ property: { ...s.property, foundation: normalised } }));
         return true;
       },
+      setShade: (shade) => {
+        const normalised = normaliseShade(shade);
+        if (!normalised) return false;
+        set(s => ({ property: { ...s.property, shade: normalised } }));
+        return true;
+      },
+      addShadeSail: (sail) => {
+        const current = get().property.shade ?? { version: 1 as const, enabled: true, sails: [] };
+        const normalised = normaliseShade({ ...current, enabled: true, sails: [...current.sails, sail] });
+        if (!normalised) return false;
+        set(s => ({ property: { ...s.property, shade: normalised } }));
+        return true;
+      },
+      updateShadeSail: (id, patch) => {
+        const current = get().property.shade;
+        if (!current?.sails.some(sail => sail.id === id)) return false;
+        const normalised = normaliseShade({ ...current, sails: current.sails.map(sail => sail.id === id ? { ...sail, ...patch, id: sail.id, anchors: sail.anchors } : sail) });
+        if (!normalised) return false;
+        set(s => ({ property: { ...s.property, shade: normalised } }));
+        return true;
+      },
+      removeShadeSail: (id) => {
+        const current = get().property.shade;
+        if (!current?.sails.some(sail => sail.id === id)) return false;
+        const sails = current.sails.filter(sail => sail.id !== id);
+        set(s => ({ property: { ...s.property, shade: { ...current, sails } } }));
+        return true;
+      },
+      updateShadeAnchor: (sailId, anchorId, patch) => {
+        const current = get().property.shade;
+        const sail = current?.sails.find(entry => entry.id === sailId);
+        if (!current || !sail?.anchors.some(anchor => anchor.id === anchorId)) return false;
+        const next = { ...current, sails: current.sails.map(entry => entry.id === sailId ? { ...entry, anchors: entry.anchors.map(anchor => anchor.id === anchorId ? { ...anchor, ...patch, id: anchor.id } : anchor) } : entry) };
+        const normalised = normaliseShade(next);
+        if (!normalised) return false;
+        set(s => ({ property: { ...s.property, shade: normalised } }));
+        return true;
+      },
+      addShadeAnchor: (sailId, anchor, afterAnchorId) => {
+        const current = get().property.shade;
+        const sail = current?.sails.find(entry => entry.id === sailId);
+        if (!current || !sail || sail.anchors.length >= SHADE_MAX_ANCHORS) return false;
+        const index = afterAnchorId ? sail.anchors.findIndex(entry => entry.id === afterAnchorId) : sail.anchors.length - 1;
+        const anchors = [...sail.anchors];
+        anchors.splice((index < 0 ? sail.anchors.length - 1 : index) + 1, 0, anchor);
+        const normalised = normaliseShade({ ...current, sails: current.sails.map(entry => entry.id === sailId ? { ...entry, anchors, ...(entry.made ? { made: { edgesM: [...entry.made.edgesM, entry.made.edgesM[entry.made.edgesM.length - 1]] } } : {}) } : entry) });
+        if (!normalised) return false;
+        set(s => ({ property: { ...s.property, shade: normalised } }));
+        return true;
+      },
+      removeShadeAnchor: (sailId, anchorId) => {
+        const current = get().property.shade;
+        const sail = current?.sails.find(entry => entry.id === sailId);
+        if (!current || !sail || sail.anchors.length <= SHADE_MIN_ANCHORS) return false;
+        const index = sail.anchors.findIndex(anchor => anchor.id === anchorId);
+        if (index < 0) return false;
+        const normalised = normaliseShade({ ...current, sails: current.sails.map(entry => entry.id === sailId ? { ...entry, anchors: entry.anchors.filter(anchor => anchor.id !== anchorId), ...(entry.made ? { made: { edgesM: entry.made.edgesM.filter((_, i) => i !== index) } } : {}) } : entry) });
+        if (!normalised) return false;
+        set(s => ({ property: { ...s.property, shade: normalised } }));
+        return true;
+      },
       setCity: (city) => {
         const clean = normaliseCity(city);
         if (!clean) return false;
@@ -2095,6 +2169,7 @@ export const usePropertyStore = create<PropertyState>()(
         if (merged.property?.eco !== undefined) merged.property = { ...merged.property, eco: normaliseEco(merged.property.eco) };
         if (merged.property?.engineering !== undefined) merged.property = { ...merged.property, engineering: normaliseEngineeringInputs(merged.property.engineering) };
         if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
+        if (merged.property?.shade !== undefined) merged.property = { ...merged.property, shade: normaliseShade(merged.property.shade) };
         if (merged.property?.services !== undefined) {
           const services = normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id)));
           merged.property = { ...merged.property, services: services ? resolveServiceConnections(services) : undefined };
@@ -2144,6 +2219,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
     out.services = services ? resolveServiceConnections(services) : undefined;
   }
   if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
+  if (property.shade !== undefined) out.shade = normaliseShade(property.shade);
   if (property.city !== undefined) out.city = normaliseCity(property.city);
   if (property.eco !== undefined) out.eco = normaliseEco(property.eco);
   if (property.engineering !== undefined) out.engineering = normaliseEngineeringInputs(property.engineering);
@@ -2309,6 +2385,7 @@ interface RawProperty {
   engineering?: unknown;
   services?: unknown;
   foundation?: unknown;
+  shade?: unknown;
   city?: unknown;
   wallHeightM?: unknown;
   id?: string;

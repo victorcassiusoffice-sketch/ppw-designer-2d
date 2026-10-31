@@ -2006,6 +2006,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               foundation={visibleFoundation}
               foundationView={inspectingFoundation}
               foundationBaseElevationM={foundationBaseElevationM}
+              shade={visible.landscape ? property.shade : undefined}
               presentation={presentation}
               camera={renderedCamera ?? camera}
               projection={projection}

@@ -70,8 +70,10 @@ import { applyContentPresentation, applyRendererPresentation, architecturalBackd
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
 import { serviceProductPreview } from './serviceProductPreview';
 import { foundationMeshes } from './foundationMeshes';
+import { shadeMeshes } from './shadeMeshes';
 import { setFoundationInspection } from './foundationInspection';
 import type { FoundationModel } from '../../designer/foundation';
+import type { ShadeModel } from '../../designer/shade';
 import { createNaturalSceneRenderer, type NaturalSceneRenderer } from './naturalSceneRenderer';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
 import { solarPanelPreview } from './solarPanelPreview';
@@ -298,6 +300,8 @@ export interface ThreeStageProps {
   foundation?: FoundationModel;
   foundationView?: boolean;
   foundationBaseElevationM?: number;
+  /** Shade sails on the ground datum; drawn with the foundation group so bounds include them. */
+  shade?: ShadeModel;
   camera: OrbitCamera;
   projection?: import('../../designer/professionalViews').CameraProjection;
   width: number;
@@ -643,7 +647,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
+  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
   ref,
 ): JSX.Element {
   const buildSkin = useBuildSkinStore(s => s.skin);
@@ -1402,12 +1406,13 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (!group) return;
     disposeObject(group); group.clear();
     if (foundation?.enabled) group.add(foundationMeshes(foundation, foundationBaseElevationM, false, foundationView));
+    if (shade?.enabled && shade.sails.length) group.add(shadeMeshes(shade, foundationBaseElevationM));
     const inspect = foundationView && hasFoundationGeometry(foundation);
     setFoundationInspection([groundRef.current, ...floorsRef.current, gardenRef.current, ...shadowsRef.current], inspect);
     if (groundRef.current) groundRef.current.visible = groundVisible && !inspect;
     group.updateMatrixWorld(true);
     const bounds = structureBoundsRef.current.clone();
-    if (foundation?.enabled) bounds.expandByObject(group);
+    if (foundation?.enabled || (shade?.enabled && shade.sails.length)) bounds.expandByObject(group);
     if (ecoRef.current?.children.length) bounds.expandByObject(ecoRef.current);
     boundsRef.current = { centre: bounds.isEmpty() ? new THREE.Vector3() : bounds.getCenter(new THREE.Vector3()),
       radius: bounds.isEmpty() ? 6 : Math.max(4, bounds.getSize(new THREE.Vector3()).length() / 2) };
@@ -1415,7 +1420,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     applyHour(hour);
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [foundation, foundationView, foundationBaseElevationM, solids, ecoTrees, groundVisible]);
+  }, [foundation, foundationView, foundationBaseElevationM, shade, solids, ecoTrees, groundVisible]);
 
   // ---- the hour: sun, sky, lamps -----------------------------------------
   useEffect(() => {
