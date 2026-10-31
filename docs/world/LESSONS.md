@@ -47,3 +47,7 @@
 - Finish3: Correct DOM text/bounds do not prove painted text. Inspect interaction states and pixels; preserve a blank capture even when later frames pass, and keep automated and visual gate results separate.
 - Finish3: An exact deployed Git head can have different generated chunk filenames from a local controlled build. Bind response instrumentation to retained, reviewed deployed bytes and their SHA, not a guessed local filename; retain a no-injection attempt as invalid instrumentation.
 - Finish3: A measured preparation await is not its additive counterfactual cost, and an improved outcome does not prove its cause. Retain all entry/touch/FPS changes; use matched delivery to assess net regression and obey the no-tradeoff reversion rule.
+
+- Finish4: A preparation await can move work earlier without improving first rendered readiness. Compare matched current/omitted tails and all device inputs, retain delivery confounds, and validate a conservative removal in normal source rather than treating provisional retention as a no-regression pass.
+- Finish4: A source-semantic pass and a passing full suite do not waive an11-byte static overage. Keep the failed emitted build, simplify genuine transport responsibility, and measure a fresh completed build without tuning hashes, names or whitespace.
+- Finish4: A non-reproduced stall in an instrumented run with incomplete trace collection cannot clear a previous formal FPS failure or justify a speculative application optimization.
