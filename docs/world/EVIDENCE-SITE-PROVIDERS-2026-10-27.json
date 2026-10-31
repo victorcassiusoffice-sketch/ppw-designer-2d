@@ -1,0 +1,432 @@
+{
+  "checkedAt": "2026-10-27T19:58:02.722Z",
+  "note": "Anonymous live requests through Site API. Overpass returned capacity HTTP502; no neighbour counts substituted. Original requests are retained below for audit. No account/key/environment change.",
+  "reports": [
+    {
+      "name": "Tamarin, Mauritius",
+      "origin": [
+        57.3776792,
+        -20.3292161
+      ],
+      "points": [
+        [
+          57.3776792,
+          -20.3292161
+        ],
+        [
+          57.37791869551321,
+          -20.3292161
+        ],
+        [
+          57.37791869551321,
+          -20.32939697434659
+        ],
+        [
+          57.3776792,
+          -20.32939697434659
+        ]
+      ],
+      "description": "Example user-drawn outline at a real geographic location, not a cadastral parcel or surveyed property. Tamarin anchor checked with Photon/OSM town centre.",
+      "responses": [
+        {
+          "name": "solar",
+          "status": 200,
+          "elapsedMs": 4593,
+          "data": {
+            "annualKwh": 1444.1,
+            "tiltDeg": 16,
+            "sourceUrl": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc?lat=-20.329307&lon=57.377799&peakpower=1&loss=14&optimalangles=1&outputformat=json",
+            "acquiredAt": "2026-10-27T19:57:11.185Z",
+            "version": "PVGIS 5.3",
+            "radiationDatabase": "PVGIS-SARAH3",
+            "periodStartYear": 2005,
+            "periodEndYear": 2023
+          }
+        },
+        {
+          "name": "context",
+          "status": 503,
+          "elapsedMs": 10029,
+          "data": {
+            "error": "Provider unavailable or timed out. Your boundary and saved report are retained."
+          }
+        },
+        {
+          "name": "terrain",
+          "status": 200,
+          "elapsedMs": 1278,
+          "data": {
+            "heightsM": [
+              10,
+              11,
+              11,
+              10
+            ],
+            "acquiredAt": "2026-10-27T19:57:07.884Z",
+            "resolutionM": 250,
+            "sourceUrl": "https://github.com/tilezen/joerd/blob/master/docs/data-sources.md",
+            "verticalReference": "Public composite orthometric heights; exact benchmark/datum transformation required for survey use",
+            "sources": [
+              "srtm/S21E057.tif, gmted/30S030E_20101117_gmted_mea075.tif"
+            ],
+            "resolutionNote": "This tile also contains GMTED2010 fallback, 250 m or coarser; exact contributing source at an individual pixel is not identified.",
+            "attribution": "Global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Curepipe, Mauritius",
+      "origin": [
+        57.5231,
+        -20.3162
+      ],
+      "points": [
+        [
+          57.5231,
+          -20.3162
+        ],
+        [
+          57.523339475363734,
+          -20.3162
+        ],
+        [
+          57.523339475363734,
+          -20.31638087434659
+        ],
+        [
+          57.5231,
+          -20.31638087434659
+        ]
+      ],
+      "description": "Example user-drawn outline at a real geographic location, not a cadastral parcel or surveyed property. Tamarin anchor checked with Photon/OSM town centre.",
+      "responses": [
+        {
+          "name": "solar",
+          "status": 200,
+          "elapsedMs": 3047,
+          "data": {
+            "annualKwh": 1324.68,
+            "tiltDeg": 16,
+            "sourceUrl": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc?lat=-20.316290&lon=57.523220&peakpower=1&loss=14&optimalangles=1&outputformat=json",
+            "acquiredAt": "2026-10-27T19:57:30.689Z",
+            "version": "PVGIS 5.3",
+            "radiationDatabase": "PVGIS-SARAH3",
+            "periodStartYear": 2005,
+            "periodEndYear": 2023
+          }
+        },
+        {
+          "name": "context",
+          "status": 503,
+          "elapsedMs": 668,
+          "data": {
+            "error": "Provider returned HTTP 502. Try again later."
+          }
+        },
+        {
+          "name": "terrain",
+          "status": 200,
+          "elapsedMs": 1984,
+          "data": {
+            "heightsM": [
+              557,
+              557,
+              557,
+              557
+            ],
+            "acquiredAt": "2026-10-27T19:57:29.629Z",
+            "resolutionM": 250,
+            "sourceUrl": "https://github.com/tilezen/joerd/blob/master/docs/data-sources.md",
+            "verticalReference": "Public composite orthometric heights; exact benchmark/datum transformation required for survey use",
+            "sources": [
+              "srtm/S21E057.tif, gmted/30S030E_20101117_gmted_mea075.tif"
+            ],
+            "resolutionNote": "This tile also contains GMTED2010 fallback, 250 m or coarser; exact contributing source at an individual pixel is not identified.",
+            "attribution": "Global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey."
+          }
+        }
+      ]
+    },
+    {
+      "name": "York, United Kingdom",
+      "origin": [
+        -1.0827,
+        53.9654
+      ],
+      "points": [
+        [
+          -1.0827,
+          53.9654
+        ],
+        [
+          -1.0823182426739046,
+          53.9654
+        ],
+        [
+          -1.0823182426739046,
+          53.96521912565341
+        ],
+        [
+          -1.0827,
+          53.96521912565341
+        ]
+      ],
+      "description": "Example user-drawn outline at a real geographic location, not a cadastral parcel or surveyed property. Tamarin anchor checked with Photon/OSM town centre.",
+      "responses": [
+        {
+          "name": "solar",
+          "status": 200,
+          "elapsedMs": 1424,
+          "data": {
+            "annualKwh": 974.22,
+            "tiltDeg": 42,
+            "sourceUrl": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc?lat=53.965310&lon=-1.082509&peakpower=1&loss=14&optimalangles=1&outputformat=json",
+            "acquiredAt": "2026-10-27T19:57:43.120Z",
+            "version": "PVGIS 5.3",
+            "radiationDatabase": "PVGIS-SARAH3",
+            "periodStartYear": 2005,
+            "periodEndYear": 2023
+          }
+        },
+        {
+          "name": "context",
+          "status": 503,
+          "elapsedMs": 10009,
+          "data": {
+            "error": "Provider unavailable or timed out. Your boundary and saved report are retained."
+          }
+        },
+        {
+          "name": "terrain",
+          "status": 200,
+          "elapsedMs": 3521,
+          "data": {
+            "heightsM": [
+              14.05859375,
+              14.3046875,
+              14.50390625,
+              14.203125
+            ],
+            "acquiredAt": "2026-10-27T19:57:45.218Z",
+            "resolutionM": 30,
+            "sourceUrl": "https://github.com/tilezen/joerd/blob/master/docs/data-sources.md",
+            "verticalReference": "Public composite orthometric heights; exact benchmark/datum transformation required for survey use",
+            "sources": [
+              "uk_lidar/LIDAR-DTM-2M-SE55.tif, uk_lidar/LIDAR-DTM-2M-SE65.tif"
+            ],
+            "resolutionNote": "Sampled on a roughly 30 m grid; display precision is not survey accuracy.",
+            "attribution": "Global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey. © Environment Agency copyright and/or database right 2015. All rights reserved. Contains public sector information licensed under the Open Government Licence v3.0. AWS archive data, not the current Environment Agency release."
+          }
+        }
+      ]
+    }
+  ],
+  "previousObservation": {
+    "checkedAt": "2026-10-27T19:46:38.033Z",
+    "note": "Live anonymous requests through the local catch-all-equivalent Site handler. Failures retained; no substitute numbers.",
+    "reports": [
+      {
+        "name": "Tamarin, Mauritius",
+        "origin": [
+          57.3734,
+          -20.3252
+        ],
+        "points": [
+          [
+            57.3734,
+            -20.3252
+          ],
+          [
+            57.37363948929443,
+            -20.3252
+          ],
+          [
+            57.37363948929443,
+            -20.32538087434659
+          ],
+          [
+            57.3734,
+            -20.32538087434659
+          ]
+        ],
+        "description": "Example user-drawn outline at a real location; not a cadastral parcel or surveyed property.",
+        "responses": [
+          {
+            "name": "solar",
+            "status": 200,
+            "elapsedMs": 4888,
+            "data": {
+              "annualKwh": 1440.2,
+              "tiltDeg": 16,
+              "sourceUrl": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc?lat=-20.325290&lon=57.373520&peakpower=1&loss=14&optimalangles=1&outputformat=json"
+            }
+          },
+          {
+            "name": "context",
+            "status": 503,
+            "elapsedMs": 788,
+            "data": {
+              "error": "Provider returned HTTP 502. Try again later."
+            }
+          },
+          {
+            "name": "terrain",
+            "status": 200,
+            "elapsedMs": 3595,
+            "data": {
+              "heightsM": [
+                -0.2109375,
+                -0.2109375,
+                0.0546875,
+                0.0546875
+              ],
+              "resolutionM": 250,
+              "sourceUrl": "https://github.com/tilezen/joerd/blob/master/docs/data-sources.md",
+              "verticalReference": "Public composite orthometric heights; exact benchmark/datum transformation required for survey use",
+              "sources": [
+                "srtm/S21E057.tif, gmted/30S030E_20101117_gmted_mea075.tif"
+              ],
+              "resolutionNote": "This tile also contains GMTED2010 fallback, 250 m or coarser; exact contributing source at an individual pixel is not identified.",
+              "attribution": "Global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey."
+            }
+          }
+        ]
+      },
+      {
+        "name": "Curepipe, Mauritius",
+        "origin": [
+          57.5231,
+          -20.3162
+        ],
+        "points": [
+          [
+            57.5231,
+            -20.3162
+          ],
+          [
+            57.523339475363734,
+            -20.3162
+          ],
+          [
+            57.523339475363734,
+            -20.31638087434659
+          ],
+          [
+            57.5231,
+            -20.31638087434659
+          ]
+        ],
+        "description": "Example user-drawn outline at a real location; not a cadastral parcel or surveyed property.",
+        "responses": [
+          {
+            "name": "solar",
+            "status": 200,
+            "elapsedMs": 2633,
+            "data": {
+              "annualKwh": 1324.68,
+              "tiltDeg": 16,
+              "sourceUrl": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc?lat=-20.316290&lon=57.523220&peakpower=1&loss=14&optimalangles=1&outputformat=json"
+            }
+          },
+          {
+            "name": "context",
+            "status": 429,
+            "elapsedMs": 5,
+            "data": {
+              "error": "Please wait before another public-provider request."
+            }
+          },
+          {
+            "name": "terrain",
+            "status": 200,
+            "elapsedMs": 360,
+            "data": {
+              "heightsM": [
+                557,
+                557,
+                557,
+                557
+              ],
+              "resolutionM": 250,
+              "sourceUrl": "https://github.com/tilezen/joerd/blob/master/docs/data-sources.md",
+              "verticalReference": "Public composite orthometric heights; exact benchmark/datum transformation required for survey use",
+              "sources": [
+                "srtm/S21E057.tif, gmted/30S030E_20101117_gmted_mea075.tif"
+              ],
+              "resolutionNote": "This tile also contains GMTED2010 fallback, 250 m or coarser; exact contributing source at an individual pixel is not identified.",
+              "attribution": "Global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey."
+            }
+          }
+        ]
+      },
+      {
+        "name": "York, United Kingdom",
+        "origin": [
+          -1.0827,
+          53.9654
+        ],
+        "points": [
+          [
+            -1.0827,
+            53.9654
+          ],
+          [
+            -1.0823182426739046,
+            53.9654
+          ],
+          [
+            -1.0823182426739046,
+            53.96521912565341
+          ],
+          [
+            -1.0827,
+            53.96521912565341
+          ]
+        ],
+        "description": "Example user-drawn outline at a real location; not a cadastral parcel or surveyed property.",
+        "responses": [
+          {
+            "name": "solar",
+            "status": 200,
+            "elapsedMs": 1043,
+            "data": {
+              "annualKwh": 974.22,
+              "tiltDeg": 42,
+              "sourceUrl": "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc?lat=53.965310&lon=-1.082509&peakpower=1&loss=14&optimalangles=1&outputformat=json"
+            }
+          },
+          {
+            "name": "context",
+            "status": 429,
+            "elapsedMs": 86,
+            "data": {
+              "error": "Please wait before another public-provider request."
+            }
+          },
+          {
+            "name": "terrain",
+            "status": 200,
+            "elapsedMs": 701,
+            "data": {
+              "heightsM": [
+                14.05859375,
+                14.3046875,
+                14.50390625,
+                14.203125
+              ],
+              "resolutionM": 30,
+              "sourceUrl": "https://github.com/tilezen/joerd/blob/master/docs/data-sources.md",
+              "verticalReference": "Public composite orthometric heights; exact benchmark/datum transformation required for survey use",
+              "sources": [
+                "uk_lidar/LIDAR-DTM-2M-SE55.tif, uk_lidar/LIDAR-DTM-2M-SE65.tif"
+              ],
+              "resolutionNote": "Sampled on a roughly 30 m grid; display precision is not survey accuracy.",
+              "attribution": "Global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey. © Environment Agency copyright and/or database right 2015. All rights reserved. Contains public sector information licensed under the Open Government Licence v3.0. AWS archive data, not the current Environment Agency release."
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1618 @@
+{
+  "at": "2026-10-31T12:38:11.644Z",
+  "source": "r4-load-v1/load-all.json",
+  "note": "All formal rows retained. FCP is necessary paint timing, not proof of which content painted. This file does not claim loader-specific paint proof. Network timing and main-thread long tasks do not establish compositor/GPU causality. Request starts and first render remain unchanged.",
+  "rows": [
+    {
+      "target": "base",
+      "device": "desktop",
+      "run": 1,
+      "responseStartMs": 626.5,
+      "responseEndMs": 1627.2999999523163,
+      "loadingDomMs": 1672.6000000238419,
+      "fcpMs": 2168,
+      "htmlEndToDomMs": 45.300000071525574,
+      "domToFcpMs": 495.39999997615814,
+      "firstPictureMs": 4905.100000023842,
+      "firstPrepareStartMs": 4514.699999928474,
+      "firstPreparedMs": 4703.299999952316,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": true,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 1635.5,
+          "endMs": 2070.6999999284744
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 2523.399999976158,
+          "endMs": 3544.1999999284744
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "desktop",
+      "run": 1,
+      "responseStartMs": 380.6999999284744,
+      "responseEndMs": 666.5,
+      "loadingDomMs": 707.5999999046326,
+      "fcpMs": 780,
+      "htmlEndToDomMs": 41.09999990463257,
+      "domToFcpMs": 72.40000009536743,
+      "firstPictureMs": 4120.199999928474,
+      "firstPrepareStartMs": 3762.0999999046326,
+      "firstPreparedMs": 3944.5999999046326,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 680.0999999046326,
+          "endMs": 1681.6999999284744
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 683.0999999046326,
+          "endMs": 1994.7999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 4123.799999952316,
+          "endMs": 4558.399999976158
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "desktop",
+      "run": 1,
+      "responseStartMs": 357.6999999284744,
+      "responseEndMs": 640.8999999761581,
+      "loadingDomMs": 669.6999999284744,
+      "fcpMs": 736,
+      "htmlEndToDomMs": 28.799999952316284,
+      "domToFcpMs": 66.30000007152557,
+      "firstPictureMs": 3139.1999999284744,
+      "firstPrepareStartMs": 2737.1999999284744,
+      "firstPreparedMs": 2925.7999999523163,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 635.8999999761581,
+          "endMs": 1111.6999999284744
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 638.1999999284744,
+          "endMs": 1480.3999999761581
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "desktop",
+      "run": 1,
+      "responseStartMs": 467.7999999523163,
+      "responseEndMs": 532.6999999284744,
+      "loadingDomMs": 2827.899999976158,
+      "fcpMs": 3604,
+      "htmlEndToDomMs": 2295.2000000476837,
+      "domToFcpMs": 776.1000000238419,
+      "firstPictureMs": 5400.099999904633,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 2140.0999999046326,
+          "duration": 639
+        },
+        {
+          "start": 2930.7999999523163,
+          "duration": 1589
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 545.3999999761581,
+          "endMs": 819.3999999761581
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 969.3999999761581,
+          "endMs": 1244.6999999284744
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "phone",
+      "run": 1,
+      "responseStartMs": 375.60000002384186,
+      "responseEndMs": 645.8999999761581,
+      "loadingDomMs": 685.6000000238419,
+      "fcpMs": 1356,
+      "htmlEndToDomMs": 39.700000047683716,
+      "domToFcpMs": 670.3999999761581,
+      "firstPictureMs": 3257.899999976158,
+      "firstPrepareStartMs": 2867.7999999523163,
+      "firstPreparedMs": 3069,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 656.2999999523163,
+          "endMs": 1253.2999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1288.1999999284744,
+          "endMs": 2021.6000000238419
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "phone",
+      "run": 1,
+      "responseStartMs": 383.09999990463257,
+      "responseEndMs": 677.1999999284744,
+      "loadingDomMs": 722.7999999523163,
+      "fcpMs": 792,
+      "htmlEndToDomMs": 45.60000002384186,
+      "domToFcpMs": 69.20000004768372,
+      "firstPictureMs": 3156.7999999523163,
+      "firstPrepareStartMs": 2765.7999999523163,
+      "firstPreparedMs": 2953.399999976158,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 688,
+          "endMs": 1431.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 690.6999999284744,
+          "endMs": 1551.6999999284744
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 3159.7999999523163,
+          "endMs": 3520.5999999046326
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "phone",
+      "run": 1,
+      "responseStartMs": 363.2999999523163,
+      "responseEndMs": 652.3999999761581,
+      "loadingDomMs": 688.2999999523163,
+      "fcpMs": 760,
+      "htmlEndToDomMs": 35.89999997615814,
+      "domToFcpMs": 71.70000004768372,
+      "firstPictureMs": 3276.5999999046326,
+      "firstPrepareStartMs": 2919.399999976158,
+      "firstPreparedMs": 3110.5,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 658.2999999523163,
+          "endMs": 1373.7999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 661.0999999046326,
+          "endMs": 1747.5999999046326
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "phone",
+      "run": 1,
+      "responseStartMs": 364.39999997615814,
+      "responseEndMs": 434.89999997615814,
+      "loadingDomMs": 1902.0999999046326,
+      "fcpMs": 2232,
+      "htmlEndToDomMs": 1467.1999999284744,
+      "domToFcpMs": 329.90000009536743,
+      "firstPictureMs": 3506.899999976158,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 1496.6999999284744,
+          "duration": 324
+        },
+        {
+          "start": 1921.1999999284744,
+          "duration": 874
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 436.89999997615814,
+          "endMs": 590.6999999284744
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 825.2999999523163,
+          "endMs": 1462
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "desktop",
+      "run": 2,
+      "responseStartMs": 356.7000000476837,
+      "responseEndMs": 625.5,
+      "loadingDomMs": 666,
+      "fcpMs": 1312,
+      "htmlEndToDomMs": 40.5,
+      "domToFcpMs": 646,
+      "firstPictureMs": 3603.899999976158,
+      "firstPrepareStartMs": 3261.8000000715256,
+      "firstPreparedMs": 3446.2000000476837,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 632.6000000238419,
+          "endMs": 1221.6000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1256.3000000715256,
+          "endMs": 1861.3000000715256
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "desktop",
+      "run": 2,
+      "responseStartMs": 391.5,
+      "responseEndMs": 691.4000000953674,
+      "loadingDomMs": 731.3000000715256,
+      "fcpMs": 800,
+      "htmlEndToDomMs": 39.89999997615814,
+      "domToFcpMs": 68.69999992847443,
+      "firstPictureMs": 3449.5,
+      "firstPrepareStartMs": 3072.3000000715256,
+      "firstPreparedMs": 3275.4000000953674,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 697.8000000715256,
+          "endMs": 1804.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 699.9000000953674,
+          "endMs": 1614.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 3453.2000000476837,
+          "endMs": 3819.600000023842
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "desktop",
+      "run": 2,
+      "responseStartMs": 339.2999999523163,
+      "responseEndMs": 603.8999999761581,
+      "loadingDomMs": 646.6999999284744,
+      "fcpMs": 716,
+      "htmlEndToDomMs": 42.799999952316284,
+      "domToFcpMs": 69.30000007152557,
+      "firstPictureMs": 3190.5999999046326,
+      "firstPrepareStartMs": 2815.1999999284744,
+      "firstPreparedMs": 3006.0999999046326,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 614.7999999523163,
+          "endMs": 992.1999999284744
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 617.5,
+          "endMs": 1405.6999999284744
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "desktop",
+      "run": 2,
+      "responseStartMs": 379.89999997615814,
+      "responseEndMs": 424.59999990463257,
+      "loadingDomMs": 2152.5999999046326,
+      "fcpMs": 2684,
+      "htmlEndToDomMs": 1728,
+      "domToFcpMs": 531.4000000953674,
+      "firstPictureMs": 3975.5,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 1783.6999999284744,
+          "duration": 337
+        },
+        {
+          "start": 2226.2999999523163,
+          "duration": 1075
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 429.1999999284744,
+          "endMs": 580.3999999761581
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 823.2999999523163,
+          "endMs": 1498.0999999046326
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "phone",
+      "run": 2,
+      "responseStartMs": 365.1999999284744,
+      "responseEndMs": 631.2999999523163,
+      "loadingDomMs": 670,
+      "fcpMs": 1100,
+      "htmlEndToDomMs": 38.700000047683716,
+      "domToFcpMs": 430,
+      "firstPictureMs": 3213,
+      "firstPrepareStartMs": 2882.600000023842,
+      "firstPreparedMs": 3057.1999999284744,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 640.6000000238419,
+          "endMs": 1015.7999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1243,
+          "endMs": 1999
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "phone",
+      "run": 2,
+      "responseStartMs": 363.5,
+      "responseEndMs": 646.7999999523163,
+      "loadingDomMs": 676.1000000238419,
+      "fcpMs": 744,
+      "htmlEndToDomMs": 29.300000071525574,
+      "domToFcpMs": 67.89999997615814,
+      "firstPictureMs": 3027.2999999523163,
+      "firstPrepareStartMs": 2696.6999999284744,
+      "firstPreparedMs": 2868.1999999284744,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 644.2999999523163,
+          "endMs": 1319.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 646.6000000238419,
+          "endMs": 1369.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 3030.6999999284744,
+          "endMs": 3379.6999999284744
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "phone",
+      "run": 2,
+      "responseStartMs": 361.10000002384186,
+      "responseEndMs": 632.1000000238419,
+      "loadingDomMs": 679.1000000238419,
+      "fcpMs": 756,
+      "htmlEndToDomMs": 47,
+      "domToFcpMs": 76.89999997615814,
+      "firstPictureMs": 3139.4000000953674,
+      "firstPrepareStartMs": 2805.5,
+      "firstPreparedMs": 2983.100000023842,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 646.4000000953674,
+          "endMs": 1622.6000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 650.6000000238419,
+          "endMs": 1643.7000000476837
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "phone",
+      "run": 2,
+      "responseStartMs": 345.89999997615814,
+      "responseEndMs": 385.60000002384186,
+      "loadingDomMs": 2061.7000000476837,
+      "fcpMs": 2432,
+      "htmlEndToDomMs": 1676.1000000238419,
+      "domToFcpMs": 370.2999999523163,
+      "firstPictureMs": 3744.2000000476837,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 1714.2999999523163,
+          "duration": 318
+        },
+        {
+          "start": 2130,
+          "duration": 914
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 391.7000000476837,
+          "endMs": 664.7000000476837
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 799,
+          "endMs": 1258.7999999523163
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "desktop",
+      "run": 3,
+      "responseStartMs": 375.2000000476837,
+      "responseEndMs": 628.2000000476837,
+      "loadingDomMs": 668.3999999761581,
+      "fcpMs": 1100,
+      "htmlEndToDomMs": 40.199999928474426,
+      "domToFcpMs": 431.60000002384186,
+      "firstPictureMs": 4022.3000000715256,
+      "firstPrepareStartMs": 3689.600000023842,
+      "firstPreparedMs": 3865.100000023842,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 635.5,
+          "endMs": 1020.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1257.7000000476837,
+          "endMs": 2577.899999976158
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "desktop",
+      "run": 3,
+      "responseStartMs": 366.60000002384186,
+      "responseEndMs": 667.1000000238419,
+      "loadingDomMs": 698.1999999284744,
+      "fcpMs": 784,
+      "htmlEndToDomMs": 31.09999990463257,
+      "domToFcpMs": 85.80000007152557,
+      "firstPictureMs": 3291.399999976158,
+      "firstPrepareStartMs": 2841.100000023842,
+      "firstPreparedMs": 3043.899999976158,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 670.3999999761581,
+          "endMs": 1412.6999999284744
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 672.7999999523163,
+          "endMs": 1617.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 3295.7999999523163,
+          "endMs": 3826.6999999284744
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "desktop",
+      "run": 3,
+      "responseStartMs": 364.10000002384186,
+      "responseEndMs": 650.7999999523163,
+      "loadingDomMs": 696.6000000238419,
+      "fcpMs": 772,
+      "htmlEndToDomMs": 45.800000071525574,
+      "domToFcpMs": 75.39999997615814,
+      "firstPictureMs": 3345.6999999284744,
+      "firstPrepareStartMs": 2931,
+      "firstPreparedMs": 3135.399999976158,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 661.5,
+          "endMs": 1507.6999999284744
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 665.6000000238419,
+          "endMs": 1848.3999999761581
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "desktop",
+      "run": 3,
+      "responseStartMs": 357.7000000476837,
+      "responseEndMs": 390.7999999523163,
+      "loadingDomMs": 1916.7999999523163,
+      "fcpMs": 2376,
+      "htmlEndToDomMs": 1526,
+      "domToFcpMs": 459.2000000476837,
+      "firstPictureMs": 3674.7000000476837,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 1494.7999999523163,
+          "duration": 352
+        },
+        {
+          "start": 1941.7999999523163,
+          "duration": 1024
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 397,
+          "endMs": 681.7000000476837
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 801.7000000476837,
+          "endMs": 1072.2000000476837
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "phone",
+      "run": 3,
+      "responseStartMs": 356.10000002384186,
+      "responseEndMs": 610.9000000953674,
+      "loadingDomMs": 649.5,
+      "fcpMs": 1192,
+      "htmlEndToDomMs": 38.59999990463257,
+      "domToFcpMs": 542.5,
+      "firstPictureMs": 3588.9000000953674,
+      "firstPrepareStartMs": 3135.2000000476837,
+      "firstPreparedMs": 3355.3000000715256,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 619,
+          "endMs": 1108.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1218.2000000476837,
+          "endMs": 2035.5
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "phone",
+      "run": 3,
+      "responseStartMs": 356.39999997615814,
+      "responseEndMs": 607.8999999761581,
+      "loadingDomMs": 644.7000000476837,
+      "fcpMs": 712,
+      "htmlEndToDomMs": 36.800000071525574,
+      "domToFcpMs": 67.29999995231628,
+      "firstPictureMs": 3128.2000000476837,
+      "firstPrepareStartMs": 2723.100000023842,
+      "firstPreparedMs": 2940.7999999523163,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 614.2000000476837,
+          "endMs": 1511.2999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 617,
+          "endMs": 1507.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 3133.7000000476837,
+          "endMs": 3495.7999999523163
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "phone",
+      "run": 3,
+      "responseStartMs": 353.89999997615814,
+      "responseEndMs": 646.5,
+      "loadingDomMs": 687.8000000715256,
+      "fcpMs": 756,
+      "htmlEndToDomMs": 41.300000071525574,
+      "domToFcpMs": 68.19999992847443,
+      "firstPictureMs": 3364.899999976158,
+      "firstPrepareStartMs": 3013.8000000715256,
+      "firstPreparedMs": 3202,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 656.3999999761581,
+          "endMs": 1145.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 658.7000000476837,
+          "endMs": 1503.6000000238419
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "phone",
+      "run": 3,
+      "responseStartMs": 400.8000000715256,
+      "responseEndMs": 445.7000000476837,
+      "loadingDomMs": 1934.6000000238419,
+      "fcpMs": 2268,
+      "htmlEndToDomMs": 1488.8999999761581,
+      "domToFcpMs": 333.39999997615814,
+      "firstPictureMs": 3587.3000000715256,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 1530.8000000715256,
+          "duration": 327
+        },
+        {
+          "start": 1960.2000000476837,
+          "duration": 952
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 453,
+          "endMs": 747.6000000238419
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 881.3999999761581,
+          "endMs": 1429.7000000476837
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "desktop",
+      "run": 4,
+      "responseStartMs": 349.60000002384186,
+      "responseEndMs": 809.3999999761581,
+      "loadingDomMs": 850.3999999761581,
+      "fcpMs": 1276,
+      "htmlEndToDomMs": 41,
+      "domToFcpMs": 425.60000002384186,
+      "firstPictureMs": 3486.899999976158,
+      "firstPrepareStartMs": 3118,
+      "firstPreparedMs": 3297.5,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 817.6000000238419,
+          "endMs": 1196.2000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1432.3000000715256,
+          "endMs": 2116.5
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "desktop",
+      "run": 4,
+      "responseStartMs": 856,
+      "responseEndMs": 1111.5,
+      "loadingDomMs": 1152.3000000715256,
+      "fcpMs": 1220,
+      "htmlEndToDomMs": 40.800000071525574,
+      "domToFcpMs": 67.69999992847443,
+      "firstPictureMs": 3765.3000000715256,
+      "firstPrepareStartMs": 3348.5,
+      "firstPreparedMs": 3550.3000000715256,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": true,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 1121.5,
+          "endMs": 1732.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1125.6000000238419,
+          "endMs": 2029.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 3768.8000000715256,
+          "endMs": 4142.300000071526
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "desktop",
+      "run": 4,
+      "responseStartMs": 359,
+      "responseEndMs": 617.1000000238419,
+      "loadingDomMs": 657,
+      "fcpMs": 724,
+      "htmlEndToDomMs": 39.89999997615814,
+      "domToFcpMs": 67,
+      "firstPictureMs": 2865.7000000476837,
+      "firstPrepareStartMs": 2476.5,
+      "firstPreparedMs": 2665.7000000476837,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 627.2000000476837,
+          "endMs": 998.6000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 629.2000000476837,
+          "endMs": 1518.6000000238419
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "desktop",
+      "run": 4,
+      "responseStartMs": 368.2000000476837,
+      "responseEndMs": 411.7000000476837,
+      "loadingDomMs": 1868.7000000476837,
+      "fcpMs": 2372,
+      "htmlEndToDomMs": 1457,
+      "domToFcpMs": 503.2999999523163,
+      "firstPictureMs": 3669,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 1503,
+          "duration": 332
+        },
+        {
+          "start": 1951.1000000238419,
+          "duration": 1040
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 417.3000000715256,
+          "endMs": 566.4000000953674
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 818.3000000715256,
+          "endMs": 1430.5
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "phone",
+      "run": 4,
+      "responseStartMs": 352.39999997615814,
+      "responseEndMs": 611.6999999284744,
+      "loadingDomMs": 649.3999999761581,
+      "fcpMs": 1080,
+      "htmlEndToDomMs": 37.700000047683716,
+      "domToFcpMs": 430.60000002384186,
+      "firstPictureMs": 3148.5,
+      "firstPrepareStartMs": 2801.600000023842,
+      "firstPreparedMs": 2988.7999999523163,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 619.3999999761581,
+          "endMs": 998.8999999761581
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1225.5,
+          "endMs": 1936.3999999761581
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "phone",
+      "run": 4,
+      "responseStartMs": 363.89999997615814,
+      "responseEndMs": 626.2000000476837,
+      "loadingDomMs": 667.2000000476837,
+      "fcpMs": 744,
+      "htmlEndToDomMs": 41,
+      "domToFcpMs": 76.79999995231628,
+      "firstPictureMs": 2977.2000000476837,
+      "firstPrepareStartMs": 2622.100000023842,
+      "firstPreparedMs": 2798.600000023842,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 634.6000000238419,
+          "endMs": 1405.8000000715256
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 637.5,
+          "endMs": 1236.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 2981.100000023842,
+          "endMs": 3336.2000000476837
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "phone",
+      "run": 4,
+      "responseStartMs": 427.60000002384186,
+      "responseEndMs": 750.1000000238419,
+      "loadingDomMs": 796.2999999523163,
+      "fcpMs": 868,
+      "htmlEndToDomMs": 46.199999928474426,
+      "domToFcpMs": 71.70000004768372,
+      "firstPictureMs": 3149.2000000476837,
+      "firstPrepareStartMs": 2806.899999976158,
+      "firstPreparedMs": 2983.5,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 762.3999999761581,
+          "endMs": 1145.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 766,
+          "endMs": 1605
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "phone",
+      "run": 4,
+      "responseStartMs": 336.90000009536743,
+      "responseEndMs": 374.60000002384186,
+      "loadingDomMs": 2651.600000023842,
+      "fcpMs": 3032,
+      "htmlEndToDomMs": 2277,
+      "domToFcpMs": 380.39999997615814,
+      "firstPictureMs": 4277.800000071526,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 2304.100000023842,
+          "duration": 318
+        },
+        {
+          "start": 2717.2000000476837,
+          "duration": 871
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 381.5,
+          "endMs": 874.8000000715256
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 1336.4000000953674,
+          "endMs": 1917.1000000238419
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "desktop",
+      "run": 5,
+      "responseStartMs": 504.10000002384186,
+      "responseEndMs": 771.2000000476837,
+      "loadingDomMs": 810.6000000238419,
+      "fcpMs": 1244,
+      "htmlEndToDomMs": 39.39999997615814,
+      "domToFcpMs": 433.39999997615814,
+      "firstPictureMs": 3590.2000000476837,
+      "firstPrepareStartMs": 3226.899999976158,
+      "firstPreparedMs": 3419.600000023842,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 776.8999999761581,
+          "endMs": 1158.8999999761581
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1407,
+          "endMs": 2309.5
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "desktop",
+      "run": 5,
+      "responseStartMs": 362.89999997615814,
+      "responseEndMs": 621.5,
+      "loadingDomMs": 661,
+      "fcpMs": 728,
+      "htmlEndToDomMs": 39.5,
+      "domToFcpMs": 67,
+      "firstPictureMs": 3136.100000023842,
+      "firstPrepareStartMs": 2747.8000000715256,
+      "firstPreparedMs": 2939.8000000715256,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 632.6000000238419,
+          "endMs": 1527.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 634.8000000715256,
+          "endMs": 1491.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 3139.5,
+          "endMs": 3521.399999976158
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "desktop",
+      "run": 5,
+      "responseStartMs": 368.60000002384186,
+      "responseEndMs": 671.2000000476837,
+      "loadingDomMs": 707.5,
+      "fcpMs": 796,
+      "htmlEndToDomMs": 36.299999952316284,
+      "domToFcpMs": 88.5,
+      "firstPictureMs": 3022.100000023842,
+      "firstPrepareStartMs": 2680.7000000476837,
+      "firstPreparedMs": 2853.9000000953674,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 679.4000000953674,
+          "endMs": 1334.9000000953674
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 682.8000000715256,
+          "endMs": 1417.6000000238419
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "desktop",
+      "run": 5,
+      "responseStartMs": 350.40000009536743,
+      "responseEndMs": 398.40000009536743,
+      "loadingDomMs": 2245.8000000715256,
+      "fcpMs": 2824,
+      "htmlEndToDomMs": 1847.3999999761581,
+      "domToFcpMs": 578.1999999284744,
+      "firstPictureMs": 4096.100000023842,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 1822.4000000953674,
+          "duration": 343
+        },
+        {
+          "start": 2277.5,
+          "duration": 1103
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 404.10000002384186,
+          "endMs": 579.1000000238419
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 843.9000000953674,
+          "endMs": 1499.1000000238419
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "base",
+      "device": "phone",
+      "run": 5,
+      "responseStartMs": 351.89999997615814,
+      "responseEndMs": 603,
+      "loadingDomMs": 639.1999999284744,
+      "fcpMs": 1056,
+      "htmlEndToDomMs": 36.199999928474426,
+      "domToFcpMs": 416.8000000715256,
+      "firstPictureMs": 3193.7999999523163,
+      "firstPrepareStartMs": 2846.1999999284744,
+      "firstPreparedMs": 3023.5,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 609.6999999284744,
+          "endMs": 973.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-fix-round-3-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 1193.7999999523163,
+          "endMs": 2072
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "walk",
+      "device": "phone",
+      "run": 5,
+      "responseStartMs": 354.3000000715256,
+      "responseEndMs": 622.4000000953674,
+      "loadingDomMs": 660.5,
+      "fcpMs": 720,
+      "htmlEndToDomMs": 38.09999990463257,
+      "domToFcpMs": 59.5,
+      "firstPictureMs": 3006.100000023842,
+      "firstPrepareStartMs": 2645.3000000715256,
+      "firstPreparedMs": 2827.4000000953674,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 629.7000000476837,
+          "endMs": 1431.8000000715256
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "startMs": 631.4000000953674,
+          "endMs": 1577.9000000953674
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "startMs": 3009.2000000476837,
+          "endMs": 3475
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "site",
+      "device": "phone",
+      "run": 5,
+      "responseStartMs": 354,
+      "responseEndMs": 624.1999999284744,
+      "loadingDomMs": 661.6000000238419,
+      "fcpMs": 732,
+      "htmlEndToDomMs": 37.40000009536743,
+      "domToFcpMs": 70.39999997615814,
+      "firstPictureMs": 3033.6999999284744,
+      "firstPrepareStartMs": 2686,
+      "firstPreparedMs": 2871,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": true,
+      "loadingFcpWithinOneSecond": true,
+      "preFcpLongTasks": [],
+      "css": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "startMs": 633,
+          "endMs": 1253
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/assets/App-B5i-oZ86.css",
+          "startMs": 636.1999999284744,
+          "endMs": 1426.1000000238419
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    },
+    {
+      "target": "prod",
+      "device": "phone",
+      "run": 5,
+      "responseStartMs": 372.2999999523163,
+      "responseEndMs": 406.39999997615814,
+      "loadingDomMs": 1815,
+      "fcpMs": 2172,
+      "htmlEndToDomMs": 1408.6000000238419,
+      "domToFcpMs": 357,
+      "firstPictureMs": 3596.7999999523163,
+      "firstPrepareStartMs": null,
+      "firstPreparedMs": null,
+      "responseStartsAfterOneSecond": false,
+      "responseEndsAfterOneSecond": false,
+      "loadingDomWithinOneSecond": false,
+      "loadingFcpWithinOneSecond": false,
+      "preFcpLongTasks": [
+        {
+          "start": 1391.5,
+          "duration": 338
+        }
+      ],
+      "css": [
+        {
+          "url": "https://onelivebuild.com/assets/main-CO6GBvCf.css",
+          "startMs": 415.89999997615814,
+          "endMs": 796.1999999284744
+        },
+        {
+          "url": "https://onelivebuild.com/assets/App-Xhd2x0gp.css",
+          "startMs": 818.7999999523163,
+          "endMs": 1245.1999999284744
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "blockedWrites": [],
+      "fatal": null
+    }
+  ],
+  "groups": {
+    "walk-desktop": {
+      "count": 5,
+      "responseStartOver1s": 0,
+      "responseEndOver1s": 1,
+      "domPass": 4,
+      "fcpPass": 4,
+      "maxDomToFcpMs": 85.80000007152557
+    },
+    "walk-phone": {
+      "count": 5,
+      "responseStartOver1s": 0,
+      "responseEndOver1s": 0,
+      "domPass": 5,
+      "fcpPass": 5,
+      "maxDomToFcpMs": 76.79999995231628
+    },
+    "site-desktop": {
+      "count": 5,
+      "responseStartOver1s": 0,
+      "responseEndOver1s": 0,
+      "domPass": 5,
+      "fcpPass": 5,
+      "maxDomToFcpMs": 88.5
+    },
+    "site-phone": {
+      "count": 5,
+      "responseStartOver1s": 0,
+      "responseEndOver1s": 0,
+      "domPass": 5,
+      "fcpPass": 5,
+      "maxDomToFcpMs": 76.89999997615814
+    }
+  },
+  "noErrorsOrWrites": true
+}

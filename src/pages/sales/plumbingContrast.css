@@ -1,0 +1,71 @@
+/* Only the standalone plumbing route imports this file. Keep shared Designer
+ * theme rules and the OLB card treatment in their existing owners. */
+:root[data-ui-theme] body .sales-plumbing .locale-theme-controls__heading button {
+  color: var(--ui-ink);
+  background: var(--ui-surface);
+  border-color: var(--ui-line);
+}
+:root[data-ui-theme] body .sales-plumbing .locale-theme-controls__heading button:hover {
+  background: var(--ui-raised);
+}
+:root[data-ui-theme] body .sales-plumbing .locale-theme-controls__heading button:focus-visible {
+  outline-color: var(--ui-accent);
+}
+
+/* The PPW light gradient otherwise remains behind dark-theme light text. */
+:root:not([data-brand='olb']):is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-surface {
+  background: var(--ui-surface);
+  border-color: var(--ui-line);
+}
+
+/* Preserve the enquiry's existing opaque status surfaces and original ink.
+ * This overrides the existing important shared muted-paragraph theme rule. */
+:root[data-ui-theme] .sales-plumbing .pitch-enquiry .pitch-enquiry-result.is-error {
+  color: #8a3c29 !important;
+}
+:root[data-ui-theme] .sales-plumbing .pitch-enquiry .pitch-enquiry-result.is-success {
+  color: #275d3e !important;
+}
+
+/* Keep small card labels and ordered steps readable on their actual surfaces.
+ * Ivory OLB already has readable labels; its established palette is retained. */
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-surface :is(.sales-status, .sales-number),
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-surface .sales-steps li::before,
+:root:not([data-brand='olb'])[data-ui-theme='ivory']
+  .sales-plumbing .sales-surface .sales-number,
+:root:not([data-brand='olb'])[data-ui-theme='ivory']
+  .sales-plumbing .sales-surface .sales-steps li::before {
+  color: var(--ui-muted);
+}
+
+/* Caption, disclosure and focused skip-link ink already follows the theme.
+ * Their pale backgrounds must follow it too; the demo image stays intact. */
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing :is(.sales-demo, .sales-callout, .sales-skip) {
+  background: var(--ui-surface);
+}
+
+/* These small labels sit outside the cards repaired above. Selected tabs keep
+ * their existing on-accent ink; only the inactive numbers need muted ink. */
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-tabs button[aria-selected='false'] span,
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-hero .sales-number {
+  color: var(--ui-muted);
+}
+:root:is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .sales-links a,
+:root:not([data-brand='olb']):is([data-ui-theme='ocean'], [data-ui-theme='slate'])
+  .sales-plumbing .pitch-enquiry .pitch-fine a {
+  color: var(--ui-accent);
+}
+
+/* Retain labels and values; give the measured low-contrast placeholder themes
+ * readable secondary ink without changing the global form reset. */
+:root:is([data-ui-theme='ivory'], [data-ui-theme='slate'])
+  .sales-plumbing .pitch-enquiry :is(input, textarea)::placeholder {
+  color: var(--ui-muted);
+}

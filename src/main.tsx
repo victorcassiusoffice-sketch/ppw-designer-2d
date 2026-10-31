@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { bootstrapFx } from './store/currencyStore';
 import RouteFallback from './components/RouteFallback';
 import { loadThreeStage } from './components/threeStageLoader';
+import { demoRoute } from './demo/demoRoute';
 import { currentBrand, isShopHost } from './brand/brand';
 import './index.css';
 import './brand/olb.css';
@@ -14,7 +15,8 @@ import './brand/olb.css';
 const App = lazy(() => import('./App'));
 // Fetch explicit 3D visits in parallel with the app, not after its route,
 // designer and viewport have each loaded. React.lazy shares this promise.
-if (new URLSearchParams(window.location.search).get('view') === '3d') {
+if (demoRoute(window.location.pathname, window.location.search)?.view === '3d'
+  || new URLSearchParams(window.location.search).get('view') === '3d') {
   void loadThreeStage().catch(() => { /* React.lazy exposes a retryable failure. */ });
 }
 const CartPage = lazy(() => import('./pages/CartPage'));

@@ -2,6 +2,8 @@ import type { Product } from '../data/products.schema';
 import bakedJson from '../data/catalogModelThumbnails.json';
 import planJson from '../data/catalogPlanDrawings.json';
 import { usableProductImage, isVectorProductImage, planSymbolDataUrl } from '../data/productImageSafety';
+import { catalogImageSources } from '../data/catalogImageSources';
+import { productPlanSymbolUrl } from '../data/products';
 
 export type CatalogBrowseMode = 'category' | 'function' | 'room';
 export interface CatalogBrowse { mode: CatalogBrowseMode; value: string }
@@ -93,6 +95,16 @@ export function catalogThumbnailImages(product: Product): CatalogThumbnailImage[
 }
 export function catalogThumbnailUrls(product: Product): string[] {
   return catalogThumbnailImages(product).map(image => image.url);
+}
+
+/** The drag ghost uses the same small picture as its originating catalogue card. */
+export function catalogDragImageUrl(product: Product): string {
+  return catalogImageSources(catalogDetailImageUrl(product)).src;
+}
+
+/** Explicit details use the same picture as the card, at its original resolution. */
+export function catalogDetailImageUrl(product: Product): string {
+  return catalogThumbnailImages(product)[0]?.url ?? productPlanSymbolUrl(product);
 }
 
 /** Only declared variants that resolve to an actual catalogue SKU are offered. */

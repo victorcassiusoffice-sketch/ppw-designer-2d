@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "expectedHead": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+  "runtimeUrl": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+  "originalSha256": "30b23e3c026f10b81a5f94b70b89777f52b2c070d00e7a85a7d3753fe26d36d2",
+  "originalBytes": 81459,
+  "originalResponseFile": "runtime-DH-0TOIs.js",
+  "reviewFile": "source-review.json",
+  "harnessSha256": "54a3d2c79f42a8366391ef2c82e1d0a11cdf9031806657c25ceb1096868ee32d",
+  "pinnedIp": "216.198.79.3",
+  "capturedAt": "2026-10-29T19:50:51.797Z",
+  "healthBefore": {
+    "at": "2026-10-29T19:50:52.426Z",
+    "target": "walk",
+    "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-29T19:50:52.525Z"
+    }
+  },
+  "healthAfter": {
+    "at": "2026-10-29T19:50:53.620Z",
+    "target": "walk",
+    "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-29T19:50:53.730Z"
+    }
+  }
+}
