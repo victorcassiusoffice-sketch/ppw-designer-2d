@@ -7,6 +7,7 @@ import type { Property } from '../store/propertyStore';
 import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
 import { DEFAULT_WALK_CHARACTER_ID, WALK_CHARACTERS } from './characters';
 import type { WalkRuntime, WalkStatus } from './runtime';
+import { createTapActivator, ownTouchSequences } from './touchInput';
 import './walk.css';
 
 const camera: OrbitCamera = { target: { x: 0, y: 0, z: 1 }, distanceM: 10, azimuthRad: 0, elevationRad: .6, fovRad: Math.PI / 3 };
@@ -14,6 +15,14 @@ const preferenceKey = 'olb-world-character-v1';
 function savedCharacter(): string {
   try { const id = localStorage.getItem(preferenceKey); return WALK_CHARACTERS.find(c => c.id === id)?.id ?? DEFAULT_WALK_CHARACTER_ID; }
   catch { return DEFAULT_WALK_CHARACTER_ID; }
+}
+
+/** Callback ref: the look surface and the pad own their touch contacts while mounted. */
+function useOwnedTouchSurface(): (node: HTMLDivElement | null) => void {
+  const release = useRef<(() => void) | null>(null);
+  return useCallback((node: HTMLDivElement | null) => {
+    release.current?.(); release.current = node ? ownTouchSequences(node) : null;
+  }, []);
 }
 
 function ControlsCopy({ touchFirst }: { touchFirst: boolean }): JSX.Element {
@@ -45,6 +54,8 @@ export default function WalkMode({ prepareVisit, onClose }: {
   const lookPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const prepare = useRef(prepareVisit);
   prepare.current = prepareVisit;
+  const lookSurface = useOwnedTouchSurface(), stickSurface = useOwnedTouchSurface();
+  const doorTap = useRef(createTapActivator(() => { runtime.current?.interact(); })).current;
   useWorkspaceFocus(host, () => { if (!runtime.current?.escape()) onClose(); }, { onKeyDown: event => { if (!help) runtime.current?.keyDown(event); } });
   useEffect(() => {
     const resize = () => setSize({ width: innerWidth, height: innerHeight });
@@ -133,7 +144,7 @@ export default function WalkMode({ prepareVisit, onClose }: {
         <a href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Characters by Kenney · CC0</a>
       </div> : error ? <div className="world-walk-card" role="alert"><h1>Walk is unavailable</h1><p>{error}</p><button type="button" onClick={onClose}>Return to design</button></div>
       : !status ? <div className="world-walk-loading" role="status" aria-live="polite"><span className="world-walk-spinner" aria-hidden="true" />{loading}</div> : <>
-        <div className="world-walk-look" aria-label="Drag to look" onClick={() => { if (matchMedia('(pointer:fine)').matches) runtime.current?.lock(); }}
+        <div className="world-walk-look" ref={lookSurface} aria-label="Drag to look" onClick={() => { if (matchMedia('(pointer:fine)').matches) runtime.current?.lock(); }}
           onPointerDown={event => { if (event.pointerType !== 'mouse' || !status.locked) { lookPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY }; event.currentTarget.setPointerCapture(event.pointerId); } }}
           onPointerMove={event => { const pointer = lookPointer.current; if (pointer?.id === event.pointerId) { runtime.current?.dragLook(event.clientX - pointer.x, event.clientY - pointer.y); pointer.x = event.clientX; pointer.y = event.clientY; } }}
           onPointerUp={() => { lookPointer.current = null; }} onPointerCancel={() => { lookPointer.current = null; }} />
@@ -144,8 +155,9 @@ export default function WalkMode({ prepareVisit, onClose }: {
         </div>
         {help && <div className="world-walk-help"><strong>How to walk</strong><ControlsCopy touchFirst={touchControls} /><button type="button" onClick={() => setHelp(false)}>Got it</button></div>}
         <div className="world-walk-aim" aria-hidden="true">·</div>
-        <div className="world-walk-door" role="status">{status.blocked ? <span>Step away so the door can move safely.</span> : status.door && <button type="button" aria-label={status.door} onClick={() => runtime.current?.interact()}>{status.door}{!touchControls && <> <kbd aria-hidden="true">E</kbd></>}</button>}</div>
-        <div className="world-walk-stick" role="application" aria-label="Move and turn with one thumb" tabIndex={0}
+        <div className="world-walk-door" role="status">{status.blocked ? <span>Step away so the door can move safely.</span> : status.door && <button type="button" aria-label={status.door}
+          onPointerDown={event => doorTap.pointerDown(event)} onPointerUp={event => doorTap.pointerUp(event)} onPointerCancel={event => doorTap.pointerCancel(event)} onClick={() => doorTap.click()}>{status.door}{!touchControls && <> <kbd aria-hidden="true">E</kbd></>}</button>}</div>
+        <div className="world-walk-stick" ref={stickSurface} role="application" aria-label="Move and turn with one thumb" tabIndex={0}
           onPointerDown={event => { stickPointer.current = event.pointerId; event.currentTarget.setPointerCapture(event.pointerId); moveStick(event); }}
           onPointerMove={moveStick} onPointerUp={stopStick} onPointerCancel={stopStick} onLostPointerCapture={stopStick}>
           <span className="world-walk-stick-knob" /><span className="world-walk-stick-label">Move + turn</span>
