@@ -26,3 +26,12 @@ Environment: `WORLD_REPO_BASE`, `WORLD_REPO_WALK`, `WORLD_REPO_SITE` (checkouts 
 | `summarize.mjs` | Pair medians, the 110 % relative gate, the absolute gates, the byte ceiling. |
 | `diag-phone-tap.mjs` | Diagnostic: zero-duration taps with a busy main thread (round 4, phone door). |
 | `diag-flick-tap.mjs` | Diagnostic: taps after a look or pad flick at increasing gaps (round 4, phone door root cause). |
+| `site-plan-visual.mjs` | Plan presentation on a preview: both devices by the three skins by tools open/closed/reopened; exact Konva rects for the annotation, backing and arrow against the HUD and the toggle, toggle contrast per state, one screenshot per state. |
+| `site-credit.mjs` | Live-map credit strip: five fresh sessions by five captures (immediate, after fonts and two frames, 500 ms, 1,500 ms, after a native scroll) with the dark-pixel share of the strip in each. |
+| `diag-site-credit-dom.mjs` | Diagnostic for the credit strip: DOM geometry and the top element at five moments per session, with the ink share of the page capture and of a clip taken right after; `--arm=immediate` or `two-frames`. |
+| `early-semantic.mjs` | Reads both controlled-build audits: no `src/walk` or `src/site` module and no map or collision library may be early except the named seam modules, each reported with its rendered size; the lazy feature list must be non-empty. |
+| `ci-collect.mjs` | Collects each head's GitHub check runs, the Lighthouse assertions and warnings parsed from the job log (ANSI and timestamp prefix stripped) and the full-suite test counts. |
+| `pdf-pages.py` | Renders each A4 PDF page with PyMuPDF: page count, the exact disclaimer footer on every page, and the body-to-footer gap per page. |
+| `evidence-package.mjs` | Builds `docs/world/finish/evidence/` from an inputs JSON: JSON copied or gzipped beside an index above 200 KB, images re-encoded as JPEG, SOURCE and PACKAGE manifests with SHA-256, the 5,000,000-byte docs/world check. |
+
+Round 4 (31 October 2026) also records: formal Walk campaigns run on the studio browser (`WORLD_PLAYWRIGHT=studio`), the one GPT's rounds used; `WORLD_NO_GPU=1` drops the GPU flags for compositing A/B checks only; results root `WORLD_RESULTS_DIR`.
