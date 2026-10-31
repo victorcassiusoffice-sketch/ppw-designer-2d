@@ -1,0 +1,2716 @@
+{
+  "startedAt": "2026-10-31T12:22:16.898Z",
+  "target": "site",
+  "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app",
+  "expected": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+  "healthBefore": {
+    "at": "2026-10-31T12:22:17.805Z",
+    "target": "site",
+    "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:22:18.390Z"
+    }
+  },
+  "method": "Fresh context per device and skin (skin seeded through the app's own persisted store key). Native Site entry with the round-3 concave traverse, Apply, Close Site, then the plan tools toggle open / closed / reopened by tap or click. After fonts.ready and two frames in each state: the site-provenance text, backing and north-arrow client rectangles from the page's Konva stage, the drawing canvas rectangle, every HUD element rectangle in the plan view, the toggle's resolved colour and background with its WCAG contrast, and a screenshot. Pass requires every annotation rectangle fully inside the canvas and clear of every HUD rectangle, and toggle contrast >= 4.5 in every state. Headless emulation, not a physical phone.",
+  "rows": [
+    {
+      "device": "phone",
+      "skin": "natural",
+      "states": [
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 438.5,
+              "width": 354,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 434.5,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 439.7499999999998,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 202.5
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 197.21875,
+                "height": 194.5
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 93.5,
+                "y": 267,
+                "width": 173.21875,
+                "height": 36
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-undo",
+              "rect": {
+                "x": 12,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-redo",
+              "rect": {
+                "x": 60,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-precision",
+              "rect": {
+                "x": 108,
+                "y": 386.5,
+                "width": 58.78125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": false
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-open",
+          "screenshot": "plan-phone-natural-tools-open.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 234,
+            "width": 390,
+            "height": 554
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 234,
+            "width": 390,
+            "height": 554
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 364.0000000123084,
+              "width": 354,
+              "height": 14.300000000000011,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 360.0000000123084,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 365.2500000123082,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 58
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 140,
+                "height": 50
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²+",
+            "expanded": "false",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-closed",
+          "screenshot": "plan-phone-natural-tools-closed.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 438.5,
+              "width": 354,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 434.5,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 439.7499999999998,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 202.5
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 197.21875,
+                "height": 194.5
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 93.5,
+                "y": 267,
+                "width": 173.21875,
+                "height": 36
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-undo",
+              "rect": {
+                "x": 12,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-redo",
+              "rect": {
+                "x": 60,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-precision",
+              "rect": {
+                "x": 108,
+                "y": 386.5,
+                "width": 58.78125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-reopened",
+          "screenshot": "plan-phone-natural-tools-reopened.png"
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "siteErrors": [],
+      "fitVisible": true,
+      "skinApplied": "natural",
+      "passed": true,
+      "blockedWrites": []
+    },
+    {
+      "device": "phone",
+      "skin": "gallery",
+      "states": [
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 438.5,
+              "width": 354,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 434.5,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 439.7499999999998,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 202.5
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 197.21875,
+                "height": 194.5
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 93.5,
+                "y": 267,
+                "width": 173.21875,
+                "height": 36
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-undo",
+              "rect": {
+                "x": 12,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-redo",
+              "rect": {
+                "x": 60,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-precision",
+              "rect": {
+                "x": 108,
+                "y": 386.5,
+                "width": 58.78125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": false
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-open",
+          "screenshot": "plan-phone-gallery-tools-open.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 234,
+            "width": 390,
+            "height": 554
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 234,
+            "width": 390,
+            "height": 554
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 364.0000000123084,
+              "width": 354,
+              "height": 14.300000000000011,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 360.0000000123084,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 365.2500000123082,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 58
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 140,
+                "height": 50
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²+",
+            "expanded": "false",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-closed",
+          "screenshot": "plan-phone-gallery-tools-closed.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 438.5,
+              "width": 354,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 434.5,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 439.7499999999998,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 202.5
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 197.21875,
+                "height": 194.5
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 93.5,
+                "y": 267,
+                "width": 173.21875,
+                "height": 36
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-undo",
+              "rect": {
+                "x": 12,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-redo",
+              "rect": {
+                "x": 60,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-precision",
+              "rect": {
+                "x": 108,
+                "y": 386.5,
+                "width": 58.78125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-reopened",
+          "screenshot": "plan-phone-gallery-tools-reopened.png"
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "siteErrors": [],
+      "fitVisible": true,
+      "skinApplied": "gallery",
+      "passed": true,
+      "blockedWrites": []
+    },
+    {
+      "device": "phone",
+      "skin": "blueprint",
+      "states": [
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 438.5,
+              "width": 354,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 434.5,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 439.7499999999998,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 202.5
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 197.21875,
+                "height": 194.5
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 93.5,
+                "y": 267,
+                "width": 173.21875,
+                "height": 36
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-undo",
+              "rect": {
+                "x": 12,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-redo",
+              "rect": {
+                "x": 60,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-precision",
+              "rect": {
+                "x": 108,
+                "y": 386.5,
+                "width": 58.78125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": false
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-open",
+          "screenshot": "plan-phone-blueprint-tools-open.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 234,
+            "width": 390,
+            "height": 554
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 234,
+            "width": 390,
+            "height": 554
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 364.0000000123084,
+              "width": 354,
+              "height": 14.300000000000011,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 360.0000000123084,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 365.2500000123082,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 58
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 140,
+                "height": 50
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²+",
+            "expanded": "false",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-closed",
+          "screenshot": "plan-phone-blueprint-tools-closed.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 378.5,
+            "width": 390,
+            "height": 409.5
+          },
+          "provenance": [
+            {
+              "x": 28,
+              "y": 438.5,
+              "width": 354,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 4.000000000000227,
+              "y": 434.5,
+              "width": 381.99999999999994,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 7.25,
+              "y": 439.7499999999998,
+              "width": 11.499999999999773,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 176
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 176,
+                "width": 390,
+                "height": 202.5
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 4,
+                "y": 180,
+                "width": 73.5,
+                "height": 44
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 81.5,
+                "y": 180,
+                "width": 197.21875,
+                "height": 194.5
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 93.5,
+                "y": 267,
+                "width": 173.21875,
+                "height": 36
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 282.71875,
+                "y": 180,
+                "width": 103.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 336.65625,
+                "y": 180,
+                "width": 49.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-undo",
+              "rect": {
+                "x": 12,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-redo",
+              "rect": {
+                "x": 60,
+                "y": 386.5,
+                "width": 44,
+                "height": 44
+              }
+            },
+            {
+              "selector": "mobile-precision",
+              "rect": {
+                "x": 108,
+                "y": 386.5,
+                "width": 58.78125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 91.84375,
+                "y": 777,
+                "width": 206.3125,
+                "height": 46
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 4,
+              "y": 180,
+              "width": 73.5,
+              "height": 44
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-reopened",
+          "screenshot": "plan-phone-blueprint-tools-reopened.png"
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "siteErrors": [],
+      "fitVisible": true,
+      "skinApplied": "blueprint",
+      "passed": true,
+      "blockedWrites": []
+    },
+    {
+      "device": "desktop",
+      "skin": "natural",
+      "states": [
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 883.734375,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 453.4375,
+                "y": 226,
+                "width": 202.640625,
+                "height": 18
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": false
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-open",
+          "screenshot": "plan-desktop-natural-tools-open.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 210,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²+",
+            "expanded": "false",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-closed",
+          "screenshot": "plan-desktop-natural-tools-closed.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 883.734375,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 453.4375,
+                "y": 226,
+                "width": 202.640625,
+                "height": 18
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-reopened",
+          "screenshot": "plan-desktop-natural-tools-reopened.png"
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "siteErrors": [],
+      "fitVisible": true,
+      "skinApplied": "natural",
+      "passed": true,
+      "blockedWrites": []
+    },
+    {
+      "device": "desktop",
+      "skin": "gallery",
+      "states": [
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 883.734375,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 453.4375,
+                "y": 226,
+                "width": 202.640625,
+                "height": 18
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": false
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-open",
+          "screenshot": "plan-desktop-gallery-tools-open.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 210,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²+",
+            "expanded": "false",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-closed",
+          "screenshot": "plan-desktop-gallery-tools-closed.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 883.734375,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 453.4375,
+                "y": 226,
+                "width": 202.640625,
+                "height": 18
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-reopened",
+          "screenshot": "plan-desktop-gallery-tools-reopened.png"
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "siteErrors": [],
+      "fitVisible": true,
+      "skinApplied": "gallery",
+      "passed": true,
+      "blockedWrites": []
+    },
+    {
+      "device": "desktop",
+      "skin": "blueprint",
+      "states": [
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 883.734375,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 453.4375,
+                "y": 226,
+                "width": 202.640625,
+                "height": 18
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": false
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-open",
+          "screenshot": "plan-desktop-blueprint-tools-open.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 210,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²+",
+            "expanded": "false",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-closed",
+          "screenshot": "plan-desktop-blueprint-tools-closed.png"
+        },
+        {
+          "stageRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "canvasRect": {
+            "x": 0,
+            "y": 263,
+            "width": 1280,
+            "height": 470
+          },
+          "provenance": [
+            {
+              "x": 474.99999998460703,
+              "y": 311.00000000009186,
+              "width": 364,
+              "height": 14.299999999999997,
+              "text": "SITE-R4-CONCAVE · N ↑ · boundary drawn / typed by you"
+            }
+          ],
+          "backing": [
+            {
+              "x": 450.99999998460726,
+              "y": 307.00000000009186,
+              "width": 392,
+              "height": 38,
+              "text": null
+            }
+          ],
+          "arrow": [
+            {
+              "x": 454.24999998460726,
+              "y": 312.25000000009186,
+              "width": 11.500000000000227,
+              "height": 27.5,
+              "text": null
+            }
+          ],
+          "hud": [
+            {
+              "selector": "plan-topbar",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 1280,
+                "height": 209
+              }
+            },
+            {
+              "selector": "plan-view-toolbar",
+              "rect": {
+                "x": 0,
+                "y": 209,
+                "width": 1280,
+                "height": 54
+              }
+            },
+            {
+              "selector": "canvas-chrome-toggle",
+              "rect": {
+                "x": 12,
+                "y": 216,
+                "width": 73.5,
+                "height": 38
+              }
+            },
+            {
+              "selector": "canvas-plan-tools",
+              "rect": {
+                "x": 91.5,
+                "y": 212,
+                "width": 883.734375,
+                "height": 46
+              }
+            },
+            {
+              "selector": "plot-capacity",
+              "rect": {
+                "x": 453.4375,
+                "y": 226,
+                "width": 202.640625,
+                "height": 18
+              }
+            },
+            {
+              "selector": "plan-document-actions",
+              "rect": {
+                "x": 1143.71875,
+                "y": 213,
+                "width": 128.28125,
+                "height": 44
+              }
+            },
+            {
+              "selector": "clear-controls",
+              "rect": {
+                "x": 1197.65625,
+                "y": 213,
+                "width": 74.34375,
+                "height": 44
+              }
+            },
+            {
+              "selector": "plan-catalog-launcher",
+              "rect": {
+                "x": 538.84375,
+                "y": 743,
+                "width": 202.3125,
+                "height": 42
+              }
+            }
+          ],
+          "toggle": {
+            "text": "27 m²−",
+            "expanded": "true",
+            "color": "rgb(25, 44, 38)",
+            "background": "rgb(255, 253, 247)",
+            "rect": {
+              "x": 12,
+              "y": 216,
+              "width": 73.5,
+              "height": 38
+            },
+            "matchesHover": true
+          },
+          "pageBackground": "rgb(244, 240, 231)",
+          "capacity": "Plot 64 m² · built 91.0 m² (142%)",
+          "toggleContrast": 14.441281270472784,
+          "annotationPresent": true,
+          "annotationInsideCanvas": true,
+          "annotationClearOfHud": true,
+          "annotationClearOfToggle": true,
+          "hudOverlapping": [],
+          "state": "tools-reopened",
+          "screenshot": "plan-desktop-blueprint-tools-reopened.png"
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "siteErrors": [],
+      "fitVisible": true,
+      "skinApplied": "blueprint",
+      "passed": true,
+      "blockedWrites": []
+    }
+  ],
+  "healthAfter": {
+    "at": "2026-10-31T12:23:08.271Z",
+    "target": "site",
+    "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:23:08.847Z"
+    }
+  },
+  "healthStable": true,
+  "passed": true,
+  "endedAt": "2026-10-31T12:23:08.271Z"
+}

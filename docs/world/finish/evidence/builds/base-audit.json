@@ -1,0 +1,9 @@
+{
+  "index": true,
+  "note": "Lossless gzip of the complete file beside this index; decompress to read every row. Nothing is truncated.",
+  "original": "audit.json",
+  "originalBytes": 345667,
+  "originalSha256": "8705316636e63c328d8b136d97a5be651a20d79efa8dd0beb8387b78ddc2ed82",
+  "gzipBytes": 42714,
+  "gzipSha256": "181a9fcad203d3d533f8b16951e4f2f4ab2bd233c835db8bdf0bc5b1976f9fe6"
+}

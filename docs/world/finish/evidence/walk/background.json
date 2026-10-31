@@ -1,0 +1,158 @@
+{
+  "at": "2026-10-31T12:18:35.784Z",
+  "target": "walk",
+  "expected": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+  "harnessVersion": 1,
+  "healthBefore": {
+    "at": "2026-10-31T12:18:36.391Z",
+    "target": "walk",
+    "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:18:36.974Z"
+    }
+  },
+  "method": "Separate functional observation, never a performance replacement. Deferred launcher snapshot event returns exact original ThreeStage.debug().frames and pause ownership. One snapshot at each named phase, no per-frame observer or production polling. Verify no original frames during chooser/loading/visit and resumed frames after Exit; non-null saved design and both editing/rendered camera strings must restore exactly. All network writes blocked.",
+  "rows": [
+    {
+      "device": "desktop",
+      "snapshots": [
+        {
+          "phase": "before-open",
+          "frames": 4,
+          "paused": false
+        },
+        {
+          "phase": "chooser-open",
+          "frames": 4,
+          "paused": true
+        },
+        {
+          "phase": "chooser-after-750ms",
+          "frames": 4,
+          "paused": true
+        },
+        {
+          "phase": "after-start",
+          "frames": 4,
+          "paused": true
+        },
+        {
+          "phase": "visit-ready",
+          "frames": 4,
+          "paused": true
+        },
+        {
+          "phase": "visit-after-movement",
+          "frames": 4,
+          "paused": true
+        },
+        {
+          "phase": "after-exit-750ms",
+          "frames": 12,
+          "paused": false
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "before": {
+        "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+        "savedBytes": 8821,
+        "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+        "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+      },
+      "after": {
+        "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+        "savedBytes": 8821,
+        "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+        "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+      },
+      "restored": true,
+      "passed": true,
+      "blockedWrites": [],
+      "browserClosed": true
+    },
+    {
+      "device": "phone",
+      "snapshots": [
+        {
+          "phase": "before-open",
+          "frames": 2,
+          "paused": false
+        },
+        {
+          "phase": "chooser-open",
+          "frames": 2,
+          "paused": true
+        },
+        {
+          "phase": "chooser-after-750ms",
+          "frames": 2,
+          "paused": true
+        },
+        {
+          "phase": "after-start",
+          "frames": 2,
+          "paused": true
+        },
+        {
+          "phase": "visit-ready",
+          "frames": 2,
+          "paused": true
+        },
+        {
+          "phase": "visit-after-movement",
+          "frames": 2,
+          "paused": true
+        },
+        {
+          "phase": "after-exit-750ms",
+          "frames": 3,
+          "paused": false
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "before": {
+        "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+        "savedBytes": 8821,
+        "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":1.89},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":35.37196827726509,\"fovRad\":0.6632251157578452}",
+        "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":1.89},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":35.37196827726509,\"fovRad\":0.7255576420055392}"
+      },
+      "after": {
+        "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+        "savedBytes": 8821,
+        "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":1.89},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":35.37196827726509,\"fovRad\":0.6632251157578452}",
+        "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":1.89},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":35.37196827726509,\"fovRad\":0.7255576420055392}"
+      },
+      "restored": true,
+      "passed": true,
+      "blockedWrites": [],
+      "browserClosed": true
+    }
+  ],
+  "healthAfter": {
+    "at": "2026-10-31T12:19:02.188Z",
+    "target": "walk",
+    "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:19:02.779Z"
+    }
+  },
+  "healthStable": true,
+  "passed": true,
+  "endedAt": "2026-10-31T12:19:02.188Z"
+}

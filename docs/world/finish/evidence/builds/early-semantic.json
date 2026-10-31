@@ -1,0 +1,84 @@
+{
+  "at": "2026-10-31T12:45:38.686Z",
+  "builds": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1",
+  "branches": {
+    "walk": {
+      "sourceCommit": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "baseCommit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+      "label": "r4-build-v1",
+      "earlyModules": 629,
+      "earlyFiles": 28,
+      "seamEarly": [],
+      "forbiddenEarly": [],
+      "heavyEarly": [],
+      "lazyFeatureModules": 16,
+      "lazyFeatureList": [
+        "src/walk/WalkLauncher.tsx",
+        "src/walk/WalkMode.tsx",
+        "src/walk/characters.ts",
+        "src/walk/collision.ts",
+        "src/walk/frameMeasurement.ts",
+        "src/walk/runtime.ts",
+        "src/walk/scene.ts",
+        "src/walk/spawn.ts",
+        "src/walk/stageSurface.ts",
+        "src/walk/thumbnails/kenney-female-a.png?inline",
+        "src/walk/thumbnails/kenney-female-b.png?inline",
+        "src/walk/thumbnails/kenney-male-a.png?inline",
+        "src/walk/thumbnails/kenney-male-b.png?inline",
+        "src/walk/touchInput.ts",
+        "src/walk/types.ts",
+        "src/walk/walk.css"
+      ],
+      "pass": true
+    },
+    "site": {
+      "sourceCommit": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+      "baseCommit": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+      "label": "r4-build-v1",
+      "earlyModules": 632,
+      "earlyFiles": 28,
+      "seamEarly": [
+        {
+          "module": "src/site/SiteLoading.tsx",
+          "renderedLength": 853,
+          "chunk": "assets/App-j5a-zufe.js"
+        },
+        {
+          "module": "src/site/SiteLaunchButton.tsx",
+          "renderedLength": 2632,
+          "chunk": "assets/App-j5a-zufe.js"
+        },
+        {
+          "module": "src/components/canvasSiteBridge.ts",
+          "renderedLength": 474,
+          "chunk": "assets/App-j5a-zufe.js"
+        }
+      ],
+      "forbiddenEarly": [],
+      "heavyEarly": [],
+      "lazyFeatureModules": 17,
+      "lazyFeatureList": [
+        "src/site/SiteAnnotation.tsx",
+        "src/site/SiteDiagram.tsx",
+        "src/site/SiteEntry.tsx",
+        "src/site/SiteMap.tsx",
+        "src/site/SiteReport.tsx",
+        "src/site/SiteWorkspace.tsx",
+        "src/site/annotationLayout.ts",
+        "src/site/foundationScenario.ts",
+        "src/site/geometry.ts",
+        "src/site/hydration.ts",
+        "src/site/planAdapter.tsx",
+        "src/site/previewMode.ts",
+        "src/site/providers.ts",
+        "src/site/sample.ts",
+        "src/site/site.css",
+        "src/site/terrain.ts",
+        "src/site/types.ts"
+      ],
+      "pass": true
+    }
+  },
+  "pass": true
+}

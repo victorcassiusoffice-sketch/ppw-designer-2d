@@ -1,0 +1,5229 @@
+{
+  "startedAt": "2026-10-31T11:53:43.608Z",
+  "target": "localwalk",
+  "url": "http://127.0.0.1:5183",
+  "diagnostic": true,
+  "playwright": "1.60.0",
+  "browser": "C:\\Users\\Victor\\AppData\\Local\\ms-playwright\\chromium-1223\\chrome-win64\\chrome.exe",
+  "method": "Phone viewport 390x844, touch emulation, one fresh context per arm. Open Walk, start, wait for the first published status. A preceding native gesture (look flick 40 px with no waits; slow look drag 40 px over 10 steps of 30 ms; stick flick 40 px) is followed after a declared gap by a CDP touchStart+touchEnd on the Controls button. Click delivery and the help card opening are recorded with every window-capture event. Diagnostic only.",
+  "cases": [
+    {
+      "gesture": "look-flick",
+      "gapMs": 60,
+      "startedAt": "2026-10-31T11:53:43.774Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 4885.300000071526,
+      "tapCommandedAt": 4955.800000071526,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 4771.5,
+          "listenerAt": 4801.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 4771.5,
+          "listenerAt": 4802,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 4803.5,
+          "listenerAt": 4847.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 4803.5,
+          "listenerAt": 4848.700000047684,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 4803.5,
+          "listenerAt": 4848.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 4850.200000047684,
+          "listenerAt": 4884.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 4850.200000047684,
+          "listenerAt": 4884.800000071526,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 4850.200000047684,
+          "listenerAt": 4885,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 4956.399999976158,
+          "listenerAt": 4984.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 4956.399999976158,
+          "listenerAt": 4984.700000047684,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 4985.700000047684,
+          "listenerAt": 5018.100000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 4985.700000047684,
+          "listenerAt": 5018.200000047684,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 4985.700000047684,
+          "listenerAt": 5018.200000047684,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 4985.700000047684,
+          "listenerAt": 5018.300000071526,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 106.19999992847443,
+      "tapDispatchDelayMs": 28.100000023841858,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-flick",
+      "gapMs": 100,
+      "startedAt": "2026-10-31T11:53:50.098Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2627.2999999523163,
+      "tapCommandedAt": 2744.100000023842,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2510.7999999523163,
+          "listenerAt": 2543.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2510.7999999523163,
+          "listenerAt": 2544,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2545,
+          "listenerAt": 2589.7999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2545,
+          "listenerAt": 2589.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2545,
+          "listenerAt": 2590.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2591.100000023842,
+          "listenerAt": 2626.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2591.100000023842,
+          "listenerAt": 2627,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2591.100000023842,
+          "listenerAt": 2627.100000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2744.7999999523163,
+          "listenerAt": 2776.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2744.7999999523163,
+          "listenerAt": 2776.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2777.600000023842,
+          "listenerAt": 2809.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2777.600000023842,
+          "listenerAt": 2809.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2777.600000023842,
+          "listenerAt": 2809.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2777.600000023842,
+          "listenerAt": 2809.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 153.69999992847443,
+      "tapDispatchDelayMs": 31.600000023841858,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-flick",
+      "gapMs": 150,
+      "startedAt": "2026-10-31T11:53:54.209Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2531.7000000476837,
+      "tapCommandedAt": 2695.3000000715256,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2427,
+          "listenerAt": 2448.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2427,
+          "listenerAt": 2448.8000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2449.9000000953674,
+          "listenerAt": 2494.8000000715256,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2449.9000000953674,
+          "listenerAt": 2494.9000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2449.9000000953674,
+          "listenerAt": 2495.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2496,
+          "listenerAt": 2531.3000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2496,
+          "listenerAt": 2531.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2496,
+          "listenerAt": 2531.600000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2696.3000000715256,
+          "listenerAt": 2732.4000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2696.3000000715256,
+          "listenerAt": 2732.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2733.5,
+          "listenerAt": 2766,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2733.5,
+          "listenerAt": 2766.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2733.5,
+          "listenerAt": 2766.4000000953674,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2733.5,
+          "listenerAt": 2766.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 200.30000007152557,
+      "tapDispatchDelayMs": 36.10000002384186,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-flick",
+      "gapMs": 200,
+      "startedAt": "2026-10-31T11:53:58.264Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2408.7000000476837,
+      "tapCommandedAt": 2616,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2303.100000023842,
+          "listenerAt": 2325.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2303.100000023842,
+          "listenerAt": 2326.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2327.2000000476837,
+          "listenerAt": 2372.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2327.2000000476837,
+          "listenerAt": 2373.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2327.2000000476837,
+          "listenerAt": 2373.3000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2374.3000000715256,
+          "listenerAt": 2408.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2374.3000000715256,
+          "listenerAt": 2408.399999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2374.3000000715256,
+          "listenerAt": 2408.600000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2616.600000023842,
+          "listenerAt": 2641.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2616.600000023842,
+          "listenerAt": 2641.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2642.899999976158,
+          "listenerAt": 2674.399999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2642.899999976158,
+          "listenerAt": 2674.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2642.899999976158,
+          "listenerAt": 2674.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2642.899999976158,
+          "listenerAt": 2674.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 242.29999995231628,
+      "tapDispatchDelayMs": 25,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-flick",
+      "gapMs": 260,
+      "startedAt": "2026-10-31T11:54:02.248Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2547.5999999046326,
+      "tapCommandedAt": 2812.6999999284744,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2427,
+          "listenerAt": 2458.0999999046326,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2427,
+          "listenerAt": 2458.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2459.2999999523163,
+          "listenerAt": 2506.399999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2459.2999999523163,
+          "listenerAt": 2506.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2459.2999999523163,
+          "listenerAt": 2506.6999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2507.6999999284744,
+          "listenerAt": 2546.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2507.6999999284744,
+          "listenerAt": 2546.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2507.6999999284744,
+          "listenerAt": 2547.1999999284744,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2813.2999999523163,
+          "listenerAt": 2842.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2813.2999999523163,
+          "listenerAt": 2842.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2843.2999999523163,
+          "listenerAt": 2875.6999999284744,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2843.2999999523163,
+          "listenerAt": 2875.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2843.2999999523163,
+          "listenerAt": 2875.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2843.2999999523163,
+          "listenerAt": 2876.0999999046326,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 305.60000002384186,
+      "tapDispatchDelayMs": 29.100000023841858,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-flick",
+      "gapMs": 320,
+      "startedAt": "2026-10-31T11:54:06.461Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2430.399999976158,
+      "tapCommandedAt": 2766.1999999284744,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2309.5999999046326,
+          "listenerAt": 2346.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2309.5999999046326,
+          "listenerAt": 2347.1999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2347.899999976158,
+          "listenerAt": 2392.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2347.899999976158,
+          "listenerAt": 2393,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2347.899999976158,
+          "listenerAt": 2393.1999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2394.5,
+          "listenerAt": 2430,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2394.5,
+          "listenerAt": 2430.0999999046326,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2394.5,
+          "listenerAt": 2430.1999999284744,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2766.7999999523163,
+          "listenerAt": 2797.5999999046326,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2766.7999999523163,
+          "listenerAt": 2797.6999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2798.6999999284744,
+          "listenerAt": 2831.0999999046326,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2798.6999999284744,
+          "listenerAt": 2831.1999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2798.6999999284744,
+          "listenerAt": 2831.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2798.6999999284744,
+          "listenerAt": 2831.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 372.2999999523163,
+      "tapDispatchDelayMs": 30.799999952316284,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-flick",
+      "gapMs": 400,
+      "startedAt": "2026-10-31T11:54:10.616Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2325.2999999523163,
+      "tapCommandedAt": 2737.100000023842,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2220.5,
+          "listenerAt": 2240.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2220.5,
+          "listenerAt": 2241.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2241.899999976158,
+          "listenerAt": 2287.600000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2241.899999976158,
+          "listenerAt": 2287.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2241.899999976158,
+          "listenerAt": 2287.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2289.2000000476837,
+          "listenerAt": 2324.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2289.2000000476837,
+          "listenerAt": 2324.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2289.2000000476837,
+          "listenerAt": 2325.100000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2737.7000000476837,
+          "listenerAt": 2775.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2737.7000000476837,
+          "listenerAt": 2775.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2776.2999999523163,
+          "listenerAt": 2807.7999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2776.2999999523163,
+          "listenerAt": 2807.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2776.2999999523163,
+          "listenerAt": 2808,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2776.2999999523163,
+          "listenerAt": 2808.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 448.5,
+      "tapDispatchDelayMs": 37.799999952316284,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-flick",
+      "gapMs": 600,
+      "startedAt": "2026-10-31T11:54:14.722Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2352.100000023842,
+      "tapCommandedAt": 2958.600000023842,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2241.5,
+          "listenerAt": 2269.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2241.5,
+          "listenerAt": 2269.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2270.600000023842,
+          "listenerAt": 2315.600000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2270.600000023842,
+          "listenerAt": 2315.6999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2270.600000023842,
+          "listenerAt": 2315.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2317,
+          "listenerAt": 2351.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2317,
+          "listenerAt": 2351.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2317,
+          "listenerAt": 2351.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2959.899999976158,
+          "listenerAt": 2986.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2959.899999976158,
+          "listenerAt": 2986.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2987.600000023842,
+          "listenerAt": 3019.600000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2987.600000023842,
+          "listenerAt": 3019.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2987.600000023842,
+          "listenerAt": 3019.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2987.600000023842,
+          "listenerAt": 3019.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 642.8999999761581,
+      "tapDispatchDelayMs": 26.399999976158142,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-flick",
+      "gapMs": 1000,
+      "startedAt": "2026-10-31T11:54:19.029Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2396.5,
+      "tapCommandedAt": 3404.6999999284744,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2287.100000023842,
+          "listenerAt": 2310.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2287.100000023842,
+          "listenerAt": 2310.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2311.600000023842,
+          "listenerAt": 2357.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2311.600000023842,
+          "listenerAt": 2357.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2311.600000023842,
+          "listenerAt": 2357.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2359,
+          "listenerAt": 2396.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2359,
+          "listenerAt": 2396.1999999284744,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2359,
+          "listenerAt": 2396.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 3407.2999999523163,
+          "listenerAt": 3427.6999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 3407.2999999523163,
+          "listenerAt": 3427.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 3428.899999976158,
+          "listenerAt": 3461.600000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 3428.899999976158,
+          "listenerAt": 3461.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 3428.899999976158,
+          "listenerAt": 3461.7999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 3428.899999976158,
+          "listenerAt": 3461.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 1048.2999999523163,
+      "tapDispatchDelayMs": 20.399999976158142,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-slow-drag",
+      "gapMs": 100,
+      "startedAt": "2026-10-31T11:54:23.772Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 3085.8000000715256,
+      "tapCommandedAt": 3194.7000000476837,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2271.9000000953674,
+          "listenerAt": 2301.4000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2271.9000000953674,
+          "listenerAt": 2301.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2334.7000000476837,
+          "listenerAt": 2381.8000000715256,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 234,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2334.7000000476837,
+          "listenerAt": 2381.9000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 234,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2427.9000000953674,
+          "listenerAt": 2465.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 238,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2505.5,
+          "listenerAt": 2548.9000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 242,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2583.8000000715256,
+          "listenerAt": 2632.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 246,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2583.8000000715256,
+          "listenerAt": 2632.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 246,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2677.7000000476837,
+          "listenerAt": 2717.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 250,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2677.7000000476837,
+          "listenerAt": 2717.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 250,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2740.4000000953674,
+          "listenerAt": 2782.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 254,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2740.4000000953674,
+          "listenerAt": 2782.3000000715256,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 254,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2802.4000000953674,
+          "listenerAt": 2849.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 258,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2802.4000000953674,
+          "listenerAt": 2849.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 258,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2863.9000000953674,
+          "listenerAt": 2898.9000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 262,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2863.9000000953674,
+          "listenerAt": 2899.100000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 262,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2926.2000000476837,
+          "listenerAt": 2966.3000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 266,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2926.2000000476837,
+          "listenerAt": 2966.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 266,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2989.9000000953674,
+          "listenerAt": 3032.3000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2989.9000000953674,
+          "listenerAt": 3032.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 3053.2000000476837,
+          "listenerAt": 3084.9000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 3053.2000000476837,
+          "listenerAt": 3085.3000000715256,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 3053.2000000476837,
+          "listenerAt": 3085.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 3195.3000000715256,
+          "listenerAt": 3217.9000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 3195.3000000715256,
+          "listenerAt": 3218,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 3218.9000000953674,
+          "listenerAt": 3252.3000000715256,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 3218.9000000953674,
+          "listenerAt": 3252.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 3218.9000000953674,
+          "listenerAt": 3252.600000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 3218.9000000953674,
+          "listenerAt": 3252.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 3218.9000000953674,
+          "listenerAt": 3262.9000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 3218.9000000953674,
+          "listenerAt": 3263.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 3218.9000000953674,
+          "listenerAt": 3263.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 3218.9000000953674,
+          "listenerAt": 3263.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "actualGapMs": 142.10000002384186,
+      "tapDispatchDelayMs": 22.600000023841858,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "look-slow-drag",
+      "gapMs": 400,
+      "startedAt": "2026-10-31T11:54:28.332Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 3091.2000000476837,
+      "tapCommandedAt": 3508,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2271,
+          "listenerAt": 2293.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 230,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2271,
+          "listenerAt": 2293.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 230,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2332.7000000476837,
+          "listenerAt": 2371.399999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 234,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2332.7000000476837,
+          "listenerAt": 2371.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 234,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2411.5,
+          "listenerAt": 2454.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 238,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2488.7999999523163,
+          "listenerAt": 2538.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 242,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2583.899999976158,
+          "listenerAt": 2621.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 246,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2583.899999976158,
+          "listenerAt": 2621.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 246,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2662.600000023842,
+          "listenerAt": 2704.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 250,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2662.600000023842,
+          "listenerAt": 2705,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 250,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2727.2999999523163,
+          "listenerAt": 2771.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 254,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2727.2999999523163,
+          "listenerAt": 2771.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 254,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2789,
+          "listenerAt": 2838.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 258,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2789,
+          "listenerAt": 2838.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 258,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2866.5,
+          "listenerAt": 2904.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 262,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2866.5,
+          "listenerAt": 2904.7000000476837,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 262,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2928,
+          "listenerAt": 2971.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 266,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2928,
+          "listenerAt": 2972.2000000476837,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 266,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2990.7999999523163,
+          "listenerAt": 3037.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2990.7999999523163,
+          "listenerAt": 3037.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 270,
+              "y": 400
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 3067.600000023842,
+          "listenerAt": 3090.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 3067.600000023842,
+          "listenerAt": 3090.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 270,
+          "y": 400,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 3067.600000023842,
+          "listenerAt": 3091,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-look",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 3508.899999976158,
+          "listenerAt": 3541.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 3508.899999976158,
+          "listenerAt": 3541.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 3542.2000000476837,
+          "listenerAt": 3574.7999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 3542.2000000476837,
+          "listenerAt": 3575,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 3542.2000000476837,
+          "listenerAt": 3575,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 3542.2000000476837,
+          "listenerAt": 3575.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 3542.2000000476837,
+          "listenerAt": 3575.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 3542.2000000476837,
+          "listenerAt": 3575.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 3542.2000000476837,
+          "listenerAt": 3575.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 3542.2000000476837,
+          "listenerAt": 3575.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "actualGapMs": 441.2999999523163,
+      "tapDispatchDelayMs": 32.39999997615814,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "stick-flick",
+      "gapMs": 100,
+      "startedAt": "2026-10-31T11:54:33.254Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2352.6999999284744,
+      "tapCommandedAt": 2462.6999999284744,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2237.1999999284744,
+          "listenerAt": 2269.1999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 711,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2237.1999999284744,
+          "listenerAt": 2269.5999999046326,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 82,
+              "y": 711
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2270.5,
+          "listenerAt": 2315.5999999046326,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 671,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2270.5,
+          "listenerAt": 2315.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 671,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2270.5,
+          "listenerAt": 2316.0999999046326,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 82,
+              "y": 671
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2317.5,
+          "listenerAt": 2351.5999999046326,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 671,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2317.5,
+          "listenerAt": 2352.1999999284744,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 671,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2317.5,
+          "listenerAt": 2352.399999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2463.399999976158,
+          "listenerAt": 2486.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2463.399999976158,
+          "listenerAt": 2486.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2487.6999999284744,
+          "listenerAt": 2518.899999976158,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2487.6999999284744,
+          "listenerAt": 2519.1999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2487.6999999284744,
+          "listenerAt": 2519.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2487.6999999284744,
+          "listenerAt": 2519.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 145.89999997615814,
+      "tapDispatchDelayMs": 23.399999976158142,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "stick-flick",
+      "gapMs": 400,
+      "startedAt": "2026-10-31T11:54:37.109Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2348.5,
+      "tapCommandedAt": 2762.600000023842,
+      "helpOpened": false,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2238.399999976158,
+          "listenerAt": 2263.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 711,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2238.399999976158,
+          "listenerAt": 2263.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 82,
+              "y": 711
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2264.5,
+          "listenerAt": 2309.600000023842,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 671,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointermove",
+          "eventAt": 2264.5,
+          "listenerAt": 2309.6999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 671,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchmove",
+          "eventAt": 2264.5,
+          "listenerAt": 2309.899999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 82,
+              "y": 671
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2310.6999999284744,
+          "listenerAt": 2348,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 671,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2310.6999999284744,
+          "listenerAt": 2348.1999999284744,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 82,
+          "y": 671,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2310.6999999284744,
+          "listenerAt": 2348.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "DIV",
+            "className": "world-walk-stick",
+            "text": null
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerdown",
+          "eventAt": 2763.600000023842,
+          "listenerAt": 2796.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2763.600000023842,
+          "listenerAt": 2796.6999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2797.7999999523163,
+          "listenerAt": 2828.6999999284744,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2797.7999999523163,
+          "listenerAt": 2828.6999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2797.7999999523163,
+          "listenerAt": 2828.6999999284744,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 3,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2797.7999999523163,
+          "listenerAt": 2828.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 4,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": false,
+      "mouseCompat": 0,
+      "actualGapMs": 452.90000009536743,
+      "tapDispatchDelayMs": 33,
+      "blockedWrites": []
+    },
+    {
+      "gesture": "none",
+      "gapMs": 0,
+      "startedAt": "2026-10-31T11:54:41.230Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "gestureEndedAt": 2264.2000000476837,
+      "tapCommandedAt": 2264.899999976158,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 2265.2999999523163,
+          "listenerAt": 2292,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 2265.2999999523163,
+          "listenerAt": 2292.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2293,
+          "listenerAt": 2324.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2293,
+          "listenerAt": 2324.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2293,
+          "listenerAt": 2324.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2293,
+          "listenerAt": 2324.600000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 2293,
+          "listenerAt": 2325,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 2293,
+          "listenerAt": 2325.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 2293,
+          "listenerAt": 2325.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 2293,
+          "listenerAt": 2325.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "actualGapMs": null,
+      "tapDispatchDelayMs": 26.700000047683716,
+      "blockedWrites": []
+    }
+  ],
+  "endedAt": "2026-10-31T11:54:45.220Z"
+}
