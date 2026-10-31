@@ -6,7 +6,8 @@ import { TARGETS, OUTPUT, PIN_IP, acquireRun } from './run-config.mjs';
 import { chromium } from './lib.mjs';
 const expectedSha = process.argv.find(x => x.startsWith('--expected='))?.slice(11);
 if (!/^[a-f0-9]{40}$/.test(expectedSha || '')) throw Error('Supply --expected=full-published-SHA.');
-await fs.mkdir(OUTPUT, { recursive: false });
+await fs.mkdir(OUTPUT, { recursive: true });
+if ((await fs.readdir(OUTPUT)).length) throw Error('Refusing to reuse a result folder: ' + OUTPUT);
 acquireRun('site-plan-functional');
 const origin = TARGETS.site;
 const result = { at: new Date().toISOString(), expectedSha, origin,

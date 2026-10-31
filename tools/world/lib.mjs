@@ -18,9 +18,11 @@ export const OUT = OUTPUT + path.sep;
 mkdirSync(OUTPUT, { recursive: true });
 export const PIN = Object.values(TARGETS).filter(u => u.startsWith('https:')).map(u => `MAP ${new URL(u).hostname} ${PIN_IP}`).join(',');
 export const DEVICES = { desktop: { viewport: { width: 1280, height: 800 } }, phone: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 } };
+/** WORLD_NO_GPU=1 drops the GPU flags (the way the round-3 seven-case harness launched) for compositing A/B checks only. */
+export const GPU_ARGS = process.env.WORLD_NO_GPU === '1' ? [] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'];
 export function launch(extraArgs = []) {
   acquireRun('browser');
-  return chromium.launch({ headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', `--host-resolver-rules=${PIN}`, ...extraArgs] });
+  return chromium.launch({ headless: true, args: [...GPU_ARGS, `--host-resolver-rules=${PIN}`, ...extraArgs] });
 }
 /** Fresh context: coach mark dismissed, every non-read request blocked and counted. */
 export async function newCtx(browser, device, options = {}) {
