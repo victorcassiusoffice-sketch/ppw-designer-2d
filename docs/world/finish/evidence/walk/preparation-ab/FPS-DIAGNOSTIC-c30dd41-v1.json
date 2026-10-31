@@ -1,0 +1,191 @@
+{
+  "expected": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+  "label": "r4-fps-diagnostic-v1",
+  "diagnosticOnly": true,
+  "formalGateEvidence": false,
+  "complete": false,
+  "applicationResponseTransformed": false,
+  "instrumentationOverhead": true,
+  "source": {
+    "source": "C:\\Users\\Victor\\Documents\\Codex\\2026-10-27\\x20-instructions-are-in-c-users\\work\\world-finish\\round4\\harness\\walk-fps-diagnostic.mjs",
+    "snapshot": "source-walk-fps-diagnostic.mjs",
+    "bytes": 16455,
+    "sha256": "ff57eb3c69c9aea704d05cb26199063b233dd65020d1fc87f8f79fd56433570a"
+  },
+  "sample": {
+    "startedAt": 12430.899999976158,
+    "deadlineAt": 52430.89999997616,
+    "finishedAt": 52430.89999997616,
+    "requestedMs": 40000,
+    "observedMs": 40000,
+    "activeMs": 40000,
+    "pausedMs": 0,
+    "completedFrames": 2400,
+    "completedFramesPerActiveSecond": 60,
+    "low1CompletedIntervalFps": 41.472265419081474,
+    "reason": "deadline",
+    "unrenderedActiveTails": [
+      {
+        "startAt": 52418.299999952316,
+        "endAt": 52430.89999997616,
+        "durationMs": 12.600000023841858
+      }
+    ],
+    "pauses": [],
+    "transitions": [
+      {
+        "at": 12430.899999976158,
+        "active": true,
+        "reason": "armed"
+      }
+    ]
+  },
+  "largestIntervals": [
+    {
+      "startAt": 13455.700000047684,
+      "completedAt": 13488.899999976158,
+      "durationMs": 33.199999928474426,
+      "start": "frame"
+    },
+    {
+      "startAt": 30835.899999976158,
+      "completedAt": 30864,
+      "durationMs": 28.100000023841858,
+      "start": "frame"
+    },
+    {
+      "startAt": 42933.39999997616,
+      "completedAt": 42961.5,
+      "durationMs": 28.100000023841858,
+      "start": "frame"
+    },
+    {
+      "startAt": 46751.89999997616,
+      "completedAt": 46777,
+      "durationMs": 25.100000023841858,
+      "start": "frame"
+    },
+    {
+      "startAt": 28602,
+      "completedAt": 28626.399999976158,
+      "durationMs": 24.399999976158142,
+      "start": "frame"
+    }
+  ],
+  "independentRafCallbacks": 2400,
+  "nativeEventCount": 104,
+  "trace": {
+    "eventsReceived": 1312564,
+    "error": "Error: Trace completion timed out",
+    "source": "fps-trace-partial.json",
+    "complete": false
+  },
+  "profile": {
+    "complete": true,
+    "source": "fps-cpu-profile.json",
+    "startTime": 771827214606,
+    "endTime": 771879428780,
+    "nodes": 3232,
+    "samples": 37604
+  },
+  "runtimeSources": [
+    {
+      "scriptId": "253",
+      "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+      "filename": "runtime-observed-0.js",
+      "bytes": 81459,
+      "sha256": "30b23e3c026f10b81a5f94b70b89777f52b2c070d00e7a85a7d3753fe26d36d2",
+      "sourceMapURL": ""
+    }
+  ],
+  "clock": {
+    "navigationStartUs": 771826445043,
+    "marks": [
+      {
+        "name": "world-fps-diagnostic-arm",
+        "entryType": "mark",
+        "startTime": 12430.600000023842,
+        "duration": 0,
+        "navigationId": 385
+      },
+      {
+        "name": "world-fps-diagnostic-complete",
+        "entryType": "mark",
+        "startTime": 52438.5,
+        "duration": 0,
+        "navigationId": 385
+      }
+    ],
+    "traceMarks": [
+      {
+        "args": {
+          "data": {
+            "callTime": 771838875630,
+            "navigationId": "8D2D3BD7A9948CE9DC63E42FD8B8ECEE",
+            "sampleTraceId": 3307218456009877,
+            "startTime": 12430.60000002384
+          }
+        },
+        "cat": "blink.user_timing",
+        "name": "world-fps-diagnostic-arm",
+        "ph": "I",
+        "pid": 25324,
+        "s": "t",
+        "tid": 38204,
+        "ts": 771838875605,
+        "tts": 3802968
+      },
+      {
+        "args": {
+          "data": {
+            "callTime": 771878883504,
+            "navigationId": "8D2D3BD7A9948CE9DC63E42FD8B8ECEE",
+            "sampleTraceId": 3307218455985153,
+            "startTime": 52438.5
+          }
+        },
+        "cat": "blink.user_timing",
+        "name": "world-fps-diagnostic-complete",
+        "ph": "I",
+        "pid": 25324,
+        "s": "t",
+        "tid": 38204,
+        "ts": 771878883499,
+        "tts": 22659462
+      }
+    ],
+    "note": "Validate navigation/user-timing marks against trace timestamps before attributing any interval. CPU profile uses its own retained monotonic start/end. Node segment wall times alone are insufficient."
+  },
+  "errors": {
+    "failure": null,
+    "cleanup": [],
+    "page": [],
+    "console": [],
+    "http": [],
+    "writes": []
+  },
+  "release": {
+    "at": "2026-10-29T20:03:54.4044353Z",
+    "expected": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+    "label": "r4-fps-diagnostic-v1",
+    "browserClosed": true,
+    "remainingOwnedProcesses": [],
+    "sharedLockAbsent": true,
+    "released": true
+  },
+  "interpretation": [
+    "The measured fixed-denominator diagnostic result is 2400/40 = 60fps with no pause and no 131ms recurrence. It does not replace the Round3 formal 2393/40 = 59.825fps failure.",
+    "The trace has 1312564 received events but no completed acknowledgement within the bounded10s wait; every received event was re-saved after browser closure. Overall diagnostic completeness is false.",
+    "No causal app defect is established by the non-recurrence. No collision/HUD/quality optimization or threshold tolerance is justified from this run.",
+    "CPU/trace parsing beyond the compact recorded fields has not yet been performed; source/context attribution remains pending and may be unavailable in the partial trace."
+  ],
+  "rawFiles": [
+    "fps-diagnostic.json",
+    "fps-trace-partial.json",
+    "fps-cpu-profile.json",
+    "script-metadata.json",
+    "runtime-observed-0.js",
+    "processes-running.json",
+    "lease-release.json"
+  ]
+}

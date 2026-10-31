@@ -230,7 +230,19 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
   return root;
 }
 
+export interface ThreeStageSurface {
+  scene: THREE.Scene;
+  renderer: THREE.WebGLRenderer;
+  fill: { readonly current: THREE.DirectionalLight | null };
+  sky: { readonly current: THREE.Mesh | null };
+  bounds: { readonly current: { centre: THREE.Vector3; radius: number } };
+  fogClearance: number;
+  release(): void;
+}
+
 export interface ThreeStageHandle {
+  /** A private deferred viewer may render its own camera without changing the design. */
+  beginWalk(): ThreeStageSurface | null;
   viewHover(x:number|null,y?:number):void;
   hitErase(x:number,y:number):ThreeEraseTarget|null;
   setEraseHover(target:ThreeEraseTarget|null,floorOutline?:readonly {x:number;y:number}[]):void;
@@ -665,6 +677,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const drawingSizeRef = useRef(new THREE.Vector2());
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | THREE.OrthographicCamera | null>(null);
+  const walkOwnsFrames = useRef(false);
   const hemiRef = useRef<THREE.HemisphereLight | null>(null);
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   /** A soft light that rides with the camera so no wall face is ever unlit. */
@@ -703,6 +716,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const firstFullPictureAtRef = useRef<number | null>(null);
   const detailReadyRef = useRef(presentation !== 'natural');
   const firstMaterialsRef = useRef<ReturnType<typeof createFirstPictureMaterials> | null>(null);
+  const firstPreparationRef = useRef<{ renderer: THREE.WebGLRenderer; buildId: number; ready: boolean } | null>(null);
   const prepareDetailsRef = useRef<(() => void) | null>(null);
   const detailTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -765,6 +779,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
+      if (walkOwnsFrames.current) return;
       const r = rendererRef.current;
       const s = sceneRef.current;
       const c = cameraRef.current;
@@ -774,6 +789,27 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const far = Math.max(1000, c.position.distanceTo(extent.centre) + extent.radius * 2 + 20);
         if (c.far !== far) { c.far = far; c.updateProjectionMatrix(); }
         updateFog();
+        if (firstPictureAtRef.current === null && !detailReadyRef.current && typeof r.compileAsync === 'function') {
+          let preparation = firstPreparationRef.current;
+          if (!preparation || preparation.renderer !== r || preparation.buildId !== buildRef.current) {
+            preparation = { renderer: r, buildId: buildRef.current, ready: false };
+            firstPreparationRef.current = preparation;
+            firstMaterialsRef.current ??= createFirstPictureMaterials();
+            const pending = preparation;
+            const ready = () => {
+              if (rendererRef.current !== r || firstPreparationRef.current !== pending || buildRef.current !== pending.buildId) return;
+              pending.ready = true;
+              r.domElement.dataset.firstPreparedMs = String(performance.now());
+              requestRender(false);
+            };
+            r.domElement.dataset.firstPrepareStartMs = String(performance.now());
+            try { void firstMaterialsRef.current.prepare(r, s, c).then(ready, ready); }
+            catch { ready(); }
+          }
+          // Keep Loading 3D visible until the completed, shadowed scene has
+          // actually drawn. Preparation alone never fires onReady.
+          if (!preparation.ready) return;
+        }
         let rendered = false;
         const automatic = qualityChoiceRef.current === 'auto' && !qualityRef.current.phone;
         const shadingReady = optionalShadingReady(firstFullPictureAtRef.current, performance.now(), pendingBodiesRef.current);
@@ -990,7 +1026,6 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       onFailed?.();
       return;
     }
-    renderer.setPixelRatio(qualityRef.current.pixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Colour truth (Vic 2026-09-17): the wall must be the SAME hex as the
     // 2D chip and the merchant's colour card. Filmic tone mapping remaps
@@ -1127,6 +1162,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       firstRefreshTimerRef.current = null;
       prepareDetailsRef.current = null;
       firstMaterialsRef.current?.dispose(); firstMaterialsRef.current = null;
+      firstPreparationRef.current = null;
       firstPictureAtRef.current = null;
       firstFullPictureAtRef.current = null;
       pendingBodiesRef.current = 0;
@@ -1448,7 +1484,6 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       naturalRendererRef.current?.dispose();
       naturalRendererRef.current = null;
     }
-    r.setPixelRatio(quality.pixelRatio);
     if (sun.shadow.mapSize.x !== quality.shadowSize) {
       sun.shadow.map?.dispose();
       sun.shadow.map = null;
@@ -1458,7 +1493,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     requestRender();
     // All captured settings are listed; renderer/camera refs stay mounted.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quality.ambientOcclusion, quality.pixelRatio, quality.shadowSize, quality.anisotropy]);
+  }, [quality.ambientOcclusion, quality.shadowSize, quality.anisotropy]);
 
   useEffect(() => {
     const scene = sceneRef.current;
@@ -1529,11 +1564,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       c = projection === 'orthographic' ? new THREE.OrthographicCamera(-1, 1, 1, -1, 0.05, c.far) : new THREE.PerspectiveCamera(50, 1, 0.05, c.far);
       cameraRef.current = c;
     }
-    // WebGLRenderer.setSize writes canvas.width/height even when unchanged,
-    // reallocating/clearing the drawing buffer. Orbit changes the camera,
-    // not the viewport: resize only when the actual layout dimensions change.
+    // Allocate once with the final layout and density, not first at the default
+    // canvas size and again for quality. This renderer has no XR or internal
+    // output effects; the optional AO composer sizes its own targets separately.
+    // Orbit and quality changes that keep the density must not clear the buffer.
     const viewport = r.getSize(drawingSizeRef.current);
-    if (viewport.x !== width || viewport.y !== height) r.setSize(width, height, false);
+    if (viewport.x !== width || viewport.y !== height || r.getPixelRatio() !== quality.pixelRatio) r.setDrawingBufferSize(width, height, quality.pixelRatio);
     if (c instanceof THREE.PerspectiveCamera) {
       c.aspect = width / height;
       c.fov = (camera.fovRad * 180) / Math.PI;
@@ -1588,7 +1624,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     requestRender(shadowsChanged);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [camera, projection, width, height, solids, wallView]);
+  }, [camera, projection, width, height, solids, wallView, quality.pixelRatio]);
 
   // ---- selection (the plan's selection, mirrored) -----------------------------------
   // A mint pad on the floor under the picked body — the Sims' footprint
@@ -1677,6 +1713,16 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     ref,
     () => {
       const api:ThreeStageHandle = {
+      beginWalk() {
+        const scene = sceneRef.current, renderer = rendererRef.current;
+        if (!scene || !renderer) return null;
+        walkOwnsFrames.current = true;
+        return {
+          scene, renderer, fill: fillRef, sky: skyRef,
+          bounds: boundsRef, fogClearance: FOG_CLEARANCE_M,
+          release() { walkOwnsFrames.current = false; requestRender(); },
+        };
+      },
       viewHover(x,y) {
         if(x===null||y===undefined||!viewHoverEnabled||brushHex!==undefined||brushConstruction||catalogPreview||solids.activeRoof){
           if(viewLoweredRef.current){clearViewHover();requestRender();}return;

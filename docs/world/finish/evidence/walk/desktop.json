@@ -1,0 +1,860 @@
+{
+  "startedAt": "2026-10-31T12:19:02.489Z",
+  "harnessVersion": 2,
+  "target": "walk",
+  "expected": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+  "healthBefore": {
+    "at": "2026-10-31T12:19:03.206Z",
+    "target": "walk",
+    "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:19:03.789Z"
+    }
+  },
+  "method": "Production preview; native keyboard/mouse/touch only, no DEV pose fixture. Non-null exact persisted-property hash and editing/rendered camera JSON before and after. Five pointer-lock Escape cycles. Desktop-only corrected navigation experiment: one native pointer-lock session with observed movementX, no repeated drag/click/unlock cycles. Door approach uses observed movement feedback and actual look/movement controls, then E/open/wait/click-or-tap-close in both views. Network writes blocked and counted; no saved design fixture injected.",
+  "rows": [
+    {
+      "device": "desktop",
+      "checks": [
+        {
+          "name": "movement-restore",
+          "evidence": {
+            "initial": [
+              4.3500000000000005,
+              0.0004999999999999965,
+              1.65
+            ],
+            "moved": [
+              3.6841316533333988,
+              0.0004999999999999965,
+              2.350759437576055
+            ],
+            "stopped": [
+              3.6841316533333988,
+              0.0004999999999999965,
+              2.350759437576055
+            ],
+            "after": {
+              "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+              "savedBytes": 8821,
+              "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+              "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+            },
+            "unchanged": true
+          },
+          "passed": true
+        },
+        {
+          "name": "doors-both-views",
+          "evidence": {
+            "door": [
+              {
+                "mode": "third",
+                "before": {
+                  "mode": "third",
+                  "door": "Open door",
+                  "blocked": false,
+                  "locked": false,
+                  "animation": "idle",
+                  "position": [
+                    2.491435031645251,
+                    0.0005000000000000035,
+                    3.115730679567044
+                  ],
+                  "camera": [
+                    1.8478285771040577,
+                    2.1579906556683937,
+                    1.0118553914992838
+                  ],
+                  "fps": 59.80509421753366,
+                  "low1": 47.7897252090786,
+                  "frames": 315,
+                  "entryMs": 1467.8999999761581
+                },
+                "afterSwing": {
+                  "mode": "third",
+                  "door": "Close door",
+                  "blocked": false,
+                  "locked": false,
+                  "animation": "idle",
+                  "position": [
+                    2.491435031645251,
+                    0.0005000000000000035,
+                    3.115730679567044
+                  ],
+                  "camera": [
+                    1.8329168388833394,
+                    2.160499375886617,
+                    0.9829348117280028
+                  ],
+                  "fps": 59.84791226419461,
+                  "low1": 47.7897252090786,
+                  "frames": 398,
+                  "entryMs": 1467.8999999761581
+                },
+                "retainedClosePrompt": true,
+                "closed": {
+                  "mode": "third",
+                  "door": "Open door",
+                  "blocked": false,
+                  "locked": false,
+                  "animation": "idle",
+                  "position": [
+                    2.491435031645251,
+                    0.0005000000000000035,
+                    3.115730679567044
+                  ],
+                  "camera": [
+                    1.8329131312287479,
+                    2.1604999996548124,
+                    0.9829276209150479
+                  ],
+                  "fps": 59.87249615290118,
+                  "low1": 49.751243781092725,
+                  "frames": 473,
+                  "entryMs": 1467.8999999761581
+                },
+                "passed": true
+              },
+              {
+                "mode": "first",
+                "before": {
+                  "mode": "first",
+                  "door": "Open door",
+                  "blocked": false,
+                  "locked": false,
+                  "animation": "idle",
+                  "position": [
+                    2.491435031645251,
+                    0.0005000000000000035,
+                    3.115730679567044
+                  ],
+                  "camera": [
+                    2.491435031645251,
+                    1.5505,
+                    3.115730679567044
+                  ],
+                  "fps": 59.874136920685885,
+                  "low1": 49.751243781092725,
+                  "frames": 480,
+                  "entryMs": 1467.8999999761581
+                },
+                "afterSwing": {
+                  "mode": "first",
+                  "door": "Close door",
+                  "blocked": false,
+                  "locked": false,
+                  "animation": "idle",
+                  "position": [
+                    2.491435031645251,
+                    0.0005000000000000035,
+                    3.115730679567044
+                  ],
+                  "camera": [
+                    2.491435031645251,
+                    1.5505,
+                    3.115730679567044
+                  ],
+                  "fps": 59.89325738882789,
+                  "low1": 51.1508951406629,
+                  "frames": 561,
+                  "entryMs": 1467.8999999761581
+                },
+                "retainedClosePrompt": true,
+                "closed": {
+                  "mode": "first",
+                  "door": "Open door",
+                  "blocked": false,
+                  "locked": false,
+                  "animation": "idle",
+                  "position": [
+                    2.491435031645251,
+                    0.0005000000000000035,
+                    3.115730679567044
+                  ],
+                  "camera": [
+                    2.491435031645251,
+                    1.5505,
+                    3.115730679567044
+                  ],
+                  "fps": 59.90704407786964,
+                  "low1": 52.19985085756459,
+                  "frames": 639,
+                  "entryMs": 1467.8999999761581
+                },
+                "passed": true
+              }
+            ],
+            "after": {
+              "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+              "savedBytes": 8821,
+              "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+              "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+            },
+            "unchanged": true
+          },
+          "passed": true
+        },
+        {
+          "name": "five-escape-cycles",
+          "evidence": {
+            "cycles": 5,
+            "allPass": true
+          },
+          "passed": true
+        }
+      ],
+      "door": [
+        {
+          "mode": "third",
+          "before": {
+            "mode": "third",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "animation": "idle",
+            "position": [
+              2.491435031645251,
+              0.0005000000000000035,
+              3.115730679567044
+            ],
+            "camera": [
+              1.8478285771040577,
+              2.1579906556683937,
+              1.0118553914992838
+            ],
+            "fps": 59.80509421753366,
+            "low1": 47.7897252090786,
+            "frames": 315,
+            "entryMs": 1467.8999999761581
+          },
+          "afterSwing": {
+            "mode": "third",
+            "door": "Close door",
+            "blocked": false,
+            "locked": false,
+            "animation": "idle",
+            "position": [
+              2.491435031645251,
+              0.0005000000000000035,
+              3.115730679567044
+            ],
+            "camera": [
+              1.8329168388833394,
+              2.160499375886617,
+              0.9829348117280028
+            ],
+            "fps": 59.84791226419461,
+            "low1": 47.7897252090786,
+            "frames": 398,
+            "entryMs": 1467.8999999761581
+          },
+          "retainedClosePrompt": true,
+          "closed": {
+            "mode": "third",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "animation": "idle",
+            "position": [
+              2.491435031645251,
+              0.0005000000000000035,
+              3.115730679567044
+            ],
+            "camera": [
+              1.8329131312287479,
+              2.1604999996548124,
+              0.9829276209150479
+            ],
+            "fps": 59.87249615290118,
+            "low1": 49.751243781092725,
+            "frames": 473,
+            "entryMs": 1467.8999999761581
+          },
+          "passed": true
+        },
+        {
+          "mode": "first",
+          "before": {
+            "mode": "first",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "animation": "idle",
+            "position": [
+              2.491435031645251,
+              0.0005000000000000035,
+              3.115730679567044
+            ],
+            "camera": [
+              2.491435031645251,
+              1.5505,
+              3.115730679567044
+            ],
+            "fps": 59.874136920685885,
+            "low1": 49.751243781092725,
+            "frames": 480,
+            "entryMs": 1467.8999999761581
+          },
+          "afterSwing": {
+            "mode": "first",
+            "door": "Close door",
+            "blocked": false,
+            "locked": false,
+            "animation": "idle",
+            "position": [
+              2.491435031645251,
+              0.0005000000000000035,
+              3.115730679567044
+            ],
+            "camera": [
+              2.491435031645251,
+              1.5505,
+              3.115730679567044
+            ],
+            "fps": 59.89325738882789,
+            "low1": 51.1508951406629,
+            "frames": 561,
+            "entryMs": 1467.8999999761581
+          },
+          "retainedClosePrompt": true,
+          "closed": {
+            "mode": "first",
+            "door": "Open door",
+            "blocked": false,
+            "locked": false,
+            "animation": "idle",
+            "position": [
+              2.491435031645251,
+              0.0005000000000000035,
+              3.115730679567044
+            ],
+            "camera": [
+              2.491435031645251,
+              1.5505,
+              3.115730679567044
+            ],
+            "fps": 59.90704407786964,
+            "low1": 52.19985085756459,
+            "frames": 639,
+            "entryMs": 1467.8999999761581
+          },
+          "passed": true
+        }
+      ],
+      "escape": [
+        {
+          "delay": 0,
+          "firstEscapeStays": true,
+          "secondEscapeExits": true,
+          "after": {
+            "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+            "savedBytes": 8821,
+            "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+            "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+          },
+          "unchanged": true
+        },
+        {
+          "delay": 80,
+          "firstEscapeStays": true,
+          "secondEscapeExits": true,
+          "after": {
+            "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+            "savedBytes": 8821,
+            "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+            "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+          },
+          "unchanged": true
+        },
+        {
+          "delay": 300,
+          "firstEscapeStays": true,
+          "secondEscapeExits": true,
+          "after": {
+            "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+            "savedBytes": 8821,
+            "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+            "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+          },
+          "unchanged": true
+        },
+        {
+          "delay": 0,
+          "firstEscapeStays": true,
+          "secondEscapeExits": true,
+          "after": {
+            "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+            "savedBytes": 8821,
+            "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+            "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+          },
+          "unchanged": true
+        },
+        {
+          "delay": 80,
+          "firstEscapeStays": true,
+          "secondEscapeExits": true,
+          "after": {
+            "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+            "savedBytes": 8821,
+            "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+            "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+          },
+          "unchanged": true
+        }
+      ],
+      "navigation": [
+        {
+          "kind": "heading-probe",
+          "before": [
+            4.3500000000000005,
+            0.0004999999999999965,
+            1.65
+          ],
+          "after": [
+            4.200179622000019,
+            0.0004999999999999965,
+            1.8076708734546143
+          ],
+          "heading": 2.3817197380728694
+        },
+        {
+          "kind": "locked-turn",
+          "desired": 2.1934277002573426,
+          "heading": 2.3817197380728694,
+          "commandPx": 117.68252363470427,
+          "actualPx": 117,
+          "events": [
+            {
+              "at": 13184.800000071526,
+              "dx": 29,
+              "dy": 0
+            },
+            {
+              "at": 13188.100000023842,
+              "dx": 29,
+              "dy": 0
+            },
+            {
+              "at": 13199.700000047684,
+              "dx": 30,
+              "dy": 0
+            },
+            {
+              "at": 13216.200000047684,
+              "dx": 29,
+              "dy": 0
+            }
+          ]
+        },
+        {
+          "kind": "approach",
+          "step": 0,
+          "before": [
+            4.200179622000019,
+            0.0004999999999999965,
+            1.8076708734546143
+          ],
+          "after": [
+            3.4712224845862303,
+            0.0004999999999999965,
+            2.442545614059349
+          ]
+        },
+        {
+          "kind": "locked-turn",
+          "desired": 2.1212591164708186,
+          "heading": 2.1945197380728696,
+          "commandPx": 45.7878885012819,
+          "actualPx": 46,
+          "events": [
+            {
+              "at": 14500,
+              "dx": 12,
+              "dy": 0
+            },
+            {
+              "at": 14516.600000023842,
+              "dx": 11,
+              "dy": 0
+            },
+            {
+              "at": 14533.400000095367,
+              "dx": 12,
+              "dy": 0
+            },
+            {
+              "at": 14567.800000071526,
+              "dx": 11,
+              "dy": 0
+            }
+          ]
+        },
+        {
+          "kind": "approach",
+          "step": 1,
+          "before": [
+            3.4712224845862303,
+            0.0004999999999999965,
+            2.442545614059349
+          ],
+          "after": [
+            2.7748123123098107,
+            0.0004999999999999965,
+            3.054108306980766
+          ]
+        },
+        {
+          "kind": "locked-turn",
+          "desired": 1.6926290586258748,
+          "heading": 2.1209197380728697,
+          "commandPx": 267.6816746543718,
+          "actualPx": 268,
+          "events": [
+            {
+              "at": 15849.200000047684,
+              "dx": 67,
+              "dy": 0
+            },
+            {
+              "at": 15866.300000071526,
+              "dx": 67,
+              "dy": 0
+            },
+            {
+              "at": 15882.5,
+              "dx": 67,
+              "dy": 0
+            },
+            {
+              "at": 15899.300000071526,
+              "dx": 67,
+              "dy": 0
+            }
+          ]
+        },
+        {
+          "kind": "approach",
+          "step": 2,
+          "before": [
+            2.7748123123098107,
+            0.0004999999999999965,
+            3.054108306980766
+          ],
+          "after": [
+            2.491435031645251,
+            0.0005000000000000035,
+            3.115730679567044
+          ]
+        },
+        {
+          "kind": "locked-turn",
+          "desired": 3.0756355449094284,
+          "heading": 1.6921197380728696,
+          "commandPx": -864.6973792728492,
+          "actualPx": -865,
+          "events": [
+            {
+              "at": 16716.100000023842,
+              "dx": -217,
+              "dy": 0
+            },
+            {
+              "at": 16733.200000047684,
+              "dx": -216,
+              "dy": 0
+            },
+            {
+              "at": 16748.400000095367,
+              "dx": -216,
+              "dy": 0
+            },
+            {
+              "at": 16767.400000095367,
+              "dx": -216,
+              "dy": 0
+            }
+          ]
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "before": {
+        "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+        "savedBytes": 8821,
+        "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+        "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+      },
+      "initial": {
+        "mode": "third",
+        "door": null,
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          4.3500000000000005,
+          0.0004999999999999965,
+          1.65
+        ],
+        "camera": [
+          5.0855988476190035,
+          2.101145997790437,
+          0.2633126716364058
+        ],
+        "fps": 60.01500375093765,
+        "low1": 59.88023952095548,
+        "frames": 26,
+        "entryMs": 3542.899999976158
+      },
+      "doorStand": {
+        "mode": "third",
+        "door": "Open door",
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          2.491435031645251,
+          0.0005000000000000035,
+          3.115730679567044
+        ],
+        "camera": [
+          1.8478285771040577,
+          2.1579906556683937,
+          1.0118553914992838
+        ],
+        "fps": 59.80509421753366,
+        "low1": 47.7897252090786,
+        "frames": 315,
+        "entryMs": 1467.8999999761581
+      },
+      "escapeTrace": [
+        {
+          "type": "pointerlockchange",
+          "at": 13191.700000047684,
+          "locked": true
+        },
+        {
+          "type": "keydown",
+          "at": 17155.300000071526,
+          "locked": true,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 17156.600000023842,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 17170.800000071526,
+          "locked": false
+        },
+        {
+          "type": "keydown",
+          "at": 29358.300000071526,
+          "locked": true,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 29358.900000095367,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keydown",
+          "at": 29361.600000023842,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 29375.700000047684,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 29403.800000071526,
+          "locked": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 29403.800000071526,
+          "locked": false
+        },
+        {
+          "type": "keydown",
+          "at": 32007.900000095367,
+          "locked": true,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 32008.400000095367,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 32017.800000071526,
+          "locked": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 32017.900000095367,
+          "locked": false
+        },
+        {
+          "type": "keydown",
+          "at": 32102.900000095367,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 32120.5,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keydown",
+          "at": 34590.5,
+          "locked": true,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 34591,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 34600.90000009537,
+          "locked": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 34600.90000009537,
+          "locked": false
+        },
+        {
+          "type": "keydown",
+          "at": 34898.10000002384,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 34912.90000009537,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keydown",
+          "at": 37291.90000009537,
+          "locked": true,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 37292.300000071526,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keydown",
+          "at": 37294.60000002384,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 37307.300000071526,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 37326.5,
+          "locked": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 37326.5,
+          "locked": false
+        },
+        {
+          "type": "keydown",
+          "at": 39743.10000002384,
+          "locked": true,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 39744,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 39754.90000009537,
+          "locked": false
+        },
+        {
+          "type": "pointerlockchange",
+          "at": 39755,
+          "locked": false
+        },
+        {
+          "type": "keydown",
+          "at": 39839.700000047684,
+          "locked": false,
+          "repeat": false
+        },
+        {
+          "type": "keyup",
+          "at": 39866.40000009537,
+          "locked": false,
+          "repeat": false
+        }
+      ],
+      "final": {
+        "savedSha256": "19b82b63d26dc508745434d94a4e8618c1d83eaa61a82d3818d423eee3aa5d4c",
+        "savedBytes": 8821,
+        "cameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.6632251157578452}",
+        "renderedCameraJson": "{\"target\":{\"x\":5.75,\"y\":4.25,\"z\":0},\"azimuthRad\":-0.5585053606381855,\"elevationRad\":0.6108652381980153,\"distanceM\":21.16462027943338,\"fovRad\":0.7214683613129115}"
+      },
+      "blockedWrites": [],
+      "passed": true,
+      "browserClosed": true
+    }
+  ],
+  "healthAfter": {
+    "at": "2026-10-31T12:19:44.546Z",
+    "target": "walk",
+    "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:19:45.131Z"
+    }
+  },
+  "healthStable": true,
+  "endedAt": "2026-10-31T12:19:44.546Z",
+  "passed": true
+}

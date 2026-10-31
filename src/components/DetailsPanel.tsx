@@ -34,7 +34,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { isShowcaseReadOnly } from '../lib/showcaseSafety';
 import { useDesignStore } from '../store/designStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
-import { CATEGORY_LABELS, getProductById, productImageUrl } from '../data/products';
+import { CATEGORY_LABELS, getProductById } from '../data/products';
+import { catalogDetailImageUrl } from './catalogMetadata';
 import type { Product } from '../data/products.schema';
 import {
   rotateSelected,
@@ -537,7 +538,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
  */
 function ProductHero({ product }: { product: Product }) {
   const [errored, setErrored] = useState(false);
-  const src = productImageUrl(product);
+  const src = catalogDetailImageUrl(product);
   return (
     <div
       className="flex items-center justify-center overflow-hidden rounded-lg border border-ppw-rim bg-ppw-paper"

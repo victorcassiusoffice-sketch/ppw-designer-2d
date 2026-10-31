@@ -1,0 +1,560 @@
+{
+  "writtenAt": "2026-10-29T19:59:03.672Z",
+  "expectedHead": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+  "label": "r4-prepare-ab-v1",
+  "diagnosticOnly": true,
+  "normalSource": false,
+  "sourceInjection": true,
+  "executedContexts": 8,
+  "completeAndEligible": true,
+  "eligiblePairs": 4,
+  "keyboardSamples": 80,
+  "nativeTouchSamples": 40,
+  "retries": 0,
+  "sourceEdits": false,
+  "rows": [
+    {
+      "sequence": 0,
+      "device": "desktop",
+      "pair": 1,
+      "variant": "current",
+      "eligible": true,
+      "clickDispatchDelayMs": 3.5,
+      "clickToFirstStatusMs": 5419.399999976158,
+      "reportedEntryMs": 5363.399999976158,
+      "preparationIntervalMs": 214.29999995231628,
+      "preparationStartToFirstStatusMs": 266.60000002384186,
+      "preparationEndToFirstStatusMs": 52.300000071525574,
+      "lastRelevantResponseToFirstStatusMs": 345.2000000476837,
+      "firstKeyboardDelayMs": 31,
+      "firstKeyboardAfterStatusMs": 36.39999997615814,
+      "keyboardModeMaxima": {
+        "third": 31,
+        "first": 15.299999952316284
+      },
+      "phoneTouchModeMaxima": null,
+      "resourceDurations": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+          "durationMs": 833
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "durationMs": 717.3999999761581
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "durationMs": 667.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "durationMs": 843
+        }
+      ],
+      "contamination": {
+        "pageErrors": false,
+        "consoleErrors": false,
+        "httpErrors": false,
+        "blockedWrites": false,
+        "deadlineExpired": false,
+        "fatal": false,
+        "beforeHealthMismatch": false,
+        "afterHealthMismatch": false,
+        "closureUnproven": false
+      },
+      "validationIssues": []
+    },
+    {
+      "sequence": 1,
+      "device": "desktop",
+      "pair": 1,
+      "variant": "omit",
+      "eligible": true,
+      "clickDispatchDelayMs": 3.100000023841858,
+      "clickToFirstStatusMs": 3571.7000000476837,
+      "reportedEntryMs": 3322.899999976158,
+      "preparationIntervalMs": 0,
+      "preparationStartToFirstStatusMs": 245.39999997615814,
+      "preparationEndToFirstStatusMs": 245.39999997615814,
+      "lastRelevantResponseToFirstStatusMs": 309.10000002384186,
+      "firstKeyboardDelayMs": 35,
+      "firstKeyboardAfterStatusMs": 26.299999952316284,
+      "keyboardModeMaxima": {
+        "third": 35,
+        "first": 21.799999952316284
+      },
+      "phoneTouchModeMaxima": null,
+      "resourceDurations": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+          "durationMs": 442.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "durationMs": 403.3000000715256
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "durationMs": 507.60000002384186
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "durationMs": 507.2999999523163
+        }
+      ],
+      "contamination": {
+        "pageErrors": false,
+        "consoleErrors": false,
+        "httpErrors": false,
+        "blockedWrites": false,
+        "deadlineExpired": false,
+        "fatal": false,
+        "beforeHealthMismatch": false,
+        "afterHealthMismatch": false,
+        "closureUnproven": false
+      },
+      "validationIssues": []
+    },
+    {
+      "sequence": 2,
+      "device": "phone",
+      "pair": 1,
+      "variant": "omit",
+      "eligible": true,
+      "clickDispatchDelayMs": 2.899999976158142,
+      "clickToFirstStatusMs": 3325.399999976158,
+      "reportedEntryMs": 3062.1999999284744,
+      "preparationIntervalMs": 0,
+      "preparationStartToFirstStatusMs": 259.89999997615814,
+      "preparationEndToFirstStatusMs": 259.89999997615814,
+      "lastRelevantResponseToFirstStatusMs": 311.1999999284744,
+      "firstKeyboardDelayMs": 38.699999928474426,
+      "firstKeyboardAfterStatusMs": 32.800000071525574,
+      "keyboardModeMaxima": {
+        "third": 38.699999928474426,
+        "first": 22.40000009536743
+      },
+      "phoneTouchModeMaxima": {
+        "third": {
+          "totalDelayMs": 56.5,
+          "pointerToHandlerMs": 48.60000002384186,
+          "handlerToRenderMs": 17.699999928474426
+        },
+        "first": {
+          "totalDelayMs": 46.800000071525574,
+          "pointerToHandlerMs": 34.89999997615814,
+          "handlerToRenderMs": 18.200000047683716
+        }
+      },
+      "resourceDurations": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+          "durationMs": 396.7999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "durationMs": 374.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "durationMs": 508.60000002384186
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "durationMs": 501.40000009536743
+        }
+      ],
+      "contamination": {
+        "pageErrors": false,
+        "consoleErrors": false,
+        "httpErrors": false,
+        "blockedWrites": false,
+        "deadlineExpired": false,
+        "fatal": false,
+        "beforeHealthMismatch": false,
+        "afterHealthMismatch": false,
+        "closureUnproven": false
+      },
+      "validationIssues": []
+    },
+    {
+      "sequence": 3,
+      "device": "phone",
+      "pair": 1,
+      "variant": "current",
+      "eligible": true,
+      "clickDispatchDelayMs": 4.300000071525574,
+      "clickToFirstStatusMs": 3393.100000023842,
+      "reportedEntryMs": 3316.7999999523163,
+      "preparationIntervalMs": 227.39999997615814,
+      "preparationStartToFirstStatusMs": 298.89999997615814,
+      "preparationEndToFirstStatusMs": 71.5,
+      "lastRelevantResponseToFirstStatusMs": 330.39999997615814,
+      "firstKeyboardDelayMs": 39.5,
+      "firstKeyboardAfterStatusMs": 28.5,
+      "keyboardModeMaxima": {
+        "third": 39.5,
+        "first": 20.600000023841858
+      },
+      "phoneTouchModeMaxima": {
+        "third": {
+          "totalDelayMs": 50.799999952316284,
+          "pointerToHandlerMs": 36.10000002384186,
+          "handlerToRenderMs": 19.699999928474426
+        },
+        "first": {
+          "totalDelayMs": 52.199999928474426,
+          "pointerToHandlerMs": 35.299999952316284,
+          "handlerToRenderMs": 17.09999990463257
+        }
+      },
+      "resourceDurations": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+          "durationMs": 406.59999990463257
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "durationMs": 385.1999999284744
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "durationMs": 507.2999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "durationMs": 501.7000000476837
+        }
+      ],
+      "contamination": {
+        "pageErrors": false,
+        "consoleErrors": false,
+        "httpErrors": false,
+        "blockedWrites": false,
+        "deadlineExpired": false,
+        "fatal": false,
+        "beforeHealthMismatch": false,
+        "afterHealthMismatch": false,
+        "closureUnproven": false
+      },
+      "validationIssues": []
+    },
+    {
+      "sequence": 4,
+      "device": "desktop",
+      "pair": 2,
+      "variant": "omit",
+      "eligible": true,
+      "clickDispatchDelayMs": 2.8000000715255737,
+      "clickToFirstStatusMs": 3379.899999976158,
+      "reportedEntryMs": 3146.100000023842,
+      "preparationIntervalMs": 0,
+      "preparationStartToFirstStatusMs": 230.79999995231628,
+      "preparationEndToFirstStatusMs": 230.79999995231628,
+      "lastRelevantResponseToFirstStatusMs": 261.1999999284744,
+      "firstKeyboardDelayMs": 39.60000002384186,
+      "firstKeyboardAfterStatusMs": 23.800000071525574,
+      "keyboardModeMaxima": {
+        "third": 39.60000002384186,
+        "first": 19.700000047683716
+      },
+      "phoneTouchModeMaxima": null,
+      "resourceDurations": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+          "durationMs": 387.7999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "durationMs": 399.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "durationMs": 365.89999997615814
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "durationMs": 504
+        }
+      ],
+      "contamination": {
+        "pageErrors": false,
+        "consoleErrors": false,
+        "httpErrors": false,
+        "blockedWrites": false,
+        "deadlineExpired": false,
+        "fatal": false,
+        "beforeHealthMismatch": false,
+        "afterHealthMismatch": false,
+        "closureUnproven": false
+      },
+      "validationIssues": []
+    },
+    {
+      "sequence": 5,
+      "device": "desktop",
+      "pair": 2,
+      "variant": "current",
+      "eligible": true,
+      "clickDispatchDelayMs": 2.799999952316284,
+      "clickToFirstStatusMs": 3382.100000023842,
+      "reportedEntryMs": 3325,
+      "preparationIntervalMs": 258.40000009536743,
+      "preparationStartToFirstStatusMs": 312.3000000715256,
+      "preparationEndToFirstStatusMs": 53.89999997615814,
+      "lastRelevantResponseToFirstStatusMs": 348.39999997615814,
+      "firstKeyboardDelayMs": 36,
+      "firstKeyboardAfterStatusMs": 28.100000023841858,
+      "keyboardModeMaxima": {
+        "third": 36,
+        "first": 23.200000047683716
+      },
+      "phoneTouchModeMaxima": null,
+      "resourceDurations": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+          "durationMs": 412.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "durationMs": 367.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "durationMs": 379.2999999523163
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "durationMs": 493.8000000715256
+        }
+      ],
+      "contamination": {
+        "pageErrors": false,
+        "consoleErrors": false,
+        "httpErrors": false,
+        "blockedWrites": false,
+        "deadlineExpired": false,
+        "fatal": false,
+        "beforeHealthMismatch": false,
+        "afterHealthMismatch": false,
+        "closureUnproven": false
+      },
+      "validationIssues": []
+    },
+    {
+      "sequence": 6,
+      "device": "phone",
+      "pair": 2,
+      "variant": "current",
+      "eligible": true,
+      "clickDispatchDelayMs": 1.5,
+      "clickToFirstStatusMs": 3244.7000000476837,
+      "reportedEntryMs": 3193.100000023842,
+      "preparationIntervalMs": 263.7999999523163,
+      "preparationStartToFirstStatusMs": 313.7999999523163,
+      "preparationEndToFirstStatusMs": 50,
+      "lastRelevantResponseToFirstStatusMs": 349.5,
+      "firstKeyboardDelayMs": 39.799999952316284,
+      "firstKeyboardAfterStatusMs": 20.5,
+      "keyboardModeMaxima": {
+        "third": 39.799999952316284,
+        "first": 19.600000023841858
+      },
+      "phoneTouchModeMaxima": {
+        "third": {
+          "totalDelayMs": 55.39999997615814,
+          "pointerToHandlerMs": 41.300000071525574,
+          "handlerToRenderMs": 21.5
+        },
+        "first": {
+          "totalDelayMs": 50.300000071525574,
+          "pointerToHandlerMs": 35.800000071525574,
+          "handlerToRenderMs": 14.800000071525574
+        }
+      },
+      "resourceDurations": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+          "durationMs": 385.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "durationMs": 375.10000002384186
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "durationMs": 474
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "durationMs": 470.60000002384186
+        }
+      ],
+      "contamination": {
+        "pageErrors": false,
+        "consoleErrors": false,
+        "httpErrors": false,
+        "blockedWrites": false,
+        "deadlineExpired": false,
+        "fatal": false,
+        "beforeHealthMismatch": false,
+        "afterHealthMismatch": false,
+        "closureUnproven": false
+      },
+      "validationIssues": []
+    },
+    {
+      "sequence": 7,
+      "device": "phone",
+      "pair": 2,
+      "variant": "omit",
+      "eligible": true,
+      "clickDispatchDelayMs": 110.60000002384186,
+      "clickToFirstStatusMs": 3523.7000000476837,
+      "reportedEntryMs": 3159.9000000953674,
+      "preparationIntervalMs": 0,
+      "preparationStartToFirstStatusMs": 252.89999997615814,
+      "preparationEndToFirstStatusMs": 252.89999997615814,
+      "lastRelevantResponseToFirstStatusMs": 294.5,
+      "firstKeyboardDelayMs": 64.89999997615814,
+      "firstKeyboardAfterStatusMs": 32.89999997615814,
+      "keyboardModeMaxima": {
+        "third": 64.89999997615814,
+        "first": 22.100000023841858
+      },
+      "phoneTouchModeMaxima": {
+        "third": {
+          "totalDelayMs": 48.800000071525574,
+          "pointerToHandlerMs": 32,
+          "handlerToRenderMs": 16.899999976158142
+        },
+        "first": {
+          "totalDelayMs": 48.10000002384186,
+          "pointerToHandlerMs": 29.300000071525574,
+          "handlerToRenderMs": 19.300000071525574
+        }
+      },
+      "resourceDurations": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-DH-0TOIs.js",
+          "durationMs": 389.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "durationMs": 391.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "durationMs": 474.3000000715256
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "durationMs": 489.60000002384186
+        }
+      ],
+      "contamination": {
+        "pageErrors": false,
+        "consoleErrors": false,
+        "httpErrors": false,
+        "blockedWrites": false,
+        "deadlineExpired": false,
+        "fatal": false,
+        "beforeHealthMismatch": false,
+        "afterHealthMismatch": false,
+        "closureUnproven": false
+      },
+      "validationIssues": []
+    }
+  ],
+  "pairs": [
+    {
+      "device": "desktop",
+      "pair": 1,
+      "order": [
+        "current",
+        "omit"
+      ],
+      "complete": true,
+      "ineligibleCases": [],
+      "currentMinusOmit": {
+        "clickToFirstStatusMs": 1847.6999999284744,
+        "reportedEntryMs": 2040.5,
+        "firstInputDelayMs": -4,
+        "lastResponseToFirstStatusMs": 36.10000002384186,
+        "nativeTouchThirdPersonMaxMs": null,
+        "nativeTouchFirstPersonMaxMs": null,
+        "preparationStartToFirstStatusMs": 21.200000047683716,
+        "clickDispatchDelayMs": 0.3999999761581421
+      }
+    },
+    {
+      "device": "phone",
+      "pair": 1,
+      "order": [
+        "omit",
+        "current"
+      ],
+      "complete": true,
+      "ineligibleCases": [],
+      "currentMinusOmit": {
+        "clickToFirstStatusMs": 67.70000004768372,
+        "reportedEntryMs": 254.60000002384186,
+        "firstInputDelayMs": 0.8000000715255737,
+        "lastResponseToFirstStatusMs": 19.200000047683716,
+        "nativeTouchThirdPersonMaxMs": -5.700000047683716,
+        "nativeTouchFirstPersonMaxMs": 5.3999998569488525,
+        "preparationStartToFirstStatusMs": 39,
+        "clickDispatchDelayMs": 1.4000000953674316
+      }
+    },
+    {
+      "device": "desktop",
+      "pair": 2,
+      "order": [
+        "omit",
+        "current"
+      ],
+      "complete": true,
+      "ineligibleCases": [],
+      "currentMinusOmit": {
+        "clickToFirstStatusMs": 2.200000047683716,
+        "reportedEntryMs": 178.89999997615814,
+        "firstInputDelayMs": -3.600000023841858,
+        "lastResponseToFirstStatusMs": 87.20000004768372,
+        "nativeTouchThirdPersonMaxMs": null,
+        "nativeTouchFirstPersonMaxMs": null,
+        "preparationStartToFirstStatusMs": 81.50000011920929,
+        "clickDispatchDelayMs": -1.1920928955078125e-7
+      }
+    },
+    {
+      "device": "phone",
+      "pair": 2,
+      "order": [
+        "current",
+        "omit"
+      ],
+      "complete": true,
+      "ineligibleCases": [],
+      "currentMinusOmit": {
+        "clickToFirstStatusMs": -279,
+        "reportedEntryMs": 33.199999928474426,
+        "firstInputDelayMs": -25.100000023841858,
+        "lastResponseToFirstStatusMs": 55,
+        "nativeTouchThirdPersonMaxMs": 6.599999904632568,
+        "nativeTouchFirstPersonMaxMs": 2.200000047683716,
+        "preparationStartToFirstStatusMs": 60.89999997615814,
+        "clickDispatchDelayMs": -109.10000002384186
+      }
+    }
+  ],
+  "interpretation": [
+    "All eight predeclared contexts and four pairs were eligible. Every failed/error/contamination check was evaluated after cleanup and exact before/after health; this is completeness, not a formal performance PASS.",
+    "Current preparation awaits were214.3–263.8ms. Omitting the call moved substantial work after the bookkeeping point: omitted preparation-end→first-status was230.8–259.9ms versus current50.0–71.5ms. The await is therefore not simply removable net latency.",
+    "Current-minus-omit click→first-status deltas are desktop+1847.7/+2.2ms and phone+67.7/−279.0ms. The first desktop current run also had materially slower runtime/GLB/Draco responses. Total first-status regression is not consistently established across the four pairs.",
+    "The matched preparation-start→first-status segment was longer with preparation in all four pairs: +21.2,+39.0,+81.5,+60.9ms. Last relevant response→first-status deltas were+36.1,+19.2,+87.2,+55.0ms. These support a modest diagnostic tail cost, not a pure GPU measurement or proof that all earlier regression came from preparation.",
+    "All40 desktop keyboard samples were under50ms in both variants. Current-minus-omit first desktop input differences were−4.0/−3.6ms. Phone keyboard first input included64.9ms in the second omitted case; native-touch maxima differed in both directions. There is no demonstrated normal-source causal input benefit or uniform native-touch benefit.",
+    "Do not declare Finish step5 resolved. Evidence is sufficient to discuss the measured tail tradeoff, but injected delivery and two pairs/device are not final gates. A normal-source follow-up decision must preserve actual first-render readiness and safety, and must retain these mixed outcomes.",
+    "The independent late131ms frame interval and strict59.825fps failure were not measured or explained by this diagnostic."
+  ]
+}

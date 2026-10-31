@@ -1,0 +1,351 @@
+{
+  "at": "2026-10-31T13:08:07.298Z",
+  "files": [
+    {
+      "file": "load/summary.json",
+      "bytes": 101012,
+      "sha256": "0dfdb5331d16fc2501ee1acd821e902f780fb61982112fde48dcd3225ca939b7"
+    },
+    {
+      "file": "load/load-all.json.gz",
+      "bytes": 149079,
+      "sha256": "506c472f971098279084a77034f9e51f81f792f7fa7cd487cb8c44d5458dbba9"
+    },
+    {
+      "file": "load/load-all.json",
+      "bytes": 393,
+      "sha256": "da4a677060b047d11b0f5f9d16e22426a0af8f0c2db749951b622485716d72d9"
+    },
+    {
+      "file": "load/network-audit.json.gz",
+      "bytes": 103915,
+      "sha256": "189c6227080dcb666185b5f96004b80c0252c341d7971e82cf93d773790c786e"
+    },
+    {
+      "file": "load/network-audit.json",
+      "bytes": 398,
+      "sha256": "d17770d03efeaba0f37e291a9aa4fd40e3339220aae865ccf38366b31c3ab34c"
+    },
+    {
+      "file": "load/startup-analysis.json",
+      "bytes": 52149,
+      "sha256": "c74fc5d85055672fb4906bf50edcbbfd907be3ab7252f55908b62b291093e2ba"
+    },
+    {
+      "file": "builds/build-attribution.json",
+      "bytes": 24984,
+      "sha256": "98e8e22a495d433352d8bf95f0568a1c509b9956e104e2b11b8705fb06145ce9"
+    },
+    {
+      "file": "builds/early-semantic.json",
+      "bytes": 2708,
+      "sha256": "260f50070a8d268c0e6cac92c14232640961bd2a1cde1edd44e054a024e08e51"
+    },
+    {
+      "file": "builds/walk-audit.json.gz",
+      "bytes": 49849,
+      "sha256": "57ba9198e4bdb787c1891a4c4c37ac88c4f0190beb0347182b8ad52e78ee0411"
+    },
+    {
+      "file": "builds/walk-audit.json",
+      "bytes": 388,
+      "sha256": "cb60175fbc6e9f18dda07f88f6a777314208b33798e260e6d337462de7d74764"
+    },
+    {
+      "file": "builds/site-audit.json.gz",
+      "bytes": 48733,
+      "sha256": "160a8f7c1b4b5dab7ceb70d9379ca1692f656a0e0d73f375b36bbf27de201a51"
+    },
+    {
+      "file": "builds/site-audit.json",
+      "bytes": 388,
+      "sha256": "c329dfa402e2b1516004f05985a5b162765a3b61893c5d86ea9508d580fca0d9"
+    },
+    {
+      "file": "builds/base-audit.json.gz",
+      "bytes": 42714,
+      "sha256": "181a9fcad203d3d533f8b16951e4f2f4ab2bd233c835db8bdf0bc5b1976f9fe6"
+    },
+    {
+      "file": "builds/base-audit.json",
+      "bytes": 388,
+      "sha256": "9443b5f867be33ff00c599d735ec3c7e86385861443892cc8572c07b765077a4"
+    },
+    {
+      "file": "rules/static.json",
+      "bytes": 2751,
+      "sha256": "f54e6e07ee2615e28bd2b0efc227fbeda365d6bc32f008b6a608300073bcc653"
+    },
+    {
+      "file": "rules/visible.json",
+      "bytes": 31608,
+      "sha256": "093a1b609771b9948c4958f40170df1f9960e03521dd9f269f05b465684574de"
+    },
+    {
+      "file": "ci/ci-status.json",
+      "bytes": 15940,
+      "sha256": "f1ed97660cf28dd41e14cedb0e21ba4be14bbd4687a2ca5da659dbcb10c02720"
+    },
+    {
+      "file": "walk/input.json",
+      "bytes": 59847,
+      "sha256": "de23f747aa4dc0e6a039f45ea845f5e5d80b7bf47bd194dcbbb4d4235801af2a"
+    },
+    {
+      "file": "walk/frames.json.gz",
+      "bytes": 183885,
+      "sha256": "09aaf3ce0c2c8753b388634260fc634acb1c4afea0b9b8c70c07c265c6884d88"
+    },
+    {
+      "file": "walk/frames.json",
+      "bytes": 404,
+      "sha256": "bafe7c1fc899103921045353cff31282dafdd82f3f757bd3e9691aa4bfba97f4"
+    },
+    {
+      "file": "walk/background.json",
+      "bytes": 5825,
+      "sha256": "e1918ffb0dd0d1ee2d14de6cbf5287ad919896ead24be3a34c3de73441ee0641"
+    },
+    {
+      "file": "walk/desktop.json",
+      "bytes": 27083,
+      "sha256": "309bc5d91e37c83792f364b407ff9eb4be16bc6aeb8ea488f88f9aaa06cb9270"
+    },
+    {
+      "file": "walk/phone.json.gz",
+      "bytes": 52291,
+      "sha256": "776a0cac67e5eb204cc5c03e867ce6e5a751fd51570622222f2a9bcaebf4575b"
+    },
+    {
+      "file": "walk/phone.json",
+      "bytes": 404,
+      "sha256": "acd5578ee9871a16e09e9556041e55f47867b9c0967de0ead58216470b03884c"
+    },
+    {
+      "file": "walk/door-diagnosis/diag-phone-tap.json",
+      "bytes": 38898,
+      "sha256": "b57be4359304cda620ac5ab17cdb7fd2d372138e459981f9621ddde1c52b034b"
+    },
+    {
+      "file": "walk/door-diagnosis/diag-flick-tap-studio.json",
+      "bytes": 145448,
+      "sha256": "955f241882dae046a5e4d83b1725996492c13a7f12b7266b86624951989457b9"
+    },
+    {
+      "file": "walk/door-diagnosis/diag-flick-tap-repo.json",
+      "bytes": 145422,
+      "sha256": "4388f81838f0e192d5d0a61cc886fdf49be7555518d33a181ce5efdd7acea158"
+    },
+    {
+      "file": "walk/door-diagnosis/local-locator-studio-fail.json.gz",
+      "bytes": 48729,
+      "sha256": "3d6180734dfed6c11c0bd121633ad5207457fb3cc9b76b329a63791e5a8a44ba"
+    },
+    {
+      "file": "walk/door-diagnosis/local-locator-studio-fail.json",
+      "bytes": 404,
+      "sha256": "613637fc2cbe18a91af00cc55e2cc97b5dc5e58967273eacaa26fe04d472cb4c"
+    },
+    {
+      "file": "walk/door-diagnosis/local-locator-studio-fixed.json.gz",
+      "bytes": 51423,
+      "sha256": "c5b81938e7671c23bbf3058452ee7a00a31d9b88f14eda18c993e12746ebc61c"
+    },
+    {
+      "file": "walk/door-diagnosis/local-locator-studio-fixed.json",
+      "bytes": 404,
+      "sha256": "67a2bdc7f37f662092d79fe87d92ab20b09d63962529d996c63a142b6ef5a552"
+    },
+    {
+      "file": "walk/door-diagnosis/local-locator-repo-pass.json.gz",
+      "bytes": 51883,
+      "sha256": "88d3daf4f40c6e97a5c31f20888a19bbb4676156adb16a9fab7578ef0e2267b0"
+    },
+    {
+      "file": "walk/door-diagnosis/local-locator-repo-pass.json",
+      "bytes": 404,
+      "sha256": "7417739caf24eeb343706f05d9e0c59ed7710338438bf8561c3de086b3688f9b"
+    },
+    {
+      "file": "walk/preparation-ab/analysis.json",
+      "bytes": 21112,
+      "sha256": "c322cc413323ad691dbf27902f66b690f1c9a369203f9df105f302d6581b9cba"
+    },
+    {
+      "file": "walk/preparation-ab/preparation-decision-v1.json",
+      "bytes": 5656,
+      "sha256": "cf6dda3d49161e244e484ab2795e8694734ac673a83dd9eb0a290b8ec5934987"
+    },
+    {
+      "file": "walk/preparation-ab/FPS-DIAGNOSTIC-c30dd41-v1.json",
+      "bytes": 5964,
+      "sha256": "68cd4fcfd01b218690e43b110f8fae91721c9e52cccfd6656f4e1b6e25c26fc4"
+    },
+    {
+      "file": "walk/preparation-ab/preflight-binding.json",
+      "bytes": 1471,
+      "sha256": "6147a6cbb33d302cb5307e4bda013800b3d07eef8d8d6d2f7fbba7b44b2b157c"
+    },
+    {
+      "file": "walk/preparation-ab/preflight-source-review.json",
+      "bytes": 2739,
+      "sha256": "b8028bedd936f785a3964afc5e9a106318a9449f2eb0cb057a6485925457a5b8"
+    },
+    {
+      "file": "walk/preparation-ab/lease-release.json",
+      "bytes": 468,
+      "sha256": "6f05354cf60646a3d950e69096f4b9bc386bdd245432bbf82751b15e05f9f755"
+    },
+    {
+      "file": "site/preview-smoke.json",
+      "bytes": 72699,
+      "sha256": "7adf7771835cf39495d5861c210bbded4d1f411c9d6dec9a252ed8a9048ebfa3"
+    },
+    {
+      "file": "site/plan-projection.json",
+      "bytes": 89660,
+      "sha256": "3a92cca0989268380fd30708ddc7ce468d505bfbd0a97a5108694f89b07462b9"
+    },
+    {
+      "file": "site/plan-visual.json",
+      "bytes": 73720,
+      "sha256": "4dc7f45a9e785d95878ad2f5588af54897b8dfd698f8b771ece382af0bc49b75"
+    },
+    {
+      "file": "site/credit.json",
+      "bytes": 34987,
+      "sha256": "952b3a68953b56e9e48d883c597f3466e36ad388fe22d70a2f0f359aef5bcea1"
+    },
+    {
+      "file": "site/credit-diag-immediate.json",
+      "bytes": 67054,
+      "sha256": "4cbb162bcf61a7e32170a54c7099a1bc017969ac239df5470acb64c00c6beda2"
+    },
+    {
+      "file": "site/credit-diag-two-frames.json",
+      "bytes": 67074,
+      "sha256": "cc63067e024379e362da7914284f38dcaec3e014dc8f69ac8df98d33b114b906"
+    },
+    {
+      "file": "site/pdf-pages.json",
+      "bytes": 3771,
+      "sha256": "e44082b00d38a1993595da5c99387e9494544c137c08ce3c37089825c7becf42"
+    },
+    {
+      "file": "walk/phone-first-door-open.jpg",
+      "bytes": 21851,
+      "sha256": "76800db202185cb94fcbab3969be75a983acad10e65adc71efce4ee5d8a70cbf"
+    },
+    {
+      "file": "walk/phone-third-door-open.jpg",
+      "bytes": 20038,
+      "sha256": "67d4b7775f862f428d4872e76bf724ead0864daf2f8e98e9e34580c16213e87a"
+    },
+    {
+      "file": "walk/desktop-first-door-open.jpg",
+      "bytes": 51970,
+      "sha256": "4ea0104ff87201199c656dc62eee18cfe99a8a8bbda98a64795158964c791acb"
+    },
+    {
+      "file": "walk/phone-chooser.jpg",
+      "bytes": 36352,
+      "sha256": "0d753979d86405ce3cc2e8ed32d6d97f58cd940973bbe05636e575753ab5d8f9"
+    },
+    {
+      "file": "walk/door-diagnosis/local-locator-studio-fail.jpg",
+      "bytes": 19577,
+      "sha256": "12f0761ad5ebb713a3875f333f645a9a5eeee40971432cfadfd77ad56b3a09b7"
+    },
+    {
+      "file": "site/plan-phone-natural-open.jpg",
+      "bytes": 27629,
+      "sha256": "ee61f5b876e29a792ea3eec58cef0f8300611dccd242da6764b3b3692cf3a6bf"
+    },
+    {
+      "file": "site/plan-phone-blueprint-reopened.jpg",
+      "bytes": 30551,
+      "sha256": "ea3c585c32aa015502a0ab92bf5c81dc73497ae6d1ce761f950008ca3d94c54f"
+    },
+    {
+      "file": "site/plan-desktop-natural-open.jpg",
+      "bytes": 45093,
+      "sha256": "5e0de8e0f206d8d96515612e43dfac0bd3029c1e5f33a4cc4d448ea9c26f2844"
+    },
+    {
+      "file": "site/plan-phone.jpg",
+      "bytes": 29336,
+      "sha256": "30254f3f2dc8abc9f037377cb1a2d6588ae0a52079b5c707dc184ab83bd77335"
+    },
+    {
+      "file": "site/hydrated-phone.jpg",
+      "bytes": 29175,
+      "sha256": "9da62dccb38f1c557d689586d56ad7c093c216761c71791ae5e8a72c992b7a34"
+    },
+    {
+      "file": "site/credit-immediate-s3-blank.jpg",
+      "bytes": 37118,
+      "sha256": "93b7f92955044381fd55c5339fb5d4a50ab226fa7ef9d5bc9f495980daf77cd6"
+    },
+    {
+      "file": "site/credit-immediate-s3-late.jpg",
+      "bytes": 39758,
+      "sha256": "8536f1ce6d8bf1ccdff26b1b3ea0c46f2fcc882000755e16e96d3861cf1c503c"
+    },
+    {
+      "file": "site/credit-two-frames-s1.jpg",
+      "bytes": 39758,
+      "sha256": "8536f1ce6d8bf1ccdff26b1b3ea0c46f2fcc882000755e16e96d3861cf1c503c"
+    },
+    {
+      "file": "site/report-laptop-a4-page-1.jpg",
+      "bytes": 56220,
+      "sha256": "2893d016455c685de76bc2e54eccff0f61011931785fe40f23ae709c1c671a2f"
+    },
+    {
+      "file": "site/report-laptop-a4-page-3.jpg",
+      "bytes": 63545,
+      "sha256": "6e1a38ef157809a39b4c05a657913f05a392034dda54a97cd1fbe79b2bc3e322"
+    },
+    {
+      "file": "site/live-phone.jpg",
+      "bytes": 37749,
+      "sha256": "13f076f20904e833eb57efd6f4949e23378fca461f7b476c1420f748183a6ee3"
+    },
+    {
+      "file": "site/report-phone.jpg",
+      "bytes": 35854,
+      "sha256": "0741a25809c7c2b3f7cdfb53f4dc4507df60e3100e5d2f6f005f6f8515bca98b"
+    },
+    {
+      "file": "walk/preparation-ab/protocol.md",
+      "bytes": 12342,
+      "sha256": "f3e56e6f798b2e77bfc4e9d76a6cba26f138a2170ddcbff8f8ae24bc47198720"
+    },
+    {
+      "file": "walk/preparation-ab/FPS-DIAGNOSTIC-c30dd41-v1.md",
+      "bytes": 1819,
+      "sha256": "97573720044848760742b3b2855a129260493b3eacecd191d8fc253a31e77e2f"
+    },
+    {
+      "file": "walk/preparation-ab/report.json.gz",
+      "bytes": 90033,
+      "sha256": "fa378c5bb44522484fa717a53eb463c941da2d8061044e2de1d09be3f3c8fd77"
+    },
+    {
+      "file": "FAILURES.json",
+      "bytes": 3397,
+      "sha256": "a339db4897083fb314020c993cf52bee02421933ced89ccabc7cc1944b2afc53"
+    },
+    {
+      "file": "REPORT.md",
+      "bytes": 9869,
+      "sha256": "bed885fef07d2635bd5b06c7ee82b126ad6dfc95a30e9d4b0af037cdf71e8a21"
+    },
+    {
+      "file": "SOURCE-MANIFEST.json",
+      "bytes": 188234,
+      "sha256": "46665c6112980f87c5c57f1a79f5c1cd250611b3a47bbaa7cc5819f58bdcf859"
+    }
+  ],
+  "totalBytes": 2813794
+}

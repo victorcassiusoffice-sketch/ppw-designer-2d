@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import type { Product } from '../data/products.schema';
 import { productPlanSymbolUrl } from '../data/products';
+import { catalogImageSources } from '../data/catalogImageSources';
 import { availabilityInfo, catalogThumbnailImages, catalogVariants, CATALOG_FUNCTIONS, CATALOG_ROOMS, CATALOG_GROUP_LABELS, type CatalogBrowse, type CatalogThumbnailImage } from './catalogMetadata';
 import { handleCatalogCategoryKey } from './catalogPresentation';
 
 /** Actual photo first, then clearly labelled static fallbacks. Never starts WebGL. */
-export function CatalogProductImage({ product, className = '' }: { product: Product; className?: string }) {
+export function CatalogProductImage({ product, className = '', detail = false }: { product: Product; className?: string; detail?: boolean }) {
   const images = catalogThumbnailImages(product);
-  return <CatalogImage key={images.map(image => image.url).join('|')} images={images} product={product} className={className} />;
+  return <CatalogImage key={images.map(image => image.url).join('|')} images={images} product={product} className={className} detail={detail} />;
 }
-function CatalogImage({ images, product, className }: { images: CatalogThumbnailImage[]; product: Product; className: string }) {
+function CatalogImage({ images, product, className, detail }: { images: CatalogThumbnailImage[]; product: Product; className: string; detail: boolean }) {
   const [index, setIndex] = useState(0);
   const image = images[index], label = image?.label ?? 'Drawing';
   return <span className={`catalog-product-visual ${className}`} data-image-kind={image?.kind ?? 'illustration'}>
-    {image ? <img className="catalog-model-thumbnail" src={image.url} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setIndex(value => value + 1)} />
+    {image ? <img className="catalog-model-thumbnail" {...catalogImageSources(image.url, detail)} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setIndex(value => value + 1)} />
       : <img className="catalog-model-thumbnail" src={productPlanSymbolUrl(product)} alt="" loading="lazy" decoding="async" draggable={false} />}
     {label && <span className="catalog-image-label">{label}</span>}
   </span>;
