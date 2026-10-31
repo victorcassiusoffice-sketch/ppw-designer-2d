@@ -9,6 +9,8 @@ import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
 import { DEMO_PAGE_READY_EVENT, isDemoPagePending } from '../demo/useDemoMode';
 import { beginWorkspaceNavigation, cancelWorkspaceNavigation, finishWorkspaceNavigation } from '../designer/workspaceNavigation';
 import { isShowcaseReadOnly } from '../lib/showcaseSafety';
+import { GROUND_LEVEL_ID } from '../designer/levels';
+import { placeShadeSail } from '../designer/shadePlacement';
 import {
   SHADE_COLOURS, SHADE_FABRICS, SHADE_MAX_ANCHORS, SHADE_MIN_ANCHORS, SHADE_SAIL_LIMIT, defaultShadeSail, estimateShadeSail,
   type ShadeAnchor, type ShadeFitStatus, type ShadeSail,
@@ -16,16 +18,6 @@ import {
 import './shadeWorkspace.css';
 
 const fmt = (value: number, digits = 2) => value.toLocaleString('en-GB', { maximumFractionDigits: digits });
-/** Plan centroid of a room outline (area-weighted), falling back to the vertex mean for a degenerate outline. */
-const polygonCentroid = (points: readonly { x: number; y: number }[]) => {
-  let twice = 0, cx = 0, cy = 0;
-  for (let i = 0; i < points.length; i++) {
-    const a = points[i], b = points[(i + 1) % points.length], cross = a.x * b.y - b.x * a.y;
-    twice += cross; cx += (a.x + b.x) * cross; cy += (a.y + b.y) * cross;
-  }
-  if (Math.abs(twice) < 1e-9) return { x: points.reduce((s, p) => s + p.x, 0) / points.length, y: points.reduce((s, p) => s + p.y, 0) / points.length };
-  return { x: cx / (3 * twice), y: cy / (3 * twice) };
-};
 const FIT_LABEL: Record<ShadeFitStatus, string> = { 'made-to-points': 'made to these points', fits: 'fits', slack: 'hangs slack', 'over-stretch': 'cannot be tensioned' };
 
 export function ShadeLaunchButton({ onBeforeOpen }: { onBeforeOpen?: () => void }) {
@@ -115,10 +107,10 @@ function ShadePanel({ onClose }: { onClose: () => void }) {
   const report = useMemo(() => sail ? estimateShadeSail(sail) : null, [sail]);
   const showcase = isShowcaseReadOnly();
   const addSail = () => {
-    const room = property.rooms.find(r => r.id === property.activeRoomId) ?? property.rooms[0];
-    const centre = room && room.polygon.length >= 3 ? polygonCentroid(room.polygon) : { x: 5, y: 5 };
+    // A sail is outdoor kit: it lands on a terrace, a hard garden surface or in the garden beside the house, never in a room.
+    const centre = placeShadeSail({ rooms: property.rooms, site: property.site, garden: property.garden, levelId: GROUND_LEVEL_ID });
     const id = `shade-${nanoid(8)}`;
-    if (store().addShadeSail(defaultShadeSail(id, { x: Math.round(centre.x * 100) / 100, y: Math.round(centre.y * 100) / 100 }, () => `pt-${nanoid(6)}`))) select(id);
+    if (store().addShadeSail(defaultShadeSail(id, { x: centre.x, y: centre.y }, () => `pt-${nanoid(6)}`))) select(id);
   };
   const updateAnchor = (anchor: ShadeAnchor, patch: Partial<Omit<ShadeAnchor, 'id'>>) => sail ? store().updateShadeAnchor(sail.id, anchor.id, patch) : false;
   const anchors = sail?.anchors ?? [];
@@ -136,7 +128,7 @@ function ShadePanel({ onClose }: { onClose: () => void }) {
           {sails.map(entry => <button key={entry.id} type="button" aria-pressed={entry.id === sail?.id} onClick={() => select(entry.id)}>{entry.name}</button>)}
           <button type="button" onClick={addSail} disabled={sails.length >= SHADE_SAIL_LIMIT} data-testid="shade-add-sail">+ Add a sail</button>
         </div>
-        {!sail && <p className="shade-empty">Add a sail to start: four posts at alternating heights around the middle of the room. Then drag each fixing point to where a post or a wall bracket can go.</p>}
+        {!sail && <p className="shade-empty">Add a sail to start: it lands outside the house, on the terrace or in the garden on the sunny north side, four posts at alternating heights. Then drag each fixing point to where a post or a wall bracket can go; set a point to Wall where it meets the house.</p>}
         {sail && report && <>
           <div className="shade-fields">
             <label className="shade-wide">Name<input value={sail.name} maxLength={128} onChange={event => store().updateShadeSail(sail.id, { name: event.target.value || 'Shade sail' })} /></label>

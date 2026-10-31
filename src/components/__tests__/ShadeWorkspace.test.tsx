@@ -38,6 +38,20 @@ describe('shade sail workspace', () => {
     expect(usePropertyStore.getState().property.rooms[0].polygon).toEqual([{ x: 2, y: 2 }, { x: 8, y: 2 }, { x: 8, y: 6 }, { x: 2, y: 6 }]);
   });
 
+  it('puts the first sail outside a plain house, in the garden on the north side, never inside the room', () => {
+    usePropertyStore.setState({ property: { id: 'shade-test-2', name: 'Shade test', activeRoomId: 'room', rooms: [{ id: 'room', name: 'Bedroom', polygon: [{ x: 2, y: 2 }, { x: 8, y: 2 }, { x: 8, y: 6 }, { x: 2, y: 6 }], placedItems: [], openings: [] }] } as unknown as Property });
+    act(() => root.render(<ShadeWorkspace onBeforeOpen={() => {}} />));
+    act(() => window.dispatchEvent(new Event('ppw:open-shade')));
+    act(() => button('+ Add a sail').click());
+    const anchors = usePropertyStore.getState().property.shade!.sails[0].anchors;
+    expect(anchors).toHaveLength(4);
+    // 1 m clear of the north wall (y = 2): every fixing point is above y = 1, so none sits inside the 2..8 × 2..6 room.
+    for (const a of anchors) { expect(a.y).toBeLessThanOrEqual(1); expect(a.x).toBeGreaterThanOrEqual(2); expect(a.x).toBeLessThanOrEqual(8); }
+    expect(anchors.reduce((s, a) => s + a.x, 0) / 4).toBeCloseTo(5, 6);
+    expect(anchors.reduce((s, a) => s + a.y, 0) / 4).toBeCloseTo(-0.8, 6);
+    expect(document.querySelector('[data-testid="shade-report"]')!.textContent).toContain('Twisted (hypar)');
+  });
+
   it('edits a fixing point height through the table, rejects an impossible value and removes down to three points', () => {
     act(() => root.render(<ShadeWorkspace onBeforeOpen={() => {}} />));
     act(() => window.dispatchEvent(new Event('ppw:open-shade')));

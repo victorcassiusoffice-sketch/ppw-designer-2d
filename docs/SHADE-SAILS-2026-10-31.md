@@ -37,7 +37,7 @@ Limits: three to six points per sail, twenty sails per design; any saved value o
 ## How to use it
 
 1. Open a design in 2D. Laptop: `Site & tools`, then `Shade sails`. Phone: `Menu`, then `Shade sails`. Or open `?panel=shade`.
-2. `+ Add a sail` places a 3.6 m four-point hypar (3.2 and 2.2 m corners) at the active room's centre. Drag the numbered points on the plan; type heights and choose post or wall in the table.
+2. `+ Add a sail` places a 3.6 m four-point hypar (3.2 and 2.2 m corners) **outside the house** (`src/designer/shadePlacement.ts`, 1 Nov 2026, Victor: "make sure the StretchTek can be fitted outside"): on a ground-level room named as outdoors (terrace, patio, veranda / varangue, deck, courtyard, pergola, carport, pool), else on the largest hard garden surface that takes the whole sail (concrete, paved path, gravel, pool), else in the garden beside the house footprint, 1 m clear of the walls, on the sunny north side first (Mauritius: the winter sun stands in the north; plan y grows south), then east, west, south; with a plot, the side where the sail fits inside the plot wins and the sail stays inside the plot. The plan view widens its fit to include the sail. Drag the numbered points on the plan (anywhere on the plot; set a point to **Wall** where it meets the house); type heights and choose post or wall in the table.
 3. Read the report: finished chords, fit, twist, corner loads, posts, hardware, shade. Change the fabric, gap or curve and watch the numbers move.
 4. Switch to 3D House to see the saddle, cables and posts on the build.
 5. If a maker has already supplied the sail, enter its edge lengths under `Made sail` and the report checks that sail against the drawn points.
