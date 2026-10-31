@@ -1,7 +1,7 @@
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { usePropertyStore } from '../store/propertyStore';
 
-type WorkspaceKind = 'foundation' | 'services' | 'city' | 'project' | 'shared';
+type WorkspaceKind = 'foundation' | 'services' | 'city' | 'project' | 'shared' | 'shade';
 let active: WorkspaceKind | null = null;
 let origin: 'plan' | '3d' = 'plan';
 let projectId: string | null = null;

@@ -50,6 +50,7 @@ import { levelHeightM } from '../designer/building';
 import { NATURAL_BARE_FLOOR_HEX } from '../designer/architecturalSurface';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
 import { FoundationPlanLayer } from './FoundationPlanLayer';
+import { ShadePlanLayer } from './ShadePlanLayer';
 import { ServiceFixturesPlanLayer } from './ServiceFixturesPlanLayer';
 import { ServiceRoutesPlanLayer } from './ServiceRoutesPlanLayer';
 import { visibleServiceRuns } from '../designer/serviceScene';
@@ -5299,6 +5300,15 @@ export function RoomCanvas({
             })}
           </Group>
         </Layer>
+
+        {/* Shade sails sit overhead, so their plan outline and fixing points
+            draw above the rooms and the furniture, in their own layer. Ground
+            level only; drag follows the same hand-tool rule as the garden. */}
+        {visible.landscape && activeLevelId === GROUND_LEVEL_ID && propertyForPaint.shade?.enabled && propertyForPaint.shade.sails.length > 0 && (
+          <Layer name="shade-sails-layer" listening={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement}>
+            <ShadePlanLayer model={propertyForPaint.shade} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />
+          </Layer>
+        )}
 
         {/* M1.5 ghost-preview Layer. Renders only while the pointer-FSM
             is in armed/dragging phase (pendingProductId set + dragGhost

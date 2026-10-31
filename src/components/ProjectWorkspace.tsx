@@ -71,6 +71,7 @@ export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void })
     const others = [
       'ppw:open-city',
       'ppw:open-foundation',
+      'ppw:open-shade',
       'ppw:open-services',
       'ppw:open-plan-import',
       'ppw:open-ai-design',
