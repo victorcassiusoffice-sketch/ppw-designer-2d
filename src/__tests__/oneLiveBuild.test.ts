@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { handleAccess, opensWithoutStudioCode, type AccessDependencies } from '../../server/accessGate';
-import { brandFor, isAppShellPath } from '../../server/brand';
+import { HOSTED_DECK_PATHS, brandFor, isAppShellPath, isHostedDeckPath } from '../../server/brand';
 import middleware from '../../middleware';
+import config from '../../vercel.json';
 
 function deps(namespace = 'production'): AccessDependencies {
   return { command: vi.fn(async () => null), now: () => 1_700_000_000_000, clientIp: 'test-ip', namespace };
@@ -19,7 +20,7 @@ describe('One Live Build look by address', () => {
   });
   it('treats app routes as pages and files as files', () => {
     for (const path of ['/', '/designer', '/pitch/developers', '/studio/sales', '/index.html']) expect(isAppShellPath(path)).toBe(true);
-    for (const path of ['/assets/app-1.js', '/brand/olb/favicon.svg', '/fonts/outfit-latin.woff2', '/olb.html', '/favicon.ico']) expect(isAppShellPath(path)).toBe(false);
+    for (const path of ['/assets/app-1.js', '/brand/olb/favicon.svg', '/fonts/outfit-latin.woff2', '/olb.html', '/favicon.ico', '/pitch/stretchtek', '/pitch/stretchtek/', '/pitch/stretchtek/assets/plan-sail.jpg']) expect(isAppShellPath(path)).toBe(false);
   });
   it('opens logos, icons, the card and the fonts without the code (the passcode page and /demo draw them)', async () => {
     for (const path of ['/brand/olb/olb-lockup.svg', '/brand/olb/hero-1200x630.jpg', '/brand/olb/site.webmanifest', '/brand/ppw-mark-512.png', '/fonts/fraunces-600-latin.woff2', '/fonts/outfit-latin.woff2']) {
@@ -73,10 +74,32 @@ describe('middleware shell by address', () => {
     expect(response.headers.get('x-middleware-rewrite')).toBe('https://onelivebuild.com/olb.html');
   });
   it('leaves files and designer.ppwellness.co alone', async () => {
-    for (const url of ['https://onelivebuild.com/assets/app-1.js', 'https://onelivebuild.com/brand/olb/favicon.svg', 'https://designer.ppwellness.co/pitch/developers']) {
+    for (const url of ['https://onelivebuild.com/assets/app-1.js', 'https://onelivebuild.com/brand/olb/favicon.svg', 'https://designer.ppwellness.co/pitch/developers', 'https://onelivebuild.com/pitch/stretchtek/', 'https://onelivebuild.com/pitch/stretchtek']) {
       const response = await middleware(new Request(url));
       expect(response.headers.get('x-middleware-rewrite')).toBeNull();
       expect(response.headers.get('x-middleware-next')).toBe('1');
+    }
+  });
+});
+
+describe('pitch decks hosted on the deck site', () => {
+  it('names the StretchTek deck and nothing under the ordinary pitch pages', () => {
+    expect(HOSTED_DECK_PATHS).toContain('/pitch/stretchtek');
+    for (const path of ['/pitch/stretchtek', '/pitch/stretchtek/', '/pitch/stretchtek/assets/plan-sail.jpg']) expect(isHostedDeckPath(path)).toBe(true);
+    for (const path of ['/pitch/stretchtekk', '/pitch/developers', '/pitch', '/']) expect(isHostedDeckPath(path)).toBe(false);
+  });
+  it('opens each hosted deck without the studio code', () => {
+    for (const base of HOSTED_DECK_PATHS) expect(opensWithoutStudioCode(`${base}/`)).toBe(true);
+  });
+  it('sends each hosted deck to the deck site before the app catch-all, with the slash form as the only entry', () => {
+    const catchAll = config.rewrites.findIndex((r) => r.source === '/(.*)');
+    expect(catchAll).toBeGreaterThan(-1);
+    for (const base of HOSTED_DECK_PATHS) {
+      const index = config.rewrites.findIndex((r) => r.source === `${base}/:path*`);
+      expect(index).toBeGreaterThan(-1);
+      expect(index).toBeLessThan(catchAll);
+      expect(config.rewrites[index].destination).toMatch(/^https:\/\/ppw-decks\.vercel\.app\/[a-z0-9-]+\/:path\*$/);
+      expect(config.redirects).toContainEqual({ source: base, destination: `${base}/`, permanent: true });
     }
   });
 });
