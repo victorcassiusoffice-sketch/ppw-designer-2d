@@ -90,7 +90,11 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/pitch/stretchtek", "destination": "/pitch/stretchtek/", "permanent": true }
+  ],
   "rewrites": [
+    { "source": "/pitch/stretchtek/:path*", "destination": "https://ppw-decks.vercel.app/stretchtek-86e4fa/:path*" },
     { "source": "/api/design-assistant", "destination": "/api/agent-chat" },
     { "source": "/api/mcp", "destination": "/api/agent-chat" },
     { "source": "/api/pitch-enquiry", "destination": "/api/orders" },

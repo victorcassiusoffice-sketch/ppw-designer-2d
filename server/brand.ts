@@ -13,8 +13,17 @@ export function brandFor(url: URL, environment: string): Brand {
   return 'ppw';
 }
 
+/** Pitch decks served from the deck site through the rewrites in vercel.json (onelivebuild.com/pitch/stretchtek/).
+ * Each is a whole page of its own, not a route of this app, so the shell rewrite leaves it alone. */
+export const HOSTED_DECK_PATHS: readonly string[] = ['/pitch/stretchtek'];
+
+export function isHostedDeckPath(pathname: string): boolean {
+  return HOSTED_DECK_PATHS.some((base) => pathname === base || pathname.startsWith(`${base}/`));
+}
+
 /** A page the single-page app answers (no file extension, or /index.html), not a file such as /assets/app.js. */
 export function isAppShellPath(pathname: string): boolean {
   if (pathname === '/index.html') return true;
+  if (isHostedDeckPath(pathname)) return false;
   return !pathname.slice(pathname.lastIndexOf('/') + 1).includes('.');
 }
