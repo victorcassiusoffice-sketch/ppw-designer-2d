@@ -50,6 +50,7 @@ import { levelHeightM } from '../designer/building';
 import { NATURAL_BARE_FLOOR_HEX } from '../designer/architecturalSurface';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
 import { FoundationPlanLayer } from './FoundationPlanLayer';
+import { ShadePlanLayer } from './ShadePlanLayer';
 import { ServiceFixturesPlanLayer } from './ServiceFixturesPlanLayer';
 import { ServiceRoutesPlanLayer } from './ServiceRoutesPlanLayer';
 import { visibleServiceRuns } from '../designer/serviceScene';
@@ -562,6 +563,7 @@ export function RoomCanvas({
   const propertyActiveLevelId = usePropertyStore((s) => s.property.activeLevelId);
   const propertyWalls = usePropertyStore((s) => s.property.walls);
   const propertyGarden = usePropertyStore((s) => s.property.garden);
+  const propertyShade = usePropertyStore((s) => s.property.shade);
   const ecoTrees = usePropertyStore((s) => s.property.eco?.trees);
   const gardenPlacement = useGardenEditorStore((s) => s.placement);
   const site = usePropertyStore((s) => s.property.site ?? null);
@@ -874,6 +876,7 @@ export function RoomCanvas({
   useEffect(() => {
     if (!pendingProductId) return;
     function onKey(e: KeyboardEvent) {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
       if (e.key === 'Escape') {
@@ -1016,7 +1019,12 @@ export function RoomCanvas({
       { x: tree.x - tree.canopyRadiusM, y: tree.y - tree.canopyRadiusM },
       { x: tree.x + tree.canopyRadiusM, y: tree.y + tree.canopyRadiusM },
     ]) : [];
-    for (const point of [...gardenPoints(garden), ...crownPoints]) {
+    // Shade sails (2026-11-01) sit OUTSIDE the house, so a new sail must widen
+    // the fit or it lands off screen above the plan.
+    const sailPoints = activeLevelId === GROUND_LEVEL_ID && propertyShade?.enabled
+      ? propertyShade.sails.flatMap(sail => sail.anchors.map(a => ({ x: a.x, y: a.y })))
+      : [];
+    for (const point of [...gardenPoints(garden), ...crownPoints, ...sailPoints]) {
       u = u ? {
         minX: Math.min(u.minX, point.x), minY: Math.min(u.minY, point.y),
         maxX: Math.max(u.maxX, point.x), maxY: Math.max(u.maxY, point.y),
@@ -1026,7 +1034,7 @@ export function RoomCanvas({
     if (u && u.maxX - u.minX < 1) u = { ...u, maxX: u.minX + 1 };
     if (u && u.maxY - u.minY < 1) u = { ...u, maxY: u.minY + 1 };
     return u;
-  }, [sitePolygon, drawnRooms, freeWalls, garden, ecoTrees, activeLevelId]);
+  }, [sitePolygon, drawnRooms, freeWalls, garden, ecoTrees, propertyShade, activeLevelId]);
   const unionWpx = union ? (union.maxX - union.minX) * pxPerMetre : 0;
   const unionHpx = union ? (union.maxY - union.minY) * pxPerMetre : 0;
   // Area readout stays the ACTIVE room's — it pairs with the TopBar L/W
@@ -5316,6 +5324,15 @@ export function RoomCanvas({
           </Group>
         </Layer>
 
+        {/* Shade sails sit overhead, so their plan outline and fixing points
+            draw above the rooms and the furniture, in their own layer. Ground
+            level only; drag follows the same hand-tool rule as the garden. */}
+        {visible.landscape && activeLevelId === GROUND_LEVEL_ID && propertyForPaint.shade?.enabled && propertyForPaint.shade.sails.length > 0 && (
+          <Layer name="shade-sails-layer" listening={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement}>
+            <ShadePlanLayer model={propertyForPaint.shade} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />
+          </Layer>
+        )}
+
         {/* M1.5 ghost-preview Layer. Renders only while the pointer-FSM
             is in armed/dragging phase (pendingProductId set + dragGhost
             populated by onPointerMove). Green = valid drop, red = blocked. */}
@@ -5821,6 +5838,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   }, []);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       if (!rotationRun.current) return;
       if (event.key === 'Escape' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z')) {
         event.preventDefault(); event.stopImmediatePropagation(); cancelTurn();

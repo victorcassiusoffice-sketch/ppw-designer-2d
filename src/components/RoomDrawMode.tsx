@@ -609,6 +609,7 @@ export function RoomDrawLayer({
   useEffect(() => {
     if (!enabled) return;
     function onKey(e: KeyboardEvent) {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       const target = e.target as HTMLElement | null;
       // Units brief (2026-08-28, D9): the segment-length field owns its own
       // Enter (commit the length) and Escape (revert the field). This window

@@ -1,0 +1,178 @@
+[
+  {
+    "id": "female-a",
+    "sourceBytes": 273448,
+    "bytes": 92780,
+    "sha256": "f7cb20396703778fe8f5c2b3d2b46c9c1c89d11f103e92b7522b74102b05c9b3",
+    "clips": [
+      {
+        "name": "idle",
+        "channels": 4,
+        "duration": 1.3333333730697632
+      },
+      {
+        "name": "walk",
+        "channels": 7,
+        "duration": 0.6666666865348816
+      },
+      {
+        "name": "sprint",
+        "channels": 7,
+        "duration": 0.5
+      }
+    ],
+    "skins": 1,
+    "textures": [
+      {
+        "mimeType": "image/png",
+        "bytes": 8706
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.5493935346603394,
+        1.043081283569336e-7,
+        -0.29189151525497437
+      ],
+      "max": [
+        0.5493935346603394,
+        0.775517463684082,
+        0.20763880014419556
+      ]
+    },
+    "heightM": 0.7755173593759537,
+    "triangles": 876
+  },
+  {
+    "id": "female-b",
+    "sourceBytes": 252140,
+    "bytes": 92116,
+    "sha256": "3c1e619550ca2417021b03df1d09ff3d55c33151c676ed1b3efb6368578bf757",
+    "clips": [
+      {
+        "name": "idle",
+        "channels": 4,
+        "duration": 1.3333333730697632
+      },
+      {
+        "name": "walk",
+        "channels": 7,
+        "duration": 0.6666666865348816
+      },
+      {
+        "name": "sprint",
+        "channels": 7,
+        "duration": 0.5
+      }
+    ],
+    "skins": 1,
+    "textures": [
+      {
+        "mimeType": "image/png",
+        "bytes": 8706
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.3835841417312622,
+        1.043081283569336e-7,
+        -0.21088343858718872
+      ],
+      "max": [
+        0.3835841417312622,
+        0.7233428955078125,
+        0.20762482285499573
+      ]
+    },
+    "heightM": 0.7233427911996841,
+    "triangles": 742
+  },
+  {
+    "id": "male-a",
+    "sourceBytes": 246916,
+    "bytes": 92204,
+    "sha256": "9d3e439ecfb571f6235feac4a0d3e85c7e98244c04b0445fc48210e787f50a8d",
+    "clips": [
+      {
+        "name": "idle",
+        "channels": 4,
+        "duration": 1.3333333730697632
+      },
+      {
+        "name": "walk",
+        "channels": 7,
+        "duration": 0.6666666865348816
+      },
+      {
+        "name": "sprint",
+        "channels": 7,
+        "duration": 0.5
+      }
+    ],
+    "skins": 1,
+    "textures": [
+      {
+        "mimeType": "image/png",
+        "bytes": 8706
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.3835841417312622,
+        1.043081283569336e-7,
+        -0.17236123979091644
+      ],
+      "max": [
+        0.3835841417312622,
+        0.6713278293609619,
+        0.16764740645885468
+      ]
+    },
+    "heightM": 0.6713277250528336,
+    "triangles": 723
+  },
+  {
+    "id": "male-b",
+    "sourceBytes": 247332,
+    "bytes": 91804,
+    "sha256": "a15a654b41c0e3b0334fae432b1056819f458cb1303fc466780d0b4350285936",
+    "clips": [
+      {
+        "name": "idle",
+        "channels": 4,
+        "duration": 1.3333333730697632
+      },
+      {
+        "name": "walk",
+        "channels": 7,
+        "duration": 0.6666666865348816
+      },
+      {
+        "name": "sprint",
+        "channels": 7,
+        "duration": 0.5
+      }
+    ],
+    "skins": 1,
+    "textures": [
+      {
+        "mimeType": "image/png",
+        "bytes": 8706
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.3835841417312622,
+        1.043081283569336e-7,
+        -0.16286130249500275
+      ],
+      "max": [
+        0.3835841417312622,
+        0.6613337993621826,
+        0.2266155481338501
+      ]
+    },
+    "heightM": 0.6613336950540543,
+    "triangles": 690
+  }
+]

@@ -50,7 +50,7 @@ function disposeBody(root: THREE.Object3D): void {
   materials.forEach(material => material.dispose());
 }
 
-function photograph(product: Product): HTMLCanvasElement | null {
+async function photograph(product: Product): Promise<HTMLCanvasElement | null> {
   const item = planModelSolid(product);
   const body = solarPanelPreview(item) ?? waterTankPreview(item) ?? furniturePreview(item);
   if (!body) return null;
@@ -89,6 +89,9 @@ function photograph(product: Product): HTMLCanvasElement | null {
     fill.target.position.copy(centre);
     scene.add(fill, fill.target);
     applyProductSurfaceLighting(body, environment?.texture ?? null, render.capabilities.getMaxAnisotropy());
+    // This deferred plan preview can finish while the user is already in 3D.
+    // Let shader linking yield instead of blocking a Walk/toolbar click.
+    if (typeof render.compileAsync === 'function') await render.compileAsync(scene, camera);
     render.render(scene, camera);
     const result = document.createElement('canvas');
     result.width = size.width; result.height = size.height;
@@ -105,7 +108,7 @@ function photograph(product: Product): HTMLCanvasElement | null {
 /** Photograph the actual model's cast shadow on a transparent receiver. The
  * receiver is display-only, never returned as an item, and is clipped to the
  * owning room by Konva. Rotating a product rotates its body but not the sun. */
-function photographShadow(product: Product, rotationDeg: number, direction: PlanShadowDirection): PlanModelShadow | null {
+async function photographShadow(product: Product, rotationDeg: number, direction: PlanShadowDirection): Promise<PlanModelShadow | null> {
   const item = planModelSolid(product);
   const body = solarPanelPreview(item) ?? waterTankPreview(item) ?? furniturePreview(item);
   if (!body) return null;
@@ -140,6 +143,7 @@ function photographShadow(product: Product, rotationDeg: number, direction: Plan
     const camera = new THREE.OrthographicCamera(-frame.widthM / 2, frame.widthM / 2, frame.depthM / 2, -frame.depthM / 2, 0.01, item.heightM * 4 + 100);
     camera.position.set(receiver.position.x, Math.max(12, item.heightM * 3), receiver.position.z);
     camera.up.set(0, 0, -1); camera.lookAt(receiver.position.x, 0, receiver.position.z);
+    if (typeof render.compileAsync === 'function') await render.compileAsync(scene, camera);
     render.render(scene, camera);
     const image = document.createElement('canvas'); image.width = size.width; image.height = size.height;
     const context = image.getContext('2d');
@@ -151,10 +155,11 @@ function photographShadow(product: Product, rotationDeg: number, direction: Plan
   }
 }
 
-function enqueuePhotograph<T>(render: () => T): Promise<T | null> {
+function enqueuePhotograph<T>(render: () => T | Promise<T>): Promise<T | null> {
   clearTimeout(disposeTimer);
-  const pending = queue.then(() => new Promise<void>(resolve => setTimeout(resolve, 0))).then(() => {
-    try { return render(); } catch { return null; }
+  const pending = queue.then(() => new Promise<void>(resolve => setTimeout(resolve, 0))).then(async () => {
+    clearTimeout(disposeTimer);
+    try { return await render(); } catch { return null; }
     finally { clearTimeout(disposeTimer); disposeTimer = setTimeout(releaseStudio, 5000); }
   });
   queue = pending;

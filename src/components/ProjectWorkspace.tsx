@@ -71,6 +71,7 @@ export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void })
     const others = [
       'ppw:open-city',
       'ppw:open-foundation',
+      'ppw:open-shade',
       'ppw:open-services',
       'ppw:open-plan-import',
       'ppw:open-ai-design',
@@ -133,6 +134,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
     const previous = document.activeElement as HTMLElement | null;
     closeRef.current?.focus();
     const key = (event: KeyboardEvent) => {
+      if (document.querySelector('[data-world-walk="true"]')) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopImmediatePropagation();

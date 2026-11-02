@@ -3,6 +3,7 @@ import { LocaleThemeControls } from './LocaleThemeControls';
 import { ServicesLaunchButton } from './ServicesWorkspace';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import { FoundationLaunchButton } from './FoundationWorkspace';
+import { ShadeLaunchButton } from './ShadeWorkspace';
 import { CityLaunchButton } from './CityWorkspace';
 import { SiteLaunchButton } from '../site/SiteLaunchButton';
 import { WorkspaceFloorNav } from './WorkspaceFloorNav';
@@ -1500,6 +1501,7 @@ export function TopBar({
           </button>
           <ServicesLaunchButton onBeforeOpen={() => setLevelsOpen(false)} />
           <FoundationLaunchButton onBeforeOpen={() => setLevelsOpen(false)} />
+          <ShadeLaunchButton onBeforeOpen={() => setLevelsOpen(false)} />
         </div>
         </PlanControlPanel>
 
@@ -3787,6 +3789,7 @@ export function TopBar({
                     </button>
                     <ServicesLaunchButton onBeforeOpen={() => setShowMobileMenu(false)} />
                     <FoundationLaunchButton onBeforeOpen={() => setShowMobileMenu(false)} />
+                    <ShadeLaunchButton onBeforeOpen={() => setShowMobileMenu(false)} />
                   </div>
                 </div>
 

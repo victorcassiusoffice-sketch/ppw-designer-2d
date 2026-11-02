@@ -5,6 +5,7 @@ interface Workspace {
   escape: () => void;
   restore: HTMLElement | null;
   fallback: string;
+  key?: (event: KeyboardEvent) => void;
 }
 const active: Workspace[] = [];
 const inertBefore = new Map<HTMLElement, string | null>();
@@ -62,6 +63,7 @@ function captureKeys(event: KeyboardEvent): void {
   // Prevent canvas/delete/history shortcuts from receiving workbench keystrokes.
   // Native editing, copying, typing and button activation remain browser defaults.
   event.stopImmediatePropagation();
+  workspace.key?.(event);
   if (event.key === 'Escape') {
     event.preventDefault();
     workspace.escape();
@@ -89,12 +91,14 @@ function captureKeys(event: KeyboardEvent): void {
 export function useWorkspaceFocus(
   host: RefObject<HTMLElement>,
   onEscape: () => void,
-  options: { fallbackFocusSelector?: string } = {},
+  options: { fallbackFocusSelector?: string; onKeyDown?: (event: KeyboardEvent) => void } = {},
 ): void {
   const action = useRef(onEscape);
   action.current = onEscape;
   const fallback = useRef(options.fallbackFocusSelector);
   fallback.current = options.fallbackFocusSelector;
+  const key = useRef(options.onKeyDown);
+  key.current = options.onKeyDown;
   useLayoutEffect(() => {
     const node = host.current;
     if (!node) return;
@@ -102,6 +106,7 @@ export function useWorkspaceFocus(
     const workspace: Workspace = {
       node,
       escape: () => action.current(),
+      key: (event) => key.current?.(event),
       restore:
         top?.restore ??
         (document.activeElement instanceof HTMLElement ? document.activeElement : null),

@@ -1,0 +1,460 @@
+{
+  "browser": "Playwright Chromium 1.60.0, WebGL SwiftShader",
+  "models": [
+    {
+      "id": "female-a",
+      "meshes": 2,
+      "skinned": 2,
+      "bounds": {
+        "min": [
+          -0.5493935160632338,
+          1.0848045348121893e-7,
+          -0.29189149985219726
+        ],
+        "max": [
+          0.549393516063231,
+          0.7755174870491028,
+          0.20763881554697267
+        ]
+      },
+      "scale": 2.192084983495331,
+      "clips": [
+        {
+          "name": "idle",
+          "duration": 1.3333333730697632,
+          "tracks": 4
+        },
+        {
+          "name": "walk",
+          "duration": 0.6666666865348816,
+          "tracks": 7
+        },
+        {
+          "name": "sprint",
+          "duration": 0.5,
+          "tracks": 7
+        }
+      ]
+    },
+    {
+      "id": "female-b",
+      "meshes": 2,
+      "skinned": 2,
+      "bounds": {
+        "min": [
+          -0.3835841231341567,
+          1.0848045348121893e-7,
+          -0.2108834231844116
+        ],
+        "max": [
+          0.3835841231341538,
+          0.7233429188728333,
+          0.20762483825777284
+        ]
+      },
+      "scale": 2.350199622607473,
+      "clips": [
+        {
+          "name": "idle",
+          "duration": 1.3333333730697632,
+          "tracks": 4
+        },
+        {
+          "name": "walk",
+          "duration": 0.6666666865348816,
+          "tracks": 7
+        },
+        {
+          "name": "sprint",
+          "duration": 0.5,
+          "tracks": 7
+        }
+      ]
+    },
+    {
+      "id": "male-a",
+      "meshes": 2,
+      "skinned": 2,
+      "bounds": {
+        "min": [
+          -0.3835841231341567,
+          1.0848045348121893e-7,
+          -0.17236122438813933
+        ],
+        "max": [
+          0.3835841231341538,
+          0.6713278527259827,
+          0.16764742186163178
+        ]
+      },
+      "scale": 2.532295163684234,
+      "clips": [
+        {
+          "name": "idle",
+          "duration": 1.3333333730697632,
+          "tracks": 4
+        },
+        {
+          "name": "walk",
+          "duration": 0.6666666865348816,
+          "tracks": 7
+        },
+        {
+          "name": "sprint",
+          "duration": 0.5,
+          "tracks": 7
+        }
+      ]
+    },
+    {
+      "id": "male-b",
+      "meshes": 2,
+      "skinned": 2,
+      "bounds": {
+        "min": [
+          -0.3835841231341567,
+          1.0848045348121893e-7,
+          -0.16286130011081695
+        ],
+        "max": [
+          0.3835841231341538,
+          0.6613338227272034,
+          0.2266155635366272
+        ]
+      },
+      "scale": 2.5705630355414084,
+      "clips": [
+        {
+          "name": "idle",
+          "duration": 1.3333333730697632,
+          "tracks": 4
+        },
+        {
+          "name": "walk",
+          "duration": 0.6666666865348816,
+          "tracks": 7
+        },
+        {
+          "name": "sprint",
+          "duration": 0.5,
+          "tracks": 7
+        }
+      ]
+    }
+  ],
+  "playback": [
+    {
+      "id": "female-a",
+      "clip": "idle",
+      "time": 0.12,
+      "scale": [
+        2.192084983495331,
+        2.192084983495331,
+        2.192084983495331
+      ],
+      "animatedHeight": 1.7527107900058527,
+      "changedComponents": 8,
+      "finite": true
+    },
+    {
+      "id": "female-b",
+      "clip": "idle",
+      "time": 0.12,
+      "scale": [
+        2.350199622607473,
+        2.350199622607473,
+        2.350199622607473
+      ],
+      "animatedHeight": 1.6936783481881115,
+      "changedComponents": 8,
+      "finite": true
+    },
+    {
+      "id": "male-a",
+      "clip": "idle",
+      "time": 0.12,
+      "scale": [
+        2.532295163684234,
+        2.532295163684234,
+        2.532295163684234
+      ],
+      "animatedHeight": 1.7100294700449776,
+      "changedComponents": 8,
+      "finite": true
+    },
+    {
+      "id": "male-b",
+      "clip": "idle",
+      "time": 0.12,
+      "scale": [
+        2.5705630355414084,
+        2.5705630355414084,
+        2.5705630355414084
+      ],
+      "animatedHeight": 1.7095041851444714,
+      "changedComponents": 8,
+      "finite": true
+    },
+    {
+      "id": "female-a",
+      "clip": "idle",
+      "time": 0.3,
+      "scale": [
+        2.192084983495331,
+        2.192084983495331,
+        2.192084983495331
+      ],
+      "animatedHeight": 1.6740897007006283,
+      "changedComponents": 8,
+      "finite": true
+    },
+    {
+      "id": "female-b",
+      "clip": "idle",
+      "time": 0.3,
+      "scale": [
+        2.350199622607473,
+        2.350199622607473,
+        2.350199622607473
+      ],
+      "animatedHeight": 1.678075904736116,
+      "changedComponents": 8,
+      "finite": true
+    },
+    {
+      "id": "male-a",
+      "clip": "idle",
+      "time": 0.3,
+      "scale": [
+        2.532295163684234,
+        2.532295163684234,
+        2.532295163684234
+      ],
+      "animatedHeight": 1.7307634597401853,
+      "changedComponents": 8,
+      "finite": true
+    },
+    {
+      "id": "male-b",
+      "clip": "idle",
+      "time": 0.3,
+      "scale": [
+        2.5705630355414084,
+        2.5705630355414084,
+        2.5705630355414084
+      ],
+      "animatedHeight": 1.7289634202650932,
+      "changedComponents": 8,
+      "finite": true
+    },
+    {
+      "id": "female-a",
+      "clip": "walk",
+      "time": 0.12,
+      "scale": [
+        2.192084983495331,
+        2.192084983495331,
+        2.192084983495331
+      ],
+      "animatedHeight": 1.7675696563750654,
+      "changedComponents": 17,
+      "finite": true
+    },
+    {
+      "id": "female-b",
+      "clip": "walk",
+      "time": 0.12,
+      "scale": [
+        2.350199622607473,
+        2.350199622607473,
+        2.350199622607473
+      ],
+      "animatedHeight": 1.7723529992677796,
+      "changedComponents": 17,
+      "finite": true
+    },
+    {
+      "id": "male-a",
+      "clip": "walk",
+      "time": 0.12,
+      "scale": [
+        2.532295163684234,
+        2.532295163684234,
+        2.532295163684234
+      ],
+      "animatedHeight": 1.7780104281646336,
+      "changedComponents": 17,
+      "finite": true
+    },
+    {
+      "id": "male-b",
+      "clip": "walk",
+      "time": 0.12,
+      "scale": [
+        2.5705630355414084,
+        2.5705630355414084,
+        2.5705630355414084
+      ],
+      "animatedHeight": 1.7791893164361667,
+      "changedComponents": 17,
+      "finite": true
+    },
+    {
+      "id": "female-a",
+      "clip": "walk",
+      "time": 0.3,
+      "scale": [
+        2.192084983495331,
+        2.192084983495331,
+        2.192084983495331
+      ],
+      "animatedHeight": 1.7779518586959029,
+      "changedComponents": 13,
+      "finite": true
+    },
+    {
+      "id": "female-b",
+      "clip": "walk",
+      "time": 0.3,
+      "scale": [
+        2.350199622607473,
+        2.350199622607473,
+        2.350199622607473
+      ],
+      "animatedHeight": 1.7000000360576937,
+      "changedComponents": 13,
+      "finite": true
+    },
+    {
+      "id": "male-a",
+      "clip": "walk",
+      "time": 0.3,
+      "scale": [
+        2.532295163684234,
+        2.532295163684234,
+        2.532295163684234
+      ],
+      "animatedHeight": 1.7000000388587104,
+      "changedComponents": 13,
+      "finite": true
+    },
+    {
+      "id": "male-b",
+      "clip": "walk",
+      "time": 0.3,
+      "scale": [
+        2.5705630355414084,
+        2.5705630355414084,
+        2.5705630355414084
+      ],
+      "animatedHeight": 1.7000000394459405,
+      "changedComponents": 13,
+      "finite": true
+    },
+    {
+      "id": "female-a",
+      "clip": "sprint",
+      "time": 0.12,
+      "scale": [
+        2.192084983495331,
+        2.192084983495331,
+        2.192084983495331
+      ],
+      "animatedHeight": 1.7411277222857815,
+      "changedComponents": 19,
+      "finite": true
+    },
+    {
+      "id": "female-b",
+      "clip": "sprint",
+      "time": 0.12,
+      "scale": [
+        2.350199622607473,
+        2.350199622607473,
+        2.350199622607473
+      ],
+      "animatedHeight": 1.5578172103009766,
+      "changedComponents": 19,
+      "finite": true
+    },
+    {
+      "id": "male-a",
+      "clip": "sprint",
+      "time": 0.12,
+      "scale": [
+        2.532295163684234,
+        2.532295163684234,
+        2.532295163684234
+      ],
+      "animatedHeight": 1.546848163802987,
+      "changedComponents": 19,
+      "finite": true
+    },
+    {
+      "id": "male-b",
+      "clip": "sprint",
+      "time": 0.12,
+      "scale": [
+        2.5705630355414084,
+        2.5705630355414084,
+        2.5705630355414084
+      ],
+      "animatedHeight": 1.5445282377468714,
+      "changedComponents": 19,
+      "finite": true
+    },
+    {
+      "id": "female-a",
+      "clip": "sprint",
+      "time": 0.3,
+      "scale": [
+        2.192084983495331,
+        2.192084983495331,
+        2.192084983495331
+      ],
+      "animatedHeight": 1.7768426907457398,
+      "changedComponents": 19,
+      "finite": true
+    },
+    {
+      "id": "female-b",
+      "clip": "sprint",
+      "time": 0.3,
+      "scale": [
+        2.350199622607473,
+        2.350199622607473,
+        2.350199622607473
+      ],
+      "animatedHeight": 1.7711242222557935,
+      "changedComponents": 19,
+      "finite": true
+    },
+    {
+      "id": "male-a",
+      "clip": "sprint",
+      "time": 0.3,
+      "scale": [
+        2.532295163684234,
+        2.532295163684234,
+        2.532295163684234
+      ],
+      "animatedHeight": 1.7766810164482505,
+      "changedComponents": 19,
+      "finite": true
+    },
+    {
+      "id": "male-b",
+      "clip": "sprint",
+      "time": 0.3,
+      "scale": [
+        2.5705630355414084,
+        2.5705630355414084,
+        2.5705630355414084
+      ],
+      "animatedHeight": 1.7778398136361382,
+      "changedComponents": 19,
+      "finite": true
+    }
+  ],
+  "errors": []
+}

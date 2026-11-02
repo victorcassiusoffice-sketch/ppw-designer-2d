@@ -1,5 +1,6 @@
 import { ServicesWorkspace } from './components/ServicesWorkspace';
 import { FoundationWorkspace } from './components/FoundationWorkspace';
+import { ShadeWorkspace } from './components/ShadeWorkspace';
 import { CityWorkspace } from './components/CityWorkspace';
 import { SharedProjectWorkspace } from './components/SharedProjectWorkspace';
 import { ProjectWorkspace } from './components/ProjectWorkspace';
@@ -454,6 +455,7 @@ export default function App() {
       <ServicesWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <HouseBuildTutorial />
       <FoundationWorkspace onBeforeOpen={() => setDrawMode(false)} />
+      <ShadeWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <CityWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <ProjectWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <SharedProjectWorkspace onBeforeOpen={() => setDrawMode(false)} />

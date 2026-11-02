@@ -16,13 +16,13 @@ describe('estimate evidence panel', () => {
     act(() => root.render(<EstimateEvidencePanel property={property} />));
     const details = host.querySelector<HTMLDetailsElement>('[data-testid="estimate-evidence"]')!;
     expect(details.open).toBe(false);
-    expect(host.textContent).toContain('11 modules');
+    expect(host.textContent).toContain('12 modules');
     expect(host.textContent).toContain('Input checks present');
     expect(host.textContent).toContain('Presence only');
     expect(host.textContent).toContain('Independent validation · not available');
     expect(host.textContent).not.toContain('Private client');
     expect(host.textContent).not.toMatch(/\bMUR\b|\bRs\b|Courts Mammouth|Espace Maison|\d+\s*%/);
-    expect(host.querySelectorAll('.estimate-engine')).toHaveLength(11);
+    expect(host.querySelectorAll('.estimate-engine')).toHaveLength(12);
     act(() => root.unmount());
   });
   it('refreshes source coverage when the merchant catalogue arrives without changing the property', () => {
