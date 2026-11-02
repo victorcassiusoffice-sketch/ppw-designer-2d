@@ -91,6 +91,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/site/(.*)", "destination": "/api/orders" },
     { "source": "/api/design-assistant", "destination": "/api/agent-chat" },
     { "source": "/api/mcp", "destination": "/api/agent-chat" },
     { "source": "/api/pitch-enquiry", "destination": "/api/orders" },

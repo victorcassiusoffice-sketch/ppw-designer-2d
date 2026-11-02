@@ -1,0 +1,22 @@
+# Site validation — Stage 2
+
+Completed 2026-10-28 Mauritius time against origin/main base `3eefbf7646f2b5c76e5297f7836e6e0336e8f1a2`.
+
+- Production build: passed (`npm run build`), including client and middleware typechecks. MapLibre and its worker are separate deferred assets; the Site workspace is 13.73 kB gzip and the map chunk is 299.33 kB gzip. Neither is imported by the standard demo before explicit Site activation.
+- Full regression suite: **402 files / 4,378 tests passed**. Focused Site/API checks: **80 tests passed**, including 35 hostile-payload normalization cases.
+- `eslint src/site api/_lib/site --max-warnings=0`: passed. Separate strict TypeScript compilation of `api/_lib/site/handler.ts`: passed. `git diff --check`: passed.
+- Existing estimator/quantity source and tests were not edited. New foundation adapter clones an explicit model and invokes the original estimator; uniform elevation translation preserves quantities.
+- Desktop 1440×1000 and phone 390×844 demo browser smoke: no JavaScript errors, no horizontal overflow, **zero live provider requests** including after opening the Site sample. Plain `/demo` hides the Site entry; `/demo?site=1` enables the local practice sample.
+- Phone functional browser path: surveyor traverse → import four survey points → declare local datum → platform 100 m → calculated 1,000 m³ cut / 0 m³ fill → assumed 2 m setback / 40% coverage → 200 m² illustrative footprint → apply → reload. Survey source, input points, geometry and results survived reload; no JavaScript errors. This is a deliberately manufactured numerical test, not real site evidence.
+- Live OpenFreeMap map, fixed visible attribution, and traverse-to-report flow were exercised. Corrected Tamarin default uses Photon/OSM town centre 57.3776792, -20.3292161. Live land-map screenshot shows mapped streets/buildings. Search is explicit-submit only.
+- Three real geographic locations were queried anonymously: Tamarin, Curepipe and York. Exact requests, acquisition times, source filenames, solar database and periods are retained in `EVIDENCE-SITE-PROVIDERS-2026-10-27.json`; measured example-outline values are in `EVIDENCE-SITE-REPORTS-2026-10-27.md`. The outlines are examples, not verified parcels. AWS composite source gates admitted SRTM/GMTED and exact UK LIDAR headers; Copernicus and absent headers are rejected. GMTED fallback is explicitly reported as 250 m or coarser, never uniformly 30 m.
+- PVGIS and licensed public terrain returned real values for all three examples. Overpass repeatedly returned capacity HTTP 502 or a 10-second timeout; neighbour, utility and land-use values remain **unavailable**, not zero. A direct bounded diagnostic response stated all workers/queue were full. No provider outage was hidden.
+- A4 offline report: three pages, every page rendered and visually inspected. Disclaimer, provenance, no-price presentation and unavailable states retained; no clipping. The separate nine-page real-location report was also rendered and visually inspected on every page. Selected screenshots, browser JSON and PDFs are committed under `docs/world/site/evidence`.
+
+## Deliberate limits
+
+No cadastral certification, planning approval, geotechnical capacity, foundation-depth inference, satellite imagery or legal entitlement is supplied. Planning defaults are absent; entered rules remain explicitly user assumptions. Uniform convex setbacks are exact; concave envelopes are withheld rather than guessed. Survey surfaces must cover the full outline and honour non-crossing constant-height contours; incomplete coverage and conflicting data withhold volume. Public terrain is never an earthworks input. Maximum boundary span is 500 m; date-line crossings, self-touching outlines and corners closer than 1 cm are rejected. These are explicit supported-input limits.
+
+The existing catch-all endpoint contains the new route; all implementation files remain under `api/_lib/site`, without an additional top-level function, account, key, environment setting, database change, deployment or merge. Cache, throttle, response-size and pending-work bounds are process-local prototype safeguards, not a distributed public-service quota guarantee. Saved source acquisition times are preserved; failed refreshes keep earlier values with their original provenance.
+
+Physical iPhone/iPad device testing, paired first-3D-picture budgets and final preview checks belong to the integration handoff and are not asserted here. Headless 390×844 emulation is not a physical-device certificate.

@@ -190,7 +190,7 @@
   background: var(--capsule-bg, #16282e); color: var(--capsule-ink, #e1edef); box-shadow: var(--capsule-shadow, none);
   -webkit-backdrop-filter: blur(var(--capsule-blur, 20px)); backdrop-filter: blur(var(--capsule-blur, 20px));
 }
-.designer-app[data-view="plan"] [data-testid="canvas-chrome-toggle"]:hover { background: var(--capsule-bg-solid, #16282e); color: #fff; }
+.designer-app[data-view="plan"] [data-testid="canvas-chrome-toggle"]:hover { background: var(--capsule-bg-solid, #16282e); color: var(--capsule-ink, #e1edef); }
 .designer-app[data-view="plan"] #canvas-plan-tools { gap: 6px; }
 .designer-app[data-view="plan"] #canvas-plan-tools > div:first-child {
   gap: var(--capsule-gap, 2px); padding: var(--capsule-pad, 4px);
