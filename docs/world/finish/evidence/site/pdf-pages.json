@@ -1,0 +1,119 @@
+{
+  "banner": "Estimates from public data for planning a conversation, not a survey and not an approval.",
+  "files": [
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/report-laptop-a4.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "image": "report-laptop-a4-page-1.png",
+          "widthMm": 209.9,
+          "heightMm": 297.0,
+          "footerBannerPresent": true,
+          "bodyFooterGapMm": 35.14,
+          "bodyFooterOverlap": false,
+          "textOutsidePage": false,
+          "blocks": 36,
+          "characters": 920
+        },
+        {
+          "page": 2,
+          "image": "report-laptop-a4-page-2.png",
+          "widthMm": 209.9,
+          "heightMm": 297.0,
+          "footerBannerPresent": true,
+          "bodyFooterGapMm": 63.45,
+          "bodyFooterOverlap": false,
+          "textOutsidePage": false,
+          "blocks": 37,
+          "characters": 1204
+        },
+        {
+          "page": 3,
+          "image": "report-laptop-a4-page-3.png",
+          "widthMm": 209.9,
+          "heightMm": 297.0,
+          "footerBannerPresent": true,
+          "bodyFooterGapMm": 17.55,
+          "bodyFooterOverlap": false,
+          "textOutsidePage": false,
+          "blocks": 45,
+          "characters": 1438
+        },
+        {
+          "page": 4,
+          "image": "report-laptop-a4-page-4.png",
+          "widthMm": 209.9,
+          "heightMm": 297.0,
+          "footerBannerPresent": true,
+          "bodyFooterGapMm": 229.01,
+          "bodyFooterOverlap": false,
+          "textOutsidePage": false,
+          "blocks": 6,
+          "characters": 435
+        }
+      ],
+      "pageCount": 4,
+      "everyPageHasFooter": true,
+      "anyOverlapOrClip": false,
+      "minBodyFooterGapMm": 17.55
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/report-phone-a4.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "image": "report-phone-a4-page-1.png",
+          "widthMm": 209.9,
+          "heightMm": 297.0,
+          "footerBannerPresent": true,
+          "bodyFooterGapMm": 35.14,
+          "bodyFooterOverlap": false,
+          "textOutsidePage": false,
+          "blocks": 36,
+          "characters": 920
+        },
+        {
+          "page": 2,
+          "image": "report-phone-a4-page-2.png",
+          "widthMm": 209.9,
+          "heightMm": 297.0,
+          "footerBannerPresent": true,
+          "bodyFooterGapMm": 63.45,
+          "bodyFooterOverlap": false,
+          "textOutsidePage": false,
+          "blocks": 37,
+          "characters": 1204
+        },
+        {
+          "page": 3,
+          "image": "report-phone-a4-page-3.png",
+          "widthMm": 209.9,
+          "heightMm": 297.0,
+          "footerBannerPresent": true,
+          "bodyFooterGapMm": 17.55,
+          "bodyFooterOverlap": false,
+          "textOutsidePage": false,
+          "blocks": 45,
+          "characters": 1438
+        },
+        {
+          "page": 4,
+          "image": "report-phone-a4-page-4.png",
+          "widthMm": 209.9,
+          "heightMm": 297.0,
+          "footerBannerPresent": true,
+          "bodyFooterGapMm": 229.01,
+          "bodyFooterOverlap": false,
+          "textOutsidePage": false,
+          "blocks": 6,
+          "characters": 435
+        }
+      ],
+      "pageCount": 4,
+      "everyPageHasFooter": true,
+      "anyOverlapOrClip": false,
+      "minBodyFooterGapMm": 17.55
+    }
+  ]
+}

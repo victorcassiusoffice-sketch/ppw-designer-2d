@@ -1,0 +1,58 @@
+{
+  "config": {
+    "version": 1,
+    "edges": [
+      128,
+      256
+    ],
+    "quality": 78,
+    "alphaQuality": 90,
+    "effort": 5,
+    "sharp": "0.35.3",
+    "webp": "1.6.0"
+  },
+  "totals": {
+    "images": 106,
+    "originalBytes": 7495604,
+    "smallBytes": 234176,
+    "largeBytes": 590540
+  },
+  "courts": {
+    "images": 33,
+    "originalBytes": 4184626,
+    "smallBytes": 45384,
+    "largeBytes": 88404
+  },
+  "groups": {
+    "catalog-models": {
+      "images": 21,
+      "originalBytes": 1524186,
+      "smallBytes": 70610,
+      "largeBytes": 163938
+    },
+    "catalog-plans": {
+      "images": 33,
+      "originalBytes": 4184626,
+      "smallBytes": 45384,
+      "largeBytes": 88404
+    },
+    "photos": {
+      "images": 22,
+      "originalBytes": 523596,
+      "smallBytes": 48970,
+      "largeBytes": 125802
+    },
+    "topdown": {
+      "images": 30,
+      "originalBytes": 1263196,
+      "smallBytes": 69212,
+      "largeBytes": 212396
+    }
+  },
+  "manifestBytes": 17647,
+  "manifestGzipBytes": 3095,
+  "generated": {
+    "files": 204,
+    "bytes": 809182
+  }
+}

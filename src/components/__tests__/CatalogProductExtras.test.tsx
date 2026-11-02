@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getAllProducts } from '../../data/products';
 import { CatalogBrowseTabs, CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
 import { catalogThumbnailUrls } from '../catalogMetadata';
+import { catalogImageSources } from '../../data/catalogImageSources';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement, root: Root;
@@ -16,17 +17,27 @@ describe('catalogue controls', () => {
     const product = getAllProducts().find(row => catalogThumbnailUrls(row).some(url => url.includes('/catalog-models/')))!;
     act(() => root.render(<CatalogProductImage product={product} />));
     const urls = catalogThumbnailUrls(product);
-    expect(host.querySelector('img')?.getAttribute('src')).toBe(urls[0]);
+    expect(host.querySelector('img')?.getAttribute('src')).toBe(catalogImageSources(urls[0]).src);
+    expect(host.querySelector('img')?.getAttribute('srcset')).toBe(catalogImageSources(urls[0]).srcSet);
     expect(host.querySelector('img')?.getAttribute('loading')).toBe('lazy');
     expect(host.querySelector('[data-image-kind]')?.getAttribute('data-image-kind')).toBe('photo');
     expect(host.querySelector('.catalog-image-label')).toBeNull();
     for (let i = 1; i < urls.length; i++) {
       act(() => host.querySelector('img')!.dispatchEvent(new Event('error')));
-      expect(host.querySelector('img')?.getAttribute('src')).toBe(urls[i]);
+      expect(host.querySelector('img')?.getAttribute('src')).toBe(catalogImageSources(urls[i]).src);
     }
     act(() => host.querySelector('img')!.dispatchEvent(new Event('error')));
     expect(host.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/);
     expect(host.textContent).toContain('Drawing');
+  });
+  it('keeps the full image exclusively in the explicit product detail presentation', () => {
+    const product = getAllProducts().find(row => row.photo_image_url)!;
+    const original = catalogThumbnailUrls(product)[0];
+    act(() => root.render(<CatalogProductImage product={product} detail />));
+    expect(host.querySelector('img')?.getAttribute('src')).toBe(original);
+    expect(host.querySelector('img')?.hasAttribute('srcset')).toBe(false);
+    expect(host.querySelector('[data-image-kind]')?.getAttribute('data-image-kind')).toBe('photo');
+    expect(host.querySelector('.catalog-image-label')).toBeNull();
   });
   it('changes to the declared SKU and dimensions, without inventing a material variant or starting placement', () => {
     const product = getAllProducts()[0];

@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/ppw-favicon.svg" />
+    <link rel="manifest" href="/brand/ppw/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0F766E" />
     <meta
@@ -10,8 +11,25 @@
       content="Peak Performance Wellness — Wellness Room Designer. Drag-drop your space, get a costed plan."
     />
     <title>Wellness Room Designer · Peak Performance Wellness</title>
+    <style>
+      #designer-startup { display:none; }
+      html[data-initial-house] #designer-startup { position:fixed; inset:0; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; margin:0; background:radial-gradient(ellipse at 50% 35%,#e8eddf,#c6d6ca); color:#304d42; font:14px system-ui,sans-serif; }
+      #designer-startup strong { font-size:18px; }
+      #designer-startup .boot-model { width:56px; height:56px; border:1px solid #afc5b7; border-radius:12px; background:linear-gradient(135deg,#f7f5e9,#b1cdbf); box-shadow:8px 12px 20px #4d6e4930,inset 2px 2px 4px #fffc; transform:rotate(-15deg); }
+      #designer-startup .boot-track { width:116px; height:4px; border-radius:6px; overflow:hidden; background:#adc3b455; }
+      #designer-startup .boot-track span { display:block; width:40%; height:100%; background:#658e79; animation:boot-slide 1.6s ease-in-out infinite; }
+      @keyframes boot-slide { from { transform:translateX(-110%); } to { transform:translateX(360%); } }
+      @media(prefers-reduced-motion:reduce) { #designer-startup .boot-track span { animation:none; } }
+    </style>
+    <script>
+      if (/^\/(demo|embed\/designer)\/?$/.test(location.pathname) && new URLSearchParams(location.search).get('view') !== '2d') document.documentElement.setAttribute('data-initial-house','');
+    </script>
   </head>
   <body class="bg-ppw-sand text-ppw-ink antialiased">
+    <div id="designer-startup" role="status" aria-live="polite" data-testid="loading-3d">
+      <div class="boot-model" aria-hidden="true"></div><strong>Loading 3D</strong>
+      <span>Preparing your measured design</span><div class="boot-track" aria-hidden="true"><span></span></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -1,0 +1,804 @@
+{
+  "at": "2026-10-31T12:09:26.300Z",
+  "baseHead": "56d852d1f2f5d7342b9e02194964d6b998c795c7",
+  "baseline": {
+    "count": 28,
+    "raw": 2905199,
+    "gzip": 871303
+  },
+  "branches": {
+    "walk": {
+      "sourceHead": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "sourceStatus": "",
+      "count": 28,
+      "raw": 2906274,
+      "gzip": 871728,
+      "rawDelta": 1075,
+      "gzipDelta": 425,
+      "moduleChanges": [
+        {
+          "id": "src/components/threeStageLoader.ts",
+          "beforeRendered": 237,
+          "afterRendered": 252,
+          "renderedDelta": 15,
+          "previousChunk": "assets/main-DHOW9Yxw.js",
+          "currentChunk": "assets/main-DPGL0hhp.js",
+          "beforeExports": [
+            "loadThreeStage"
+          ],
+          "afterExports": [
+            "loadThreeStage"
+          ]
+        },
+        {
+          "id": "src/hooks/useWorkspaceFocus.ts",
+          "beforeRendered": 4219,
+          "afterRendered": 4378,
+          "renderedDelta": 159,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-C_9SMezw.js",
+          "beforeExports": [
+            "useWorkspaceFocus"
+          ],
+          "afterExports": [
+            "useWorkspaceFocus"
+          ]
+        },
+        {
+          "id": "src/components/ProjectWorkspace.tsx",
+          "beforeRendered": 48994,
+          "afterRendered": 49064,
+          "renderedDelta": 70,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-C_9SMezw.js",
+          "beforeExports": [
+            "ProjectWorkspace"
+          ],
+          "afterExports": [
+            "ProjectWorkspace"
+          ]
+        },
+        {
+          "id": "src/components/OpeningSelectionEditor.tsx",
+          "beforeRendered": 5234,
+          "afterRendered": 5304,
+          "renderedDelta": 70,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-C_9SMezw.js",
+          "beforeExports": [
+            "OpeningSelectionEditor"
+          ],
+          "afterExports": [
+            "OpeningSelectionEditor"
+          ]
+        },
+        {
+          "id": "src/components/RoomView3D.tsx",
+          "beforeRendered": 101051,
+          "afterRendered": 101617,
+          "renderedDelta": 566,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-C_9SMezw.js",
+          "beforeExports": [
+            "RoomView3D"
+          ],
+          "afterExports": [
+            "RoomView3D"
+          ]
+        },
+        {
+          "id": "src/components/TopBar.tsx",
+          "beforeRendered": 225156,
+          "afterRendered": 225154,
+          "renderedDelta": -2,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-C_9SMezw.js",
+          "beforeExports": [
+            "TopBar"
+          ],
+          "afterExports": [
+            "TopBar"
+          ]
+        },
+        {
+          "id": "src/components/RoomDrawMode.tsx",
+          "beforeRendered": 41067,
+          "afterRendered": 41137,
+          "renderedDelta": 70,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-C_9SMezw.js",
+          "beforeExports": [
+            "RoomDrawLayer",
+            "SnapUnitStepper",
+            "RoomDrawHUD"
+          ],
+          "afterExports": [
+            "RoomDrawLayer",
+            "SnapUnitStepper",
+            "RoomDrawHUD"
+          ]
+        },
+        {
+          "id": "src/components/RoomCanvas.tsx",
+          "beforeRendered": 241138,
+          "afterRendered": 241278,
+          "renderedDelta": 140,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-C_9SMezw.js",
+          "beforeExports": [
+            "RoomCanvas"
+          ],
+          "afterExports": [
+            "RoomCanvas"
+          ]
+        },
+        {
+          "id": "src/components/PlanGardenWorkspace.tsx",
+          "beforeRendered": 3479,
+          "afterRendered": 3549,
+          "renderedDelta": 70,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-C_9SMezw.js",
+          "beforeExports": [
+            "PlanGardenWorkspace"
+          ],
+          "afterExports": [
+            "PlanGardenWorkspace"
+          ]
+        },
+        {
+          "id": "src/components/three/ThreeStage.tsx",
+          "beforeRendered": 83906,
+          "afterRendered": 84481,
+          "renderedDelta": 575,
+          "previousChunk": "assets/ThreeStage-Z2WEYbA1.js",
+          "currentChunk": "assets/ThreeStage-BvkOCsfa.js",
+          "beforeExports": [
+            "ThreeStage",
+            "default"
+          ],
+          "afterExports": [
+            "ThreeStage",
+            "default"
+          ]
+        }
+      ],
+      "chunkChanges": [
+        {
+          "name": "assets/App.js",
+          "previousFile": "assets/App-DknD37rJ.js",
+          "currentFile": "assets/App-C_9SMezw.js",
+          "rawDelta": 909,
+          "gzipDelta": 368,
+          "sameHash": false
+        },
+        {
+          "name": "assets/CurrencySwitcher.js",
+          "previousFile": "assets/CurrencySwitcher-CL0kYB8t.js",
+          "currentFile": "assets/CurrencySwitcher-OzgsebPr.js",
+          "rawDelta": 0,
+          "gzipDelta": -3,
+          "sameHash": false
+        },
+        {
+          "name": "assets/LocaleThemeControls.js",
+          "previousFile": "assets/LocaleThemeControls-CS9Zxink.js",
+          "currentFile": "assets/LocaleThemeControls-B1AWRHBe.js",
+          "rawDelta": 0,
+          "gzipDelta": -1,
+          "sameHash": false
+        },
+        {
+          "name": "assets/ThreeStage.js",
+          "previousFile": "assets/ThreeStage-Z2WEYbA1.js",
+          "currentFile": "assets/ThreeStage-BvkOCsfa.js",
+          "rawDelta": 111,
+          "gzipDelta": 71,
+          "sameHash": false
+        },
+        {
+          "name": "assets/buildSkinStore.js",
+          "previousFile": "assets/buildSkinStore-B-kjly2M.js",
+          "currentFile": "assets/buildSkinStore-iwC2BD6R.js",
+          "rawDelta": 0,
+          "gzipDelta": -1,
+          "sameHash": false
+        },
+        {
+          "name": "assets/buildingServices.js",
+          "previousFile": "assets/buildingServices-DV1gAOMk.js",
+          "currentFile": "assets/buildingServices-BGK7BObi.js",
+          "rawDelta": 9,
+          "gzipDelta": 3,
+          "sameHash": false
+        },
+        {
+          "name": "assets/cartStore.js",
+          "previousFile": "assets/cartStore-C07ffxsA.js",
+          "currentFile": "assets/cartStore-Dieoy3Kv.js",
+          "rawDelta": 0,
+          "gzipDelta": -1,
+          "sameHash": false
+        },
+        {
+          "name": "assets/currency.js",
+          "previousFile": "assets/currency-CLScbmN-.js",
+          "currentFile": "assets/currency-YZfNC0xt.js",
+          "rawDelta": 0,
+          "gzipDelta": -2,
+          "sameHash": false
+        },
+        {
+          "name": "assets/designsApi.js",
+          "previousFile": "assets/designsApi-C8Utq6Kf.js",
+          "currentFile": "assets/designsApi-jdEkazsx.js",
+          "rawDelta": 0,
+          "gzipDelta": -1,
+          "sameHash": false
+        },
+        {
+          "name": "assets/main.js",
+          "previousFile": "assets/main-DHOW9Yxw.js",
+          "currentFile": "assets/main-DPGL0hhp.js",
+          "rawDelta": 1,
+          "gzipDelta": -16,
+          "sameHash": false
+        },
+        {
+          "name": "assets/productSurfaceLighting.js",
+          "previousFile": "assets/productSurfaceLighting-BQZxIn0h.js",
+          "currentFile": "assets/productSurfaceLighting-B33xd6Bt.js",
+          "rawDelta": 0,
+          "gzipDelta": 0,
+          "sameHash": false
+        },
+        {
+          "name": "assets/propertyStore.js",
+          "previousFile": "assets/propertyStore-C5e7ZzCd.js",
+          "currentFile": "assets/propertyStore-9uqHx6BS.js",
+          "rawDelta": 0,
+          "gzipDelta": -2,
+          "sameHash": false
+        },
+        {
+          "name": "assets/renderQualityStore.js",
+          "previousFile": "assets/renderQualityStore-BBxCd5KC.js",
+          "currentFile": "assets/renderQualityStore-PPMm6eeW.js",
+          "rawDelta": 0,
+          "gzipDelta": 0,
+          "sameHash": false
+        },
+        {
+          "name": "assets/serviceFixtureMeshes.js",
+          "previousFile": "assets/serviceFixtureMeshes-dDaBzpGO.js",
+          "currentFile": "assets/serviceFixtureMeshes-DTCQy3Rs.js",
+          "rawDelta": 0,
+          "gzipDelta": -2,
+          "sameHash": false
+        },
+        {
+          "name": "assets/vendor-three.js",
+          "previousFile": "assets/vendor-three-CjQotlrx.js",
+          "currentFile": "assets/vendor-three-DFSP7WXy.js",
+          "rawDelta": 45,
+          "gzipDelta": 12,
+          "sameHash": false
+        }
+      ],
+      "html": [
+        {
+          "file": "index.html",
+          "beforeRaw": 2642,
+          "afterRaw": 6049,
+          "rawDelta": 3407,
+          "beforeGzip": 1273,
+          "afterGzip": 2519,
+          "gzipDelta": 1246
+        },
+        {
+          "file": "olb.html",
+          "beforeRaw": 3623,
+          "afterRaw": 6966,
+          "rawDelta": 3343,
+          "beforeGzip": 1560,
+          "afterGzip": 2779,
+          "gzipDelta": 1219
+        }
+      ],
+      "latePlumbing": [
+        {
+          "id": "src/pages/sales/plumbingHero.json",
+          "renderedLength": 529,
+          "renderedExports": [
+            "src",
+            "srcSet",
+            "sizes",
+            "width",
+            "height",
+            "default"
+          ],
+          "chunk": "assets/PlumbingPitchPage-BWRS-lon.js",
+          "early": false
+        },
+        {
+          "id": "src/pages/sales/plumbingHero.json",
+          "renderedLength": 529,
+          "renderedExports": [
+            "src",
+            "srcSet",
+            "sizes",
+            "width",
+            "height",
+            "default"
+          ],
+          "chunk": "assets/plumbing/plumbingMain-BPER9ztJ.js",
+          "early": false
+        },
+        {
+          "id": "src/pages/sales/plumbingMain.tsx",
+          "renderedLength": 342,
+          "renderedExports": [],
+          "chunk": "assets/plumbing/plumbingMain-BPER9ztJ.js",
+          "early": false
+        }
+      ],
+      "finalization": {
+        "primaryFilesVerified": 620,
+        "originalNonHtmlHashesPreserved": true,
+        "primaryHashDigest": "a8ff6f898b37cb1c5e948c5cd2badc0df3764a2f03f42e8551e9f3ac95846865",
+        "newFiles": [
+          "assets/plumbing/PlumbingEnquiryForm-BWjplNBo.css",
+          "assets/plumbing/PlumbingEnquiryForm-CoyardYg.js",
+          "assets/plumbing/plumbingMain-BPER9ztJ.js",
+          "assets/plumbing/plumbingMain-OjCrkJzx.css",
+          "assets/plumbing/vendor-react-De-jGD7v.js",
+          "assets/plumbing/vendor-router-Dg-knw_b.js",
+          "assets/plumbing/vendor-sentry-gR1wJj98.js"
+        ],
+        "html": {
+          "index.html": {
+            "rawDelta": 1900,
+            "gzipDelta": 574,
+            "primary": {
+              "scripts": [
+                "/assets/vendor-react-CS4MHxMm.js",
+                "/assets/vendor-router-YSxUxVSZ.js",
+                "/assets/main-DPGL0hhp.js"
+              ],
+              "preloads": [
+                "/assets/vendor-react-CS4MHxMm.js",
+                "/assets/vendor-router-YSxUxVSZ.js",
+                "/assets/main-DPGL0hhp.js"
+              ],
+              "styles": [
+                "/assets/main-CB3fRIv-.css"
+              ]
+            },
+            "plumbing": {
+              "scripts": [
+                "/assets/plumbing/plumbingMain-BPER9ztJ.js"
+              ],
+              "preloads": [
+                "/assets/plumbing/plumbingMain-BPER9ztJ.js",
+                "/assets/plumbing/vendor-react-De-jGD7v.js",
+                "/assets/plumbing/vendor-router-Dg-knw_b.js"
+              ],
+              "styles": [
+                "/assets/plumbing/plumbingMain-OjCrkJzx.css"
+              ]
+            }
+          },
+          "olb.html": {
+            "rawDelta": 1900,
+            "gzipDelta": 573,
+            "primary": {
+              "scripts": [
+                "/assets/vendor-react-CS4MHxMm.js",
+                "/assets/vendor-router-YSxUxVSZ.js",
+                "/assets/main-DPGL0hhp.js"
+              ],
+              "preloads": [
+                "/assets/vendor-react-CS4MHxMm.js",
+                "/assets/vendor-router-YSxUxVSZ.js",
+                "/assets/main-DPGL0hhp.js"
+              ],
+              "styles": [
+                "/assets/main-CB3fRIv-.css"
+              ]
+            },
+            "plumbing": {
+              "scripts": [
+                "/assets/plumbing/plumbingMain-BPER9ztJ.js"
+              ],
+              "preloads": [
+                "/assets/plumbing/plumbingMain-BPER9ztJ.js",
+                "/assets/plumbing/vendor-react-De-jGD7v.js",
+                "/assets/plumbing/vendor-router-Dg-knw_b.js"
+              ],
+              "styles": [
+                "/assets/plumbing/plumbingMain-OjCrkJzx.css"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "site": {
+      "sourceHead": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+      "sourceStatus": "",
+      "count": 28,
+      "raw": 2907728,
+      "gzip": 872309,
+      "rawDelta": 2529,
+      "gzipDelta": 1006,
+      "moduleChanges": [
+        {
+          "id": "src/components/TopBar.tsx",
+          "beforeRendered": 225156,
+          "afterRendered": 225225,
+          "renderedDelta": 69,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-j5a-zufe.js",
+          "beforeExports": [
+            "TopBar"
+          ],
+          "afterExports": [
+            "TopBar"
+          ]
+        },
+        {
+          "id": "src/components/RoomCanvas.tsx",
+          "beforeRendered": 241138,
+          "afterRendered": 241575,
+          "renderedDelta": 437,
+          "previousChunk": "assets/App-DknD37rJ.js",
+          "currentChunk": "assets/App-j5a-zufe.js",
+          "beforeExports": [
+            "RoomCanvas"
+          ],
+          "afterExports": [
+            "RoomCanvas"
+          ]
+        },
+        {
+          "id": "src/store/propertyStore.ts",
+          "beforeRendered": 69419,
+          "afterRendered": 69468,
+          "renderedDelta": 49,
+          "previousChunk": "assets/propertyStore-C5e7ZzCd.js",
+          "currentChunk": "assets/propertyStore-D7cf2-rg.js",
+          "beforeExports": [
+            "SITE_MIN_M",
+            "SITE_MAX_M",
+            "normaliseSite",
+            "usePropertyStore",
+            "normaliseLoadedProperty",
+            "normaliseWallPaintCoats",
+            "normaliseWallPaintWastePct",
+            "normaliseLevels",
+            "normaliseFreeWalls",
+            "normaliseLoadedRoom",
+            "decodeFloorZones",
+            "pruneOpenings",
+            "roomOpenings",
+            "canonicalisePropertyWinding",
+            "selectActiveRoom"
+          ],
+          "afterExports": [
+            "SITE_MIN_M",
+            "SITE_MAX_M",
+            "normaliseSite",
+            "usePropertyStore",
+            "normaliseLoadedProperty",
+            "normaliseWallPaintCoats",
+            "normaliseWallPaintWastePct",
+            "normaliseLevels",
+            "normaliseFreeWalls",
+            "normaliseLoadedRoom",
+            "decodeFloorZones",
+            "pruneOpenings",
+            "roomOpenings",
+            "canonicalisePropertyWinding",
+            "selectActiveRoom"
+          ]
+        },
+        {
+          "id": "src/components/three/ThreeStage.tsx",
+          "beforeRendered": 83906,
+          "afterRendered": 83876,
+          "renderedDelta": -30,
+          "previousChunk": "assets/ThreeStage-Z2WEYbA1.js",
+          "currentChunk": "assets/ThreeStage-B0LrqE4t.js",
+          "beforeExports": [
+            "ThreeStage",
+            "default"
+          ],
+          "afterExports": [
+            "ThreeStage",
+            "default"
+          ]
+        },
+        {
+          "id": "src/site/SiteLoading.tsx",
+          "beforeRendered": 0,
+          "afterRendered": 853,
+          "renderedDelta": 853,
+          "previousChunk": null,
+          "currentChunk": "assets/App-j5a-zufe.js",
+          "beforeExports": [],
+          "afterExports": [
+            "default"
+          ]
+        },
+        {
+          "id": "src/site/SiteLaunchButton.tsx",
+          "beforeRendered": 0,
+          "afterRendered": 2632,
+          "renderedDelta": 2632,
+          "previousChunk": null,
+          "currentChunk": "assets/App-j5a-zufe.js",
+          "beforeExports": [],
+          "afterExports": [
+            "SiteLaunchButton"
+          ]
+        },
+        {
+          "id": "src/components/canvasSiteBridge.ts",
+          "beforeRendered": 0,
+          "afterRendered": 474,
+          "renderedDelta": 474,
+          "previousChunk": null,
+          "currentChunk": "assets/App-j5a-zufe.js",
+          "beforeExports": [],
+          "afterExports": [
+            "installCanvasSiteAdapter",
+            "useCanvasSiteProjection"
+          ]
+        }
+      ],
+      "chunkChanges": [
+        {
+          "name": "assets/App.js",
+          "previousFile": "assets/App-DknD37rJ.js",
+          "currentFile": "assets/App-j5a-zufe.js",
+          "rawDelta": 2501,
+          "gzipDelta": 1018,
+          "sameHash": false
+        },
+        {
+          "name": "assets/CurrencySwitcher.js",
+          "previousFile": "assets/CurrencySwitcher-CL0kYB8t.js",
+          "currentFile": "assets/CurrencySwitcher-FvdtBxK-.js",
+          "rawDelta": 0,
+          "gzipDelta": -3,
+          "sameHash": false
+        },
+        {
+          "name": "assets/LocaleThemeControls.js",
+          "previousFile": "assets/LocaleThemeControls-CS9Zxink.js",
+          "currentFile": "assets/LocaleThemeControls-D0jWtOD2.js",
+          "rawDelta": 0,
+          "gzipDelta": -1,
+          "sameHash": false
+        },
+        {
+          "name": "assets/ThreeStage.js",
+          "previousFile": "assets/ThreeStage-Z2WEYbA1.js",
+          "currentFile": "assets/ThreeStage-B0LrqE4t.js",
+          "rawDelta": -11,
+          "gzipDelta": 5,
+          "sameHash": false
+        },
+        {
+          "name": "assets/buildSkinStore.js",
+          "previousFile": "assets/buildSkinStore-B-kjly2M.js",
+          "currentFile": "assets/buildSkinStore-B7GyctDU.js",
+          "rawDelta": 0,
+          "gzipDelta": -2,
+          "sameHash": false
+        },
+        {
+          "name": "assets/buildingServices.js",
+          "previousFile": "assets/buildingServices-DV1gAOMk.js",
+          "currentFile": "assets/buildingServices-tH2AyWvw.js",
+          "rawDelta": 0,
+          "gzipDelta": -3,
+          "sameHash": false
+        },
+        {
+          "name": "assets/cartStore.js",
+          "previousFile": "assets/cartStore-C07ffxsA.js",
+          "currentFile": "assets/cartStore-BruOo0ya.js",
+          "rawDelta": 0,
+          "gzipDelta": -2,
+          "sameHash": false
+        },
+        {
+          "name": "assets/currency.js",
+          "previousFile": "assets/currency-CLScbmN-.js",
+          "currentFile": "assets/currency-DHTIHZlW.js",
+          "rawDelta": 0,
+          "gzipDelta": -3,
+          "sameHash": false
+        },
+        {
+          "name": "assets/designsApi.js",
+          "previousFile": "assets/designsApi-C8Utq6Kf.js",
+          "currentFile": "assets/designsApi-BzqVNtKM.js",
+          "rawDelta": 0,
+          "gzipDelta": -2,
+          "sameHash": false
+        },
+        {
+          "name": "assets/main.js",
+          "previousFile": "assets/main-DHOW9Yxw.js",
+          "currentFile": "assets/main-CVyo8oqa.js",
+          "rawDelta": -9,
+          "gzipDelta": -15,
+          "sameHash": false
+        },
+        {
+          "name": "assets/productSurfaceLighting.js",
+          "previousFile": "assets/productSurfaceLighting-BQZxIn0h.js",
+          "currentFile": "assets/productSurfaceLighting-BaFpcgdX.js",
+          "rawDelta": 0,
+          "gzipDelta": -2,
+          "sameHash": false
+        },
+        {
+          "name": "assets/propertyStore.js",
+          "previousFile": "assets/propertyStore-C5e7ZzCd.js",
+          "currentFile": "assets/propertyStore-D7cf2-rg.js",
+          "rawDelta": 48,
+          "gzipDelta": 18,
+          "sameHash": false
+        },
+        {
+          "name": "assets/renderQualityStore.js",
+          "previousFile": "assets/renderQualityStore-BBxCd5KC.js",
+          "currentFile": "assets/renderQualityStore-BWehppU5.js",
+          "rawDelta": 0,
+          "gzipDelta": -2,
+          "sameHash": false
+        }
+      ],
+      "html": [
+        {
+          "file": "index.html",
+          "beforeRaw": 2642,
+          "afterRaw": 6049,
+          "rawDelta": 3407,
+          "beforeGzip": 1273,
+          "afterGzip": 2518,
+          "gzipDelta": 1245
+        },
+        {
+          "file": "olb.html",
+          "beforeRaw": 3623,
+          "afterRaw": 6966,
+          "rawDelta": 3343,
+          "beforeGzip": 1560,
+          "afterGzip": 2775,
+          "gzipDelta": 1215
+        }
+      ],
+      "latePlumbing": [
+        {
+          "id": "src/pages/sales/plumbingHero.json",
+          "renderedLength": 529,
+          "renderedExports": [
+            "src",
+            "srcSet",
+            "sizes",
+            "width",
+            "height",
+            "default"
+          ],
+          "chunk": "assets/PlumbingPitchPage-DVgpEw-4.js",
+          "early": false
+        },
+        {
+          "id": "src/pages/sales/plumbingHero.json",
+          "renderedLength": 529,
+          "renderedExports": [
+            "src",
+            "srcSet",
+            "sizes",
+            "width",
+            "height",
+            "default"
+          ],
+          "chunk": "assets/plumbing/plumbingMain-BPER9ztJ.js",
+          "early": false
+        },
+        {
+          "id": "src/pages/sales/plumbingMain.tsx",
+          "renderedLength": 342,
+          "renderedExports": [],
+          "chunk": "assets/plumbing/plumbingMain-BPER9ztJ.js",
+          "early": false
+        }
+      ],
+      "finalization": {
+        "primaryFilesVerified": 613,
+        "originalNonHtmlHashesPreserved": true,
+        "primaryHashDigest": "7c7f2226b934cad48bcf7cc8288d5383fc98446b1c77180d276dced30a8adfb1",
+        "newFiles": [
+          "assets/plumbing/PlumbingEnquiryForm-BWjplNBo.css",
+          "assets/plumbing/PlumbingEnquiryForm-CoyardYg.js",
+          "assets/plumbing/plumbingMain-BPER9ztJ.js",
+          "assets/plumbing/plumbingMain-OjCrkJzx.css",
+          "assets/plumbing/vendor-react-De-jGD7v.js",
+          "assets/plumbing/vendor-router-Dg-knw_b.js",
+          "assets/plumbing/vendor-sentry-gR1wJj98.js"
+        ],
+        "html": {
+          "index.html": {
+            "rawDelta": 1900,
+            "gzipDelta": 578,
+            "primary": {
+              "scripts": [
+                "/assets/vendor-react-CS4MHxMm.js",
+                "/assets/vendor-router-YSxUxVSZ.js",
+                "/assets/main-CVyo8oqa.js"
+              ],
+              "preloads": [
+                "/assets/vendor-react-CS4MHxMm.js",
+                "/assets/vendor-router-YSxUxVSZ.js",
+                "/assets/main-CVyo8oqa.js"
+              ],
+              "styles": [
+                "/assets/main-CB3fRIv-.css"
+              ]
+            },
+            "plumbing": {
+              "scripts": [
+                "/assets/plumbing/plumbingMain-BPER9ztJ.js"
+              ],
+              "preloads": [
+                "/assets/plumbing/plumbingMain-BPER9ztJ.js",
+                "/assets/plumbing/vendor-react-De-jGD7v.js",
+                "/assets/plumbing/vendor-router-Dg-knw_b.js"
+              ],
+              "styles": [
+                "/assets/plumbing/plumbingMain-OjCrkJzx.css"
+              ]
+            }
+          },
+          "olb.html": {
+            "rawDelta": 1900,
+            "gzipDelta": 575,
+            "primary": {
+              "scripts": [
+                "/assets/vendor-react-CS4MHxMm.js",
+                "/assets/vendor-router-YSxUxVSZ.js",
+                "/assets/main-CVyo8oqa.js"
+              ],
+              "preloads": [
+                "/assets/vendor-react-CS4MHxMm.js",
+                "/assets/vendor-router-YSxUxVSZ.js",
+                "/assets/main-CVyo8oqa.js"
+              ],
+              "styles": [
+                "/assets/main-CB3fRIv-.css"
+              ]
+            },
+            "plumbing": {
+              "scripts": [
+                "/assets/plumbing/plumbingMain-BPER9ztJ.js"
+              ],
+              "preloads": [
+                "/assets/plumbing/plumbingMain-BPER9ztJ.js",
+                "/assets/plumbing/vendor-react-De-jGD7v.js",
+                "/assets/plumbing/vendor-router-Dg-knw_b.js"
+              ],
+              "styles": [
+                "/assets/plumbing/plumbingMain-OjCrkJzx.css"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

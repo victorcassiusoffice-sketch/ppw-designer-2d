@@ -20,7 +20,6 @@
  * validated placement. No engine change — Konva stable-lock untouched.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { productImageUrl } from '../../data/products';
 import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
 import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
 import type { Product } from '../../data/products.schema';
@@ -55,7 +54,7 @@ import { CatalogHeader, CatalogHome } from '../CatalogHome';
 import { useCatalogDismissal } from '../useCatalogDismissal';
 import { PlanCatalogLauncher } from '../PlanCatalogLauncher';
 import { CatalogAvailability, CatalogBrowseTabs, CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
-import { type CatalogBrowse } from '../catalogMetadata';
+import { catalogDragImageUrl, type CatalogBrowse } from '../catalogMetadata';
 import { isPitchEmbed } from '../../demo/pitchEmbed';
 
 const { DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
@@ -418,7 +417,7 @@ export function SimsBottomToolbar() {
                     data-macro={macroOf(p)}
                     title={p.name}
                     aria-label={`${p.name} — choose position, or hold and drag onto the floor`}
-                    onPointerDown={(e) => start(e, p.id, productImageUrl(p))}
+                    onPointerDown={(e) => start(e, p.id, catalogDragImageUrl(p))}
                     onClick={(event) => { if (event.detail === 0) choosePosition(p.id); }}
                     // Bug 1 (2026-05-28) — long-press should drag, not pop the
                     // browser "Save image" menu over the catalog thumbnail.

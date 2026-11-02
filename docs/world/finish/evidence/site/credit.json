@@ -1,0 +1,1337 @@
+{
+  "startedAt": "2026-10-31T12:23:08.748Z",
+  "target": "site",
+  "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app",
+  "expected": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+  "sessions": 5,
+  "healthBefore": {
+    "at": "2026-10-31T12:23:09.358Z",
+    "target": "site",
+    "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:23:09.943Z"
+    }
+  },
+  "method": "Phone viewport 390x844, touch emulation, one fresh context per session. /demo?view=2d&pitch=1&site=1&live=1, Site from the map, wait for the map canvas, search Tamarin Mauritius, take the first result, tap four corners, Close & check boundary, scroll the map shell into view. Captures: immediate, after fonts.ready + two frames, +500 ms, +1500 ms, after a native touch scroll and scrollIntoView. Each capture is the strip's own client rectangle; ink share = pixels with luminance below 140 over all pixels (the strip is white with dark text and links). A capture under 0.5 percent ink is blank. DOM geometry of the three anchors is recorded beside each capture. Every non-read request is blocked. Not a physical phone.",
+  "rows": [
+    {
+      "session": 1,
+      "captures": [
+        {
+          "label": "immediate",
+          "at": 11625.700000047684,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s1-immediate.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "fonts-two-frames",
+          "at": 11722.300000071526,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s1-fonts-two-frames.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "500ms",
+          "at": 12312.399999976158,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s1-500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "1500ms",
+          "at": 13402.300000071526,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s1-1500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "after-native-scroll",
+          "at": 13642.399999976158,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 524.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 524.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 524.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s1-after-native-scroll.png",
+          "clip": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "mapErrors": [],
+      "completed": true,
+      "providerRequests": 9,
+      "blockedWrites": [],
+      "blankCaptures": [],
+      "passed": true
+    },
+    {
+      "session": 2,
+      "captures": [
+        {
+          "label": "immediate",
+          "at": 9447.100000023842,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s2-immediate.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "fonts-two-frames",
+          "at": 9546.900000095367,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s2-fonts-two-frames.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "500ms",
+          "at": 10151.200000047684,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s2-500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "1500ms",
+          "at": 11245.100000023842,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s2-1500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "after-native-scroll",
+          "at": 11453.400000095367,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 524.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 524.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 524.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s2-after-native-scroll.png",
+          "clip": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "mapErrors": [],
+      "completed": true,
+      "providerRequests": 9,
+      "blockedWrites": [],
+      "blankCaptures": [],
+      "passed": true
+    },
+    {
+      "session": 3,
+      "captures": [
+        {
+          "label": "immediate",
+          "at": 9534.399999976158,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s3-immediate.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "fonts-two-frames",
+          "at": 9631.600000023842,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s3-fonts-two-frames.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "500ms",
+          "at": 10223,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s3-500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "1500ms",
+          "at": 11316.600000023842,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s3-1500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "after-native-scroll",
+          "at": 11520.899999976158,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 524.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 524.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 524.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s3-after-native-scroll.png",
+          "clip": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "mapErrors": [],
+      "completed": true,
+      "providerRequests": 9,
+      "blockedWrites": [],
+      "blankCaptures": [],
+      "passed": true
+    },
+    {
+      "session": 4,
+      "captures": [
+        {
+          "label": "immediate",
+          "at": 9320.200000047684,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s4-immediate.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "fonts-two-frames",
+          "at": 9416.700000047684,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s4-fonts-two-frames.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "500ms",
+          "at": 10007.600000023842,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s4-500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "1500ms",
+          "at": 11100,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s4-1500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "after-native-scroll",
+          "at": 11307.299999952316,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 524.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 524.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 524.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s4-after-native-scroll.png",
+          "clip": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "mapErrors": [],
+      "completed": true,
+      "providerRequests": 9,
+      "blockedWrites": [],
+      "blankCaptures": [],
+      "passed": true
+    },
+    {
+      "session": 5,
+      "captures": [
+        {
+          "label": "immediate",
+          "at": 9300.100000023842,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s5-immediate.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "fonts-two-frames",
+          "at": 9397.299999952316,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s5-fonts-two-frames.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "500ms",
+          "at": 9982.899999976158,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s5-500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "1500ms",
+          "at": 11077.600000023842,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 629.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 629.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 629.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s5-1500ms.png",
+          "clip": {
+            "x": 17,
+            "y": 622.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        },
+        {
+          "label": "after-native-scroll",
+          "at": 11288.200000047684,
+          "fonts": "loaded",
+          "box": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "anchors": [
+            {
+              "text": "OpenFreeMap",
+              "x": 26,
+              "y": 524.921875,
+              "width": 63.078125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenMapTiles",
+              "x": 103.484375,
+              "y": 524.921875,
+              "width": 63.8125,
+              "height": 14,
+              "visible": true
+            },
+            {
+              "text": "OpenStreetMap",
+              "x": 217.203125,
+              "y": 524.921875,
+              "width": 69.96875,
+              "height": 14,
+              "visible": true
+            }
+          ],
+          "width": 356,
+          "height": 29,
+          "darkPixels": 594,
+          "share": 0.057535838822161955,
+          "file": "credit-s5-after-native-scroll.png",
+          "clip": {
+            "x": 17,
+            "y": 517.921875,
+            "width": 356,
+            "height": 29
+          },
+          "blank": false
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "mapErrors": [],
+      "completed": true,
+      "providerRequests": 9,
+      "blockedWrites": [],
+      "blankCaptures": [],
+      "passed": true
+    }
+  ],
+  "healthAfter": {
+    "at": "2026-10-31T12:24:10.513Z",
+    "target": "site",
+    "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:24:11.089Z"
+    }
+  },
+  "healthStable": true,
+  "reproduced": false,
+  "passed": true,
+  "endedAt": "2026-10-31T12:24:10.513Z"
+}

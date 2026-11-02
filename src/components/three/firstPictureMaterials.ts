@@ -36,17 +36,28 @@ export function createFirstPictureMaterials() {
     if (shaderChanged) preview.needsUpdate = true;
     return preview;
   }
+  function withMaterials<T>(scene: THREE.Scene, action: () => T, visibleOnly: boolean): T {
+    const originals: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
+    const visit = (object: THREE.Object3D) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      originals.push([mesh, mesh.material]);
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(lightweight) : lightweight(mesh.material);
+    };
+    if (visibleOnly) scene.traverseVisible(visit); else scene.traverse(visit);
+    try { return action(); }
+    finally { for (const [mesh, material] of originals) mesh.material = material; }
+  }
   return {
+    prepare(renderer: Pick<THREE.WebGLRenderer, 'compileAsync'>, scene: THREE.Scene, camera: THREE.Camera): Promise<unknown> {
+      // compileAsync sets programs up synchronously, then polls their parallel
+      // shader links. Restore the live materials before that promise yields.
+      // Three.compile traverses hidden meshes too: converting those avoids
+      // accidentally compiling the cutaway's full physical materials here.
+      return withMaterials(scene, () => renderer.compileAsync(scene, camera), false);
+    },
     draw<T>(scene: THREE.Scene, render: () => T): T {
-      const originals: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
-      scene.traverseVisible(object => {
-        const mesh = object as THREE.Mesh;
-        if (!mesh.isMesh) return;
-        originals.push([mesh, mesh.material]);
-        mesh.material = Array.isArray(mesh.material) ? mesh.material.map(lightweight) : lightweight(mesh.material);
-      });
-      try { return render(); }
-      finally { for (const [mesh, material] of originals) mesh.material = material; }
+      return withMaterials(scene, render, true);
     },
     dispose() { for (const material of temporary.values()) material.dispose(); temporary.clear(); },
   };

@@ -1,0 +1,30 @@
+{
+  "expectedHead": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+  "originalSha256": "30b23e3c026f10b81a5f94b70b89777f52b2c070d00e7a85a7d3753fe26d36d2",
+  "reviewedAt": "2026-10-29T19:53:15.806Z",
+  "reviewer": "/root/finish_lighthouse",
+  "approvedForDiagnostic": true,
+  "poseAndReadinessPreserved": true,
+  "cancellationSemanticsReviewed": true,
+  "noQualityChanges": true,
+  "inspectedLoadExpression": "if(this.syncView(0),this.follow.copy(l),this.followReady=w,this.host.scene.updateMatrixWorld(!0),this.camera.updateMatrixWorld(!0),n==null||n(`Preparing ${t.label} for your walk…`),await this.prepareScene(),this.disposed||this.abort.signal.aborted)return;",
+  "inspectedPrepareSceneImplementation": "prepareScene(){const t=this.abort.signal,e=()=>new Error(\"Walk preparation was cancelled or took too long. Exit and try again.\");return t.aborted?Promise.reject(e()):new Promise((n,i)=>{let r=!1;const o=(a,u)=>{r||(r=!0,t.removeEventListener(\"abort\",c),a?n():i(u))},c=()=>o(!1,e());t.addEventListener(\"abort\",c,{once:!0});try{this.host.renderer.compileAsync(this.host.scene,this.camera).then(()=>o(!0),a=>o(!1,a))}catch(a){o(!1,a)}})}",
+  "originalAwaitCount": 1,
+  "expressionCount": 1,
+  "locations": {
+    "minifiedLine": 1,
+    "expressionCharacterOffset": 75446,
+    "expressionByteOffset": 75452,
+    "methodCharacterOffset": 75850,
+    "methodByteOffset": 75858
+  },
+  "freshRuntimeIdenticalToPrior52faBody": true,
+  "findings": [
+    "Fresh c30dd41 pinned GET discovery chain: demo HTML links App-C6WRBeWP.js; App references WalkLauncher-fWK02D9a.js; launcher references runtime-DH-0TOIs.js. Every capture has exact c30dd41 preview health before/after.",
+    "Exactly one await follows idle play/mixer zero update, actor pose, syncView, follow history restoration, matrix updates and Preparing progress. It precedes the unchanged disposed/abort guard, entry/ready bookkeeping and requestAnimationFrame.",
+    "The complete inspected method rejects an already-aborted signal, registers/removes its abort listener, calls compileAsync with the actual host scene/camera once, handles synchronous errors and promise rejection, and settles once.",
+    "Current diagnostic retains that await and same-object rethrow with guarded timing. Omit is intentionally a no-call counterfactual; preparation-specific errors/cancellation no longer execute, while remaining loading and first-real-render readiness logic is unchanged.",
+    "No renderer/quality/antialiasing/DPR/assets/camera/input logic is changed. Equal-length transformed bodies and exact-source/status guards remain required.",
+    "This is an agent source inspection. Root must independently confirm this fresh binding before any of the eight contexts start."
+  ]
+}

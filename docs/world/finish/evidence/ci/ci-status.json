@@ -1,0 +1,485 @@
+{
+  "at": "2026-10-31T12:30:44.874Z",
+  "label": "r4-ci-v3",
+  "repo": "victorcassiusoffice-sketch/ppw-designer-2d",
+  "branches": {
+    "walk": {
+      "head": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "checks": [
+        {
+          "name": "Vercel Preview Comments",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-31T12:10:07Z",
+          "completedAt": "2026-10-31T12:10:07Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/runs/124533438868",
+          "runId": "124533438868",
+          "jobId": null
+        },
+        {
+          "name": "Vitest (axe-core + schema-mirror + 590+ tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-31T12:06:53Z",
+          "completedAt": "2026-10-31T12:11:15Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41199654355/job/124532758889",
+          "runId": "41199654355",
+          "jobId": "124532758889"
+        },
+        {
+          "name": "Typecheck (root + api)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-31T12:06:53Z",
+          "completedAt": "2026-10-31T12:09:41Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41199654355/job/124532758727",
+          "runId": "41199654355",
+          "jobId": "124532758727"
+        },
+        {
+          "name": "Run Lighthouse audits",
+          "status": "completed",
+          "conclusion": "failure",
+          "startedAt": "2026-10-31T12:06:53Z",
+          "completedAt": "2026-10-31T12:11:03Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41199654354/job/124532758711",
+          "runId": "41199654354",
+          "jobId": "124532758711"
+        },
+        {
+          "name": "Scan history for secrets",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-31T12:06:53Z",
+          "completedAt": "2026-10-31T12:07:15Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41199654341/job/124532758560",
+          "runId": "41199654341",
+          "jobId": "124532758560"
+        }
+      ],
+      "statuses": [
+        {
+          "context": "Vercel",
+          "state": "success",
+          "url": "https://vercel.com/victor-ppw/ppw-designer-2d/HG3rLkKcjJ3X2VmbtRr5sVp2CW3c"
+        }
+      ],
+      "lighthouse": {
+        "jobId": "124532758711",
+        "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41199654354/job/124532758711",
+        "conclusion": "failure",
+        "failures": [
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "csp-xss",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  csp-xss failure for minScore assertion"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "total-byte-weight",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  total-byte-weight failure for minScore assertion"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "unused-css-rules",
+            "assertion": "maxLength",
+            "expected": "<=0",
+            "found": "2",
+            "line": "✘  unused-css-rules failure for maxLength assertion"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "valid-source-maps",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  valid-source-maps failure for minScore assertion"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "csp-xss",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  csp-xss failure for minScore assertion"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "total-byte-weight",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  total-byte-weight failure for minScore assertion"
+          }
+        ],
+        "warnings": [
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "bootup-time",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "categories.performance",
+            "assertion": "minScore",
+            "expected": ">=0.75",
+            "found": "0.46"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "dom-size",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "first-contentful-paint",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0.38"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "first-meaningful-paint",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0.38"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "interactive",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "largest-contentful-paint",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0.6"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "mainthread-work-breakdown",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "max-potential-fid",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "server-response-time",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "speed-index",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0.26"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "bootup-time",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "dom-size",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "mainthread-work-breakdown",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "server-response-time",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          }
+        ],
+        "auditIds": [
+          "csp-xss",
+          "total-byte-weight",
+          "unused-css-rules",
+          "valid-source-maps"
+        ],
+        "newIds": [],
+        "count": 6,
+        "warningCount": 15
+      },
+      "fullSuite": {
+        "files": 424,
+        "tests": 4458,
+        "conclusion": "success",
+        "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41199654355/job/124532758889"
+      }
+    },
+    "site": {
+      "head": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+      "checks": [
+        {
+          "name": "Vercel Preview Comments",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-31T12:17:37Z",
+          "completedAt": "2026-10-31T12:17:37Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/runs/124535028626",
+          "runId": "124535028626",
+          "jobId": null
+        },
+        {
+          "name": "Typecheck (root + api)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-31T12:15:02Z",
+          "completedAt": "2026-10-31T12:17:55Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41200246868/job/124534467236",
+          "runId": "41200246868",
+          "jobId": "124534467236"
+        },
+        {
+          "name": "Vitest (axe-core + schema-mirror + 590+ tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-31T12:15:03Z",
+          "completedAt": "2026-10-31T12:18:09Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41200246868/job/124534467074",
+          "runId": "41200246868",
+          "jobId": "124534467074"
+        },
+        {
+          "name": "Scan history for secrets",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-31T12:15:03Z",
+          "completedAt": "2026-10-31T12:15:21Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41200246820/job/124534467065",
+          "runId": "41200246820",
+          "jobId": "124534467065"
+        },
+        {
+          "name": "Run Lighthouse audits",
+          "status": "completed",
+          "conclusion": "failure",
+          "startedAt": "2026-10-31T12:15:02Z",
+          "completedAt": "2026-10-31T12:19:33Z",
+          "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41200246774/job/124534466878",
+          "runId": "41200246774",
+          "jobId": "124534466878"
+        }
+      ],
+      "statuses": [
+        {
+          "context": "Vercel",
+          "state": "success",
+          "url": "https://vercel.com/victor-ppw/ppw-designer-2d/Ex75i448FMLdsBMy41KpD64XhkDe"
+        }
+      ],
+      "lighthouse": {
+        "jobId": "124534466878",
+        "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41200246774/job/124534466878",
+        "conclusion": "failure",
+        "failures": [
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "csp-xss",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  csp-xss failure for minScore assertion"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "total-byte-weight",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  total-byte-weight failure for minScore assertion"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "unused-css-rules",
+            "assertion": "maxLength",
+            "expected": "<=0",
+            "found": "2",
+            "line": "✘  unused-css-rules failure for maxLength assertion"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "valid-source-maps",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  valid-source-maps failure for minScore assertion"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "csp-xss",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  csp-xss failure for minScore assertion"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "total-byte-weight",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0",
+            "line": "✘  total-byte-weight failure for minScore assertion"
+          }
+        ],
+        "warnings": [
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "bootup-time",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "categories.performance",
+            "assertion": "minScore",
+            "expected": ">=0.75",
+            "found": "0.51"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "dom-size",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "first-contentful-paint",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0.67"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "first-meaningful-paint",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0.6"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "interactive",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "largest-contentful-paint",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0.66"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "mainthread-work-breakdown",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "max-potential-fid",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "server-response-time",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/demo?view=2d&pitch=1",
+            "audit": "speed-index",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0.29"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "bootup-time",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "dom-size",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "mainthread-work-breakdown",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          },
+          {
+            "route": "/pitch/plumbing",
+            "audit": "server-response-time",
+            "assertion": "minScore",
+            "expected": ">=0.9",
+            "found": "0"
+          }
+        ],
+        "auditIds": [
+          "csp-xss",
+          "total-byte-weight",
+          "unused-css-rules",
+          "valid-source-maps"
+        ],
+        "newIds": [],
+        "count": 6,
+        "warningCount": 15
+      },
+      "fullSuite": {
+        "files": 426,
+        "tests": 4499,
+        "conclusion": "success",
+        "url": "https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/41200246868/job/124534467074"
+      }
+    }
+  }
+}

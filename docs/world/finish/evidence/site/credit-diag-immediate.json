@@ -1,0 +1,2563 @@
+{
+  "startedAt": "2026-10-31T12:38:50.030Z",
+  "diagnostic": true,
+  "arm": "immediate",
+  "gpuArgs": "d3d11",
+  "target": "site",
+  "expected": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+  "healthBefore": {
+    "at": "2026-10-31T12:38:51.343Z",
+    "target": "site",
+    "url": "https://ppw-designer-2d-git-gpt-olb-site-map-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "8d06d105bb20f301cb47e425ef6674fcacad34e7",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:38:51.944Z"
+    }
+  },
+  "rows": [
+    {
+      "session": 1,
+      "moments": [
+        {
+          "label": "map-ready",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 0,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 394.6,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 685.6,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 692.6,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 692.6,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 692.6,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 405.6,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 653.6,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-search",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 166,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 228.6,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 519.6,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 526.6,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 526.6,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 526.6,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 239.6,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 487.6,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "at-screenshot",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-screenshot",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-1500ms",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "stripInkShareAtScreenshot": 0.057535838822161955,
+      "stripInkShareInPageCapture": 0.057535838822161955,
+      "blockedWrites": []
+    },
+    {
+      "session": 2,
+      "moments": [
+        {
+          "label": "map-ready",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 0,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 394.6,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 685.6,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 692.6,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 692.6,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 692.6,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 405.6,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 653.6,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-search",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 166,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 228.6,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 519.6,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 526.6,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 526.6,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 526.6,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 239.6,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 487.6,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "at-screenshot",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-screenshot",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-1500ms",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "stripInkShareAtScreenshot": 0.057535838822161955,
+      "stripInkShareInPageCapture": 0.057535838822161955,
+      "blockedWrites": []
+    },
+    {
+      "session": 3,
+      "moments": [
+        {
+          "label": "map-ready",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 0,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 394.6,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 395.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 685.6,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 692.6,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 692.6,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 692.6,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 405.6,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 653.6,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-search",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 166,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 228.6,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 229.6,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 519.6,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 526.6,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 526.6,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 526.6,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 239.6,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 487.6,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "at-screenshot",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-screenshot",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        },
+        {
+          "label": "after-1500ms",
+          "scroll": {
+            "rect": {
+              "x": 0,
+              "y": 228.4,
+              "w": 390,
+              "h": 527.1
+            },
+            "scrollTop": 229,
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "auto",
+              "height": "527.141px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "shell": {
+            "rect": {
+              "x": 16,
+              "y": 227.9,
+              "w": 358,
+              "h": 321
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "321px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "map": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "auto",
+              "overflow": "hidden",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvasContainer": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 0
+            },
+            "style": {
+              "position": "static",
+              "zIndex": "auto",
+              "overflow": "visible",
+              "height": "0px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            }
+          },
+          "canvas": {
+            "rect": {
+              "x": 17,
+              "y": 228.9,
+              "w": 356,
+              "h": 290
+            },
+            "style": {
+              "position": "absolute",
+              "zIndex": "auto",
+              "overflow": "clip",
+              "height": "290px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "width": 356,
+            "height": 290,
+            "cssWidth": 356,
+            "cssHeight": 290,
+            "dpr": 1
+          },
+          "strip": {
+            "rect": {
+              "x": 17,
+              "y": 518.9,
+              "w": 356,
+              "h": 29
+            },
+            "style": {
+              "position": "relative",
+              "zIndex": "2",
+              "overflow": "visible",
+              "height": "29px",
+              "display": "block",
+              "visibility": "visible",
+              "opacity": "1",
+              "transform": "none"
+            },
+            "text": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+            "topElement": {
+              "tag": "DIV",
+              "className": "site-attribution",
+              "text": "OpenFreeMap © OpenMapTiles Data from Ope"
+            }
+          },
+          "anchors": [
+            {
+              "x": 26,
+              "y": 525.9,
+              "w": 63.1,
+              "h": 14
+            },
+            {
+              "x": 103.5,
+              "y": 525.9,
+              "w": 63.8,
+              "h": 14
+            },
+            {
+              "x": 217.2,
+              "y": 525.9,
+              "w": 70,
+              "h": 14
+            }
+          ],
+          "controls": [
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-group",
+              "rect": {
+                "x": 319,
+                "y": 238.9,
+                "w": 44,
+                "h": 132
+              }
+            },
+            {
+              "className": "maplibregl-ctrl maplibregl-ctrl-scale",
+              "rect": {
+                "x": 27,
+                "y": 486.9,
+                "w": 89.4,
+                "h": 22
+              }
+            }
+          ],
+          "viewport": {
+            "w": 390,
+            "h": 844
+          }
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "stripInkShareAtScreenshot": 0.057535838822161955,
+      "stripInkShareInPageCapture": 0,
+      "blockedWrites": []
+    }
+  ],
+  "endedAt": "2026-10-31T12:39:30.021Z"
+}

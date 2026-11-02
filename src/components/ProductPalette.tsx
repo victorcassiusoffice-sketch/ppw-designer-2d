@@ -24,7 +24,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   REGION_GROUPS,
   filterByRegion,
-  productImageUrl,
   thumbnailFor,
 } from '../data/products';
 import { mergeCatalog } from '../data/mergeCatalog';
@@ -34,6 +33,8 @@ import { DetailCard } from '../designer/DetailCard';
 import type { RegionGroup } from '../data/products';
 import type { Product, ProductCategory } from '../data/products.schema';
 import { isPitchEmbed } from '../demo/pitchEmbed';
+import { catalogImageSources } from '../data/catalogImageSources';
+import { catalogDetailImageUrl } from './catalogMetadata';
 
 // P0-ζ — Sims-style floating hover card state for catalog cards.
 interface HoverState {
@@ -431,7 +432,7 @@ export function ProductPalette({
             anchorYPx={hover.anchorYPx}
             canvasWidthPx={typeof window !== 'undefined' ? window.innerWidth : 1280}
             canvasHeightPx={typeof window !== 'undefined' ? window.innerHeight : 720}
-            thumbUrl={productImageUrl(hover.product)}
+            thumbUrl={catalogDetailImageUrl(hover.product)}
             name={hover.product.name}
             priceMur={Math.round(hover.product.price?.value ?? 0)}
             priceLabel={formatPrice(hover.product)}
@@ -466,14 +467,14 @@ export function ProductPalette({
 
 /**
  * Catalog tile thumbnail (2026-06-09) — shows the REAL product image
- * (productImageUrl: real photo → top-down → …) instead of the generic
+ * (catalogue resolver: real photo → top-down → …) instead of the generic
  * category SVG. On a load error it falls back to the inline category SVG so
  * a 404 never leaves a blank tile. `object-contain` keeps the product
  * un-cropped on its white studio background.
  */
 function CatalogTileThumb({ product }: { product: Product }) {
   const [errored, setErrored] = useState(false);
-  const src = productImageUrl(product);
+  const src = catalogDetailImageUrl(product);
   // SVG data-URI fallbacks always "load", so only a real raster 404 flips
   // `errored`; when it does, drop straight to the category SVG primitive.
   if (errored || !src) {
@@ -486,7 +487,7 @@ function CatalogTileThumb({ product }: { product: Product }) {
   }
   return (
     <img
-      src={src}
+      {...catalogImageSources(src)}
       alt={product.name}
       loading="lazy"
       draggable={false}

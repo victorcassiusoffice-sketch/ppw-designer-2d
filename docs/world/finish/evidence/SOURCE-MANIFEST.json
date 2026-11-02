@@ -1,0 +1,2801 @@
+{
+  "at": "2026-10-31T13:08:07.296Z",
+  "note": "Every original file this package was made from, with its byte count and SHA-256. hashOnly entries are retained outside the package unchanged.",
+  "sources": [
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-load-v1/summary.json",
+      "bytes": 101012,
+      "sha256": "0dfdb5331d16fc2501ee1acd821e902f780fb61982112fde48dcd3225ca939b7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-load-v1/load-all.json",
+      "bytes": 1520143,
+      "sha256": "053bfc3d4a590e2e10a22bf2eb8b99d99e6298390e31c5abe36cea897182f0bc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-load-v1/network-audit.json",
+      "bytes": 1640720,
+      "sha256": "44b067e411a46441b41110ec6ee7c72d56bc56ce511942c65e3fb142b089f98c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/startup-analysis-r4-load-v1.json",
+      "bytes": 52149,
+      "sha256": "c74fc5d85055672fb4906bf50edcbbfd907be3ab7252f55908b62b291093e2ba"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/build-attribution-r4-build-v1.json",
+      "bytes": 24984,
+      "sha256": "98e8e22a495d433352d8bf95f0568a1c509b9956e104e2b11b8705fb06145ce9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/early-semantic-r4-build-v1.json",
+      "bytes": 2708,
+      "sha256": "260f50070a8d268c0e6cac92c14232640961bd2a1cde1edd44e054a024e08e51"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/audit.json",
+      "bytes": 445190,
+      "sha256": "e7751f6344f65ac4835528cbcb5de7172ceb70f79bf982b132c1c0493a9a37fe"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/audit.json",
+      "bytes": 430306,
+      "sha256": "2d16a727df9dbbff1cae086553d22cb696dfd33ca217003278711882710b2e9d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/audit.json",
+      "bytes": 345667,
+      "sha256": "8705316636e63c328d8b136d97a5be651a20d79efa8dd0beb8387b78ddc2ed82"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/rules-static-r4-v1.json",
+      "bytes": 2751,
+      "sha256": "f54e6e07ee2615e28bd2b0efc227fbeda365d6bc32f008b6a608300073bcc653"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-rules-visible-v1/visible-rules.json",
+      "bytes": 31608,
+      "sha256": "093a1b609771b9948c4958f40170df1f9960e03521dd9f269f05b465684574de"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-ci-v3/ci-status.json",
+      "bytes": 15940,
+      "sha256": "f1ed97660cf28dd41e14cedb0e21ba4be14bbd4687a2ca5da659dbcb10c02720"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-input-v1/walk-performance-walk.json",
+      "bytes": 59847,
+      "sha256": "de23f747aa4dc0e6a039f45ea845f5e5d80b7bf47bd194dcbbb4d4235801af2a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-frames-v1/walk-framerate-walk.json",
+      "bytes": 3111394,
+      "sha256": "a6a15a3be2e1660903097e7e141d7c44b08bfdee280d0673e45a130c609d3710"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-background-v1/background-ownership.json",
+      "bytes": 5825,
+      "sha256": "e1918ffb0dd0d1ee2d14de6cbf5287ad919896ead24be3a34c3de73441ee0641"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-desktop-v1/walk-functional-walk.json",
+      "bytes": 27083,
+      "sha256": "309bc5d91e37c83792f364b407ff9eb4be16bc6aeb8ea488f88f9aaa06cb9270"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-phone-v1/walk-functional-walk.json",
+      "bytes": 1800571,
+      "sha256": "353edc3b29fa4592bbc093b714e6288fb98217abad6693bda52059030d35d433"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-phone-tap-v1/diag-phone-tap.json",
+      "bytes": 38898,
+      "sha256": "b57be4359304cda620ac5ab17cdb7fd2d372138e459981f9621ddde1c52b034b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-flick-tap-studio-v1/diag-flick-tap.json",
+      "bytes": 145448,
+      "sha256": "955f241882dae046a5e4d83b1725996492c13a7f12b7266b86624951989457b9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-flick-tap-repo-v1/diag-flick-tap.json",
+      "bytes": 145422,
+      "sha256": "4388f81838f0e192d5d0a61cc886fdf49be7555518d33a181ce5efdd7acea158"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-phone-locator-studio-v1/walk-functional-walk.json",
+      "bytes": 1900201,
+      "sha256": "0dd5e4dcfa77af26aa4261a488bc851364d5cdcc7037bba026e632b5be383f74"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-phone-locator-studio-fixed-v1/walk-functional-walk.json",
+      "bytes": 1793911,
+      "sha256": "17ca2dc3b3887199ab4d1da5557a3d8f1ed88e3b196db53b667f38eeb5e915d3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-phone-locator-v1/walk-functional-walk.json",
+      "bytes": 1867397,
+      "sha256": "f1e5b5ff2cd9afe8282ecc84cba274764311dc8f2871f5275eebc6d547d9cd1d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/analysis.json",
+      "bytes": 21112,
+      "sha256": "c322cc413323ad691dbf27902f66b690f1c9a369203f9df105f302d6581b9cba"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/preparation-decision-v1.json",
+      "bytes": 5656,
+      "sha256": "cf6dda3d49161e244e484ab2795e8694734ac673a83dd9eb0a290b8ec5934987"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/FPS-DIAGNOSTIC-c30dd41-v1.json",
+      "bytes": 5964,
+      "sha256": "68cd4fcfd01b218690e43b110f8fae91721c9e52cccfd6656f4e1b6e25c26fc4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/preflight-binding.json",
+      "bytes": 1471,
+      "sha256": "6147a6cbb33d302cb5307e4bda013800b3d07eef8d8d6d2f7fbba7b44b2b157c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/preflight-source-review.json",
+      "bytes": 2739,
+      "sha256": "b8028bedd936f785a3964afc5e9a106318a9449f2eb0cb057a6485925457a5b8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/lease-release.json",
+      "bytes": 468,
+      "sha256": "6f05354cf60646a3d950e69096f4b9bc386bdd245432bbf82751b15e05f9f755"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/preview-smoke.json",
+      "bytes": 72699,
+      "sha256": "7adf7771835cf39495d5861c210bbded4d1f411c9d6dec9a252ed8a9048ebfa3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/plan-projection.json",
+      "bytes": 89660,
+      "sha256": "3a92cca0989268380fd30708ddc7ce468d505bfbd0a97a5108694f89b07462b9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/site-plan-visual.json",
+      "bytes": 73720,
+      "sha256": "4dc7f45a9e785d95878ad2f5588af54897b8dfd698f8b771ece382af0bc49b75"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/site-credit.json",
+      "bytes": 34987,
+      "sha256": "952b3a68953b56e9e48d883c597f3466e36ad388fe22d70a2f0f359aef5bcea1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-immediate-v2/diag-site-credit-dom.json",
+      "bytes": 67054,
+      "sha256": "4cbb162bcf61a7e32170a54c7099a1bc017969ac239df5470acb64c00c6beda2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-twoframes-v1/diag-site-credit-dom.json",
+      "bytes": 67074,
+      "sha256": "cc63067e024379e362da7914284f38dcaec3e014dc8f69ac8df98d33b114b906"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/pdf-pages.json",
+      "bytes": 3771,
+      "sha256": "e44082b00d38a1993595da5c99387e9494544c137c08ce3c37089825c7becf42"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-phone-v1/walk-phone-first-door-open.jpg",
+      "bytes": 21783,
+      "sha256": "5368efc2479777d3424b546b5bfd582821176cce0883a76a72dcfecfb9a720c4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-phone-v1/walk-phone-third-door-open.jpg",
+      "bytes": 19970,
+      "sha256": "82d9ef12d4566521cfa9a46323094baf6e910ae72daffa8cef1dc2e4e4682c01"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-desktop-v1/walk-desktop-first-door-open.jpg",
+      "bytes": 51574,
+      "sha256": "0dc13a27652a76c1537149e4c43399f4e263e4292c417d984cbfe11315f6fce0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-input-v1/walk-phone-chooser.jpg",
+      "bytes": 41043,
+      "sha256": "cf1b5f409b0eb285eed2a7e7070edb25fcbe628a39fe6d9fd11311f06ace7c8d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-phone-locator-studio-v1/walk-phone-single-touch-doors-both-views-failure.jpg",
+      "bytes": 19530,
+      "sha256": "af36eb0e62827c5168df0aed844fc80181d3c8247c31cde40c699cd0c9147817"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-natural-tools-open.png",
+      "bytes": 87822,
+      "sha256": "449983d34b04512b8e8b50976ad052f5e0f4a2bec90c57c037fdeb0a74b8eea2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-blueprint-tools-reopened.png",
+      "bytes": 87439,
+      "sha256": "c0e69078479f3744d41eb4b8ca250e490ca94bd54d67aa094d9362d9420f59ab"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-natural-tools-open.png",
+      "bytes": 132459,
+      "sha256": "8bba8018682447655e631aeac010b57fbd57048bb053cb5389a4f86cd5b22e4c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/plan-phone.jpg",
+      "bytes": 32372,
+      "sha256": "06c9013c7943c70b493186a82c72865d34f06c280d3b1a5be6ad76a786b765b9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/hydrated-phone.jpg",
+      "bytes": 32244,
+      "sha256": "34040aebd1905b71ac54dd02421a2003e5edea9a058701da2ab18178329e7e42"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-immediate-v2/credit-dom-s3.png",
+      "bytes": 66885,
+      "sha256": "23bbad620d0d20397e2c3bae279a0ec86848bade9a709617417930576a8e5acc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-immediate-v2/credit-dom-s3-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-twoframes-v1/credit-dom-s1.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/report-laptop-a4-page-1.png",
+      "bytes": 66800,
+      "sha256": "236149b3c86192776a47f87f0e4f552c614bd720e6a67e068175107d8e7b71ea"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/report-laptop-a4-page-3.png",
+      "bytes": 88146,
+      "sha256": "482f28e4a963a6378101076418cb9b617a6a22f64a856d81e121df6913283d4a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/live-phone.jpg",
+      "bytes": 38686,
+      "sha256": "5d6f241eed76d99b1323b68a8e5d346c4bab7c04af3e855ca3053e7f945d7851"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/report-phone.jpg",
+      "bytes": 36710,
+      "sha256": "1ac8ff15502387b033b700e8d5af64dcf88de0b054c2415827298aa009baedc5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/protocol.md",
+      "bytes": 12342,
+      "sha256": "f3e56e6f798b2e77bfc4e9d76a6cba26f138a2170ddcbff8f8ae24bc47198720"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/FPS-DIAGNOSTIC-c30dd41-v1.md",
+      "bytes": 1819,
+      "sha256": "97573720044848760742b3b2855a129260493b3eacecd191d8fc253a31e77e2f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/gpt-round4-prep-ab/report.json.gz",
+      "bytes": 90033,
+      "sha256": "fa378c5bb44522484fa717a53eb463c941da2d8061044e2de1d09be3f3c8fd77"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/docs/FAILURES.json",
+      "bytes": 3397,
+      "sha256": "a339db4897083fb314020c993cf52bee02421933ced89ccabc7cc1944b2afc53"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/AdminLayout-B6XH245W.js",
+      "bytes": 665,
+      "sha256": "e17aace219c28fa2d741542f94f388cc9e21fd26d320e697d03df101be1c5229"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/AdminMerchantsPage-BObkhb80.js",
+      "bytes": 6975,
+      "sha256": "2db7965ddf7834b6aa37baa4a0e01ba571d33181faabca914eed835231635f33"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/AiProviderDraft-Dus139CC.js",
+      "bytes": 815,
+      "sha256": "100da0798c72ae952255a3d02c10abd318940f4a8ce121bc104b2f40dcd20fd3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/App-CiuI5Q1x.css",
+      "bytes": 205684,
+      "sha256": "6d7916f6f53642fa9c790957b3bad16aa328332aea1f8d75d2fafef4635de763"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/App-DknD37rJ.js",
+      "bytes": 1079141,
+      "sha256": "b9cad162a3b4260713b4be39b08572311607ddd7b220e423fcaf824c1e996dba"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/AuditLogPage-x28-CSQo.js",
+      "bytes": 3389,
+      "sha256": "3e3919a52f578e21bc3b646ba25d70534168335b4eeb6ec8078144c7dfe53cd0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/AuthenticatedAiDraft-C__QiotN.js",
+      "bytes": 2439,
+      "sha256": "2251707a412ce793d1fd56ab358f75d5cd347835811847f5d9b93a19056374fe"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/buildingServices-DV1gAOMk.js",
+      "bytes": 175717,
+      "sha256": "338f54e90cae8dd3fef99ff2cbd9ccc15e2613f982ed9307aa1c13e6214ab6a0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/buildingServicesCatalog-gFhvLWEg.js",
+      "bytes": 6105,
+      "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/buildSkinStore-B-kjly2M.js",
+      "bytes": 744,
+      "sha256": "3a7bfa3ce00d0119a3ade174a1a40b800814a36807c8f229c987ca85a12bd8ca"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/CartPage-ClZ-jlCr.js",
+      "bytes": 12285,
+      "sha256": "487731b751bafc270ff00cbc0ab5b2ffa443ba2235e850fa6282ea2b10179ed1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/CartPageHeader-DyHeNeZm.js",
+      "bytes": 1301,
+      "sha256": "0966b08c29e6403859c5690d869833d9bbab0dbb6c36ed0370d2d95cdc6359b0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/cartStore-C07ffxsA.js",
+      "bytes": 12564,
+      "sha256": "71878b9442c1d05a40d947641c664b8e45160c22b8a3ef5863ff19bcd319eed8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/CheckoutPage-B6Tn0TY7.js",
+      "bytes": 21431,
+      "sha256": "f0e9e63f7af779e9edf8b7132578dae87bc78facf34f6d6841b7e23db01d041b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/CityThreeView-Bak-owCN.css",
+      "bytes": 1403,
+      "sha256": "47f3523b75efec745e52ec5fdf43c84d3754a95ebf7a7835e5c01422cb90950f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/CityThreeView-Cl1EtCH3.js",
+      "bytes": 11792,
+      "sha256": "aa93cd1c7635cb063696bfc72c420249e5d0fa6b5dd39ca1bc668cf6be91b82d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/commission-BSjTNLTx.js",
+      "bytes": 52,
+      "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/ConstructionPitchPage-BcgGXA3A.css",
+      "bytes": 20020,
+      "sha256": "d00fa16aaf400ec8ee3b9eeb6f3be71bbddad23922365904344cbbbf2136f94b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/ConstructionPitchPage-BJQviuNx.js",
+      "bytes": 28952,
+      "sha256": "d7638564ee8ccb1a8d6cf05c65127725f106fe099424a044a288f08657c9e4ce"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/currency-CLScbmN-.js",
+      "bytes": 325,
+      "sha256": "336aa2ad7502e81c307213a95d5cf138f7f33b04ae12b026802870cc322359f0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/CurrencySwitcher-CL0kYB8t.js",
+      "bytes": 2642,
+      "sha256": "048d62d9d359e8d2a0c4581a0a69d39db161dd7be2ed464a4629d7e7513d3735"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/DashboardPage-8UfHVPC8.js",
+      "bytes": 5222,
+      "sha256": "54c81bffb61ff615d0bd9d42fdbc354ddc82cec7005efebddeb1e30f06577fdd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/DemoDesignerPage-BtX7evLt.js",
+      "bytes": 4846,
+      "sha256": "a7417176c5750f60e4bc76bed9e636015553981f9a6585faac04970dc1b5348d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/designsApi-C8Utq6Kf.js",
+      "bytes": 16071,
+      "sha256": "b739ecc2becbb0c119efb592bf4b7244558bb57a776cfd371aac56a5aaaae07d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/DeveloperPitchPage-WXv3fnCY.js",
+      "bytes": 18445,
+      "sha256": "f1bf574dc99395381a9f456d25d07804bdd84944eaeabe5892d87829ae796b9e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/downloadJson-DhXa1J4E.js",
+      "bytes": 276,
+      "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/draco_decoder-C32yEggz.wasm",
+      "bytes": 285747,
+      "sha256": "c55a594e8ffd18426d36b27fea9618af3df5e173640a3e56d46f09d76f0574f2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/draco_decoder-fzg4nYZr.js",
+      "bytes": 719410,
+      "sha256": "30e4d486fa020737af10e3c56197693e5b904bdc05b8bfa5d7b06751dec6da04"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/draco_decoder-Z1_iN-Ht.wasm",
+      "bytes": 192420,
+      "sha256": "a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/draco_wasm_wrapper-DxJM36Ib.js",
+      "bytes": 58763,
+      "sha256": "e8049906ef3f8f75d3456c22a3f31bfdfe5b5b5bd09ccdec613b9e9a49d554d8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/draco_wasm_wrapper-fZCQGLGb.js",
+      "bytes": 58456,
+      "sha256": "8bb2952d2ba7d67e1414f8df819410cb0434a666be53f671fff75f68843d76f6"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/EmbeddedDesigner-CbI-XtPz.js",
+      "bytes": 1073,
+      "sha256": "e03cfd027b2aacba479d9f1b0b78c5224a6e66a25114c813ef70716990e4fd38"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/embedMessages-BIa44F5a.js",
+      "bytes": 716,
+      "sha256": "eca3fa419597e6f5c6148696fec50907ca90341605dd329622c18a1945f0734e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/EmployeeStarterPage-CR5J8dCf.js",
+      "bytes": 13355,
+      "sha256": "5f1f0e6821ad2192a168fc1051f8d8a95bc0f0a65fcb1cd5fdabde15964cd5af"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/gumroadCheckout-BB7KmXQx.js",
+      "bytes": 1060,
+      "sha256": "42d94dbfcddbc6ab7711cb703a344824a85adb936e65f6bb60e202da00f4564b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/GumroadReturnPage-BG_EzyOK.js",
+      "bytes": 1033,
+      "sha256": "629d27079bcd605bb62ab9b0e5ca32025b14932c4b9964a572b0568f34d80810"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/html2canvas.esm-CBrSDip1.js",
+      "bytes": 202301,
+      "sha256": "b4f3add809a6d59f46260e8fd56cab240f3153def977386b230a839e8cb0b281"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/index-DtdD89wa.js",
+      "bytes": 62174,
+      "sha256": "173f5306ed8458858b9e483dfc462174c82d7be74daa8ac8f190c7e219364371"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/LocaleThemeControls-CS9Zxink.js",
+      "bytes": 3170,
+      "sha256": "79e673fe10bb3fcdfdc50dc6a1bde4612e18ab2d234f2c667570ac5bb567cc28"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/main-CB3fRIv-.css",
+      "bytes": 74931,
+      "sha256": "887507e9cc6ad254c8b621802fa14c9d799f9ac9b3b17dcef57f0c4b3fd02ea4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/main-DHOW9Yxw.js",
+      "bytes": 87363,
+      "sha256": "9484401a68ee15addb1f8ac09f710de102809a72967be9fc135653285b1ffeec"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MarketplaceCartPage-Bl_hXd4q.js",
+      "bytes": 6947,
+      "sha256": "fb416113a0ec9e6c830217578f4ef06a2dd79c89b3ca3d6ac2761050d653f102"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/marketplaceCartStore-CxYglcrb.js",
+      "bytes": 808,
+      "sha256": "0cd51d8664cc7f2fc6b49459fa26f4cd08c3cafb17c8c04ad3310e0883ce22ca"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MarketplaceCheckoutPage-DY8lPIwh.js",
+      "bytes": 8159,
+      "sha256": "40ff7a1ffcc6e9de85ba1a8a5b56e03e99bd4e8716c339250a6b690ec991de8d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantAddProductPage-CMt09diz.js",
+      "bytes": 11707,
+      "sha256": "650e0bd2218319ad50513e815ab68c5f4b32d03200706fafff3705396837bb7c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantAgentPage-kHCVhgZW.js",
+      "bytes": 5479,
+      "sha256": "cccad8991409cca257efead5470ec92b9a2a0c8c71d0b201f34e52cf17b25c2f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantConnectPage-C5bjaT7E.js",
+      "bytes": 18772,
+      "sha256": "3298c12b447727b502c39124edbe127bda4ce8464138a097b0353e24f2483c83"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantConnectPage-CD4N4Hu1.css",
+      "bytes": 6122,
+      "sha256": "708b86402774b4b369a61159f93868eecfb5f419d406392d2d3a939d2c4c0d42"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantDashboardPage-B8qQnC7v.js",
+      "bytes": 11848,
+      "sha256": "38291e3d3566225d91d098023b3b60fc580daff83ecb2d198fd3d50b0ebd9bb5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantDetailPage-U1BbHm3M.js",
+      "bytes": 8829,
+      "sha256": "9703364287f15d6533333693feb02d6acf566666a4dd642021026ccd0f8abce5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/merchantFurniture-ZuMdbwJD.js",
+      "bytes": 2710,
+      "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantOnboardingPage-Dpwg32D0.js",
+      "bytes": 7005,
+      "sha256": "28424b974b11aec349cee72e540534d0e4a3e66d23aabbcd2cce6bd558d44053"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantPitchPage-C_gFSBsJ.js",
+      "bytes": 18144,
+      "sha256": "f252585911f6430a47f21520e1174a63687b07d5870b42c388fa8d34e18624b0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MerchantsListPage-BAr8shu8.js",
+      "bytes": 5968,
+      "sha256": "c95a8abe33c54b55909f69c36397174182ede196072f15235c9c02b9d6b97f5d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/middleware-BoNmX9tp.js",
+      "bytes": 3758,
+      "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/modelSnapshot-57aqsZYo.js",
+      "bytes": 5351,
+      "sha256": "9ec34e617e493adbdef1fb7f4b1bd3e57d189e88d5a522eedaedc39bb4340f13"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/MyDesignsPage-B8kfswtM.js",
+      "bytes": 8416,
+      "sha256": "0c84c7442bf2548c0b68f6665b7673bd6a74f69f33ef497f9fa21e78206a5a92"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OlbHomePage--qco7qC7.css",
+      "bytes": 3234,
+      "sha256": "8fc5d3bb1b6cf52662014f8f78136139406e8e0ac3664610070014058d511fd4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OlbHomePage-BNpC04fL.js",
+      "bytes": 2521,
+      "sha256": "210b31ad74484ca92853d9dfa40b87c94e442236248d1f3924782cd567f3de90"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OlbLockup-DNJvxCTl.js",
+      "bytes": 373,
+      "sha256": "8dfed318c79d76eabe46fcb3bd4aeea29dda2fceaab11aa9d22ae3e733f30607"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OrderCancelledPage-If8WaV9L.js",
+      "bytes": 1152,
+      "sha256": "de57d3b094e9865370c38dbc9a265992270671d6d13d6d9cf07dd1678d2465ba"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OrderPendingPage-B_zQ0O_k.js",
+      "bytes": 3510,
+      "sha256": "717adaa4b83ea131d070d1a4f7695cbac93d14f4f139cf1c47cb6bb94253fcf4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OrdersListPage-lUchrPDy.js",
+      "bytes": 5722,
+      "sha256": "bd31463672899687ee2cb147df7f3a052c7b32869f4248e878b4d3332b69124f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/orderSnapshot-Cx7fzqkU.js",
+      "bytes": 416,
+      "sha256": "e335721c45f7ed58e0c2cc3505f257b34fcc7ecb91fe6af0189f2064b5f7e262"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OrdersPage-CvOWRGUH.js",
+      "bytes": 2797,
+      "sha256": "bf0334aa1e2eb6d80b30a4fe5ed469e738642b0f154f96358ecac5c0807fbc99"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/ordersStore-CNxSaAmi.js",
+      "bytes": 476,
+      "sha256": "1fc21db11590165f06fb70ddfed6a0e56c3c4476478f6e3da73a572c67684c1d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OrderSuccessPage-BidnMixe.js",
+      "bytes": 442445,
+      "sha256": "537adb70fa9229220aa88e15389be5b1642d4e195118366d1dfd50dc9a2b697d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/OrderTrackPage-CN84lk7q.js",
+      "bytes": 6898,
+      "sha256": "77d8fe88c1ce89b460325708ca3f80ef21ac8cd44f9bd29c0d78cca63b03972d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/PayoutsListPage-OhXzdByh.js",
+      "bytes": 5516,
+      "sha256": "0feadd744a6ca1525113c217720f54f214f7b1b026ea0bf65e7932d9e8532278"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/paypal-pA1pCpPL.js",
+      "bytes": 2631,
+      "sha256": "113528438d89e3c625649b7a250b7bfe0104b4807893f98b287e4cc6a2a86ad2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/paypalReturn-CLA59kOS.js",
+      "bytes": 685,
+      "sha256": "e7cdc449e2a53005225e0ba066c18ea78a596bb8ddc2a03d627efe15194548b5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/pitch-tactile-BsYnGRGm.js",
+      "bytes": 5194,
+      "sha256": "6b905de4d70e2af2fdfe01c62cc73e7a1f7fb4d7caac855556c38a9cf65d2ca9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/pitch-tactile-BWjplNBo.css",
+      "bytes": 48785,
+      "sha256": "9eea27020520ceb32b5daa278b8b52e2fd7df83087dbeb046058686b3f933e3b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/PitchShell-CnJyRLq9.js",
+      "bytes": 15475,
+      "sha256": "0c98677c6b3bbf803f00d5d3dd54160331cbfaeac588684a6054896d7afd4ea0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/PitchShell-DnpWFdvd.css",
+      "bytes": 23129,
+      "sha256": "b283e3a573f7f68dc510a6e19c8472ccc2e65b403aeb02cca78f89210d341e21"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/PlumbingPitchPage-DQmjOirS.js",
+      "bytes": 13539,
+      "sha256": "1e248b14eff6c9e8d4482c887cee6d70a64fc187e5afc1614a38035e1adc74c7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/priceAdjust-CQuYKOWT.js",
+      "bytes": 248,
+      "sha256": "a76c990f830ef27987971cd6d3ac69bc6f37d3ffba431ac28d32d790ebcc2dd1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/ProductDetailPage-5LNBUh0K.js",
+      "bytes": 4371,
+      "sha256": "cddc43ff46f3f990553e16b804d6042b8c1a7b5fbcbaa9e8d28c894716bfe031"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/productImageSafety-CDXX3Z8N.js",
+      "bytes": 434,
+      "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/ProductsListPage-CYf14Tb-.js",
+      "bytes": 6701,
+      "sha256": "4053cce92543943cdf0a700738194563f567a9cd0c2e92fd2cf46730f145db43"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/productSurfaceLighting-BQZxIn0h.js",
+      "bytes": 37588,
+      "sha256": "1f758e13d22a8ce896cf03405a992c952abcaeff772f02a95f1b50381451bf50"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/propertyStore-C5e7ZzCd.js",
+      "bytes": 88628,
+      "sha256": "9f29a33e19d4697b48a5fee5ecc9ace0da3f4f135359ed55eda3fa53acaaf50f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/PublicProductsPage-D2oMdXAH.js",
+      "bytes": 8514,
+      "sha256": "ba59973a40e1d3a8d0d6ed9b7f8e16e5c6e0a5fc2e07f9b997a7fdfef46860ad"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/quotedProducts-2NCXztC6.js",
+      "bytes": 392,
+      "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/renderQualityStore-BBxCd5KC.js",
+      "bytes": 27262,
+      "sha256": "5be2c16f73657f72fa7196d8ad24a5d0a966d9e2fb7d6962e5c8575493d0b735"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/RequireAdmin-DTR4Jl8k.js",
+      "bytes": 2236,
+      "sha256": "36cf41dd997ad6104c3de15fb7a17f2e950eed90ebc849e11a441ba7c9d3db47"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/RequireMerchant-BvJGo3r3.js",
+      "bytes": 5153,
+      "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/salesNavigation-DeIa13Wr.js",
+      "bytes": 31149,
+      "sha256": "f349f13e6ba45aaba3fd9507740cdcc0bad2d348325077d53210c508830c4480"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/salesNavigation-DGrOBR_j.css",
+      "bytes": 16489,
+      "sha256": "5febee052e4b1903b8ca0b0fd53d5975d934d1f7a97e60e2fd34b5d97de186c3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/serviceFixtureMeshes-dDaBzpGO.js",
+      "bytes": 4351,
+      "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/ServicesThreeEditor-BIsfzWJ6.js",
+      "bytes": 10250,
+      "sha256": "8167d0e83590e013ddf78b4e3c1d2a50b352fefba465b88e33b2ba511a08bcb1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/SharedProjectConnection-C5i6fsB0.js",
+      "bytes": 1164,
+      "sha256": "893280abeb67a760b9de3562caceaca191ee7bcb20ee15361d2af8702dbcbe8b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/SharedProjectWorkbench-CJ_-A-6A.css",
+      "bytes": 10616,
+      "sha256": "ae115a59efc3c17332be456112aa76d72bf5666c9b7a4c1bde4fc7fc461ea31f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/SharedProjectWorkbench-vyOFINNy.js",
+      "bytes": 90717,
+      "sha256": "f121221c1e10180a298c2a3e4739b85d1239595d595fa82ff6eb360d28a1bac1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/showcaseSafety-DFBXsUeQ.js",
+      "bytes": 179,
+      "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/sofapColourMatch-DvLtg7hz.js",
+      "bytes": 55858,
+      "sha256": "ed23d4e1ee1646259437655a78c0347c488a90b716f77b52123549ad8558a903"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/soft-shop-DOYnmUy9.css",
+      "bytes": 6021,
+      "sha256": "59636bd235921e568ee4ab4db2e41e102d5c7b8cd8ac87a952b2f31368803e77"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/StudioPage-BtMUdwIp.js",
+      "bytes": 10112,
+      "sha256": "9d2d909e57595768ffad09ce0092257f9146d3095b707bad833b1407cf1b8a1b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/StudioPage-CSPjoFHJ.css",
+      "bytes": 25110,
+      "sha256": "eafbd4a2bb5cbfdebd7be77e68abffa93649e98e7b7ae2559cfc2b38aecc688a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/SuppliersListPage-B-xTxMWH.js",
+      "bytes": 5979,
+      "sha256": "6dc7025bb5907aea027618886a663f2467a3d8bc02e75bb41036786154c04157"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/SuppliersPage-CDp_z_ZX.js",
+      "bytes": 8567,
+      "sha256": "728d0bb3363568786751eecc8398406002153df90f5bf833bd9bd61b44c16d2c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/SuppliersSignupCompletePage-CGibStLu.js",
+      "bytes": 2141,
+      "sha256": "02a930e4c2c9d4021411570864046ea4e3f3c1404a0d2a23631f89abd8d70dd3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/ThreeStage-Z2WEYbA1.js",
+      "bytes": 94211,
+      "sha256": "eb64f02d72e64c5b2deb8f2df01d1fc8b238d3a7d1b04389b0afc5983eccd084"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/types-BR-OoGj9.js",
+      "bytes": 54910,
+      "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/uxKit-EVMlNDHM.js",
+      "bytes": 1621,
+      "sha256": "a759eb3574e427c8626b905bc9a6bfc30a0717d9c525d4a527126e6d60b0acd9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/vendor-konva-CbK8OvmD.js",
+      "bytes": 292561,
+      "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/vendor-react-CS4MHxMm.js",
+      "bytes": 142362,
+      "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/vendor-router-YSxUxVSZ.js",
+      "bytes": 21566,
+      "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/vendor-sentry-EPSolKsr.js",
+      "bytes": 36,
+      "sha256": "6ee4980decb0daeb5b25a4821516b0d0a5a2a5ccfba1aa3ee629d1db3d04e292"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/vendor-three-CjQotlrx.js",
+      "bytes": 744964,
+      "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/assets/workflowModel-BzySRCmb.js",
+      "bytes": 1985,
+      "sha256": "0e6aacd3f47bbc1750dba89e1a5fb0e0014edc243abbae4d81c0bc0b91b3b672"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/index.html",
+      "bytes": 2642,
+      "sha256": "cf84cdb9ff47b80cf6d8aca9501627fe86cea40f4532cc5e8964b1713dcaa7e2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/base/olb.html",
+      "bytes": 3623,
+      "sha256": "8f1cc0890e3b9da97484d0db4d828f6f8a5724c7509ee4d78290bb35a6d90750"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/AdminLayout-mAp_6sKB.js",
+      "bytes": 665,
+      "sha256": "15971366e13583930ee753ad6e95907f933327a473ddd013bcb9fdfd7804f487"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/AdminMerchantsPage-BpjoHVCl.js",
+      "bytes": 6975,
+      "sha256": "c9784a5fbf20cc7f4c2036d191367249b8d1cfed5e3d89f64dcc85217aad5749"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/AiProviderDraft-DInfF7ns.js",
+      "bytes": 815,
+      "sha256": "02596a570466f1d4bbcd1e6a7f0b99a15691eb2662957d22ca3667e3f7c971e8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/App-B5i-oZ86.css",
+      "bytes": 205707,
+      "sha256": "fddc788efe604acfe1d7afc6c955118d1eb1f21c7b069aae1d1b2b50465490fa"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/App-j5a-zufe.js",
+      "bytes": 1081642,
+      "sha256": "46f3772d9ceef52fac16c4e9b468f9c48695b9d59d4ccd054c7fd6164f97e4db"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/AuditLogPage-fJx0hK0k.js",
+      "bytes": 3389,
+      "sha256": "a8c01eea307247dd102873e4169975f6eed34bd66e41036321f3953d63d56da2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/AuthenticatedAiDraft-8cd9Fz8G.js",
+      "bytes": 2439,
+      "sha256": "1d3df71876995e1803210a8b299c65a6d38973c3c39c8eeb2fed681126427b82"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/buildingServices-tH2AyWvw.js",
+      "bytes": 175717,
+      "sha256": "7762886a228cd05bb31b44c54c613d976902b6c41399a5c6d2d51d6d3a8f057e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/buildingServicesCatalog-gFhvLWEg.js",
+      "bytes": 6105,
+      "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/buildSkinStore-B7GyctDU.js",
+      "bytes": 744,
+      "sha256": "46cb05ad4c3c3ef8241c11a39e1f618dc480ce9213fa0659e20aef3e4c5de584"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/CartPage-QnZGlQF6.js",
+      "bytes": 12285,
+      "sha256": "9ad5edcdb9dd5ca48050b0cccac5f1b335e94827e238bc1ca2086d0008d07bfd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/CartPageHeader-CqAjB--H.js",
+      "bytes": 1301,
+      "sha256": "6ad80e2aa7eb101481b4394e0d54052a18aa2bfe11a776b861201f479f87b203"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/cartStore-BruOo0ya.js",
+      "bytes": 12564,
+      "sha256": "efa99174aa47c8c6b3bd2b98651e08828f91455e0d875e3d79d6a07e28a8929f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/CheckoutPage-CGpm3Hl0.js",
+      "bytes": 21431,
+      "sha256": "436203eca16f4aa207394491cbacb3218d0c36d1223bd761bdb177c0f3d18805"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/CityThreeView-Bak-owCN.css",
+      "bytes": 1403,
+      "sha256": "47f3523b75efec745e52ec5fdf43c84d3754a95ebf7a7835e5c01422cb90950f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/CityThreeView-ou73tIz7.js",
+      "bytes": 11792,
+      "sha256": "466e49e2925b3450e5f4229865148cdf27504770cc59f3e82b7cb5dc29c993d3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/commission-BSjTNLTx.js",
+      "bytes": 52,
+      "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/ConstructionPitchPage-BcgGXA3A.css",
+      "bytes": 20020,
+      "sha256": "d00fa16aaf400ec8ee3b9eeb6f3be71bbddad23922365904344cbbbf2136f94b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/ConstructionPitchPage-BF2CVGXa.js",
+      "bytes": 28952,
+      "sha256": "51faed4bdaa62da1d38bb10413c17149bd5ef681738fe0c97b08a6330039673c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/currency-DHTIHZlW.js",
+      "bytes": 325,
+      "sha256": "5495832bbc054f570734918234650e93dc7f84da322e34519a14866308714daf"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/CurrencySwitcher-FvdtBxK-.js",
+      "bytes": 2642,
+      "sha256": "04c19b7b42c02e45eb66befb8ab4a10f7a6607bc16e069aa6ba2371f7b5ed699"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/DashboardPage-DRwAuqPI.js",
+      "bytes": 5222,
+      "sha256": "f3319d0bc4db331fa3741f09876517c78029b668506bbee045ca9aa23f011190"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/DemoDesignerPage-BB7senvS.js",
+      "bytes": 4846,
+      "sha256": "91b95c73a64dd736e9b0368ad8943607196a4e508b56a018793600903e9b1cd4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/designsApi-BzqVNtKM.js",
+      "bytes": 16071,
+      "sha256": "970bb3f58348bb5b6aeda09b9a292989e9a2df18868a01525c1a48c4953ca827"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/DeveloperPitchPage-Dyf1uFfz.js",
+      "bytes": 18445,
+      "sha256": "9c30d4616dd8d49c8494d52e2aa0b239ce35e2e5342812c8578e560e871ad5cd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/downloadJson-DhXa1J4E.js",
+      "bytes": 276,
+      "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/draco_decoder-C32yEggz.wasm",
+      "bytes": 285747,
+      "sha256": "c55a594e8ffd18426d36b27fea9618af3df5e173640a3e56d46f09d76f0574f2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/draco_decoder-fzg4nYZr.js",
+      "bytes": 719410,
+      "sha256": "30e4d486fa020737af10e3c56197693e5b904bdc05b8bfa5d7b06751dec6da04"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/draco_decoder-Z1_iN-Ht.wasm",
+      "bytes": 192420,
+      "sha256": "a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/draco_wasm_wrapper-DxJM36Ib.js",
+      "bytes": 58763,
+      "sha256": "e8049906ef3f8f75d3456c22a3f31bfdfe5b5b5bd09ccdec613b9e9a49d554d8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/draco_wasm_wrapper-fZCQGLGb.js",
+      "bytes": 58456,
+      "sha256": "8bb2952d2ba7d67e1414f8df819410cb0434a666be53f671fff75f68843d76f6"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/EmbeddedDesigner-CbI-XtPz.js",
+      "bytes": 1073,
+      "sha256": "e03cfd027b2aacba479d9f1b0b78c5224a6e66a25114c813ef70716990e4fd38"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/embedMessages-BIa44F5a.js",
+      "bytes": 716,
+      "sha256": "eca3fa419597e6f5c6148696fec50907ca90341605dd329622c18a1945f0734e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/EmployeeStarterPage-DFQzNVJp.js",
+      "bytes": 13355,
+      "sha256": "08126ca4e4eeebb9082c25bb7e5c3ed919c7572e423e4def2832105218b3ccc5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/gumroadCheckout-BB7KmXQx.js",
+      "bytes": 1060,
+      "sha256": "42d94dbfcddbc6ab7711cb703a344824a85adb936e65f6bb60e202da00f4564b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/GumroadReturnPage-BG_EzyOK.js",
+      "bytes": 1033,
+      "sha256": "629d27079bcd605bb62ab9b0e5ca32025b14932c4b9964a572b0568f34d80810"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/html2canvas.esm-CBrSDip1.js",
+      "bytes": 202301,
+      "sha256": "b4f3add809a6d59f46260e8fd56cab240f3153def977386b230a839e8cb0b281"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/hydration-LzseufAA.js",
+      "bytes": 16025,
+      "sha256": "5801b416291a43d66fd1bba6d7082bf092ec05cc7697bec35a986ee2edbe4293"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/index-BSYnv-Ji.js",
+      "bytes": 62174,
+      "sha256": "09525e13eb81e502b677df5424118c3c850cbfaab55d9aac88df6d7f5ec06f39"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/LocaleThemeControls-D0jWtOD2.js",
+      "bytes": 3170,
+      "sha256": "9931c146d271924c927da8e40982c0cbbc6ba3338fec5606c8bab19dcfd17cf2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/main-CB3fRIv-.css",
+      "bytes": 74931,
+      "sha256": "887507e9cc6ad254c8b621802fa14c9d799f9ac9b3b17dcef57f0c4b3fd02ea4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/main-CVyo8oqa.js",
+      "bytes": 87354,
+      "sha256": "1c7ffbc94337f57322df6bd58e37ad3ab05676ed9e42e1f4d2032ed275dad0d3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/maplibre-gl-worker-GrpJo12C.js",
+      "bytes": 520092,
+      "sha256": "e680068ee4d7630979c4cb894df946fa944b19454bd92195f4ed79a4ba82cc2f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MarketplaceCartPage-B6olWqPV.js",
+      "bytes": 6947,
+      "sha256": "3c167ae0aca9d70ab69ef953e92117fc6ca395385b2914abd84176307e9686be"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/marketplaceCartStore-Smkw3CyB.js",
+      "bytes": 808,
+      "sha256": "26729e7b31ac1d98e60abd6ab13195b0fcbc64386cc57ff9814465b13c890892"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MarketplaceCheckoutPage-DnnSAD2n.js",
+      "bytes": 8159,
+      "sha256": "b2377f454b742eb1c0cc8b2877dcdac2445a1ae590954ba29df899a8bd429130"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantAddProductPage-CMt09diz.js",
+      "bytes": 11707,
+      "sha256": "650e0bd2218319ad50513e815ab68c5f4b32d03200706fafff3705396837bb7c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantAgentPage-kHCVhgZW.js",
+      "bytes": 5479,
+      "sha256": "cccad8991409cca257efead5470ec92b9a2a0c8c71d0b201f34e52cf17b25c2f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantConnectPage-C5bjaT7E.js",
+      "bytes": 18772,
+      "sha256": "3298c12b447727b502c39124edbe127bda4ce8464138a097b0353e24f2483c83"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantConnectPage-CD4N4Hu1.css",
+      "bytes": 6122,
+      "sha256": "708b86402774b4b369a61159f93868eecfb5f419d406392d2d3a939d2c4c0d42"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantDashboardPage-B8qQnC7v.js",
+      "bytes": 11848,
+      "sha256": "38291e3d3566225d91d098023b3b60fc580daff83ecb2d198fd3d50b0ebd9bb5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantDetailPage-tSpprgV6.js",
+      "bytes": 8829,
+      "sha256": "b95bb641722e8612b303c4a7019abf2681514122fe46c180a0c7cbc673ae91b5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/merchantFurniture-ZuMdbwJD.js",
+      "bytes": 2710,
+      "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantOnboardingPage-Dpwg32D0.js",
+      "bytes": 7005,
+      "sha256": "28424b974b11aec349cee72e540534d0e4a3e66d23aabbcd2cce6bd558d44053"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantPitchPage-DmaTzHv_.js",
+      "bytes": 18144,
+      "sha256": "dc168c7a5e64e02a70cc1ed07962a175d3a127ca69876c4545a7982c20e7d107"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MerchantsListPage-nqFrBNi6.js",
+      "bytes": 5968,
+      "sha256": "e6d0b52001945d524fb1816205b67ef67a628d46077f1f799d3e820d73f615d5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/middleware-BoNmX9tp.js",
+      "bytes": 3758,
+      "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/modelSnapshot-CT0kEzL5.js",
+      "bytes": 5351,
+      "sha256": "683db74c728fbb55c0c3d14e83e8a6625eacb25f9c50a3065bcd8fd130019ab5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/MyDesignsPage-NAxRqOsG.js",
+      "bytes": 8416,
+      "sha256": "ab2a80d3781c0a8b54bdc43cbc83c023f49e235d8dd701b7c5c53fc983043b11"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OlbHomePage--qco7qC7.css",
+      "bytes": 3234,
+      "sha256": "8fc5d3bb1b6cf52662014f8f78136139406e8e0ac3664610070014058d511fd4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OlbHomePage-BmtgYZLK.js",
+      "bytes": 2521,
+      "sha256": "b3d54b48e3bf0eec3f6f90a5010ae87e815661b14a199d5249d2fe39c2057205"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OlbLockup-BnMGFoTW.js",
+      "bytes": 373,
+      "sha256": "9ce289cc27e1d0f2f59d609ef487f0e253419af7c5d70875b080be61593bb283"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OrderCancelledPage-HyO0OcvX.js",
+      "bytes": 1152,
+      "sha256": "9c9e5b3a31e5a0f11c1ae5a199ca1d29074923f1a1da8e1327bcec413a5f7ae5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OrderPendingPage-DkTDtg6R.js",
+      "bytes": 3510,
+      "sha256": "f00d129e17c240cd3824b0e47eacf07815219a7ca5b1319e6903f5a106117a07"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OrdersListPage-D64wXHge.js",
+      "bytes": 5722,
+      "sha256": "dffcdcc6e29e0bdbac3c3ad22f76c7910d218f331429020ea707b621dfe9d6e8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/orderSnapshot-Cx7fzqkU.js",
+      "bytes": 416,
+      "sha256": "e335721c45f7ed58e0c2cc3505f257b34fcc7ecb91fe6af0189f2064b5f7e262"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OrdersPage-KNsX8R0E.js",
+      "bytes": 2797,
+      "sha256": "8a81e4e30cc2b785566666a92c0958aee550721eb77fd2bb12689761703e01d1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/ordersStore-Cl5OKD9p.js",
+      "bytes": 476,
+      "sha256": "823ab00c35ee636f4382a9c995b16bc794cd98e346c4b2fdd90854e6aed67bb0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OrderSuccessPage-BArsnb0t.js",
+      "bytes": 442445,
+      "sha256": "d352609b48fc2efd0980fb757c658d84b32e25926ccac2eb3d62d9009fa75c0b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/OrderTrackPage-CU8-KOf3.js",
+      "bytes": 6898,
+      "sha256": "c2564697d6a819ab5e7b26b9aa01b356d08dfa4f25b88a2ee856fc94cf29304f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/PayoutsListPage-N6Fps-az.js",
+      "bytes": 5516,
+      "sha256": "fb3734b1de5cb1aaab93151cbb01b5638b1786f19215d12c528e35d8cf979ff7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/paypal-pA1pCpPL.js",
+      "bytes": 2631,
+      "sha256": "113528438d89e3c625649b7a250b7bfe0104b4807893f98b287e4cc6a2a86ad2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/paypalReturn-CLA59kOS.js",
+      "bytes": 685,
+      "sha256": "e7cdc449e2a53005225e0ba066c18ea78a596bb8ddc2a03d627efe15194548b5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/pitch-tactile-BWjplNBo.css",
+      "bytes": 48785,
+      "sha256": "9eea27020520ceb32b5daa278b8b52e2fd7df83087dbeb046058686b3f933e3b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/pitch-tactile-CaozMKyy.js",
+      "bytes": 5194,
+      "sha256": "b2aad5b3bbea22c2026572da4095029fad8ef4a532e9e8335e28acd89e316843"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/PitchShell-DnpWFdvd.css",
+      "bytes": 23129,
+      "sha256": "b283e3a573f7f68dc510a6e19c8472ccc2e65b403aeb02cca78f89210d341e21"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/PitchShell-mwEbPbrY.js",
+      "bytes": 15475,
+      "sha256": "f6a95c880013923cb27dd10a9c6bc7c7a7ac5b8b445435994ba86699765b3d86"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/plumbing/PlumbingEnquiryForm-BWjplNBo.css",
+      "bytes": 48785,
+      "sha256": "9eea27020520ceb32b5daa278b8b52e2fd7df83087dbeb046058686b3f933e3b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/plumbing/PlumbingEnquiryForm-CoyardYg.js",
+      "bytes": 5344,
+      "sha256": "0ffcb74f668ecf1237fbffb9f198687e0299b33d15f85d39ed0419ebad9e9059"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/plumbing/plumbingMain-BPER9ztJ.js",
+      "bytes": 98504,
+      "sha256": "e78fc3f5cfd531fc6df6bf63e256634a998aab8b7eb268447d93423fccc23dfc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/plumbing/plumbingMain-OjCrkJzx.css",
+      "bytes": 45617,
+      "sha256": "2e97aa693d2551ba8d7c30d63ae49861d0a448fe736013dc7f64d1049b4d0f39"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/plumbing/vendor-react-De-jGD7v.js",
+      "bytes": 142224,
+      "sha256": "dfeebbf8ac42693e169156fa3933b2ca3d2df01f43f796e5b28c4f8cd2b3b3a8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/plumbing/vendor-router-Dg-knw_b.js",
+      "bytes": 5682,
+      "sha256": "8d516aabdc2a31c1a388aba20ce4b363e0517e40cacda270680579cda8081966"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/plumbing/vendor-sentry-gR1wJj98.js",
+      "bytes": 36,
+      "sha256": "3a6108a398039662f47b839fcf1433ad23775f185d57b144b0bd12369a6089c0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/PlumbingEnquiryForm-CcOTjsE-.js",
+      "bytes": 268,
+      "sha256": "0750854610a808d860d112f7a88c3fac504de1dfc1d40ac5575d21376f25ca34"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/PlumbingPitchPage-DVgpEw-4.js",
+      "bytes": 14511,
+      "sha256": "b9827dec0a39b3d11a9553b4fe956b4637d960b69ddcd2ccf91a64865f4ac6d7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/priceAdjust-CQuYKOWT.js",
+      "bytes": 248,
+      "sha256": "a76c990f830ef27987971cd6d3ac69bc6f37d3ffba431ac28d32d790ebcc2dd1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/ProductDetailPage-4C9_H4SZ.js",
+      "bytes": 4371,
+      "sha256": "1f64b4b0de7a2d725265f83e53c70ab9e8a2d78f6739cc046b168a2e8ed05734"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/productImageSafety-CDXX3Z8N.js",
+      "bytes": 434,
+      "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/ProductsListPage-D3sDySCa.js",
+      "bytes": 6701,
+      "sha256": "9992d684a8f0751160500897f915c4e38fa510a9a934936a9183b403db7ee2c8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/productSurfaceLighting-BaFpcgdX.js",
+      "bytes": 37588,
+      "sha256": "561c2f06fcc99fb1e36dd9bd53448bbcfbb1129ad8069fc2666d91b05142e0f7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/propertyStore-D7cf2-rg.js",
+      "bytes": 88676,
+      "sha256": "c114a58d29a36a2e0a52efdb1346ba8fc78607e7f61413a04c3500fa44f977be"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/PublicProductsPage-Cjy06crT.js",
+      "bytes": 8514,
+      "sha256": "f1798b3f0ae902c5e1d531801d530a7d5eac4e3f94f82411c9da93539b4fdb86"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/quotedProducts-2NCXztC6.js",
+      "bytes": 392,
+      "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/renderQualityStore-BWehppU5.js",
+      "bytes": 27262,
+      "sha256": "b0ea41f6b105d392895ff5641d05d8b95ddbdbf5a0def06161fdbfbaed0c909d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/RequireAdmin-DuuVRnhY.js",
+      "bytes": 2236,
+      "sha256": "df2a8b68b374a41b408522ca58cb08079225a6e8bade27045588fe7f43894cc2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/RequireMerchant-BvJGo3r3.js",
+      "bytes": 5153,
+      "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/salesNavigation-Bhh0Xvey.css",
+      "bytes": 17187,
+      "sha256": "edb7ebaa46f6c46edc3404caac002b230b39d93916aaf2069e4667b429b3c324"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/salesNavigation-D5tnuVtR.js",
+      "bytes": 31149,
+      "sha256": "53f0aa53a3d437842862e9625f1b7a6c2be7da4f42e1da973b0547a3ac9bdc3d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/serviceFixtureMeshes-dDaBzpGO.js",
+      "bytes": 4351,
+      "sha256": "eb5e3680f0d2ea291b22b1a1f3a2438b57a1f7d29b96fcc27e37c637170cc77d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/ServicesThreeEditor-BB-DbkYW.js",
+      "bytes": 10250,
+      "sha256": "44e770b42a4033e861394506470b7f1bedbe8b4f2ee31736442c32b57540d9aa"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SharedProjectConnection-B6tkJe9G.js",
+      "bytes": 1164,
+      "sha256": "b287757f8d9fb98007db2c705598ac36f6cadda87979674a3dbdb4b1b31ae9aa"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SharedProjectWorkbench-Bdw7sqR3.js",
+      "bytes": 90717,
+      "sha256": "967017b64c1d93bdcbc7c4875a1c3d21453d563d270973201cf51467d2217f80"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SharedProjectWorkbench-CJ_-A-6A.css",
+      "bytes": 10616,
+      "sha256": "ae115a59efc3c17332be456112aa76d72bf5666c9b7a4c1bde4fc7fc461ea31f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/showcaseSafety-DFBXsUeQ.js",
+      "bytes": 179,
+      "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SiteEntry-BLTDhKmB.css",
+      "bytes": 9098,
+      "sha256": "ba35f89f430043f6b7374ca5030c43fd4297572baf39e5db7ee8a7ba94ab5b68"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SiteEntry-C7t_5N9m.js",
+      "bytes": 41065,
+      "sha256": "ec2180813fe1453cf2db572cb8721205e416dc79c4e55eaf208d551dd1774290"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SiteMap-BDoEfmOF.js",
+      "bytes": 1090441,
+      "sha256": "1aecbc85186874dadc675e38bb027a2b73006b4a51f0f463ee43ba2db72054ba"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SiteMap-Y3Rwdjno.css",
+      "bytes": 71547,
+      "sha256": "5c87cb3105d67ec8eeadc5a53f7216942f393710153222753bed280f70034658"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/sofapColourMatch-DvLtg7hz.js",
+      "bytes": 55858,
+      "sha256": "ed23d4e1ee1646259437655a78c0347c488a90b716f77b52123549ad8558a903"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/soft-shop-DOYnmUy9.css",
+      "bytes": 6021,
+      "sha256": "59636bd235921e568ee4ab4db2e41e102d5c7b8cd8ac87a952b2f31368803e77"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/StudioPage-BIDXcgGH.js",
+      "bytes": 10112,
+      "sha256": "b14e02086348c50f68fee2e623020c9b23318750e615b773a61abd97f685c110"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/StudioPage-CSPjoFHJ.css",
+      "bytes": 25110,
+      "sha256": "eafbd4a2bb5cbfdebd7be77e68abffa93649e98e7b7ae2559cfc2b38aecc688a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SuppliersListPage-D7GklzGz.js",
+      "bytes": 5979,
+      "sha256": "1b5c256333c61525b916e06dfe79744f7c5c7cc10bd9d2c974b202e7e3da3b79"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SuppliersPage-CDp_z_ZX.js",
+      "bytes": 8567,
+      "sha256": "728d0bb3363568786751eecc8398406002153df90f5bf833bd9bd61b44c16d2c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/SuppliersSignupCompletePage-CGibStLu.js",
+      "bytes": 2141,
+      "sha256": "02a930e4c2c9d4021411570864046ea4e3f3c1404a0d2a23631f89abd8d70dd3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/ThreeStage-B0LrqE4t.js",
+      "bytes": 94200,
+      "sha256": "aeffc68717785285be9e1964f88af7676e24d42e19807940f0b77f233d6244bb"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/types-BR-OoGj9.js",
+      "bytes": 54910,
+      "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/uxKit-EVMlNDHM.js",
+      "bytes": 1621,
+      "sha256": "a759eb3574e427c8626b905bc9a6bfc30a0717d9c525d4a527126e6d60b0acd9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/vendor-konva-CbK8OvmD.js",
+      "bytes": 292561,
+      "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/vendor-react-CS4MHxMm.js",
+      "bytes": 142362,
+      "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/vendor-router-YSxUxVSZ.js",
+      "bytes": 21566,
+      "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/vendor-sentry-EPSolKsr.js",
+      "bytes": 36,
+      "sha256": "6ee4980decb0daeb5b25a4821516b0d0a5a2a5ccfba1aa3ee629d1db3d04e292"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/vendor-three-CjQotlrx.js",
+      "bytes": 744964,
+      "sha256": "c43efd72856b5afaafe4fc7b9c68593254ddd259b5e7b60a7c8d20f3ce9272b2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/assets/workflowModel-BzySRCmb.js",
+      "bytes": 1985,
+      "sha256": "0e6aacd3f47bbc1750dba89e1a5fb0e0014edc243abbae4d81c0bc0b91b3b672"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/index.html",
+      "bytes": 6049,
+      "sha256": "9e2ccdc41eab15877e98e0c6989a984b88d760572f5725e79e1aa16f2e08ccef"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/site/olb.html",
+      "bytes": 6966,
+      "sha256": "6f65cc2ba33137549854140d5e52242f304c59cdc0866af72f0eeab2e656bd65"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/AdminLayout-Fzrv8jRn.js",
+      "bytes": 665,
+      "sha256": "a82c1c34af26506d07e6decc730bb4b8e9caa13a4bfe46914ff9b7bd5164f12d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/AdminMerchantsPage-DDdblwGD.js",
+      "bytes": 6975,
+      "sha256": "616f77dc1c253aa6219229517d29a006a846314cafcaba6ef26cf3ff5a890633"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/AiProviderDraft-HwyBDjbR.js",
+      "bytes": 815,
+      "sha256": "796bcf4501095ae21fbc0dccb0092b7c08217b18ff043fa8f5f6596e5e792525"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/App-CiuI5Q1x.css",
+      "bytes": 205684,
+      "sha256": "6d7916f6f53642fa9c790957b3bad16aa328332aea1f8d75d2fafef4635de763"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/App-C_9SMezw.js",
+      "bytes": 1080050,
+      "sha256": "a9468b0dd8a456155b861d337e5ea18aac522b3ac25ee6ade1b001ac06c74339"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/AuditLogPage-CTy0y6aK.js",
+      "bytes": 3389,
+      "sha256": "0e1c47278e4910912f2d49ab7eef85a125276b3a87a850c0b0a1b2158102b8b3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/AuthenticatedAiDraft-DsxlMA68.js",
+      "bytes": 2439,
+      "sha256": "de9c000701d273faee7b52d601a114948a75981e66ff3da94cc534410e256660"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/buildingServices-BGK7BObi.js",
+      "bytes": 175726,
+      "sha256": "587aaa6ab7b8cc939a948348105d9347d15f6cfcc0d5b50842b4af3b9ac28b79"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/buildingServicesCatalog-gFhvLWEg.js",
+      "bytes": 6105,
+      "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/buildSkinStore-iwC2BD6R.js",
+      "bytes": 744,
+      "sha256": "e871718486095cb71996ccc51963ddce71fb1f9cd186714b610a5a3cdf68d0ae"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/CartPage-DwlbLPNz.js",
+      "bytes": 12285,
+      "sha256": "bbdee591379070214cdf5c90565c8233e931a0857434db97e37c06de64711fec"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/CartPageHeader-DDqEqZCN.js",
+      "bytes": 1301,
+      "sha256": "bae542bf32ff5c9a7fd5ca3ffcac2dd2fe6ba7d743579a4f65f283d31f49326e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/cartStore-Dieoy3Kv.js",
+      "bytes": 12564,
+      "sha256": "45165ce078cdde3f465269f46255b8dcc8367884443b3fcfceb1f1c5c92d9007"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/CheckoutPage-BNRxNg4a.js",
+      "bytes": 21431,
+      "sha256": "7fca2a7993cb8512b0eea374fe9697b94d603c40100df04feaad521df12b06f7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/CityThreeView-Bak-owCN.css",
+      "bytes": 1403,
+      "sha256": "47f3523b75efec745e52ec5fdf43c84d3754a95ebf7a7835e5c01422cb90950f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/CityThreeView-fMYitrqj.js",
+      "bytes": 11792,
+      "sha256": "ea391eecabb38d4ae2227f9e170976f1dd2558a4c35655e0ccb6a647d891a4b2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/commission-BSjTNLTx.js",
+      "bytes": 52,
+      "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/ConstructionPitchPage-BcgGXA3A.css",
+      "bytes": 20020,
+      "sha256": "d00fa16aaf400ec8ee3b9eeb6f3be71bbddad23922365904344cbbbf2136f94b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/ConstructionPitchPage-CA_1Dhjs.js",
+      "bytes": 28952,
+      "sha256": "2a772da1796049552ca409b8acf8ce0f86cdd7968723f9a3a9a4c7aa10679ee7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/currency-YZfNC0xt.js",
+      "bytes": 325,
+      "sha256": "69a6a722e5dd1798bc264d3bdb66e480dad4f8b0fb5e2959853ea0157d31e318"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/CurrencySwitcher-OzgsebPr.js",
+      "bytes": 2642,
+      "sha256": "c3dc12c03d96e75b6d0c1d3b18bc13a055451f640cedbfaa4bbce2c980809aa5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/DashboardPage-DSFQJmsh.js",
+      "bytes": 5222,
+      "sha256": "dfffeeca8c82bfd716ecced1620e46e9bf8ff0737ee8d0251f397035573d992a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/DemoDesignerPage-B5EfFE51.js",
+      "bytes": 4846,
+      "sha256": "f8acd4d515803cb10e8046b13f6dfd407f5b5a4331122d9fad9f650f78b6486d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/designsApi-jdEkazsx.js",
+      "bytes": 16071,
+      "sha256": "66963f22a2396e9cc9d67a2424051dee8b09085635599ebafa1b00cbaed4d05b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/DeveloperPitchPage-DrbMIrnT.js",
+      "bytes": 18445,
+      "sha256": "e2328049c289cb09eec63051fed1b12a68676529b1a3103d38d11162087de8f8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/downloadJson-DhXa1J4E.js",
+      "bytes": 276,
+      "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/draco_decoder-C32yEggz.wasm",
+      "bytes": 285747,
+      "sha256": "c55a594e8ffd18426d36b27fea9618af3df5e173640a3e56d46f09d76f0574f2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/draco_decoder-fzg4nYZr.js",
+      "bytes": 719410,
+      "sha256": "30e4d486fa020737af10e3c56197693e5b904bdc05b8bfa5d7b06751dec6da04"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/draco_decoder-Z1_iN-Ht.wasm",
+      "bytes": 192420,
+      "sha256": "a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/draco_wasm_wrapper-DxJM36Ib.js",
+      "bytes": 58763,
+      "sha256": "e8049906ef3f8f75d3456c22a3f31bfdfe5b5b5bd09ccdec613b9e9a49d554d8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/draco_wasm_wrapper-fZCQGLGb.js",
+      "bytes": 58456,
+      "sha256": "8bb2952d2ba7d67e1414f8df819410cb0434a666be53f671fff75f68843d76f6"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/EmbeddedDesigner-CbI-XtPz.js",
+      "bytes": 1073,
+      "sha256": "e03cfd027b2aacba479d9f1b0b78c5224a6e66a25114c813ef70716990e4fd38"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/embedMessages-BIa44F5a.js",
+      "bytes": 716,
+      "sha256": "eca3fa419597e6f5c6148696fec50907ca90341605dd329622c18a1945f0734e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/EmployeeStarterPage-BKjhACoY.js",
+      "bytes": 13355,
+      "sha256": "a8b3caa10089339c1c7f980e048a320d13330f8be04c4791a75918917eb7e7d1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/gumroadCheckout-BB7KmXQx.js",
+      "bytes": 1060,
+      "sha256": "42d94dbfcddbc6ab7711cb703a344824a85adb936e65f6bb60e202da00f4564b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/GumroadReturnPage-BG_EzyOK.js",
+      "bytes": 1033,
+      "sha256": "629d27079bcd605bb62ab9b0e5ca32025b14932c4b9964a572b0568f34d80810"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/html2canvas.esm-CBrSDip1.js",
+      "bytes": 202301,
+      "sha256": "b4f3add809a6d59f46260e8fd56cab240f3153def977386b230a839e8cb0b281"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/index-B2lADH-j.js",
+      "bytes": 62174,
+      "sha256": "269ddc6c7eacbe5e215c6b430da3e59e460e79427b0a00adda9ec6fdbb0400bd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/LocaleThemeControls-B1AWRHBe.js",
+      "bytes": 3170,
+      "sha256": "94c330a98f7b8e3b4306c58b34c49f338f0b3f53a11428bbf761966cba26fb14"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/main-CB3fRIv-.css",
+      "bytes": 74931,
+      "sha256": "887507e9cc6ad254c8b621802fa14c9d799f9ac9b3b17dcef57f0c4b3fd02ea4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/main-DPGL0hhp.js",
+      "bytes": 87364,
+      "sha256": "035099c8ed9ead3b089d8589697d3c15b6c111711d6e760fd5cd75b65f9e9115"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MarketplaceCartPage-ByN709JM.js",
+      "bytes": 6947,
+      "sha256": "e6dc344d6fdc41d68b1a7763e29ccda0558f95a2c58ceb3e60a5849239e4ee1a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/marketplaceCartStore-B3MsEnz3.js",
+      "bytes": 808,
+      "sha256": "8ded6dd8299e69187aad0013ec1ac0118c130e72f7f868da06127819fb745f66"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MarketplaceCheckoutPage-Bbi2jXGl.js",
+      "bytes": 8159,
+      "sha256": "1fa457c56058c9261850aa6f4a169484370c518bfdec29a1b152c3c77c87fbd8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantAddProductPage-CMt09diz.js",
+      "bytes": 11707,
+      "sha256": "650e0bd2218319ad50513e815ab68c5f4b32d03200706fafff3705396837bb7c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantAgentPage-kHCVhgZW.js",
+      "bytes": 5479,
+      "sha256": "cccad8991409cca257efead5470ec92b9a2a0c8c71d0b201f34e52cf17b25c2f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantConnectPage-C5bjaT7E.js",
+      "bytes": 18772,
+      "sha256": "3298c12b447727b502c39124edbe127bda4ce8464138a097b0353e24f2483c83"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantConnectPage-CD4N4Hu1.css",
+      "bytes": 6122,
+      "sha256": "708b86402774b4b369a61159f93868eecfb5f419d406392d2d3a939d2c4c0d42"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantDashboardPage-B8qQnC7v.js",
+      "bytes": 11848,
+      "sha256": "38291e3d3566225d91d098023b3b60fc580daff83ecb2d198fd3d50b0ebd9bb5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantDetailPage-Cogaeq1v.js",
+      "bytes": 8829,
+      "sha256": "89550d1bd969f62aaff5c94b451f8f6130379d038e1749d8deba23cd6e998f99"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/merchantFurniture-ZuMdbwJD.js",
+      "bytes": 2710,
+      "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantOnboardingPage-Dpwg32D0.js",
+      "bytes": 7005,
+      "sha256": "28424b974b11aec349cee72e540534d0e4a3e66d23aabbcd2cce6bd558d44053"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantPitchPage-DVs-yXoQ.js",
+      "bytes": 18144,
+      "sha256": "164e995404fbe18b9bc49e5ab2524605c6301c3bbacd557ef96842ddafa5cfed"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MerchantsListPage-21--zwuR.js",
+      "bytes": 5968,
+      "sha256": "5b7734dadeca04cfe9adb35f6662eec65b2a4a8742dd22b476a2a52a5423c8bc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/middleware-BoNmX9tp.js",
+      "bytes": 3758,
+      "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/modelSnapshot-MzQDvOPR.js",
+      "bytes": 5512,
+      "sha256": "cfb3d8c0b37951fe424103b657c8c19cf4c47b31a4d9ad972eb61ea008283524"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/MyDesignsPage-BALkY4BH.js",
+      "bytes": 8416,
+      "sha256": "c242e52ccd1c8e8babcff5cf0e1dbbaf8e324e7793903ab6eec222228e029b31"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OlbHomePage--qco7qC7.css",
+      "bytes": 3234,
+      "sha256": "8fc5d3bb1b6cf52662014f8f78136139406e8e0ac3664610070014058d511fd4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OlbHomePage-C3O-E6ew.js",
+      "bytes": 2521,
+      "sha256": "3118dddb186064eed79ef209c0ffa6c36d081ea8144a237f0e82e75b0da96edd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OlbLockup-BVrLG4OL.js",
+      "bytes": 373,
+      "sha256": "fcac2aa1adf98a072646d205d5a8ac41957634e84e2abaafdc847f1e489e8f37"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OrderCancelledPage-pyeBS-Pr.js",
+      "bytes": 1152,
+      "sha256": "69c0d64ed76e9f57280787f9b53af831133c607a16904c4583cec238c4f76fa0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OrderPendingPage-CUrMH4y2.js",
+      "bytes": 3510,
+      "sha256": "cc4a677668b3241c0d60f48b32178e782f71d78da45cbd8a1dc9c64fab5ee014"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OrdersListPage-hvPrdSgb.js",
+      "bytes": 5722,
+      "sha256": "515138b27115f52fbc76ce8a8cbd11038f39f07d50245e2173c307f789c4d8dc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/orderSnapshot-Cx7fzqkU.js",
+      "bytes": 416,
+      "sha256": "e335721c45f7ed58e0c2cc3505f257b34fcc7ecb91fe6af0189f2064b5f7e262"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OrdersPage-G0kl7Y9p.js",
+      "bytes": 2797,
+      "sha256": "fe5dda382c5daa6722be1d7c441875757d7f0779c30e253bfd33b27a35932140"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/ordersStore-Cndv-y0L.js",
+      "bytes": 476,
+      "sha256": "b27e49b7cc57ce2eb94c668b134d98ad79b40c76d72ca4b592301b4069fbfeda"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OrderSuccessPage-CVQ3FhHS.js",
+      "bytes": 442445,
+      "sha256": "7ccbdae9206b49aa03bd1b726d52508876d3af9503e442ac07eb52485319431a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/OrderTrackPage-BtYrMAdH.js",
+      "bytes": 6898,
+      "sha256": "f2ecb9ff358a5b6c67b99fc0a771fc34012090f6e353d94d48297334f45ee7dc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/PayoutsListPage-By44D8PX.js",
+      "bytes": 5516,
+      "sha256": "66a581f892849ad532d7229f39e3c4dc2b9e2c52af216fff923b19fc67d52fde"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/paypal-pA1pCpPL.js",
+      "bytes": 2631,
+      "sha256": "113528438d89e3c625649b7a250b7bfe0104b4807893f98b287e4cc6a2a86ad2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/paypalReturn-CLA59kOS.js",
+      "bytes": 685,
+      "sha256": "e7cdc449e2a53005225e0ba066c18ea78a596bb8ddc2a03d627efe15194548b5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/pitch-tactile-BWjplNBo.css",
+      "bytes": 48785,
+      "sha256": "9eea27020520ceb32b5daa278b8b52e2fd7df83087dbeb046058686b3f933e3b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/pitch-tactile-DaAGp70_.js",
+      "bytes": 5194,
+      "sha256": "230c78c3798933aa04ecb626eddfde434cd03575ce07d26575e120df7e29481e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/PitchShell-DipBXTWN.js",
+      "bytes": 15475,
+      "sha256": "73d80ff8199bd2e51f9e20dd2de5862c252e9e7cb9ba504066eaf5563b2b48f6"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/PitchShell-DnpWFdvd.css",
+      "bytes": 23129,
+      "sha256": "b283e3a573f7f68dc510a6e19c8472ccc2e65b403aeb02cca78f89210d341e21"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/plumbing/PlumbingEnquiryForm-BWjplNBo.css",
+      "bytes": 48785,
+      "sha256": "9eea27020520ceb32b5daa278b8b52e2fd7df83087dbeb046058686b3f933e3b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/plumbing/PlumbingEnquiryForm-CoyardYg.js",
+      "bytes": 5344,
+      "sha256": "0ffcb74f668ecf1237fbffb9f198687e0299b33d15f85d39ed0419ebad9e9059"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/plumbing/plumbingMain-BPER9ztJ.js",
+      "bytes": 98504,
+      "sha256": "e78fc3f5cfd531fc6df6bf63e256634a998aab8b7eb268447d93423fccc23dfc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/plumbing/plumbingMain-OjCrkJzx.css",
+      "bytes": 45617,
+      "sha256": "2e97aa693d2551ba8d7c30d63ae49861d0a448fe736013dc7f64d1049b4d0f39"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/plumbing/vendor-react-De-jGD7v.js",
+      "bytes": 142224,
+      "sha256": "dfeebbf8ac42693e169156fa3933b2ca3d2df01f43f796e5b28c4f8cd2b3b3a8"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/plumbing/vendor-router-Dg-knw_b.js",
+      "bytes": 5682,
+      "sha256": "8d516aabdc2a31c1a388aba20ce4b363e0517e40cacda270680579cda8081966"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/plumbing/vendor-sentry-gR1wJj98.js",
+      "bytes": 36,
+      "sha256": "3a6108a398039662f47b839fcf1433ad23775f185d57b144b0bd12369a6089c0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/PlumbingEnquiryForm-C4IzZooO.js",
+      "bytes": 268,
+      "sha256": "89059c645f0143c0568b95e30b865a02678e1bbb7e2febbb89fc81ccd2fe4ea2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/PlumbingPitchPage-BWRS-lon.js",
+      "bytes": 14511,
+      "sha256": "4a888887c9de4116ed0508af6b7abd16894fe6e605d2514dc0bfd79297f3f0f5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/priceAdjust-CQuYKOWT.js",
+      "bytes": 248,
+      "sha256": "a76c990f830ef27987971cd6d3ac69bc6f37d3ffba431ac28d32d790ebcc2dd1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/ProductDetailPage-CGAw40h5.js",
+      "bytes": 4371,
+      "sha256": "de53e832efe7d6bed42cd341b5b79130388c0ff4f2d819e764615941a9cc0a2f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/productImageSafety-CDXX3Z8N.js",
+      "bytes": 434,
+      "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/ProductsListPage-BXQx40ZK.js",
+      "bytes": 6701,
+      "sha256": "5687a01017d059217b13ef7fe672cf9567a9e14b1a495952dbc309e66a3a5088"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/productSurfaceLighting-B33xd6Bt.js",
+      "bytes": 37588,
+      "sha256": "ed4f6c598ca737333cf4ef6cc173ad3124c62b3f59567dc80ed3bee96932cb44"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/propertyStore-9uqHx6BS.js",
+      "bytes": 88628,
+      "sha256": "5e2dba7012881c1ed7d0a698f2831ee1dad032ba1f8d0317a9d9aaad11dc710f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/PublicProductsPage-BWfcIouS.js",
+      "bytes": 8514,
+      "sha256": "654093f553983e0c2bf8f5f900aed3d872aca1169aa213027a5f356ff564e7c0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/quotedProducts-2NCXztC6.js",
+      "bytes": 392,
+      "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/renderQualityStore-PPMm6eeW.js",
+      "bytes": 27262,
+      "sha256": "f8c3222943c3679c0f9ca9eae401c1e23e1649991dcd7e94af0efe4c4812c9fb"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/RequireAdmin-CzV_Q_h1.js",
+      "bytes": 2236,
+      "sha256": "703c893f6b26d58d3892833c1e548f6e26775a6038e6e2e456c116d2b9aafdb5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/RequireMerchant-BvJGo3r3.js",
+      "bytes": 5153,
+      "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/runtime-BRFAkElF.js",
+      "bytes": 81076,
+      "sha256": "611eb866a70df789aa254c595a7446c3e2b8774f089da7400abf5202f2dc29ef"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/salesNavigation-Bhh0Xvey.css",
+      "bytes": 17187,
+      "sha256": "edb7ebaa46f6c46edc3404caac002b230b39d93916aaf2069e4667b429b3c324"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/salesNavigation-Cm9B4xOj.js",
+      "bytes": 31149,
+      "sha256": "8fe965ae1c12fc8a0b02689162ce701bb67a5e054dc743132c70cdc0e9768bed"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/serviceFixtureMeshes-DTCQy3Rs.js",
+      "bytes": 4351,
+      "sha256": "1fe8fe0b6325cc6d2eb0e1944903bf9509da8d26ca6bacfe84e2909a1472c917"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/ServicesThreeEditor-CHpaTgiM.js",
+      "bytes": 10250,
+      "sha256": "ee7592184b9acbc6a4a0aebadd906728ecdab2beff003dd2d2baf00143be91f3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/SharedProjectConnection-BZo1RaJE.js",
+      "bytes": 1164,
+      "sha256": "06b4e826cee26e5dc4c9e60ee642099a91dc630854b6d81f01fb3f682d544bb0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/SharedProjectWorkbench-CJ_-A-6A.css",
+      "bytes": 10616,
+      "sha256": "ae115a59efc3c17332be456112aa76d72bf5666c9b7a4c1bde4fc7fc461ea31f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/SharedProjectWorkbench-Y3ozxLX9.js",
+      "bytes": 90717,
+      "sha256": "86ef675e847b179c94908c9f3dd53ee6b29de38f980c12cbcd9a4eea87eee9a4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/showcaseSafety-DFBXsUeQ.js",
+      "bytes": 179,
+      "sha256": "60340ef11e0215d758544616a93215d16ba125f2dd68069d5cc75b79a7110ec4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/sofapColourMatch-DvLtg7hz.js",
+      "bytes": 55858,
+      "sha256": "ed23d4e1ee1646259437655a78c0347c488a90b716f77b52123549ad8558a903"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/soft-shop-DOYnmUy9.css",
+      "bytes": 6021,
+      "sha256": "59636bd235921e568ee4ab4db2e41e102d5c7b8cd8ac87a952b2f31368803e77"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/StudioPage-CSPjoFHJ.css",
+      "bytes": 25110,
+      "sha256": "eafbd4a2bb5cbfdebd7be77e68abffa93649e98e7b7ae2559cfc2b38aecc688a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/StudioPage-DemlyWzf.js",
+      "bytes": 10112,
+      "sha256": "c0472ae37ecdc60de2bd6cf37ac5b599e90b07d8e8e7e45d7ac91dd2a1ff90d1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/SuppliersListPage-SHzv_tBT.js",
+      "bytes": 5979,
+      "sha256": "96756fc2ca8b25cd3e2da6fc05233417eeaf3922337c6313bcde8fae83a8dd0f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/SuppliersPage-CDp_z_ZX.js",
+      "bytes": 8567,
+      "sha256": "728d0bb3363568786751eecc8398406002153df90f5bf833bd9bd61b44c16d2c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/SuppliersSignupCompletePage-CGibStLu.js",
+      "bytes": 2141,
+      "sha256": "02a930e4c2c9d4021411570864046ea4e3f3c1404a0d2a23631f89abd8d70dd3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/ThreeStage-BvkOCsfa.js",
+      "bytes": 94322,
+      "sha256": "aaba6fe975f4a38e1151a61cbd8f5979312a4813032cc60fcf7df7992619835f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/types-BR-OoGj9.js",
+      "bytes": 54910,
+      "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/uxKit-EVMlNDHM.js",
+      "bytes": 1621,
+      "sha256": "a759eb3574e427c8626b905bc9a6bfc30a0717d9c525d4a527126e6d60b0acd9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/vendor-konva-CbK8OvmD.js",
+      "bytes": 292561,
+      "sha256": "614939911e1bcb36880faadaeaf9ffd4145450c51d3be9b3002931b8054892fd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/vendor-react-CS4MHxMm.js",
+      "bytes": 142362,
+      "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/vendor-router-YSxUxVSZ.js",
+      "bytes": 21566,
+      "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/vendor-sentry-EPSolKsr.js",
+      "bytes": 36,
+      "sha256": "6ee4980decb0daeb5b25a4821516b0d0a5a2a5ccfba1aa3ee629d1db3d04e292"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/vendor-three-DFSP7WXy.js",
+      "bytes": 745009,
+      "sha256": "8ed6b3f62f6fb67636da4b44ffef183c2184775dec0950f5645945695c625219"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/walk-animation-CVCR6P-e.js",
+      "bytes": 50981,
+      "sha256": "40e5de0c11b9ac47d4c78eab1f7dc3240733801c713fa9f6f1c25dd3eeb288ec"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/walk-controls-ClkkmM6i.js",
+      "bytes": 2132,
+      "sha256": "54599b8b63de1fcf3fd69e4cff6164451f8a33fc749187d814b987b815d6f378"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/WalkLauncher-D7S-8ezj.js",
+      "bytes": 23250,
+      "sha256": "97ed5e1354c05e7d6d9014ffc4265dcc055e0c92720bc360c090716c38f88465"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/WalkLauncher-DuQnpEzB.css",
+      "bytes": 5574,
+      "sha256": "499da89a9ebcfdc212e065a1dc45e2fa507d86d29851d64dc5e497374f673b52"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/assets/workflowModel-BzySRCmb.js",
+      "bytes": 1985,
+      "sha256": "0e6aacd3f47bbc1750dba89e1a5fb0e0014edc243abbae4d81c0bc0b91b3b672"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/index.html",
+      "bytes": 6049,
+      "sha256": "648d64f7a623da014da7fcaaee37f921cde26be117c8783212d35b609ea2c669"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/builds/r4-build-v1/walk/olb.html",
+      "bytes": 6966,
+      "sha256": "1bdf46c968078d538ef78a7a14cc7612d34df769e436542b883c4dbec030f2fd"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-ci-v1/ci-status.json",
+      "bytes": 13262,
+      "sha256": "e68aac48ca6af5a65cf88ab75397439b0f7ad0cde7a5e12a39f8a625b9d4c6b6"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-ci-v2/ci-status.json",
+      "bytes": 13262,
+      "sha256": "15456a6a898fb7557c0aec8e72a28d16595a3164d8d4f63b6379cfae8033c1a5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-dom-v1/credit-dom-s1-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-dom-v1/credit-dom-s1.png",
+      "bytes": 66885,
+      "sha256": "23bbad620d0d20397e2c3bae279a0ec86848bade9a709617417930576a8e5acc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-dom-v1/credit-dom-s2-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-dom-v1/credit-dom-s2.png",
+      "bytes": 66885,
+      "sha256": "23bbad620d0d20397e2c3bae279a0ec86848bade9a709617417930576a8e5acc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-dom-v1/credit-dom-s3-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-dom-v1/credit-dom-s3.png",
+      "bytes": 66885,
+      "sha256": "23bbad620d0d20397e2c3bae279a0ec86848bade9a709617417930576a8e5acc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-dom-v1/diag-site-credit-dom.json",
+      "bytes": 66354,
+      "sha256": "84239f0547cffe7555e15bcdfef5f906db0d49e5375a9dc6dcf83978e5885ef0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-immediate-v2/credit-dom-s1-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-immediate-v2/credit-dom-s1.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-immediate-v2/credit-dom-s2-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-immediate-v2/credit-dom-s2.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-twoframes-v1/credit-dom-s1-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-twoframes-v1/credit-dom-s2-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-twoframes-v1/credit-dom-s2.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-twoframes-v1/credit-dom-s3-late.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-diag-site-credit-twoframes-v1/credit-dom-s3.png",
+      "bytes": 70264,
+      "sha256": "22110ba5e1bfd255ad85ad2b7be5b17b7f1d79357e513af031a19deeed97f12c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-phone-locator-studio-fixed-v1/walk-phone-first-door-open.jpg",
+      "bytes": 21628,
+      "sha256": "4d6d2a69a490c930ccbb811f549a0c62ad2ef2d834d890e62e9285c497200f65"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-phone-locator-studio-fixed-v1/walk-phone-third-door-open.jpg",
+      "bytes": 20091,
+      "sha256": "bf5db658792173fb273794118410bfe57ff24497aa672931eb92d8ddba0018c9"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-phone-locator-v1/walk-phone-first-door-open.jpg",
+      "bytes": 21723,
+      "sha256": "10f1df1e8595206bdee69d829672bba54b13d16939808f79a3e03d72cd2ce7c6"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-phone-locator-v1/walk-phone-third-door-open.jpg",
+      "bytes": 20135,
+      "sha256": "c9c7933130c770ee87c1224dc8797f8c9c86f9a64c27b594ba79742ca7d2cca5"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-blueprint-tools-closed.png",
+      "bytes": 124402,
+      "sha256": "944b601a9f74b6c77d3310e3bce1ea84ed4effd5edaeef653e4705a4c7744ab3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-blueprint-tools-open.png",
+      "bytes": 132996,
+      "sha256": "e978ba92f446d2647ff2b14e73cb5163ea0c3036db4653f8b6865cd1036d3cce"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-blueprint-tools-reopened.png",
+      "bytes": 132308,
+      "sha256": "00daf6c7fc3ac934357d050a060e5d8992bf1a9d6fa3dc3e556fde98dd034b00"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-gallery-tools-closed.png",
+      "bytes": 124185,
+      "sha256": "35bc134de23f2202853b9cc8bcfd90a2a5a51e51af4be9bb1dcde213b7e51063"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-gallery-tools-open.png",
+      "bytes": 132845,
+      "sha256": "8e436ebafe83772a40746fa31275e44b5a120584a228c0fd3b02be5719b2c848"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-gallery-tools-reopened.png",
+      "bytes": 132160,
+      "sha256": "2a230ec237975ab21992f52ab151fb1c7fdfddfe5fff7122224977bc1468537c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-natural-tools-closed.png",
+      "bytes": 123814,
+      "sha256": "ff6282a5414ec7cf7eb2e2c6c449bf1fde6d861616345251b6048e95cbcd1468"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-natural-tools-open.png",
+      "bytes": 132459,
+      "sha256": "8bba8018682447655e631aeac010b57fbd57048bb053cb5389a4f86cd5b22e4c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-desktop-natural-tools-reopened.png",
+      "bytes": 131776,
+      "sha256": "1b7d12fa1d84810e488f563d8eb5f5f7ba10afa2a3c649a099f642c186493519"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-blueprint-tools-closed.png",
+      "bytes": 75606,
+      "sha256": "ba49681ad2227a211f4ba22be0bda9cd95aff37d19edd748a70916dddde354ab"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-blueprint-tools-open.png",
+      "bytes": 88005,
+      "sha256": "6cc896864e18019b8a61c5bc3016bd1b76cd1f634bd064fe813e9bb9f02d85a1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-blueprint-tools-reopened.png",
+      "bytes": 87439,
+      "sha256": "c0e69078479f3744d41eb4b8ca250e490ca94bd54d67aa094d9362d9420f59ab"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-gallery-tools-closed.png",
+      "bytes": 75063,
+      "sha256": "04723201f17f8c879016d148c6b4a7b3f2f3502de602880418371f7d3a117613"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-gallery-tools-open.png",
+      "bytes": 87684,
+      "sha256": "afc0de58fa18c813b8ee261e1423b72d60b0d81f86a78db2e5a126aecb37658f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-gallery-tools-reopened.png",
+      "bytes": 87117,
+      "sha256": "35b0e8ffa5c3c51332b0b4cb7571f22d44d56e8b7cf49272b85aaebcacb43576"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-natural-tools-closed.png",
+      "bytes": 74961,
+      "sha256": "f9be3c266ba67ab6d7ce012eea08ead966f52b9b8e56e128b1d38a06770803ba"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-natural-tools-open.png",
+      "bytes": 87822,
+      "sha256": "449983d34b04512b8e8b50976ad052f5e0f4a2bec90c57c037fdeb0a74b8eea2"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/plan-phone-natural-tools-reopened.png",
+      "bytes": 87256,
+      "sha256": "497806ed054d5b929eb5b8e1206034dc2419e690bec166810b8ee0c81a3f751b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-local-site-plan-visual-v1/site-plan-visual.json",
+      "bytes": 73262,
+      "sha256": "85fdbfafedaa0313c3acef441ee04a35880800dc8fa283fc1b611cfc0c614056"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-1500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-1500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-after-native-scroll-page.jpg",
+      "bytes": 40610,
+      "sha256": "a09409118de931beb2fbe58c8e211eae89815891a10df8c2f4651ce96240eab7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-after-native-scroll.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-fonts-two-frames-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-fonts-two-frames.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-immediate-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s1-immediate.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-1500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-1500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-after-native-scroll-page.jpg",
+      "bytes": 40610,
+      "sha256": "a09409118de931beb2fbe58c8e211eae89815891a10df8c2f4651ce96240eab7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-after-native-scroll.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-fonts-two-frames-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-fonts-two-frames.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-immediate-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s2-immediate.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-1500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-1500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-after-native-scroll-page.jpg",
+      "bytes": 40610,
+      "sha256": "a09409118de931beb2fbe58c8e211eae89815891a10df8c2f4651ce96240eab7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-after-native-scroll.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-fonts-two-frames-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-fonts-two-frames.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-immediate-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s3-immediate.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-1500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-1500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-after-native-scroll-page.jpg",
+      "bytes": 40610,
+      "sha256": "a09409118de931beb2fbe58c8e211eae89815891a10df8c2f4651ce96240eab7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-after-native-scroll.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-fonts-two-frames-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-fonts-two-frames.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-immediate-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s4-immediate.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-1500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-1500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-500ms-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-500ms.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-after-native-scroll-page.jpg",
+      "bytes": 40610,
+      "sha256": "a09409118de931beb2fbe58c8e211eae89815891a10df8c2f4651ce96240eab7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-after-native-scroll.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-fonts-two-frames-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-fonts-two-frames.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-immediate-page.jpg",
+      "bytes": 41862,
+      "sha256": "edde058e4dc62129b9455473770aac7a84c05aaffd74450d29a0b2f6d0f0cb40"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-credit-v1/credit-s5-immediate.png",
+      "bytes": 1764,
+      "sha256": "12c79f48b5f87e49c5d2612e9635a212a9b1e731c64808782ffb98de7719132f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/hydrated-laptop.jpg",
+      "bytes": 51223,
+      "sha256": "22d758ae8cd3031c6ab76d28382876b0df9e759c1f5cf1f31afbf842a5cbf4e7"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/pending-laptop.jpg",
+      "bytes": 62282,
+      "sha256": "801f1f54d89a81fc06d9ce8b8dcf691c2c1ea19b72e15b526a4ef0216662753e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/pending-phone.jpg",
+      "bytes": 34395,
+      "sha256": "f626154969864d68be9d6ac01044a192406e1fc0c8041117770a2ad34292ad45"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/plan-laptop.jpg",
+      "bytes": 51748,
+      "sha256": "9c255bfa376395b59a5552a542f67094d75eb0d18c4b2e3edbe6c3661ff1cf26"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/plan-room-laptop.jpg",
+      "bytes": 59076,
+      "sha256": "be0fe5bbd3ba5d7486fcd484c9542dcaa29e0f870cd79e022647c566b2812da3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-v2/plan-room-phone.jpg",
+      "bytes": 38673,
+      "sha256": "3c872b3709c649393ebef99a7bb797c1f2b97ff97218b1cf65ceeafa0dba89a4"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-blueprint-tools-closed.png",
+      "bytes": 124402,
+      "sha256": "944b601a9f74b6c77d3310e3bce1ea84ed4effd5edaeef653e4705a4c7744ab3"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-blueprint-tools-open.png",
+      "bytes": 132996,
+      "sha256": "e978ba92f446d2647ff2b14e73cb5163ea0c3036db4653f8b6865cd1036d3cce"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-blueprint-tools-reopened.png",
+      "bytes": 132308,
+      "sha256": "00daf6c7fc3ac934357d050a060e5d8992bf1a9d6fa3dc3e556fde98dd034b00"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-gallery-tools-closed.png",
+      "bytes": 124185,
+      "sha256": "35bc134de23f2202853b9cc8bcfd90a2a5a51e51af4be9bb1dcde213b7e51063"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-gallery-tools-open.png",
+      "bytes": 132845,
+      "sha256": "8e436ebafe83772a40746fa31275e44b5a120584a228c0fd3b02be5719b2c848"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-gallery-tools-reopened.png",
+      "bytes": 132160,
+      "sha256": "2a230ec237975ab21992f52ab151fb1c7fdfddfe5fff7122224977bc1468537c"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-natural-tools-closed.png",
+      "bytes": 123814,
+      "sha256": "ff6282a5414ec7cf7eb2e2c6c449bf1fde6d861616345251b6048e95cbcd1468"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-desktop-natural-tools-reopened.png",
+      "bytes": 131776,
+      "sha256": "1b7d12fa1d84810e488f563d8eb5f5f7ba10afa2a3c649a099f642c186493519"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-blueprint-tools-closed.png",
+      "bytes": 75606,
+      "sha256": "ba49681ad2227a211f4ba22be0bda9cd95aff37d19edd748a70916dddde354ab"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-blueprint-tools-open.png",
+      "bytes": 88005,
+      "sha256": "6cc896864e18019b8a61c5bc3016bd1b76cd1f634bd064fe813e9bb9f02d85a1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-gallery-tools-closed.png",
+      "bytes": 75063,
+      "sha256": "04723201f17f8c879016d148c6b4a7b3f2f3502de602880418371f7d3a117613"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-gallery-tools-open.png",
+      "bytes": 87684,
+      "sha256": "afc0de58fa18c813b8ee261e1423b72d60b0d81f86a78db2e5a126aecb37658f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-gallery-tools-reopened.png",
+      "bytes": 87117,
+      "sha256": "35b0e8ffa5c3c51332b0b4cb7571f22d44d56e8b7cf49272b85aaebcacb43576"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-natural-tools-closed.png",
+      "bytes": 74961,
+      "sha256": "f9be3c266ba67ab6d7ce012eea08ead966f52b9b8e56e128b1d38a06770803ba"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-plan-visual-v1/plan-phone-natural-tools-reopened.png",
+      "bytes": 87256,
+      "sha256": "497806ed054d5b929eb5b8e1206034dc2419e690bec166810b8ee0c81a3f751b"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/live-laptop.jpg",
+      "bytes": 85100,
+      "sha256": "e8b8e853301acc862bf55db4b50e737d71f71f9ae1955fdef9de5a56c843a1f0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/loading-laptop.jpg",
+      "bytes": 38488,
+      "sha256": "8c4c929e176e86e0c3429136b29544511babd247b075d6ba6c0e5a334a44fbdf"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/loading-phone.jpg",
+      "bytes": 24217,
+      "sha256": "794ea4b818e6b20cfd9eda106dfa9e06fbfd8623a3218f339e602e97ca1c8f5f"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/report-laptop-a4.pdf",
+      "bytes": 320262,
+      "sha256": "3e4e53b2c7f0f79ce02595e92814474dc01863fad1533f722f09d5872878ea84"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/report-laptop.jpg",
+      "bytes": 52950,
+      "sha256": "0b6a23e198e51fa28964ca72396e064bcfecffab237c814f35f79dd65af13c92"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-preview-v1/report-phone-a4.pdf",
+      "bytes": 320262,
+      "sha256": "162ad0f3605f0b7dcb1a93b8e60b8fbfc127dfd945a3e4b1d83ba0147b97acfc"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/pdf-pages.json",
+      "bytes": 3352,
+      "sha256": "21b0d5fab023f0255409d9cd46420180e821ccf1bf2379c2a2020722e8650ac0"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/report-laptop-a4-page-1.png",
+      "bytes": 66800,
+      "sha256": "236149b3c86192776a47f87f0e4f552c614bd720e6a67e068175107d8e7b71ea"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/report-laptop-a4-page-2.png",
+      "bytes": 75230,
+      "sha256": "266e1263a03fb224559714679fd51424802fd3843ecd30e6bec8a3de441f9682"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/report-laptop-a4-page-3.png",
+      "bytes": 88146,
+      "sha256": "482f28e4a963a6378101076418cb9b617a6a22f64a856d81e121df6913283d4a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/report-laptop-a4-page-4.png",
+      "bytes": 32855,
+      "sha256": "946b04281aa10df7732ab193e3008af296b168fee086f75fe4202183fc5ab77e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/report-phone-a4-page-1.png",
+      "bytes": 66800,
+      "sha256": "236149b3c86192776a47f87f0e4f552c614bd720e6a67e068175107d8e7b71ea"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/report-phone-a4-page-2.png",
+      "bytes": 75230,
+      "sha256": "266e1263a03fb224559714679fd51424802fd3843ecd30e6bec8a3de441f9682"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/report-phone-a4-page-3.png",
+      "bytes": 88146,
+      "sha256": "482f28e4a963a6378101076418cb9b617a6a22f64a856d81e121df6913283d4a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v1/report-phone-a4-page-4.png",
+      "bytes": 32855,
+      "sha256": "946b04281aa10df7732ab193e3008af296b168fee086f75fe4202183fc5ab77e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/report-laptop-a4-page-2.png",
+      "bytes": 75230,
+      "sha256": "266e1263a03fb224559714679fd51424802fd3843ecd30e6bec8a3de441f9682"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/report-laptop-a4-page-4.png",
+      "bytes": 32855,
+      "sha256": "946b04281aa10df7732ab193e3008af296b168fee086f75fe4202183fc5ab77e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/report-phone-a4-page-1.png",
+      "bytes": 66800,
+      "sha256": "236149b3c86192776a47f87f0e4f552c614bd720e6a67e068175107d8e7b71ea"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/report-phone-a4-page-2.png",
+      "bytes": 75230,
+      "sha256": "266e1263a03fb224559714679fd51424802fd3843ecd30e6bec8a3de441f9682"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/report-phone-a4-page-3.png",
+      "bytes": 88146,
+      "sha256": "482f28e4a963a6378101076418cb9b617a6a22f64a856d81e121df6913283d4a"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-site-print-v2/report-phone-a4-page-4.png",
+      "bytes": 32855,
+      "sha256": "946b04281aa10df7732ab193e3008af296b168fee086f75fe4202183fc5ab77e"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-desktop-v1/walk-desktop-third-door-open.jpg",
+      "bytes": 42996,
+      "sha256": "5e4dcf086647a49f25df2c3f534039b251245a6b7f2d9fdb6a28011651b321c1"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/r4-walk-input-v1/walk-desktop-chooser.jpg",
+      "bytes": 52776,
+      "sha256": "f89fc171bceea643fabd62932b79b920bc08c5852915fd9de31868381cb75e04"
+    },
+    {
+      "file": "C:/Users/Victor/AppData/Local/Temp/claude/C--Users-Victor-Documents-PPW-Second-Brain/b10a8204-e2c6-4cdb-adc3-ed3345b89669/scratchpad/world-results/semantic-check.cjs",
+      "bytes": 761,
+      "sha256": "7b4f094dddfe2a92c42f35972de8e675581a188aec09cdf49cef638f96ac416c"
+    }
+  ]
+}

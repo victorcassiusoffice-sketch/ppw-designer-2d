@@ -1,0 +1,9 @@
+{
+  "index": true,
+  "note": "Lossless gzip of the complete file beside this index; decompress to read every row. Nothing is truncated.",
+  "original": "load-all.json",
+  "originalBytes": 1520143,
+  "originalSha256": "053bfc3d4a590e2e10a22bf2eb8b99d99e6298390e31c5abe36cea897182f0bc",
+  "gzipBytes": 149079,
+  "gzipSha256": "506c472f971098279084a77034f9e51f81f792f7fa7cd487cb8c44d5458dbba9"
+}

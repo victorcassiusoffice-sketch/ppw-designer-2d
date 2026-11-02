@@ -1,0 +1,17 @@
+{
+  "note": "Every failed, superseded or diagnostic run of round 4 kept by name. Files outside this package are hashed in SOURCE-MANIFEST.json (hashOnly entries).",
+  "entries": [
+    { "label": "r4-local-phone-locator-studio-v1", "kind": "formal-harness-local", "result": "FAIL click-not-observed at the first door Open (phone, studio Chromium 1234) on a local preview build of 36cbef4 before the fix", "kept": "walk/door-diagnosis/local-locator-studio-fail.json(.gz) and local-locator-studio-fail.jpg" },
+    { "label": "r4-local-phone-locator-v1", "kind": "formal-harness-local", "result": "PASS on the repository Chromium 1223 before the fix; a non-reproduction, not a pass: the fling classification depends on the last 40 ms of the swipe", "kept": "walk/door-diagnosis/local-locator-repo-pass.json(.gz)" },
+    { "label": "r4-diag-flick-tap-studio-v1 / r4-diag-flick-tap-repo-v1", "kind": "diagnostic", "result": "11 of 14 cases per browser fail to click after a look or stick flick (22 failures); slow drag and no gesture click", "kept": "walk/door-diagnosis/diag-flick-tap-studio.json, diag-flick-tap-repo.json" },
+    { "label": "r4-diag-phone-tap-v1", "kind": "diagnostic", "result": "all 6 arms click (zero-duration, CDP 0 ms, busy main thread): tap duration is not the cause", "kept": "walk/door-diagnosis/diag-phone-tap.json" },
+    { "label": "r4-ci-v1, r4-ci-v2", "kind": "collection", "result": "parsed zero Lighthouse assertions and null test counts (GitHub timestamp prefix and ANSI codes); superseded by r4-ci-v3", "kept": "hashOnly" },
+    { "label": "r4-site-plan-v1", "kind": "harness", "result": "EEXIST on the fresh-label folder because lib.mjs pre-creates it; no browser work ran; folder empty; superseded by r4-site-plan-v2", "kept": "empty folder (nothing to hash)" },
+    { "label": "r4-site-print-v1", "kind": "check", "result": "pdf-pages.py v1 flagged false overlaps because the fragment 'not a survey' also sits in the page-1 screen banner; superseded by v2 with the exact banner string", "kept": "hashOnly (page PNGs)" },
+    { "label": "r4-diag-site-credit-dom-v1", "kind": "diagnostic", "result": "first DOM-geometry run (no arms, no ink shares); superseded by the immediate/two-frames A/B", "kept": "hashOnly" },
+    { "label": "r4-diag-site-credit-immediate-v2 session 3", "kind": "diagnostic", "result": "full-page capture blank over the strip (0 % ink) while the DOM has the strip on top and a clip taken right after shows 5.75 %; the two-frames arm is 3/3 painted", "kept": "site/credit-diag-immediate.json, site/credit-immediate-s3-blank.jpg, site/credit-immediate-s3-late.jpg" },
+    { "label": "r4-local-site-plan-visual-v1", "kind": "local-check", "result": "local preview run of the plan presentation before the preview run; same outcome", "kept": "hashOnly" },
+    { "label": "r4-final-v1 (GPT, 30 October)", "kind": "controlled-build", "result": "Site early closure +1,035 gzip, 11 bytes over the ceiling; repaired by the palette seam (fd7d204) and re-measured as +1,006 in r4-build-v1", "kept": "recorded in ROUNDS.md (GPT's folder, outside this repository)" },
+    { "label": "walk-desktop loading paint run", "kind": "formal", "result": "1 of 5 Walk laptop loads has DOM loader and FCP after 1 s because its HTML response ended after 1 s; the every-run gate stays FAIL (OPEN)", "kept": "load/load-all.json(.gz), load/startup-analysis.json" }
+  ]
+}

@@ -1,0 +1,1414 @@
+{
+  "startedAt": "2026-10-31T11:44:40.709Z",
+  "target": "localwalk",
+  "url": "http://127.0.0.1:5183",
+  "diagnostic": true,
+  "method": "Phone viewport 390x844, touch emulation. Each case: fresh context, open Walk, start, wait for the first published status, then one tap on the Controls button (help card opens on click). Arms: Playwright locator.tap(); CDP touchStart+touchEnd back to back; the same with a 60 ms synchronous main-thread block queued just before so both events are processed in one late turn; CDP touchStart, 100 ms hold, touchEnd. Every window-capture touch/pointer/mouse/click event is retained. Not a product measurement.",
+  "cases": [
+    {
+      "arm": "locator-tap",
+      "startedAt": "2026-10-31T11:44:41.530Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "box": {
+        "x": 260,
+        "y": 78,
+        "width": 118,
+        "height": 44
+      },
+      "commandedAt": 4956,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 5040.699999928474,
+          "listenerAt": 5074.099999904633,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 5040.699999928474,
+          "listenerAt": 5075.099999904633,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 0,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 5041.299999952316,
+          "listenerAt": 5075.299999952316,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 5041.299999952316,
+          "listenerAt": 5075.299999952316,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 5041.299999952316,
+          "listenerAt": 5075.299999952316,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 5041.299999952316,
+          "listenerAt": 5075.399999976158,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 5041.299999952316,
+          "listenerAt": 5081.099999904633,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 5041.299999952316,
+          "listenerAt": 5081.299999952316,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 5041.299999952316,
+          "listenerAt": 5081.699999928474,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 5041.299999952316,
+          "listenerAt": 5081.799999952316,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "dispatchDelayMs": 34,
+      "downUpGapMs": 0.6000000238418579,
+      "blockedWrites": []
+    },
+    {
+      "arm": "cdp-0ms",
+      "startedAt": "2026-10-31T11:44:48.301Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "box": {
+        "x": 260,
+        "y": 78,
+        "width": 118,
+        "height": 44
+      },
+      "commandedAt": 1867.6000000238419,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 1868.3000000715256,
+          "listenerAt": 1894.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 1868.3000000715256,
+          "listenerAt": 1895.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 1896.2000000476837,
+          "listenerAt": 1927.4000000953674,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 1896.2000000476837,
+          "listenerAt": 1927.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 1896.2000000476837,
+          "listenerAt": 1927.5,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 1896.2000000476837,
+          "listenerAt": 1927.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 1896.2000000476837,
+          "listenerAt": 1928.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 1896.2000000476837,
+          "listenerAt": 1928.3000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 1896.2000000476837,
+          "listenerAt": 1928.4000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 1896.2000000476837,
+          "listenerAt": 1928.4000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "dispatchDelayMs": 31.299999952316284,
+      "downUpGapMs": 27.899999976158142,
+      "blockedWrites": []
+    },
+    {
+      "arm": "cdp-0ms-busy60",
+      "startedAt": "2026-10-31T11:44:51.832Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "box": {
+        "x": 260,
+        "y": 78,
+        "width": 118,
+        "height": 44
+      },
+      "commandedAt": 1788.5,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 1789.7000000476837,
+          "listenerAt": 1862.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 1789.7000000476837,
+          "listenerAt": 1862.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 1863.2999999523163,
+          "listenerAt": 1895.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 1863.2999999523163,
+          "listenerAt": 1895.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 1863.2999999523163,
+          "listenerAt": 1895.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 1863.2999999523163,
+          "listenerAt": 1895.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 1863.2999999523163,
+          "listenerAt": 1896.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 1863.2999999523163,
+          "listenerAt": 1896.6000000238419,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 1863.2999999523163,
+          "listenerAt": 1896.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 1863.2999999523163,
+          "listenerAt": 1896.7999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "dispatchDelayMs": 72.59999990463257,
+      "downUpGapMs": 73.59999990463257,
+      "blockedWrites": []
+    },
+    {
+      "arm": "cdp-0ms-busy60-repeat",
+      "startedAt": "2026-10-31T11:44:55.327Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "box": {
+        "x": 260,
+        "y": 78,
+        "width": 118,
+        "height": 44
+      },
+      "commandedAt": 1856.7000000476837,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 1857.5,
+          "listenerAt": 1935.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 1857.5,
+          "listenerAt": 1935.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 1937,
+          "listenerAt": 1966.8000000715256,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 1937,
+          "listenerAt": 1967,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 1937,
+          "listenerAt": 1967.1000000238419,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 1937,
+          "listenerAt": 1967.3000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 1937,
+          "listenerAt": 1967.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 1937,
+          "listenerAt": 1967.8000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 1937,
+          "listenerAt": 1967.8000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 1937,
+          "listenerAt": 1967.9000000953674,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "dispatchDelayMs": 78,
+      "downUpGapMs": 79.5,
+      "blockedWrites": []
+    },
+    {
+      "arm": "cdp-100ms",
+      "startedAt": "2026-10-31T11:44:58.890Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "box": {
+        "x": 260,
+        "y": 78,
+        "width": 118,
+        "height": 44
+      },
+      "commandedAt": 1861.1000000238419,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 1861.5,
+          "listenerAt": 1888.8999999761581,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 1861.5,
+          "listenerAt": 1889.1000000238419,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 1998.5,
+          "listenerAt": 2022.8999999761581,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 1998.5,
+          "listenerAt": 2023.1000000238419,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 1998.5,
+          "listenerAt": 2023.1000000238419,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 1998.5,
+          "listenerAt": 2023.2000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 1998.5,
+          "listenerAt": 2023.6000000238419,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 1998.5,
+          "listenerAt": 2023.7000000476837,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 1998.5,
+          "listenerAt": 2023.8000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 1998.5,
+          "listenerAt": 2023.8000000715256,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "dispatchDelayMs": 27.399999976158142,
+      "downUpGapMs": 137,
+      "blockedWrites": []
+    },
+    {
+      "arm": "cdp-100ms-busy60",
+      "startedAt": "2026-10-31T11:45:02.527Z",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "box": {
+        "x": 260,
+        "y": 78,
+        "width": 118,
+        "height": 44
+      },
+      "commandedAt": 1922.1999999284744,
+      "helpOpened": true,
+      "events": [
+        {
+          "type": "pointerdown",
+          "eventAt": 1923.3999999761581,
+          "listenerAt": 2001.3999999761581,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchstart",
+          "eventAt": 1923.3999999761581,
+          "listenerAt": 2001.6000000238419,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [
+            {
+              "id": 1,
+              "x": 319,
+              "y": 100
+            }
+          ],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "gotpointercapture",
+          "eventAt": 2102.600000023842,
+          "listenerAt": 2135,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "pointerup",
+          "eventAt": 2102.600000023842,
+          "listenerAt": 2135.100000023842,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": true,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "lostpointercapture",
+          "eventAt": 2102.600000023842,
+          "listenerAt": 2135.2999999523163,
+          "trusted": true,
+          "cancelable": false,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerId": 2,
+          "pointerType": "touch",
+          "isPrimary": true,
+          "x": 319,
+          "y": 100,
+          "captureAtTarget": false,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "touchend",
+          "eventAt": 2102.600000023842,
+          "listenerAt": 2135.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "touches": [],
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousemove",
+          "eventAt": 2102.600000023842,
+          "listenerAt": 2136.1999999284744,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 0,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mousedown",
+          "eventAt": 2102.600000023842,
+          "listenerAt": 2136.2999999523163,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 1,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "mouseup",
+          "eventAt": 2102.600000023842,
+          "listenerAt": 2136.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": null,
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        },
+        {
+          "type": "click",
+          "eventAt": 2102.600000023842,
+          "listenerAt": 2136.5,
+          "trusted": true,
+          "cancelable": true,
+          "defaultPrevented": false,
+          "target": {
+            "nodeId": 3,
+            "connected": true,
+            "tag": "BUTTON",
+            "className": null,
+            "text": "Controls"
+          },
+          "pointerType": "touch",
+          "buttons": 0,
+          "detail": 1,
+          "x": 319,
+          "y": 100,
+          "afterDispatchDefaultPrevented": false
+        }
+      ],
+      "clickObserved": true,
+      "mouseCompat": 2,
+      "dispatchDelayMs": 78,
+      "downUpGapMs": 179.20000004768372,
+      "blockedWrites": []
+    }
+  ],
+  "endedAt": "2026-10-31T11:45:06.477Z"
+}

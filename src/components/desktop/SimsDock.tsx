@@ -20,7 +20,6 @@
  * CHROME_FOCUS_RING keep the desktop and phone catalogs consistent.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { productImageUrl } from '../../data/products';
 import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
 import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
 import type { Product } from '../../data/products.schema';
@@ -50,7 +49,7 @@ import { PlanCatalogLauncher } from '../PlanCatalogLauncher';
 import { MobileProductPopup } from '../mobile/MobileProductPopup';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
 import { CatalogAvailability, CatalogBrowseTabs, CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
-import { CATALOG_GROUP_LABELS, type CatalogBrowse } from '../catalogMetadata';
+import { CATALOG_GROUP_LABELS, catalogDragImageUrl, catalogDetailImageUrl, type CatalogBrowse } from '../catalogMetadata';
 import { isPitchEmbed } from '../../demo/pitchEmbed';
 
 const { CHROME_TEXT_2, DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
@@ -448,7 +447,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                         // over from here.
                         armedBeforePress.current = pendingProductId === p.id;
                         armOnly(p);
-                        dockDrag.start(e, p.id, productImageUrl(p));
+                        dockDrag.start(e, p.id, catalogDragImageUrl(p));
                       }}
                       onPointerUp={() => {
                         // A press that never became a drag is still a click, and
@@ -532,7 +531,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
             anchorYPx={hover.anchorYPx}
             canvasWidthPx={typeof window !== 'undefined' ? window.innerWidth : 1280}
             canvasHeightPx={typeof window !== 'undefined' ? window.innerHeight : 720}
-            thumbUrl={productImageUrl(hover.product)}
+            thumbUrl={catalogDetailImageUrl(hover.product)}
             name={hover.product.name}
             priceMur={Math.round(hover.product.price?.value ?? 0)}
             priceLabel={catalogPrice(hover.product)}

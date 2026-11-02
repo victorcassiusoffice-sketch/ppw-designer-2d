@@ -1,0 +1,108 @@
+{
+  "at": "2026-10-29T20:03:16.552Z",
+  "decision": "Prepare narrow normal-source removal for validation",
+  "acceptedAsFinal": false,
+  "sourceHead": "c30dd41ce5a282c2620f7164d9245f9519e8e2c3",
+  "diagnosticOnly": true,
+  "normalSource": false,
+  "reason": "The added preparation has a consistently longer preparation-start-to-first-rendered-status interval in all four diagnostic pairs, while all forty desktop input samples pass in both variants and no uniform phone input benefit is demonstrated. Conservatively test its removal instead of accepting a tradeoff or treating provisional retention as no-regression proof.",
+  "pairs": [
+    {
+      "device": "desktop",
+      "pair": 1,
+      "order": [
+        "current",
+        "omit"
+      ],
+      "complete": true,
+      "ineligibleCases": [],
+      "currentMinusOmit": {
+        "clickToFirstStatusMs": 1847.6999999284744,
+        "reportedEntryMs": 2040.5,
+        "firstInputDelayMs": -4,
+        "lastResponseToFirstStatusMs": 36.10000002384186,
+        "nativeTouchThirdPersonMaxMs": null,
+        "nativeTouchFirstPersonMaxMs": null,
+        "preparationStartToFirstStatusMs": 21.200000047683716,
+        "clickDispatchDelayMs": 0.3999999761581421
+      }
+    },
+    {
+      "device": "phone",
+      "pair": 1,
+      "order": [
+        "omit",
+        "current"
+      ],
+      "complete": true,
+      "ineligibleCases": [],
+      "currentMinusOmit": {
+        "clickToFirstStatusMs": 67.70000004768372,
+        "reportedEntryMs": 254.60000002384186,
+        "firstInputDelayMs": 0.8000000715255737,
+        "lastResponseToFirstStatusMs": 19.200000047683716,
+        "nativeTouchThirdPersonMaxMs": -5.700000047683716,
+        "nativeTouchFirstPersonMaxMs": 5.3999998569488525,
+        "preparationStartToFirstStatusMs": 39,
+        "clickDispatchDelayMs": 1.4000000953674316
+      }
+    },
+    {
+      "device": "desktop",
+      "pair": 2,
+      "order": [
+        "omit",
+        "current"
+      ],
+      "complete": true,
+      "ineligibleCases": [],
+      "currentMinusOmit": {
+        "clickToFirstStatusMs": 2.200000047683716,
+        "reportedEntryMs": 178.89999997615814,
+        "firstInputDelayMs": -3.600000023841858,
+        "lastResponseToFirstStatusMs": 87.20000004768372,
+        "nativeTouchThirdPersonMaxMs": null,
+        "nativeTouchFirstPersonMaxMs": null,
+        "preparationStartToFirstStatusMs": 81.50000011920929,
+        "clickDispatchDelayMs": -1.1920928955078125e-7
+      }
+    },
+    {
+      "device": "phone",
+      "pair": 2,
+      "order": [
+        "current",
+        "omit"
+      ],
+      "complete": true,
+      "ineligibleCases": [],
+      "currentMinusOmit": {
+        "clickToFirstStatusMs": -279,
+        "reportedEntryMs": 33.199999928474426,
+        "firstInputDelayMs": -25.100000023841858,
+        "lastResponseToFirstStatusMs": 55,
+        "nativeTouchThirdPersonMaxMs": 6.599999904632568,
+        "nativeTouchFirstPersonMaxMs": 2.200000047683716,
+        "preparationStartToFirstStatusMs": 60.89999997615814,
+        "clickDispatchDelayMs": -109.10000002384186
+      }
+    }
+  ],
+  "limits": [
+    "All eight predeclared contexts and four pairs were eligible. Every failed/error/contamination check was evaluated after cleanup and exact before/after health; this is completeness, not a formal performance PASS.",
+    "Current preparation awaits were214.3–263.8ms. Omitting the call moved substantial work after the bookkeeping point: omitted preparation-end→first-status was230.8–259.9ms versus current50.0–71.5ms. The await is therefore not simply removable net latency.",
+    "Current-minus-omit click→first-status deltas are desktop+1847.7/+2.2ms and phone+67.7/−279.0ms. The first desktop current run also had materially slower runtime/GLB/Draco responses. Total first-status regression is not consistently established across the four pairs.",
+    "The matched preparation-start→first-status segment was longer with preparation in all four pairs: +21.2,+39.0,+81.5,+60.9ms. Last relevant response→first-status deltas were+36.1,+19.2,+87.2,+55.0ms. These support a modest diagnostic tail cost, not a pure GPU measurement or proof that all earlier regression came from preparation.",
+    "All40 desktop keyboard samples were under50ms in both variants. Current-minus-omit first desktop input differences were−4.0/−3.6ms. Phone keyboard first input included64.9ms in the second omitted case; native-touch maxima differed in both directions. There is no demonstrated normal-source causal input benefit or uniform native-touch benefit.",
+    "Do not declare Finish step5 resolved. Evidence is sufficient to discuss the measured tail tradeoff, but injected delivery and two pairs/device are not final gates. A normal-source follow-up decision must preserve actual first-render readiness and safety, and must retain these mixed outcomes.",
+    "The independent late131ms frame interval and strict59.825fps failure were not measured or explained by this diagnostic."
+  ],
+  "requiredNext": [
+    "Preserve actor/camera pose, first actual rendered status, abort/disposal/GLB deadline and input safety.",
+    "Adapt only newly introduced preparation tests to meaningful load/first-render/cancellation behavior; keep all existing base tests.",
+    "Run focused/full checks and fresh normal-source exact-head input/frame/functional campaigns before accepting the removal.",
+    "Do not attribute the entire older entry/touch regression or the independent late131ms frame stall to preparation."
+  ],
+  "sourceEvidence": "preparation-ab/r4-prepare-ab-v1/report.json",
+  "analysisEvidence": "preparation-ab/r4-prepare-ab-v1/analysis.json"
+}

@@ -527,6 +527,20 @@
 .sales-footer button {
   font-size: 12px;
 }
+/* The footer ink follows the selected theme; its button surface must follow
+   too, including hover, so dark themes never leave light text on ivory. */
+:root[data-ui-theme] body .sales-footer button {
+  color: var(--ui-ink);
+  background: var(--ui-surface);
+  border-color: var(--ui-line);
+}
+:root[data-ui-theme] body .sales-footer button:hover {
+  background: var(--ui-raised);
+  border-color: var(--ui-line);
+}
+:root[data-ui-theme] body .sales-footer button:focus-visible {
+  outline-color: var(--ui-accent);
+}
 .sales-live-layout {
   display: grid;
   grid-template-columns: 300px 1fr;

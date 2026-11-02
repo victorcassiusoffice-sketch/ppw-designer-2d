@@ -1,0 +1,1665 @@
+{
+  "startedAt": "2026-10-31T12:14:56.356Z",
+  "harnessVersion": 3,
+  "postReadySettlingMs": 0,
+  "viewSwitchSettlingMs": 0,
+  "target": "walk",
+  "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app",
+  "expected": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+  "healthBefore": {
+    "at": "2026-10-31T12:14:57.254Z",
+    "target": "walk",
+    "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:14:57.813Z"
+    }
+  },
+  "method": "Fresh Chromium per viewport, D3D11, no throttling. Action timestamps are DOM click event timestamps; visible chooser uses next animation-frame paint opportunity with all four PNGs decoded. Input end is first changed-position render submission, not photon latency. Keyboard samples retain native keyboard event time. Phone additionally uses native CDP touchStart on the one-thumb pad, with its pointer event time captured independently of the runtime handler timestamp. Round2 removes Round1’s explicit1000ms ready wait and400ms view-switch wait. These stricter first-use samples do not replace previous evidence. No runtime movement tuning was made for these measurements.",
+  "rows": [
+    {
+      "device": "desktop",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "chooserWallClockMs": 173,
+      "chooserCallToDecodedFrameMs": 185,
+      "chooser": {
+        "actionAt": 9367.800000071526,
+        "visibleAt": 9435.900000095367,
+        "images": [
+          {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAA",
+            "width": 64,
+            "height": 64,
+            "bytes": 1767
+          },
+          {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAA",
+            "width": 64,
+            "height": 64,
+            "bytes": 1821
+          },
+          {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAA",
+            "width": 64,
+            "height": 64,
+            "bytes": 1776
+          },
+          {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAA",
+            "width": 64,
+            "height": 64,
+            "bytes": 1872
+          }
+        ]
+      },
+      "chooserMs": 68.10000002384186,
+      "preStartResources": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-react-CS4MHxMm.js",
+          "start": 3966.8000000715256,
+          "end": 4808.200000047684
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-router-DUymecSS.js",
+          "start": 3967.100000023842,
+          "end": 4813.200000047684
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-C2RiXfVc.js",
+          "start": 3967.3000000715256,
+          "end": 5410.300000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "start": 3968.7000000476837,
+          "end": 4818.400000095367
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-DiHee6WC.js",
+          "start": 3972.7000000476837,
+          "end": 5662.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServices-BhWxnxOB.js",
+          "start": 3973,
+          "end": 5010.800000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productImageSafety-CDXX3Z8N.js",
+          "start": 3973.2000000476837,
+          "end": 5311.600000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/types-BR-OoGj9.js",
+          "start": 3973.2000000476837,
+          "end": 5330.900000095367
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/merchantFurniture-ZuMdbwJD.js",
+          "start": 3973.2000000476837,
+          "end": 5340.900000095367
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServicesCatalog-gFhvLWEg.js",
+          "start": 3973.3000000715256,
+          "end": 4809.200000047684
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/middleware-BoNmX9tp.js",
+          "start": 3973.3000000715256,
+          "end": 5312.600000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/propertyStore-BaL5uR8j.js",
+          "start": 3973.4000000953674,
+          "end": 5047.200000047684
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/showcaseSafety-DFBXsUeQ.js",
+          "start": 3973.4000000953674,
+          "end": 5311.900000095367
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/LocaleThemeControls-CefV7nPN.js",
+          "start": 3973.4000000953674,
+          "end": 5334.300000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/designsApi--oqef4hC.js",
+          "start": 3973.4000000953674,
+          "end": 5436.600000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/RequireMerchant-Do98o4Fd.js",
+          "start": 3973.5,
+          "end": 4648.200000047684
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/downloadJson-DhXa1J4E.js",
+          "start": 3973.5,
+          "end": 4845
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildSkinStore-2hUxbdFx.js",
+          "start": 3973.5,
+          "end": 5214.800000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/currency-Da4TABuh.js",
+          "start": 3973.600000023842,
+          "end": 5028.600000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/cartStore-B_nryMcq.js",
+          "start": 3973.600000023842,
+          "end": 5337.200000047684
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/renderQualityStore-BjihP1eN.js",
+          "start": 3973.7000000476837,
+          "end": 5027.800000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/quotedProducts-2NCXztC6.js",
+          "start": 3973.7000000476837,
+          "end": 5315.700000047684
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/CurrencySwitcher-BP4nt3Eg.js",
+          "start": 3973.7000000476837,
+          "end": 5340.100000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productSurfaceLighting-TqAqURS4.js",
+          "start": 3973.8000000715256,
+          "end": 4844.400000095367
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-konva-CbK8OvmD.js",
+          "start": 3973.8000000715256,
+          "end": 4947.100000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/commission-BSjTNLTx.js",
+          "start": 3973.8000000715256,
+          "end": 5011.700000047684
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/ThreeStage-B-2qpc2J.js",
+          "start": 3973.8000000715256,
+          "end": 5481.800000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-three-DFSP7WXy.js",
+          "start": 3973.8000000715256,
+          "end": 5532.100000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/serviceFixtureMeshes-DTCQy3Rs.js",
+          "start": 3973.9000000953674,
+          "end": 5325.800000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "start": 3974.3000000715256,
+          "end": 5060.100000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/DemoDesignerPage-Dyzyfna4.js",
+          "start": 5453.900000095367,
+          "end": 6116.800000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/embedMessages-BIa44F5a.js",
+          "start": 5456,
+          "end": 6119.100000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-ui-latin.woff2",
+          "start": 5466.400000095367,
+          "end": 6312.100000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/brand/olb/olb-mark.svg",
+          "start": 6145.100000023842,
+          "end": 6776.400000095367
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/products?limit=100",
+          "start": 6219.800000071526,
+          "end": 8205
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-HFui1b7t.js",
+          "start": 7425.5,
+          "end": 8128.800000071526
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "start": 7425.600000023842,
+          "end": 8062.5
+        }
+      ],
+      "progressSeen": "Walk mode\nExplore your design\nExit walk ×\nPreparing your walk…",
+      "entry": {
+        "mode": "third",
+        "door": null,
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          4.3500000000000005,
+          0.001000000000000222,
+          1.65
+        ],
+        "camera": [
+          5.0855988476190035,
+          2.101645987566177,
+          0.2633126716364058
+        ],
+        "fps": 0,
+        "low1": 0,
+        "frames": 1,
+        "entryMs": 3910.2000000476837
+      },
+      "readyObservedAt": 13627.300000071526,
+      "input": [
+        {
+          "mode": "third",
+          "n": 0,
+          "key": "KeyW",
+          "inputAt": 13643.400000095367,
+          "handlerAt": 13646.800000071526,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 13656.300000071526,
+          "startPosition": [
+            4.3500000000000005,
+            1.65
+          ],
+          "position": [
+            4.333353291333336,
+            0.0004999999999999965,
+            1.6675189859394015
+          ],
+          "delayMs": 12.899999976158142
+        },
+        {
+          "mode": "third",
+          "n": 1,
+          "key": "KeyS",
+          "inputAt": 13823.700000047684,
+          "handlerAt": 13823.900000095367,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 13834,
+          "startPosition": [
+            4.333353291333336,
+            1.6675189859394015
+          ],
+          "position": [
+            4.3500000000000005,
+            0.0004999999999999965,
+            1.65
+          ],
+          "delayMs": 10.299999952316284
+        },
+        {
+          "mode": "third",
+          "n": 2,
+          "key": "KeyW",
+          "inputAt": 13998.200000047684,
+          "handlerAt": 14001.800000071526,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 14017.400000095367,
+          "startPosition": [
+            4.3500000000000005,
+            1.65
+          ],
+          "position": [
+            4.325029937000004,
+            0.0005,
+            1.6762784789091023
+          ],
+          "delayMs": 19.200000047683716
+        },
+        {
+          "mode": "third",
+          "n": 3,
+          "key": "KeyS",
+          "inputAt": 14180.800000071526,
+          "handlerAt": 14182.700000047684,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 14199.300000071526,
+          "startPosition": [
+            4.325029937000004,
+            1.6762784789091023
+          ],
+          "position": [
+            4.341676645666668,
+            0.0004999999999999965,
+            1.6587594929697007
+          ],
+          "delayMs": 18.5
+        },
+        {
+          "mode": "third",
+          "n": 4,
+          "key": "KeyW",
+          "inputAt": 14370.200000047684,
+          "handlerAt": 14370.5,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 14382.400000095367,
+          "startPosition": [
+            4.341676645666668,
+            1.6587594929697007
+          ],
+          "position": [
+            4.325029937000004,
+            0.0005,
+            1.6762784789091023
+          ],
+          "delayMs": 12.200000047683716
+        },
+        {
+          "mode": "first",
+          "n": 0,
+          "key": "KeyW",
+          "inputAt": 14604.100000023842,
+          "handlerAt": 14604.800000071526,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 14617.800000071526,
+          "startPosition": [
+            4.325029937000004,
+            1.6762784789091023
+          ],
+          "position": [
+            4.300059874000007,
+            0.0004999999999999965,
+            1.7025569578182047
+          ],
+          "delayMs": 13.700000047683716
+        },
+        {
+          "mode": "first",
+          "n": 1,
+          "key": "KeyS",
+          "inputAt": 14788.200000047684,
+          "handlerAt": 14788.5,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 14799.800000071526,
+          "startPosition": [
+            4.300059874000007,
+            1.7025569578182047
+          ],
+          "position": [
+            4.316706582666671,
+            0.0005,
+            1.685037971878803
+          ],
+          "delayMs": 11.600000023841858
+        },
+        {
+          "mode": "first",
+          "n": 2,
+          "key": "KeyW",
+          "inputAt": 14960.100000023842,
+          "handlerAt": 14960.600000023842,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 14965.600000023842,
+          "startPosition": [
+            4.316706582666671,
+            1.685037971878803
+          ],
+          "position": [
+            4.291736519666674,
+            0.0005,
+            1.7113164507879055
+          ],
+          "delayMs": 5.5
+        },
+        {
+          "mode": "first",
+          "n": 3,
+          "key": "KeyS",
+          "inputAt": 15135.300000071526,
+          "handlerAt": 15135.600000023842,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 15148.300000071526,
+          "startPosition": [
+            4.291736519666674,
+            1.7113164507879055
+          ],
+          "position": [
+            4.308383228333339,
+            0.0004999999999999965,
+            1.693797464848504
+          ],
+          "delayMs": 13
+        },
+        {
+          "mode": "first",
+          "n": 4,
+          "key": "KeyW",
+          "inputAt": 15319.600000023842,
+          "handlerAt": 15319.800000071526,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 15333.200000047684,
+          "startPosition": [
+            4.308383228333339,
+            1.693797464848504
+          ],
+          "position": [
+            4.291736519666674,
+            0.0005,
+            1.7113164507879055
+          ],
+          "delayMs": 13.600000023841858
+        }
+      ],
+      "touchInput": [],
+      "network": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-react-CS4MHxMm.js",
+          "start": 3966.8000000715256,
+          "end": 4808.200000047684,
+          "bytes": 47583
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-router-DUymecSS.js",
+          "start": 3967.100000023842,
+          "end": 4813.200000047684,
+          "bytes": 8718
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-C2RiXfVc.js",
+          "start": 3967.3000000715256,
+          "end": 5410.300000071526,
+          "bytes": 32796
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "start": 3968.7000000476837,
+          "end": 4818.400000095367,
+          "bytes": 15662
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-DiHee6WC.js",
+          "start": 3972.7000000476837,
+          "end": 5662.5,
+          "bytes": 329407
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServices-BhWxnxOB.js",
+          "start": 3973,
+          "end": 5010.800000071526,
+          "bytes": 52711
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productImageSafety-CDXX3Z8N.js",
+          "start": 3973.2000000476837,
+          "end": 5311.600000023842,
+          "bytes": 734
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/types-BR-OoGj9.js",
+          "start": 3973.2000000476837,
+          "end": 5330.900000095367,
+          "bytes": 13462
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/merchantFurniture-ZuMdbwJD.js",
+          "start": 3973.2000000476837,
+          "end": 5340.900000095367,
+          "bytes": 1694
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServicesCatalog-gFhvLWEg.js",
+          "start": 3973.3000000715256,
+          "end": 4809.200000047684,
+          "bytes": 2951
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/middleware-BoNmX9tp.js",
+          "start": 3973.3000000715256,
+          "end": 5312.600000023842,
+          "bytes": 1701
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/propertyStore-BaL5uR8j.js",
+          "start": 3973.4000000953674,
+          "end": 5047.200000047684,
+          "bytes": 31828
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/showcaseSafety-DFBXsUeQ.js",
+          "start": 3973.4000000953674,
+          "end": 5311.900000095367,
+          "bytes": 479
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/LocaleThemeControls-CefV7nPN.js",
+          "start": 3973.4000000953674,
+          "end": 5334.300000071526,
+          "bytes": 1657
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/designsApi--oqef4hC.js",
+          "start": 3973.4000000953674,
+          "end": 5436.600000023842,
+          "bytes": 5818
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/RequireMerchant-Do98o4Fd.js",
+          "start": 3973.5,
+          "end": 4648.200000047684,
+          "bytes": 2646
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/downloadJson-DhXa1J4E.js",
+          "start": 3973.5,
+          "end": 4845,
+          "bytes": 576
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildSkinStore-2hUxbdFx.js",
+          "start": 3973.5,
+          "end": 5214.800000071526,
+          "bytes": 1044
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/currency-Da4TABuh.js",
+          "start": 3973.600000023842,
+          "end": 5028.600000023842,
+          "bytes": 625
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/cartStore-B_nryMcq.js",
+          "start": 3973.600000023842,
+          "end": 5337.200000047684,
+          "bytes": 5028
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/renderQualityStore-BjihP1eN.js",
+          "start": 3973.7000000476837,
+          "end": 5027.800000071526,
+          "bytes": 11525
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/quotedProducts-2NCXztC6.js",
+          "start": 3973.7000000476837,
+          "end": 5315.700000047684,
+          "bytes": 692
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/CurrencySwitcher-BP4nt3Eg.js",
+          "start": 3973.7000000476837,
+          "end": 5340.100000023842,
+          "bytes": 1835
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productSurfaceLighting-TqAqURS4.js",
+          "start": 3973.8000000715256,
+          "end": 4844.400000095367,
+          "bytes": 14880
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-konva-CbK8OvmD.js",
+          "start": 3973.8000000715256,
+          "end": 4947.100000023842,
+          "bytes": 92347
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/commission-BSjTNLTx.js",
+          "start": 3973.8000000715256,
+          "end": 5011.700000047684,
+          "bytes": 352
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/ThreeStage-B-2qpc2J.js",
+          "start": 3973.8000000715256,
+          "end": 5481.800000071526,
+          "bytes": 34861
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-three-DFSP7WXy.js",
+          "start": 3973.8000000715256,
+          "end": 5532.100000023842,
+          "bytes": 197556
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/serviceFixtureMeshes-DTCQy3Rs.js",
+          "start": 3973.9000000953674,
+          "end": 5325.800000071526,
+          "bytes": 2242
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "start": 3974.3000000715256,
+          "end": 5060.100000023842,
+          "bytes": 42610
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/DemoDesignerPage-Dyzyfna4.js",
+          "start": 5453.900000095367,
+          "end": 6116.800000071526,
+          "bytes": 2788
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/embedMessages-BIa44F5a.js",
+          "start": 5456,
+          "end": 6119.100000023842,
+          "bytes": 1016
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-ui-latin.woff2",
+          "start": 5466.400000095367,
+          "end": 6312.100000023842,
+          "bytes": 216980
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/brand/olb/olb-mark.svg",
+          "start": 6145.100000023842,
+          "end": 6776.400000095367,
+          "bytes": 700
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/products?limit=100",
+          "start": 6219.800000071526,
+          "end": 8205,
+          "bytes": 1804
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-HFui1b7t.js",
+          "start": 7425.5,
+          "end": 8128.800000071526,
+          "bytes": 12991
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "start": 7425.600000023842,
+          "end": 8062.5,
+          "bytes": 2144
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-C4Y1Ov47.js",
+          "start": 10958.600000023842,
+          "end": 11760.800000071526,
+          "bytes": 28578
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/walk-animation-CVCR6P-e.js",
+          "start": 10958.700000047684,
+          "end": 11662.5,
+          "bytes": 16155
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/walk-controls-ClkkmM6i.js",
+          "start": 10958.800000071526,
+          "end": 11595.200000047684,
+          "bytes": 1101
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "start": 11809.5,
+          "end": 12524.800000071526,
+          "bytes": 27141
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "start": 12540.200000047684,
+          "end": 13179.5,
+          "bytes": 12100
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "start": 12540.300000071526,
+          "end": 13432,
+          "bytes": 60862
+        }
+      ],
+      "lockedHint": 1,
+      "firstEscape": {
+        "unlocked": true,
+        "inWalk": true
+      },
+      "secondEscapeExits": true,
+      "blockedWrites": []
+    },
+    {
+      "device": "phone",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "chooserWallClockMs": 240,
+      "chooserCallToDecodedFrameMs": 272,
+      "chooser": {
+        "actionAt": 4598.300000071526,
+        "visibleAt": 4679.300000071526,
+        "images": [
+          {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAA",
+            "width": 64,
+            "height": 64,
+            "bytes": 1767
+          },
+          {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAA",
+            "width": 64,
+            "height": 64,
+            "bytes": 1821
+          },
+          {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAA",
+            "width": 64,
+            "height": 64,
+            "bytes": 1776
+          },
+          {
+            "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAA",
+            "width": 64,
+            "height": 64,
+            "bytes": 1872
+          }
+        ]
+      },
+      "chooserMs": 81,
+      "preStartResources": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-react-CS4MHxMm.js",
+          "start": 909.1000000238419,
+          "end": 1375.2000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-router-DUymecSS.js",
+          "start": 909.3000000715256,
+          "end": 1380.8000000715256
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "start": 909.3999999761581,
+          "end": 1393.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-C2RiXfVc.js",
+          "start": 909.3999999761581,
+          "end": 1688.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServices-BhWxnxOB.js",
+          "start": 909.8000000715256,
+          "end": 1480.3999999761581
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-DiHee6WC.js",
+          "start": 909.8000000715256,
+          "end": 1977.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServicesCatalog-gFhvLWEg.js",
+          "start": 910,
+          "end": 1394.3999999761581
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/merchantFurniture-ZuMdbwJD.js",
+          "start": 910,
+          "end": 1608
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/middleware-BoNmX9tp.js",
+          "start": 910,
+          "end": 1722.3000000715256
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productImageSafety-CDXX3Z8N.js",
+          "start": 910,
+          "end": 1722.6000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/types-BR-OoGj9.js",
+          "start": 910,
+          "end": 1979.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/propertyStore-BaL5uR8j.js",
+          "start": 910.1000000238419,
+          "end": 1596.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/designsApi--oqef4hC.js",
+          "start": 910.1000000238419,
+          "end": 1701.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/RequireMerchant-Do98o4Fd.js",
+          "start": 910.2000000476837,
+          "end": 1483.6000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/showcaseSafety-DFBXsUeQ.js",
+          "start": 910.2000000476837,
+          "end": 1484.8000000715256
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildSkinStore-2hUxbdFx.js",
+          "start": 910.2000000476837,
+          "end": 1634.2000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/downloadJson-DhXa1J4E.js",
+          "start": 910.2000000476837,
+          "end": 1722.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/LocaleThemeControls-CefV7nPN.js",
+          "start": 910.2000000476837,
+          "end": 1722.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/quotedProducts-2NCXztC6.js",
+          "start": 910.3000000715256,
+          "end": 1481.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/cartStore-B_nryMcq.js",
+          "start": 910.3000000715256,
+          "end": 1484.6000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/currency-Da4TABuh.js",
+          "start": 910.3000000715256,
+          "end": 1986.2000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-konva-CbK8OvmD.js",
+          "start": 910.3999999761581,
+          "end": 1583.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/renderQualityStore-BjihP1eN.js",
+          "start": 910.3999999761581,
+          "end": 1599.3999999761581
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/commission-BSjTNLTx.js",
+          "start": 910.3999999761581,
+          "end": 1608.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/CurrencySwitcher-BP4nt3Eg.js",
+          "start": 910.3999999761581,
+          "end": 1990.8999999761581
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/ThreeStage-B-2qpc2J.js",
+          "start": 910.5,
+          "end": 1728.6000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productSurfaceLighting-TqAqURS4.js",
+          "start": 910.5,
+          "end": 1976.1000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-three-DFSP7WXy.js",
+          "start": 910.5,
+          "end": 1989.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/serviceFixtureMeshes-DTCQy3Rs.js",
+          "start": 910.6000000238419,
+          "end": 1722.6000000238419
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "start": 910.7000000476837,
+          "end": 1992.5
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/DemoDesignerPage-Dyzyfna4.js",
+          "start": 1705.7000000476837,
+          "end": 2226.2000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/embedMessages-BIa44F5a.js",
+          "start": 1705.8999999761581,
+          "end": 2060.600000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-ui-latin.woff2",
+          "start": 1714.8999999761581,
+          "end": 2343.600000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/brand/olb/olb-mark.svg",
+          "start": 2250.7000000476837,
+          "end": 2623.600000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/products?limit=100",
+          "start": 2295,
+          "end": 2476.100000023842
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-HFui1b7t.js",
+          "start": 3311.3000000715256,
+          "end": 3725.7000000476837
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "start": 3311.5,
+          "end": 3696.899999976158
+        }
+      ],
+      "progressSeen": "Walk mode\nExit walk ×\nPreparing your walk…",
+      "entry": {
+        "mode": "third",
+        "door": null,
+        "blocked": false,
+        "locked": false,
+        "animation": "idle",
+        "position": [
+          4.3500000000000005,
+          0.001000000000000222,
+          1.65
+        ],
+        "camera": [
+          5.0855988476190035,
+          2.101645987566177,
+          0.2633126716364058
+        ],
+        "fps": 0,
+        "low1": 0,
+        "frames": 1,
+        "entryMs": 2881.2999999523163
+      },
+      "readyObservedAt": 8192,
+      "input": [
+        {
+          "mode": "third",
+          "n": 0,
+          "key": "KeyW",
+          "inputAt": 8202.200000047684,
+          "handlerAt": 8203,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 8217,
+          "startPosition": [
+            4.3500000000000005,
+            1.65
+          ],
+          "position": [
+            4.333353291333336,
+            0.0004999999999999965,
+            1.6675189859394015
+          ],
+          "delayMs": 14.799999952316284
+        },
+        {
+          "mode": "third",
+          "n": 1,
+          "key": "KeyS",
+          "inputAt": 8378.200000047684,
+          "handlerAt": 8378.600000023842,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 8382.700000047684,
+          "startPosition": [
+            4.333353291333336,
+            1.6675189859394015
+          ],
+          "position": [
+            4.3500000000000005,
+            0.0004999999999999965,
+            1.65
+          ],
+          "delayMs": 4.5
+        },
+        {
+          "mode": "third",
+          "n": 2,
+          "key": "KeyW",
+          "inputAt": 8557.700000047684,
+          "handlerAt": 8558.200000047684,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 8568,
+          "startPosition": [
+            4.3500000000000005,
+            1.65
+          ],
+          "position": [
+            4.333353291333336,
+            0.0004999999999999965,
+            1.6675189859394015
+          ],
+          "delayMs": 10.299999952316284
+        },
+        {
+          "mode": "third",
+          "n": 3,
+          "key": "KeyS",
+          "inputAt": 8738.700000047684,
+          "handlerAt": 8738.899999976158,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 8750.100000023842,
+          "startPosition": [
+            4.333353291333336,
+            1.6675189859394015
+          ],
+          "position": [
+            4.3500000000000005,
+            0.0004999999999999965,
+            1.65
+          ],
+          "delayMs": 11.399999976158142
+        },
+        {
+          "mode": "third",
+          "n": 4,
+          "key": "KeyW",
+          "inputAt": 8909.899999976158,
+          "handlerAt": 8910.200000047684,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 8916.700000047684,
+          "startPosition": [
+            4.3500000000000005,
+            1.65
+          ],
+          "position": [
+            4.333353291333336,
+            0.0004999999999999965,
+            1.6675189859394015
+          ],
+          "delayMs": 6.800000071525574
+        },
+        {
+          "mode": "first",
+          "n": 0,
+          "key": "KeyW",
+          "inputAt": 10376.700000047684,
+          "handlerAt": 10377.100000023842,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 10381.800000071526,
+          "startPosition": [
+            4.295898196833339,
+            1.7069367043030548
+          ],
+          "position": [
+            4.2792514881666746,
+            0.0004999999999999965,
+            1.7244556902424564
+          ],
+          "delayMs": 5.100000023841858
+        },
+        {
+          "mode": "first",
+          "n": 1,
+          "key": "KeyS",
+          "inputAt": 10558.100000023842,
+          "handlerAt": 10558.600000023842,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 10565.700000047684,
+          "startPosition": [
+            4.2792514881666746,
+            1.7244556902424564
+          ],
+          "position": [
+            4.295898196833339,
+            0.0004999999999999965,
+            1.7069367043030548
+          ],
+          "delayMs": 7.600000023841858
+        },
+        {
+          "mode": "first",
+          "n": 2,
+          "key": "KeyW",
+          "inputAt": 10737,
+          "handlerAt": 10737.300000071526,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 10748.100000023842,
+          "startPosition": [
+            4.295898196833339,
+            1.7069367043030548
+          ],
+          "position": [
+            4.2792514881666746,
+            0.0004999999999999965,
+            1.7244556902424564
+          ],
+          "delayMs": 11.100000023841858
+        },
+        {
+          "mode": "first",
+          "n": 3,
+          "key": "KeyS",
+          "inputAt": 10911,
+          "handlerAt": 10911.300000071526,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 10915.200000047684,
+          "startPosition": [
+            4.2792514881666746,
+            1.7244556902424564
+          ],
+          "position": [
+            4.295898196833339,
+            0.0004999999999999965,
+            1.7069367043030548
+          ],
+          "delayMs": 4.200000047683716
+        },
+        {
+          "mode": "first",
+          "n": 4,
+          "key": "KeyW",
+          "inputAt": 11085.600000023842,
+          "handlerAt": 11086,
+          "source": "keyboard",
+          "firstMovedRenderedAt": 11098.399999976158,
+          "startPosition": [
+            4.295898196833339,
+            1.7069367043030548
+          ],
+          "position": [
+            4.2792514881666746,
+            0.0004999999999999965,
+            1.7244556902424564
+          ],
+          "delayMs": 12.799999952316284
+        }
+      ],
+      "touchInput": [
+        {
+          "mode": "third",
+          "n": 0,
+          "pointerInputAt": 9090.800000071526,
+          "inputAt": 9120.899999976158,
+          "handlerAt": 9120.899999976158,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 9134.800000071526,
+          "startPosition": [
+            4.333353291333336,
+            1.6675189859394015
+          ],
+          "position": [
+            4.320868259833337,
+            0.0005000000000000035,
+            1.6806582253939526
+          ],
+          "delayMs": 44,
+          "handlerDelayMs": 13.900000095367432
+        },
+        {
+          "mode": "third",
+          "n": 1,
+          "pointerInputAt": 9340.700000047684,
+          "inputAt": 9366.899999976158,
+          "handlerAt": 9366.899999976158,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 9384.100000023842,
+          "startPosition": [
+            4.295898196833339,
+            1.7069367043030548
+          ],
+          "position": [
+            4.308383228333338,
+            0.0005,
+            1.6937974648485037
+          ],
+          "delayMs": 43.39999997615814,
+          "handlerDelayMs": 17.200000047683716
+        },
+        {
+          "mode": "third",
+          "n": 2,
+          "pointerInputAt": 9592.200000047684,
+          "inputAt": 9617.600000023842,
+          "handlerAt": 9617.600000023842,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 9633.399999976158,
+          "startPosition": [
+            4.333353291333336,
+            1.6675189859394015
+          ],
+          "position": [
+            4.320868259833337,
+            0.0005000000000000035,
+            1.6806582253939526
+          ],
+          "delayMs": 41.199999928474426,
+          "handlerDelayMs": 15.799999952316284
+        },
+        {
+          "mode": "third",
+          "n": 3,
+          "pointerInputAt": 9846,
+          "inputAt": 9866.200000047684,
+          "handlerAt": 9866.200000047684,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 9883.100000023842,
+          "startPosition": [
+            4.295898196833339,
+            1.7069367043030548
+          ],
+          "position": [
+            4.308383228333338,
+            0.0005,
+            1.6937974648485037
+          ],
+          "delayMs": 37.10000002384186,
+          "handlerDelayMs": 16.899999976158142
+        },
+        {
+          "mode": "third",
+          "n": 4,
+          "pointerInputAt": 10091.600000023842,
+          "inputAt": 10116.700000047684,
+          "handlerAt": 10116.700000047684,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 10132.200000047684,
+          "startPosition": [
+            4.333353291333336,
+            1.6675189859394015
+          ],
+          "position": [
+            4.320868259833337,
+            0.0005000000000000035,
+            1.6806582253939526
+          ],
+          "delayMs": 40.60000002384186,
+          "handlerDelayMs": 15.5
+        },
+        {
+          "mode": "first",
+          "n": 0,
+          "pointerInputAt": 11274.300000071526,
+          "inputAt": 11299,
+          "handlerAt": 11299,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 11316.200000047684,
+          "startPosition": [
+            4.2792514881666746,
+            1.7244556902424564
+          ],
+          "position": [
+            4.266766456666676,
+            0.0005000000000000035,
+            1.7375949296970075
+          ],
+          "delayMs": 41.89999997615814,
+          "handlerDelayMs": 17.200000047683716
+        },
+        {
+          "mode": "first",
+          "n": 1,
+          "pointerInputAt": 11522.700000047684,
+          "inputAt": 11548.899999976158,
+          "handlerAt": 11548.899999976158,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 11564.600000023842,
+          "startPosition": [
+            4.241796393666678,
+            1.7638734086061096
+          ],
+          "position": [
+            4.254281425166677,
+            0.0005000000000000035,
+            1.7507341691515586
+          ],
+          "delayMs": 41.89999997615814,
+          "handlerDelayMs": 15.700000047683716
+        },
+        {
+          "mode": "first",
+          "n": 2,
+          "pointerInputAt": 11774.5,
+          "inputAt": 11798.200000047684,
+          "handlerAt": 11798.200000047684,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 11815.899999976158,
+          "startPosition": [
+            4.2792514881666746,
+            1.7244556902424564
+          ],
+          "position": [
+            4.266766456666676,
+            0.0005000000000000035,
+            1.7375949296970075
+          ],
+          "delayMs": 41.39999997615814,
+          "handlerDelayMs": 17.699999928474426
+        },
+        {
+          "mode": "first",
+          "n": 3,
+          "pointerInputAt": 12027,
+          "inputAt": 12049.5,
+          "handlerAt": 12049.5,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 12065.800000071526,
+          "startPosition": [
+            4.241796393666678,
+            1.7638734086061096
+          ],
+          "position": [
+            4.254281425166677,
+            0.0005000000000000035,
+            1.7507341691515586
+          ],
+          "delayMs": 38.800000071525574,
+          "handlerDelayMs": 16.300000071525574
+        },
+        {
+          "mode": "first",
+          "n": 4,
+          "pointerInputAt": 12275.300000071526,
+          "inputAt": 12298.300000071526,
+          "handlerAt": 12298.300000071526,
+          "source": "touch",
+          "key": "stick",
+          "firstMovedRenderedAt": 12315.600000023842,
+          "startPosition": [
+            4.2792514881666746,
+            1.7244556902424564
+          ],
+          "position": [
+            4.266766456666676,
+            0.0005000000000000035,
+            1.7375949296970075
+          ],
+          "delayMs": 40.299999952316284,
+          "handlerDelayMs": 17.299999952316284
+        }
+      ],
+      "network": [
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-react-CS4MHxMm.js",
+          "start": 909.1000000238419,
+          "end": 1375.2000000476837,
+          "bytes": 47583
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-router-DUymecSS.js",
+          "start": 909.3000000715256,
+          "end": 1380.8000000715256,
+          "bytes": 8718
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-CB3fRIv-.css",
+          "start": 909.3999999761581,
+          "end": 1393.5,
+          "bytes": 15662
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/main-C2RiXfVc.js",
+          "start": 909.3999999761581,
+          "end": 1688.5,
+          "bytes": 32796
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServices-BhWxnxOB.js",
+          "start": 909.8000000715256,
+          "end": 1480.3999999761581,
+          "bytes": 52711
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-DiHee6WC.js",
+          "start": 909.8000000715256,
+          "end": 1977.5,
+          "bytes": 329407
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildingServicesCatalog-gFhvLWEg.js",
+          "start": 910,
+          "end": 1394.3999999761581,
+          "bytes": 2951
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/merchantFurniture-ZuMdbwJD.js",
+          "start": 910,
+          "end": 1608,
+          "bytes": 1694
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/middleware-BoNmX9tp.js",
+          "start": 910,
+          "end": 1722.3000000715256,
+          "bytes": 1701
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productImageSafety-CDXX3Z8N.js",
+          "start": 910,
+          "end": 1722.6000000238419,
+          "bytes": 734
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/types-BR-OoGj9.js",
+          "start": 910,
+          "end": 1979.1000000238419,
+          "bytes": 13462
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/propertyStore-BaL5uR8j.js",
+          "start": 910.1000000238419,
+          "end": 1596.5,
+          "bytes": 31828
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/designsApi--oqef4hC.js",
+          "start": 910.1000000238419,
+          "end": 1701.5,
+          "bytes": 5818
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/RequireMerchant-Do98o4Fd.js",
+          "start": 910.2000000476837,
+          "end": 1483.6000000238419,
+          "bytes": 2646
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/showcaseSafety-DFBXsUeQ.js",
+          "start": 910.2000000476837,
+          "end": 1484.8000000715256,
+          "bytes": 479
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/buildSkinStore-2hUxbdFx.js",
+          "start": 910.2000000476837,
+          "end": 1634.2000000476837,
+          "bytes": 1044
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/downloadJson-DhXa1J4E.js",
+          "start": 910.2000000476837,
+          "end": 1722.5,
+          "bytes": 576
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/LocaleThemeControls-CefV7nPN.js",
+          "start": 910.2000000476837,
+          "end": 1722.5,
+          "bytes": 1657
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/quotedProducts-2NCXztC6.js",
+          "start": 910.3000000715256,
+          "end": 1481.1000000238419,
+          "bytes": 692
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/cartStore-B_nryMcq.js",
+          "start": 910.3000000715256,
+          "end": 1484.6000000238419,
+          "bytes": 5028
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/currency-Da4TABuh.js",
+          "start": 910.3000000715256,
+          "end": 1986.2000000476837,
+          "bytes": 625
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-konva-CbK8OvmD.js",
+          "start": 910.3999999761581,
+          "end": 1583.1000000238419,
+          "bytes": 92347
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/renderQualityStore-BjihP1eN.js",
+          "start": 910.3999999761581,
+          "end": 1599.3999999761581,
+          "bytes": 11525
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/commission-BSjTNLTx.js",
+          "start": 910.3999999761581,
+          "end": 1608.1000000238419,
+          "bytes": 352
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/CurrencySwitcher-BP4nt3Eg.js",
+          "start": 910.3999999761581,
+          "end": 1990.8999999761581,
+          "bytes": 1835
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/ThreeStage-B-2qpc2J.js",
+          "start": 910.5,
+          "end": 1728.6000000238419,
+          "bytes": 34861
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/productSurfaceLighting-TqAqURS4.js",
+          "start": 910.5,
+          "end": 1976.1000000238419,
+          "bytes": 14880
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/vendor-three-DFSP7WXy.js",
+          "start": 910.5,
+          "end": 1989.5,
+          "bytes": 197556
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/serviceFixtureMeshes-DTCQy3Rs.js",
+          "start": 910.6000000238419,
+          "end": 1722.6000000238419,
+          "bytes": 2242
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/App-CiuI5Q1x.css",
+          "start": 910.7000000476837,
+          "end": 1992.5,
+          "bytes": 42610
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/DemoDesignerPage-Dyzyfna4.js",
+          "start": 1705.7000000476837,
+          "end": 2226.2000000476837,
+          "bytes": 2788
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/embedMessages-BIa44F5a.js",
+          "start": 1705.8999999761581,
+          "end": 2060.600000023842,
+          "bytes": 1016
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/fonts/inter-ui-latin.woff2",
+          "start": 1714.8999999761581,
+          "end": 2343.600000023842,
+          "bytes": 216980
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/brand/olb/olb-mark.svg",
+          "start": 2250.7000000476837,
+          "end": 2623.600000023842,
+          "bytes": 700
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/products?limit=100",
+          "start": 2295,
+          "end": 2476.100000023842,
+          "bytes": 1802
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-HFui1b7t.js",
+          "start": 3311.3000000715256,
+          "end": 3725.7000000476837,
+          "bytes": 12991
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/WalkLauncher-DuQnpEzB.css",
+          "start": 3311.5,
+          "end": 3696.899999976158,
+          "bytes": 2144
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/runtime-C4Y1Ov47.js",
+          "start": 6541.300000071526,
+          "end": 6917.100000023842,
+          "bytes": 28578
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/walk-animation-CVCR6P-e.js",
+          "start": 6541.399999976158,
+          "end": 7003.899999976158,
+          "bytes": 16155
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/assets/walk-controls-ClkkmM6i.js",
+          "start": 6541.5,
+          "end": 7005.399999976158,
+          "bytes": 1101
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/models/world-characters/kenney-female-a.glb",
+          "start": 7034.700000047684,
+          "end": 7430.899999976158,
+          "bytes": 27141
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_wasm_wrapper.js",
+          "start": 7434.399999976158,
+          "end": 7827.700000047684,
+          "bytes": 12100
+        },
+        {
+          "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/draco/draco_decoder.wasm",
+          "start": 7434.5,
+          "end": 7961.5,
+          "bytes": 60862
+        }
+      ],
+      "blockedWrites": []
+    }
+  ],
+  "healthAfter": {
+    "at": "2026-10-31T12:15:28.149Z",
+    "target": "walk",
+    "url": "https://ppw-designer-2d-git-gpt-olb-walk-mode-2026-10-27-victor-ppw.vercel.app/api/healthcheck",
+    "status": 200,
+    "body": {
+      "ok": true,
+      "service": "ppw-designer-2d",
+      "env": "preview",
+      "commit": "72326031722745a6ca99a9b416ccba7a65ff1cd4",
+      "sentryConfigured": true,
+      "timestamp": "2026-10-31T12:15:28.733Z"
+    }
+  },
+  "healthStable": true,
+  "endedAt": "2026-10-31T12:15:28.149Z"
+}

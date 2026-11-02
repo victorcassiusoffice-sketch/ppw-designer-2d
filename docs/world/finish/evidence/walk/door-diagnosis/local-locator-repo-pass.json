@@ -1,0 +1,9 @@
+{
+  "index": true,
+  "note": "Lossless gzip of the complete file beside this index; decompress to read every row. Nothing is truncated.",
+  "original": "walk-functional-walk.json",
+  "originalBytes": 1867397,
+  "originalSha256": "f1e5b5ff2cd9afe8282ecc84cba274764311dc8f2871f5275eebc6d547d9cd1d",
+  "gzipBytes": 51883,
+  "gzipSha256": "88d3daf4f40c6e97a5c31f20888a19bbb4676156adb16a9fab7578ef0e2267b0"
+}

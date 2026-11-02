@@ -1,0 +1,187 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "cases": [
+    {
+      "device": "desktop",
+      "dpr": 1,
+      "view": "2d",
+      "checks": [
+        "basket uses density-appropriate small drawing; demo text guard",
+        "actual photo and Drawing labels preserved; 1x/2x currentSrc selected; explicit detail keeps original"
+      ],
+      "pictures": [
+        {
+          "kind": "basket",
+          "src": "/products/thumbs/504a52ac1cf24001-128.webp",
+          "currentSrc": "http://127.0.0.1:5173/products/thumbs/504a52ac1cf24001-128.webp",
+          "srcSet": "/products/thumbs/504a52ac1cf24001-128.webp 1x, /products/thumbs/504a52ac1cf24001-256.webp 2x",
+          "width": 128,
+          "height": 50
+        },
+        {
+          "kind": "photo",
+          "src": "/products/thumbs/0526e3fbea00cb6b-128.webp",
+          "currentSrc": "http://127.0.0.1:5173/products/thumbs/0526e3fbea00cb6b-128.webp",
+          "srcSet": "/products/thumbs/0526e3fbea00cb6b-128.webp 1x, /products/thumbs/0526e3fbea00cb6b-256.webp 2x",
+          "width": 128,
+          "height": 128
+        },
+        {
+          "kind": "plan",
+          "src": "/products/thumbs/504a52ac1cf24001-128.webp",
+          "currentSrc": "http://127.0.0.1:5173/products/thumbs/504a52ac1cf24001-128.webp",
+          "srcSet": "/products/thumbs/504a52ac1cf24001-128.webp 1x, /products/thumbs/504a52ac1cf24001-256.webp 2x",
+          "width": 128,
+          "height": 50
+        },
+        {
+          "kind": "explicit-detail",
+          "src": "/products/catalog-plans/courts-marco-sofa-corner-04e6c71b304b5da7.png",
+          "currentSrc": "http://127.0.0.1:5173/products/catalog-plans/courts-marco-sofa-corner-04e6c71b304b5da7.png",
+          "srcSet": null,
+          "width": 512,
+          "height": 201
+        }
+      ],
+      "errors": [],
+      "writes": [],
+      "failures": [],
+      "fontRangeCandidates": [
+        {
+          "chars": [
+            "＋ U+ff0b"
+          ],
+          "tag": "OPTION",
+          "role": null,
+          "testid": null,
+          "visible": false,
+          "family": "Inter, ui-sans-serif, system-ui, sans-serif",
+          "style": "normal"
+        },
+        {
+          "chars": [
+            "简 U+7b80",
+            "体 U+4f53",
+            "中 U+4e2d",
+            "文 U+6587"
+          ],
+          "tag": "OPTION",
+          "role": null,
+          "testid": null,
+          "visible": false,
+          "family": "Inter, system-ui, sans-serif",
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "dpr": 2,
+      "view": "3d",
+      "checks": [
+        "basket uses density-appropriate small drawing; demo text guard",
+        "actual photo and Drawing labels preserved; 1x/2x currentSrc selected; explicit detail keeps original"
+      ],
+      "pictures": [
+        {
+          "kind": "basket",
+          "src": "/products/thumbs/504a52ac1cf24001-128.webp",
+          "currentSrc": "http://127.0.0.1:5173/products/thumbs/504a52ac1cf24001-256.webp",
+          "srcSet": "/products/thumbs/504a52ac1cf24001-128.webp 1x, /products/thumbs/504a52ac1cf24001-256.webp 2x",
+          "width": 128,
+          "height": 50
+        },
+        {
+          "kind": "photo",
+          "src": "/products/thumbs/0526e3fbea00cb6b-128.webp",
+          "currentSrc": "http://127.0.0.1:5173/products/thumbs/0526e3fbea00cb6b-256.webp",
+          "srcSet": "/products/thumbs/0526e3fbea00cb6b-128.webp 1x, /products/thumbs/0526e3fbea00cb6b-256.webp 2x",
+          "width": 128,
+          "height": 128
+        },
+        {
+          "kind": "plan",
+          "src": "/products/thumbs/504a52ac1cf24001-128.webp",
+          "currentSrc": "http://127.0.0.1:5173/products/thumbs/504a52ac1cf24001-256.webp",
+          "srcSet": "/products/thumbs/504a52ac1cf24001-128.webp 1x, /products/thumbs/504a52ac1cf24001-256.webp 2x",
+          "width": 128,
+          "height": 50
+        },
+        {
+          "kind": "explicit-detail",
+          "src": "/products/catalog-plans/courts-marco-sofa-corner-04e6c71b304b5da7.png",
+          "currentSrc": "http://127.0.0.1:5173/products/catalog-plans/courts-marco-sofa-corner-04e6c71b304b5da7.png",
+          "srcSet": null,
+          "width": 512,
+          "height": 201
+        }
+      ],
+      "errors": [],
+      "writes": [],
+      "failures": [],
+      "fontRangeCandidates": [
+        {
+          "chars": [
+            "＋ U+ff0b"
+          ],
+          "tag": "OPTION",
+          "role": null,
+          "testid": null,
+          "visible": false,
+          "family": "Inter, ui-sans-serif, system-ui, sans-serif",
+          "style": "normal"
+        },
+        {
+          "chars": [
+            "简 U+7b80",
+            "体 U+4f53",
+            "中 U+4e2d",
+            "文 U+6587"
+          ],
+          "tag": "OPTION",
+          "role": null,
+          "testid": null,
+          "visible": false,
+          "family": "Inter, system-ui, sans-serif",
+          "style": "normal"
+        },
+        {
+          "chars": [
+            "简 U+7b80",
+            "体 U+4f53",
+            "中 U+4e2d",
+            "文 U+6587"
+          ],
+          "tag": "OPTION",
+          "role": null,
+          "testid": null,
+          "visible": false,
+          "family": "Inter, system-ui, sans-serif",
+          "style": "normal"
+        },
+        {
+          "chars": [
+            "＋ U+ff0b"
+          ],
+          "tag": "OPTION",
+          "role": null,
+          "testid": null,
+          "visible": false,
+          "family": "Inter, ui-sans-serif, system-ui, sans-serif",
+          "style": "normal"
+        },
+        {
+          "chars": [
+            "＋ U+ff0b"
+          ],
+          "tag": "OPTION",
+          "role": null,
+          "testid": null,
+          "visible": false,
+          "family": "Inter, ui-sans-serif, system-ui, sans-serif",
+          "style": "normal"
+        }
+      ]
+    }
+  ]
+}
