@@ -65,8 +65,9 @@ const PreviewShopRoute = lazy(() => import('./pages/studio/StudioPage').then((m)
 const ShowcaseCheckoutGuard = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.ShowcaseCheckoutGuard })));
 const OlbHomePage = lazy(() => import('./pages/olb/OlbHomePage'));
 
-// onelivebuild.com opens on its own front page; designer.ppwellness.co (and the
-// shop's own address, row D6-ONELIVEBUILD-1010-19) keep the shop as the front door.
+// onelivebuild.com has its own front page (now at /home, behind the code or the
+// admin sign-in); designer.ppwellness.co (and the shop's own address, row
+// D6-ONELIVEBUILD-1010-19) keep the shop as the front door.
 const oneLiveBuildHome = currentBrand() === 'olb' && !isShopHost();
 
 // Fire-and-forget FX bootstrap - refreshes the live rate snapshot if
@@ -137,7 +138,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         {/* WD rework 2026-07-26 (Vic directive 5): the SHOP is the front door.
             "Browse and buy" is the primary journey; the Sims-style room
             designer is an optional extra mode at /designer. */}
-        <Route path="/" element={oneLiveBuildHome ? <OlbHomePage /> : <PreviewShopRoute><PublicProductsPage /></PreviewShopRoute>} />
+        {/* onelivebuild.com: the server answers "/" with the public landing (middleware.ts);
+            the software's own front page lives at /home. In-app links to "/" land there too. */}
+        <Route path="/" element={oneLiveBuildHome ? <Navigate to="/home" replace /> : <PreviewShopRoute><PublicProductsPage /></PreviewShopRoute>} />
+        <Route path="/home" element={oneLiveBuildHome ? <OlbHomePage /> : <Navigate to="/" replace />} />
         <Route path="/designer" element={<App />} />
         <Route path="/demo" element={<DemoDesignerPage />} />
         <Route path="/embed/designer" element={<DemoDesignerPage />} />

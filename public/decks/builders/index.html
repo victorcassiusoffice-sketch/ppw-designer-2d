@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" style="--pages: 8;">
+<head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: file:; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: file:; media-src 'self' file:; font-src 'self' file:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Every trade on one live plan we set up from the architect's drawing: foundations, concrete, blocks and services worked out from it, as estimates your team checks. From Victor Cassius Bhatoolaul, founder of One Live Build.">
+<title>One Live Build · for builders and contractors</title>
+<link rel="icon" href="assets/olb-mark.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:Fraunces;src:url(assets/fonts/fraunces-600-latin.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:Outfit;src:url(assets/fonts/outfit-latin.woff2) format("woff2");font-weight:100 900;font-display:swap}
+:root{--paper:#f3efe6;--ink:#1a1814;--palm:#1e3d32;--copper:#8f4e2a;--navy:var(--palm);--navy2:#2a5243;--ember:var(--copper);--muted:#5c574e;--line:#d4cbbc;--sand:#e7dcc8;--tint:#eee7d9;--bezel:#101114;--text:Outfit,system-ui,sans-serif;--display:Fraunces,Georgia,serif;--avail:calc(100dvh - 198px)}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--text);-webkit-font-smoothing:antialiased}
+button,a{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,img.zoom:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
+button:disabled{opacity:.35;cursor:default}
+[hidden]{display:none!important}
+h1,h2,h3,p,figure,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height:1.08;text-align:left}
+h1{font-size:clamp(36px,3.9vw,50px)}
+h2{font-size:clamp(32px,3.5vw,50px)}
+em{font-style:normal;color:var(--ember)}
+img,video{max-width:100%;display:block}
+p,li,figcaption,td,th{line-height:1.5;text-align:left}
+
+/* the slide strip (kept from the type decks) */
+.deck{display:flex;width:100%;height:calc(100dvh - 62px);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.deck::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;width:100%;height:100%;padding:24px clamp(24px,5.5vw,80px) 12px;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--paper)}
+.sh{display:flex;align-items:center;gap:14px;flex:none;height:44px;margin:0 0 20px}
+.sh .lockup{width:165px;height:34px}
+.sh .num{margin-left:auto;font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.page-content{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.45fr);gap:3.5vw;align-items:center}
+.sf{display:flex;align-items:center;gap:8px;flex:none;margin-top:12px;padding-top:9px;border-top:1px solid var(--line);font-size:12px;line-height:1.5;color:var(--muted)}
+.sf img{width:16px;height:16px;flex:none}
+.sf .right{margin-left:auto;text-align:right}
+.sf .brand,#slide-3 .sf>span:first-of-type{white-space:nowrap}
+
+/* words */
+.intro{display:grid;justify-items:start;align-content:center;gap:18px;min-width:0}
+.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:13px;font-weight:600;color:var(--ember)}
+.lead{font-size:clamp(17px,1.55vw,21px);line-height:1.5;max-width:24em;color:var(--ink)}
+.byline{font-size:15px;line-height:1.5;color:var(--muted)}
+.swipe-hint{display:flex;align-items:center;gap:14px;font-size:15px;font-weight:600;color:var(--ember)}
+.swipe-hint span{font-size:26px;line-height:1}
+.hint-y{display:none}
+.cap{font-size:14px;line-height:1.5;color:var(--muted);max-width:46em}
+.tag{display:inline-flex;align-items:center;align-self:flex-start;justify-self:start;flex:none;white-space:nowrap;font-family:var(--text);font-size:11px;line-height:1.2;font-weight:700;letter-spacing:.08em;padding:7px 11px;border-radius:99px;border:1.5px solid transparent}
+.tag.live{background:var(--navy);color:#fff}
+.tag.bfy{background:var(--sand);border-color:#829184;color:var(--navy)}
+.tag.tb{background:transparent;border-style:dashed;border-color:var(--ember);color:var(--ember)}
+.also{display:flex;align-items:center;gap:12px;font-size:16px;line-height:1.5;color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:50px;padding:12px 22px;border-radius:10px;border:1.5px solid var(--navy);font-size:16px;font-weight:600;line-height:1.3;text-decoration:none;text-align:left;position:relative;z-index:3}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.primary:hover{background:var(--navy2)}
+
+/* frames for the captures */
+.visual{min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px}
+.win{position:relative;margin:0;border-radius:12px;overflow:hidden;background:#151619;box-shadow:0 22px 44px -22px rgba(26,24,20,.55),0 0 0 1px rgba(26,24,20,.14)}
+.win::before{content:"";display:block;height:16px;background:radial-gradient(circle at 12px 8px,#6b6f78 3px,transparent 3.6px),radial-gradient(circle at 24px 8px,#6b6f78 3px,transparent 3.6px),radial-gradient(circle at 36px 8px,#6b6f78 3px,transparent 3.6px),#25272c}
+.win img{width:100%;height:auto}
+.phone{position:relative;margin:0;padding:7px;border-radius:30px;background:var(--bezel);box-shadow:0 22px 44px -20px rgba(26,24,20,.6),inset 0 0 0 1px #2c2e33;flex:none}
+.phone img{width:100%;height:auto;border-radius:23px}
+img.zoom{cursor:zoom-in}
+
+/* 1 cover: the words, one photograph */
+.cover .page-content{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)}
+.photo{margin:0;display:grid;gap:10px;justify-items:start;min-width:0}
+.photo img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;max-height:calc(var(--avail) - 44px);border-radius:18px;box-shadow:0 22px 44px -22px rgba(26,24,20,.55)}
+
+/* 2 the furnished home: laptop and phone side by side */
+.s2 .page-content{grid-template-columns:minmax(0,.7fr) minmax(0,1.55fr)}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end}
+.pair .win{width:min(100%,calc((var(--avail) - 60px) * var(--ratio,1.6)))}
+.pair .phone{width:min(13.5vw,calc((var(--avail) - 60px) * .4622 + 14px));margin-left:-64px;z-index:1}
+.pair .cap{grid-column:1/-1;margin-top:4px}
+
+/* 3 the map (map v2): the slide's content box is the cqw container; the deck-wide sizes it reads */
+.s3 .page-content{display:block;container-type:inline-size;--fs-s:12px;--fs-tag:9px;--rad:10px;--r:14px}
+.s3 .mv{height:100%}
+.s3 .eyebrow{font-size:12px}
+.s3 h2{font-size:30px}
+.s3 .nw{white-space:nowrap}
+.s3 .tag{font-size:10px;padding:6px 9px;letter-spacing:.06em}
+.s3 .mv-key{font-size:12px;line-height:1.4}
+
+/* 4 5 6 one screen, the words beside it */
+.s4 .page-content,.s5 .page-content,.s6 .page-content{grid-template-columns:minmax(0,.74fr) minmax(0,1.5fr)}
+.solo{display:grid;gap:12px;justify-items:start}
+.solo .win{width:min(100%,calc((var(--avail) - 44px) * var(--ratio,1.6)))}
+
+/* 7 what this could change: three cards */
+.s7 .page-content{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:22px}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.col{display:flex;flex-direction:column;gap:11px;padding:14px 18px 18px;border-radius:14px;background:var(--tint);border:1px solid var(--line)}
+.col.c-tb{background:transparent;border:1.5px dashed var(--ember)}
+.col .strip{display:block;width:100%;height:110px;object-fit:cover;object-position:50% 40%;border-radius:9px;margin-bottom:3px}
+.col .means{font-family:var(--display);font-weight:600;font-size:clamp(19px,1.7vw,23px);line-height:1.25}
+.col ul{display:grid;gap:8px}
+.col li{position:relative;padding-left:20px;font-size:16px;line-height:1.5}
+.col li::before{content:"";position:absolute;left:2px;top:.62em;width:8px;height:8px;border-radius:50%;background:var(--navy)}
+.col.c-tb li::before{background:transparent;border:1.5px solid var(--ember)}
+
+/* 8 next step */
+.s8 .page-content{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+.closing{display:grid;gap:20px;justify-items:start;align-content:center}
+.ask{font-family:var(--display);font-weight:600;font-size:clamp(20px,1.9vw,26px);line-height:1.3;color:var(--ember)}
+.portrait{margin:0;display:grid;gap:12px;justify-items:start;align-content:center}
+.portrait img{width:min(100%,calc(var(--avail) - 90px),340px);height:auto;border-radius:22px;box-shadow:0 22px 44px -22px rgba(26,24,20,.55)}
+.portrait figcaption{font-size:17px;font-weight:600;line-height:1.5;color:var(--ink)}
+.portrait figcaption span{display:block;font-size:14px;font-weight:400;color:var(--muted)}
+
+/* bottom bar */
+.book-nav{position:fixed;bottom:0;left:0;right:0;height:62px;background:var(--paper);display:flex;align-items:center;justify-content:center;gap:16px;border-top:1px solid var(--line);z-index:10;padding:0 8px}
+.book-nav>button{border:1px solid var(--line);border-radius:50%;min-width:44px;height:44px;background:var(--paper);font-size:22px;color:var(--navy)}
+.page-dots{display:flex;align-items:center;min-width:0}
+.page-dots button{width:26px;height:44px;padding:0;border:0;background:none}
+.page-dots span{display:block;width:7px;height:7px;margin:auto;border-radius:50%;background:#a59f94;transition:width .2s}
+.page-dots [aria-current] span{width:22px;background:var(--navy);border-radius:8px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+
+/* enlarge a picture (kept from the type decks) */
+.image-dialog{position:fixed;inset:0;border:0;padding:0;margin:0;width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;background:var(--paper);color:var(--ink)}
+.image-dialog[open]{display:flex;flex-direction:column;z-index:1000}
+.image-dialog::backdrop{background:rgba(26,24,20,.85)}
+.image-toolbar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex:none}
+.image-toolbar p{font-size:14px;margin-right:auto}
+.image-toolbar button{min-height:44px;padding:8px 16px;border:0;border-radius:8px;background:var(--navy);color:#fff;font-weight:600}
+.image-toolbar .zoom-toggle{background:var(--sand);color:var(--navy)}
+.image-pan{overflow:auto;flex:1;min-height:0;display:grid;align-items:start;justify-items:center;padding:16px}
+.image-pan img{width:auto;max-width:100%;max-height:calc(100dvh - 110px);height:auto}
+.image-pan.zoomed img{max-width:none;max-height:none;width:max(100%,1400px)}
+
+@media screen and (max-width:999px){
+  :root{--avail:9999px}
+  html,body{height:auto;overflow-x:hidden;overflow-y:auto}
+  body{padding-bottom:62px}
+  .deck{display:block;height:auto;overflow:visible;scroll-snap-type:none}
+  .slide{height:auto;min-height:calc(100dvh - 62px);padding:14px 20px 18px;overflow:visible;scroll-snap-align:none;scroll-snap-stop:normal;border-bottom:1px solid var(--line)}
+  .hint-x{display:none}.hint-y{display:flex}
+  .sh{height:40px;margin-bottom:12px}
+  .sh .lockup{width:136px;height:28px}
+  .page-content,.cover .page-content,.s2 .page-content,.s4 .page-content,.s5 .page-content,.s6 .page-content,.s8 .page-content{flex:none;display:flex;flex-direction:column;align-items:stretch;gap:22px}
+  .s3 .page-content{display:block}
+  .s3 .mv{height:auto}
+  .s3 h2{font-size:29px}
+  .s3 .nw{white-space:normal}
+  .intro{gap:13px}
+  h1{font-size:38px}
+  h2{font-size:31px}
+  .lead{font-size:17px}
+  .byline,.swipe-hint{font-size:14px}
+  .cap{font-size:13.5px}
+  .sf{margin-top:18px;font-size:11px;align-items:center}
+  .photo img{max-height:none;border-radius:14px}
+  .pair{grid-template-columns:minmax(0,1fr) 30%}
+  .pair .win,.solo .win{width:100%}
+  .pair .phone{width:auto;margin-left:-14%;padding:5px;border-radius:20px}
+  .pair .phone img{border-radius:15px}
+  .cols{grid-template-columns:1fr;gap:12px}
+  .col{padding:12px 14px 16px;gap:9px}
+  .col .strip{height:84px}
+  .col .means{font-size:20px}
+  .col li{font-size:15px}
+  .s7 .page-content{gap:16px}
+  .ask{font-size:21px}
+  .portrait{order:-1;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px}
+  .portrait img{width:96px;border-radius:50%}
+  .closing{gap:16px}
+  .btn{min-height:48px;font-size:15px}
+  .book-nav{gap:6px}
+  .page-dots button{width:min(26px,calc((100vw - 120px) / var(--pages)))}
+  .book-nav>button{min-width:40px;height:40px}
+}
+@media screen and (max-width:999px) and (max-height:650px){
+  body{padding-bottom:52px}
+  .slide{min-height:calc(100dvh - 52px);padding:10px 16px 14px}
+  .book-nav{height:52px}
+  .sh{height:36px;margin-bottom:8px}
+  h1{font-size:33px}
+  h2{font-size:27px}
+  .lead{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+@media print{
+  :root{--avail:556px}
+  html,body{height:auto;overflow:visible;background:var(--paper)}
+  .deck{height:auto;display:block;overflow:visible}
+  .slide{width:1280px;height:720px;break-after:page;page-break-after:always;padding:24px 64px 20px;overflow:hidden}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  body>:not(.deck),.book-nav,.image-dialog,.swipe-hint{display:none!important}
+  .s3 .page-content{height:548px}
+  .pair .phone{width:calc((var(--avail) - 60px) * .4622 + 14px)}
+  @page{size:1280px 720px;margin:0}
+}
+</style>
+<style>
+/* deck site 14 Oct: slide 3 "How it connects", map v2 with pictures of One Live Build (template: ../assets-map-v2/MAP-V2-TEMPLATE.html).
+   Desktop: a 9-track grid (card | gap | card | link | hub | link | card | gap | card), so every wire lands on a card centre.
+   Row 1: four picture cards around the live-build picture. Row 2: the shared line every card hangs from (step 2, step 4, step 3).
+   Band: the order card under step 4, the estimate line, the tag key. Numbered steps 1-4 follow the arrows.
+   Phones: one vertical story on a centre line (plans in, live build, step 2, the four cards, step 3, materials, order); wires hidden.
+   Re-cut 14 Oct: longer step 2/3 and order lines and a BUILT FOR YOU buyer row, so the gaps are a little
+   tighter and the order card spans the two link tracks under the hub (same centre, so the arrow still lands on it). */
+.mv{--wire:rgba(30,61,50,.55);--mvg:1cqw;--mvr:1.1cqw;--link:2.61cqw;display:grid;grid-template-rows:auto minmax(0,1fr) auto;row-gap:var(--mvg)}
+.mv-head{display:flex;align-items:flex-end;gap:3cqw}
+.mv-ttl{flex:none}
+.mv-in{margin:0;display:flex;align-items:center;gap:.9cqw;padding:.3cqw 1.3cqw .3cqw .45cqw;background:var(--paper);border:1px solid var(--line);border-radius:var(--rad);box-shadow:0 .2cqw .8cqw rgba(26,24,20,.08)}
+.mv-in figcaption{display:flex;flex-direction:column;gap:.4cqw}
+.mv-th{position:relative;display:block;overflow:hidden;flex:none;border-radius:.5cqw;border:1px solid var(--line);background:#dfe5dd}
+.mv-th img{position:absolute;display:block;max-width:none;height:auto}
+.mv-in .mv-th{width:7.2cqw;aspect-ratio:305/190}
+.mv-in .mv-th img{width:209.84%;left:-103.28%;top:-34.21%}
+.mv-step{display:flex;align-items:center;gap:.55cqw;font-weight:600;font-size:1.12cqw;line-height:1.25;color:var(--ink)}
+.mv-step b{display:inline-flex;align-items:center;justify-content:center;flex:none;width:1.6cqw;height:1.6cqw;border-radius:50%;background:var(--copper);color:var(--paper);font-size:.9cqw;font-weight:700;line-height:1}
+.mv-l{font-size:var(--fs-s);line-height:1.36}
+.mv-l .tag,.mv-rows.in .tag,.mv-lead .tag{margin-right:.5em}
+
+.mv-map,.mv-band{display:grid;grid-template-columns:minmax(0,16.2fr) minmax(0,1.2fr) minmax(0,16.2fr) minmax(0,2.9fr) minmax(0,27fr) minmax(0,2.9fr) minmax(0,16.2fr) minmax(0,1.2fr) minmax(0,16.2fr)}
+.mv-map{grid-template-rows:minmax(0,1fr) auto;row-gap:var(--mvr);min-height:0}
+.mv-hub{grid-column:5;grid-row:1}
+.mv-c1{grid-column:1;grid-row:1}.mv-c2{grid-column:3;grid-row:1}.mv-c3{grid-column:7;grid-row:1}.mv-c4{grid-column:9;grid-row:1}
+.mv-two{grid-column:1/4;grid-row:2}.mv-calc{grid-column:5;grid-row:2}.mv-three{grid-column:7/10;grid-row:2}
+
+/* the live build in the centre */
+.mv-hub{position:relative;margin:0;display:flex;flex-direction:column;gap:.55cqw;min-height:0;padding:.6cqw;background:var(--palm);border-radius:var(--r);box-shadow:0 .45cqw 1.5cqw rgba(30,61,50,.28);outline:1.5px dashed rgba(30,61,50,.5);outline-offset:.45cqw}
+.mv-hpw{position:relative;flex:1;min-height:0;border-radius:.8cqw;overflow:hidden;background:#a9b5ab}
+.mv-hpic{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 50%}
+.mv-hub figcaption{display:flex;align-items:center;justify-content:space-between;gap:.8cqw;padding:0 .35cqw .15cqw}
+.mv-hl{font-family:var(--display);font-weight:600;font-size:1.5cqw;line-height:1.1;letter-spacing:-.01em;color:var(--paper)}
+.mv-hub .tag.live{background:var(--paper);color:var(--palm);border-color:var(--paper)}
+
+/* the four people around it, each with a picture on top */
+.mv-card{position:relative;display:flex;flex-direction:column;min-height:0;background:var(--tint);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.mv-pw{position:relative;flex:none}
+.mv-pic{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:50% 50%;border-bottom:1px solid var(--line);background:#dfe5dd}
+.mv-ex{position:absolute;left:.5cqw;top:.5cqw;padding:.22em .7em;border-radius:999px;background:rgba(26,24,20,.76);color:var(--paper);font-size:var(--fs-tag);font-weight:600;letter-spacing:.04em;line-height:1.3}
+/* zoomed picture: the box keeps 16:9, the image is scaled and shifted (--w width, --x left, --y top, in % of the box) */
+.mv-pw.zm{aspect-ratio:16/9;overflow:hidden;border-bottom:1px solid var(--line);background:#dfe5dd}
+.mv-pw.zm .mv-pic{position:absolute;max-width:none;width:var(--w);left:var(--x);top:var(--y);height:auto;aspect-ratio:auto;object-fit:fill;border-bottom:0}
+.mv-cb{display:flex;flex-direction:column;gap:.5cqw;padding:.55cqw .85cqw .65cqw}
+.mv-card h3{font-size:1.4cqw}
+.mv-rows{list-style:none;margin:0;padding:0;display:grid;gap:.35cqw;font-size:var(--fs-s);line-height:1.36;color:var(--ink)}
+
+/* the shared line: boxes hang from it, its top edge is the wire */
+.mv-box{position:relative;display:flex;flex-direction:column;gap:.5cqw;padding:.7cqw 1cqw .8cqw;background:var(--tint);border:1px solid var(--line);border-top:1.5px solid var(--wire);border-radius:0 0 var(--rad) var(--rad)}
+.mv-lead{font-size:var(--fs-s);line-height:1.4;color:var(--muted)}
+.mv-cr{display:flex;align-items:center;gap:.8cqw}
+.mv-calc .mv-th{width:8.9cqw;aspect-ratio:256/132}
+.mv-calc .mv-th img{width:250%;left:-147.66%;top:-125.76%}
+.mv-calc strong,.mv-order strong{display:block;font-weight:600;font-size:1.12cqw;line-height:1.28}
+.mv-tl{display:flex;align-items:center;gap:.5cqw;margin-top:.35cqw;font-size:var(--fs-s);color:var(--muted)}
+
+/* wires: one shared line, stubs up into each card, arrows down the middle */
+.w{position:absolute;z-index:2;pointer-events:none}
+.w-v{width:0;border-left:1.5px solid var(--wire)}
+.w-h{height:0;border-top:1.5px solid var(--wire)}
+.w-v.dn::after,.w-v.up::after{content:"";position:absolute;left:calc(-.42cqw - .75px);width:.84cqw;height:.62cqw;background:var(--palm)}
+.w-v.dn::after{bottom:0;clip-path:polygon(0 0,100% 0,50% 100%)}
+.w-v.up::after{top:0;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.w-in{left:50%;bottom:100%;height:var(--mvg)}
+.w-dn{left:50%;top:100%;height:var(--mvr)}
+.w-out{left:50%;top:100%;height:calc(var(--mvg) + 1px)}
+.w-st{top:calc(-1.5px - var(--mvr));height:var(--mvr)}
+.w-st.a{left:24.107%}.w-st.b{left:75.893%}
+.mv-two .w-h{left:100%;top:-1.5px;width:calc(var(--link) + 2px)}
+.mv-three .w-h{right:100%;top:-1.5px;width:calc(var(--link) + 2px)}
+
+/* band: the order card under step 4, the estimate line, the key */
+.mv-band{align-items:center}
+.mv-est{grid-column:1/4;grid-row:1}
+.mv-est .est{font-size:var(--fs-s);line-height:1.38;color:var(--muted)}
+.mv-est .est b{color:var(--palm);font-weight:700}
+.mv-est .cap{margin-top:.35cqw}
+.mv-order{grid-column:4/7;grid-row:1;margin:0 1cqw;align-self:start;display:flex;flex-direction:column;gap:.4cqw;padding:.7cqw 1cqw;border:1px dashed rgba(143,78,42,.55);border-radius:var(--r)}
+.mv-order .mv-tl{margin-top:0}
+.mv-key{grid-column:7/10;grid-row:1;justify-self:end;display:grid;grid-template-columns:auto 1fr;gap:.15cqw .6cqw;align-items:center;white-space:normal}
+.mv-key .tag{justify-self:start}
+.mv-key span.t{margin-right:0}
+
+@media (max-width:999px){
+  .mv{--wire:rgba(30,61,50,.45);display:flex;flex-direction:column;gap:16px}
+  .mv-head{flex-direction:column;align-items:stretch;gap:16px}
+  .mv-in{padding:8px 12px 8px 8px;gap:12px;border-radius:12px}
+  .mv-in .mv-th{width:104px;border-radius:8px}
+  .mv-step{font-size:15px;gap:8px}
+  .mv-step b{width:22px;height:22px;font-size:12px}
+  .mv-l{font-size:14px}
+  .mv-map{display:flex;flex-direction:column;gap:16px;position:relative}
+  .mv-map::before{content:"";position:absolute;left:50%;top:-16px;bottom:-16px;border-left:1.5px solid var(--wire);transform:translateX(-.75px)}
+  .mv-map>*{position:relative;z-index:1}
+  .w{display:none}
+  .mv-hub{outline:none;padding:8px;gap:8px;border-radius:16px}
+  .mv-hpw{flex:none;aspect-ratio:16/10;border-radius:10px}
+  .mv-hub figcaption{padding:0 4px 2px}
+  .mv-hl{font-size:20px}
+  .mv-card{border-radius:16px}
+  .mv-ex{left:8px;top:8px;font-size:11px}
+  .mv-cb{padding:12px 14px 14px;gap:8px}
+  .mv-card h3{font-size:19px}
+  .mv-rows{font-size:14.5px;gap:8px}
+  .mv-box{border-radius:14px;border-top:1px solid var(--line);padding:12px 14px;gap:8px}
+  .mv-lead{font-size:14.5px}
+  .mv-cr{gap:12px}
+  .mv-calc .mv-th{width:124px;border-radius:8px}
+  .mv-calc strong,.mv-order strong{font-size:16px}
+  .mv-tl{font-size:14px;gap:8px}
+  .mv-band{display:flex;flex-direction:column;gap:16px}
+  .mv-order{align-self:stretch;margin:0;padding:12px 14px;gap:6px;background:var(--paper);position:relative;z-index:1}
+  .mv-est .est{font-size:13px}
+  .mv-est .cap{margin-top:6px}
+  .mv-key{justify-self:auto;gap:8px 10px}
+  .mv-in figcaption{gap:6px}
+  .mv-tl{margin-top:6px}
+}
+/* phone map rail (15 Oct 2026, Vic: "less vertical scrolling, sections where it's horizontal"): on phones the map slide swipes sideways, one panel at a time.
+   contain:inline-size keeps the rail to the slide's width (without it the panels widen the whole page). */
+@media (max-width:999px){
+  .mv .mv-head::after{content:"Swipe to follow the plan \2192";display:block;font-size:13px;line-height:1.3;color:var(--muted)}
+  .mv .mv-map{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:stretch;gap:12px;width:100%;min-width:0;contain:inline-size;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:2px 0 14px;scrollbar-width:thin}
+  .mv .mv-map::before{display:none}
+  .mv .mv-map>*{flex:0 0 82% !important;width:82% !important;max-width:82% !important;margin:0 !important;scroll-snap-align:start}
+  .mv .mv-map .w{display:none !important}
+  .mv .mv-map .mv-calc .mv-cr{flex-direction:column;align-items:flex-start;gap:10px}
+  .mv .mv-map .mv-calc .mv-th{width:100%;max-width:260px}
+  .mv .mv-map .mv-hub .mv-hpw{flex:1 1 auto;aspect-ratio:auto;min-height:150px}
+}
+</style>
+</head>
+<body>
+<main class="deck" aria-label="One Live Build for builders and contractors: a short deck">
+
+<section class="slide cover" id="slide-1" aria-label="Slide 1 of 8: Every trade on one live plan." tabindex="-1">
+  <header class="sh"><img class="lockup" src="assets/olb-lockup.svg" alt="One Live Build" width="165" height="34"><span class="num">01 / 08</span></header>
+  <div class="page-content">
+    <div class="intro">
+      <p class="eyebrow">One Live Build · for builders and contractors</p>
+      <h1>Every trade<br><em>on one live plan.</em></h1>
+      <p class="lead">Foundations, concrete, blocks and bags worked out from the architect's drawing, on one plan we set up. Estimates your team checks.</p>
+      <p class="byline">from Victor Cassius Bhatoolaul, founder of One Live Build</p>
+      <p class="swipe-hint hint-x">Swipe to turn the page <span aria-hidden="true">&rarr;</span></p>
+      <p class="swipe-hint hint-y">Scroll down to turn the page <span aria-hidden="true">&darr;</span></p>
+    </div>
+    <figure class="visual photo"><img class="zoom" src="assets/cover.jpg" width="1600" height="900" alt="Block-work walls of a house going up on a building site in Mauritius, masons seen from behind in hard hats. An illustration."><figcaption class="cap">An illustration of a house site at block-work stage. Not a site of ours.</figcaption></figure>
+  </div>
+  <footer class="sf"><img src="assets/olb-mark.svg" alt="" width="64" height="64"><span class="brand">One Live Build</span><span class="right">For builders and contractors · November 2026</span></footer>
+</section>
+
+<section class="slide s2" id="slide-2" aria-label="Slide 2 of 8: The client sees the house as it will be built." tabindex="-1">
+  <header class="sh"><img class="lockup" src="assets/olb-lockup.svg" alt="One Live Build" width="165" height="34"><span class="num">02 / 08</span></header>
+  <div class="page-content">
+    <div class="intro">
+      <span class="tag live">LIVE</span>
+      <h2>The client sees the house<br><em>as it will be built.</em></h2>
+      <p class="lead">In 3D, on a laptop or a phone, from the same plan your masons build from. Nothing to install.</p>
+      <p class="also"><span class="tag bfy">BUILT FOR YOU</span>We set it up from the architect's drawing.</p>
+    </div>
+    <div class="visual pair">
+      <figure class="win" style="--ratio:1.957"><img class="zoom" src="assets/room-3d.jpg" width="1600" height="818" alt="The example home in One Live Build in 3D, roof off and furnished, on a laptop screen"></figure>
+      <figure class="phone"><img class="zoom" src="assets/room-3d-phone.jpg" width="600" height="1206" alt="The same example home in 3D on a phone"></figure>
+      <p class="cap">The example home in One Live Build, 3D, on a laptop and on a phone. Captured 1 November.</p>
+    </div>
+  </div>
+  <footer class="sf"><img src="assets/olb-mark.svg" alt="" width="64" height="64"><span class="brand">One Live Build</span><span class="right">For builders and contractors · November 2026</span></footer>
+</section>
+
+<section class="slide s3" id="slide-3" aria-label="Slide 3 of 8: one live build, everyone in sync" tabindex="-1">
+  <header class="sh"><img class="lockup" src="assets/olb-lockup.svg" alt="One Live Build" width="165" height="34"><span class="num">03 / 08</span></header>
+  <div class="page-content"><div class="sb mv">
+    <div class="mv-head">
+      <div class="mv-ttl">
+        <p class="eyebrow">How it connects</p>
+        <h2>One live build. <em class="nw">Everyone in sync.</em></h2>
+      </div>
+      <figure class="mv-in">
+        <span class="mv-th"><img src="assets/map-v2/plan-import.jpg" width="640" height="400" alt="One Live Build's Bring your plans screen, with a measured two-storey example under review"></span>
+        <figcaption>
+          <p class="mv-step"><b>1</b>Plans in</p>
+          <p class="mv-l"><span class="tag live">LIVE</span>Your architect&#x27;s plan goes in at real&nbsp;scale</p>
+        </figcaption>
+      </figure>
+    </div>
+    <div class="mv-map">
+      <figure class="mv-hub">
+        <i class="w w-v dn w-in" aria-hidden="true"></i>
+        <span class="mv-hpw"><img class="mv-hpic" src="assets/map-v2/hub-house-3d.jpg" width="640" height="400" alt="One Live Build's example home in 3D, roof off and furnished: living room, kitchen, wellness room, home office and bedroom on its plot"></span>
+        <figcaption><span class="mv-hl">Your project · live build</span><span class="tag bfy">BUILT FOR YOU</span></figcaption>
+        <i class="w w-v dn w-dn" aria-hidden="true"></i>
+      </figure>
+      <div class="mv-box mv-two">
+        <i class="w w-v up w-st a" aria-hidden="true"></i><i class="w w-v up w-st b" aria-hidden="true"></i><i class="w w-h" aria-hidden="true"></i>
+        <p class="mv-step"><b>2</b>One plan, set up for every company</p>
+        <p class="mv-lead"><span class="tag bfy">BUILT FOR YOU</span>We set up your plans and your suppliers&#x27; ranges. Every company takes its numbers from that one plan.</p>
+      </div>
+      <article class="mv-card mv-c1">
+        <span class="mv-pw zm" style="--w:179.78%;--x:0%;--y:-99.75%"><img class="mv-pic" src="assets/map-v2/suppliers-catalogue.jpg" width="640" height="400" alt="One Live Build's product tray under a 2D plan, open on the Decor category: blinds, a console, a wall shelf, a mirror, a diffuser and a plant"></span>
+        <div class="mv-cb">
+          <h3>Your suppliers</h3>
+          <ul class="mv-rows in">
+            <li><span class="tag bfy">BUILT FOR YOU</span>Their catalogues loaded into the&nbsp;build</li>
+            <li><span class="tag tb">TO BUILD</span>Live stock</li>
+          </ul>
+        </div>
+      </article>
+      <article class="mv-card mv-c2">
+        <span class="mv-pw"><img class="mv-pic" src="assets/map-v2/buyers-room.jpg" width="640" height="400" alt="A close-up of the example home in 3D: a home office with a desk and chair, and a furnished bedroom"></span>
+        <div class="mv-cb">
+          <h3>Your buyers</h3>
+          <ul class="mv-rows in">
+            <li><span class="tag bfy">BUILT FOR YOU</span>We load each home; buyers furnish it</li>
+            <li><span class="tag tb">TO BUILD</span>Order until a cut-off you set, months before handover</li>
+          </ul>
+        </div>
+      </article>
+      <article class="mv-card mv-c3">
+        <span class="mv-pw"><img class="mv-pic" src="assets/map-v2/construction-foundations.jpg" width="640" height="400" alt="Strip-footing trenches under every wall of the example home in 3D, each labelled 1 m deep, drawn as an example"><span class="mv-ex">Example</span></span>
+        <div class="mv-cb">
+          <h3>Construction team</h3>
+          <ul class="mv-rows in">
+            <li><span class="tag live">LIVE</span>Foundation and concrete quantities from the plan, as&nbsp;estimates</li>
+          </ul>
+        </div>
+      </article>
+      <article class="mv-card mv-c4">
+        <span class="mv-pw zm" style="--w:185.51%;--x:-76.81%;--y:-48.44%"><img class="mv-pic" src="assets/map-v2/plumbing-power.jpg" width="640" height="400" alt="The Plumbing and Electric floor of the example home in 2D: cold water, hot water, drainage and electric conduit runs between a sink, toilet, mains tap and electrical board, drawn as an example"><span class="mv-ex">Example</span></span>
+        <div class="mv-cb">
+          <h3>Plumbing and power</h3>
+          <ul class="mv-rows in">
+            <li><span class="tag live">LIVE</span>Laid out floor by floor, on the same&nbsp;plan</li>
+          </ul>
+        </div>
+      </article>
+      <div class="mv-box mv-three">
+        <i class="w w-v up w-st a" aria-hidden="true"></i><i class="w w-v up w-st b" aria-hidden="true"></i><i class="w w-h" aria-hidden="true"></i>
+        <p class="mv-step"><b>3</b>Change once, every drawing and quantity follows</p>
+        <ul class="mv-rows in">
+          <li><span class="tag live">LIVE</span>Change the plan once: 2D,&nbsp;3D and quantities follow</li>
+          <li><span class="tag tb">TO BUILD</span>Change alerts to each trade</li>
+        </ul>
+      </div>
+      <div class="mv-box mv-calc">
+        <p class="mv-step"><b>4</b>Materials worked out</p>
+        <div class="mv-cr">
+          <span class="mv-th"><img src="assets/map-v2/materials.jpg" width="640" height="400" alt="One Live Build's Materials panel, Concrete tab: wall area, blocks, concrete and cement bags worked out from the drawing"></span>
+          <div><strong>Materials calculated from the plan</strong><span class="mv-tl"><span class="tag live">LIVE</span>estimates</span></div>
+        </div>
+        <i class="w w-v dn w-out" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="mv-band">
+      <div class="mv-order"><strong>Orders to every supplier, together, on one date</strong><span class="mv-tl"><span class="tag tb">TO BUILD</span></span></div>
+      <div class="mv-est">
+        <p class="est"><b>Estimate only;</b> a qualified engineer or plumber must check before ordering or building.</p>
+        <p class="cap">Pictures: an example home in One Live Build, 13&nbsp;October.</p>
+      </div>
+      <p class="legend mv-key"><span class="tag live">LIVE</span><span class="t">in One Live Build today</span><span class="tag bfy">BUILT FOR YOU</span><span class="t">the tool exists; we set it up with your data</span><span class="tag tb">TO BUILD</span><span>built with you</span></p>
+    </div>
+  </div></div>
+  <footer class="sf"><img src="assets/olb-mark.svg" alt="" width="64" height="64"><span>One Live Build</span><span class="right">For builders and contractors · November 2026</span></footer>
+</section>
+
+<section class="slide s4" id="slide-4" aria-label="Slide 4 of 8: Foundations, concrete, blocks, bags, from the plan." tabindex="-1">
+  <header class="sh"><img class="lockup" src="assets/olb-lockup.svg" alt="One Live Build" width="165" height="34"><span class="num">04 / 08</span></header>
+  <div class="page-content">
+    <div class="intro">
+      <span class="tag live">LIVE</span>
+      <h2>Foundations, concrete, blocks, bags,<br><em>from the plan.</em></h2>
+      <p class="lead">Worked out from the drawing before the pour, as estimates. Change the plan once and the quantities follow.</p>
+    </div>
+    <div class="visual solo">
+      <figure class="win" style="--ratio:1.961"><img class="zoom" src="assets/plan-quantities.jpg" width="1600" height="816" alt="The example home in One Live Build in 3D with its foundations drawn, and the Materials panel open: wall area, blocks, concrete and cement bags worked out from the drawing"></figure>
+      <p class="cap">The example home in 3D with its foundations drawn, and its Materials panel. Estimate only; a qualified engineer or plumber must check before ordering or building.</p>
+    </div>
+  </div>
+  <footer class="sf"><img src="assets/olb-mark.svg" alt="" width="64" height="64"><span class="brand">One Live Build</span><span class="right">For builders and contractors · November 2026</span></footer>
+</section>
+
+<section class="slide s5" id="slide-5" aria-label="Slide 5 of 8: The plumber and the electrician read the same plan." tabindex="-1">
+  <header class="sh"><img class="lockup" src="assets/olb-lockup.svg" alt="One Live Build" width="165" height="34"><span class="num">05 / 08</span></header>
+  <div class="page-content">
+    <div class="intro">
+      <span class="tag live">LIVE</span>
+      <h2>The plumber and the electrician<br><em>read the same plan.</em></h2>
+      <p class="lead">Water, waste and power laid out floor by floor, in 2D, on the plan your masons build from.</p>
+    </div>
+    <div class="visual solo">
+      <figure class="win" style="--ratio:1.624"><img class="zoom" src="assets/services.jpg" width="1600" height="985" alt="The Plumbing and Electric floor of the example home in 2D: cold water, hot water, drainage and electric conduit runs between a sink, a toilet, a mains tap and an electrical board, drawn as an example"></figure>
+      <p class="cap">Runs drawn on the example home, as an example. For coordination: your plumber and electrician design the systems.</p>
+    </div>
+  </div>
+  <footer class="sf"><img src="assets/olb-mark.svg" alt="" width="64" height="64"><span class="brand">One Live Build</span><span class="right">For builders and contractors · November 2026</span></footer>
+</section>
+
+<section class="slide s6" id="slide-6" aria-label="Slide 6 of 8: Change once. Every drawing follows." tabindex="-1">
+  <header class="sh"><img class="lockup" src="assets/olb-lockup.svg" alt="One Live Build" width="165" height="34"><span class="num">06 / 08</span></header>
+  <div class="page-content">
+    <div class="intro">
+      <span class="tag live">LIVE</span>
+      <h2>Change once.<br><em>Every drawing follows.</em></h2>
+      <p class="lead">Change the plan once: 2D, 3D and every quantity follow. Today we send each trade its plan PDF, pictures and quantity list.</p>
+      <p class="also"><span class="tag tb">TO BUILD</span>A job pack to each trade: its drawings, its quantities, its dates.</p>
+    </div>
+    <div class="visual solo">
+      <figure class="win" style="--ratio:1.956"><img class="zoom" src="assets/handoff.jpg" width="1600" height="818" alt="Strip-footing trenches under every wall of the example home in 3D, each with its concrete, drawn as an example"></figure>
+      <p class="cap">Foundations drawn on the example home in 3D, as an example. Estimate only; a qualified engineer or plumber must check before ordering or building.</p>
+    </div>
+  </div>
+  <footer class="sf"><img src="assets/olb-mark.svg" alt="" width="64" height="64"><span class="brand">One Live Build</span><span class="right">For builders and contractors · November 2026</span></footer>
+</section>
+
+<section class="slide s7" id="slide-7" aria-label="Slide 7 of 8: What this could change for you." tabindex="-1">
+  <header class="sh"><img class="lockup" src="assets/olb-lockup.svg" alt="One Live Build" width="165" height="34"><span class="num">07 / 08</span></header>
+  <div class="page-content">
+    <h2>What this could change <em>for you.</em></h2>
+    <div class="cols">
+      <div class="col c-live">
+        <img class="strip" src="assets/plan-quantities.jpg" width="1600" height="816" alt="" style="object-position:50% 40%">
+        <span class="tag live">LIVE</span>
+        <p class="means">Quantities before the pour.</p>
+        <ul>
+          <li>Foundations, concrete, blocks and bags, as estimates</li>
+          <li>From the drawing, not a second measure</li>
+        </ul>
+      </div>
+      <div class="col c-bfy">
+        <img class="strip" src="assets/room-3d.jpg" width="1600" height="818" alt="" style="object-position:50% 40%">
+        <span class="tag bfy">BUILT FOR YOU</span>
+        <p class="means">Every trade on the same drawing.</p>
+        <ul>
+          <li>We set it up from the architect's plan</li>
+          <li>Each trade gets its plan PDF, pictures and quantity list</li>
+        </ul>
+      </div>
+      <div class="col c-tb">
+        <img class="strip" src="assets/services.jpg" width="1600" height="985" alt="" style="object-position:50% 40%">
+        <span class="tag tb">TO BUILD</span>
+        <p class="means">Fewer surprises on site.</p>
+        <ul>
+          <li>A job pack to each trade</li>
+          <li>An alert to each trade when the plan changes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <footer class="sf"><img src="assets/olb-mark.svg" alt="" width="64" height="64"><span class="brand">One Live Build</span><span class="right">For builders and contractors · November 2026</span></footer>
+</section>
+
+<section class="slide s8" id="slide-8" aria-label="Slide 8 of 8: Your next step." tabindex="-1">
+  <header class="sh"><img class="lockup" src="assets/olb-lockup.svg" alt="One Live Build" width="165" height="34"><span class="num">08 / 08</span></header>
+  <div class="page-content">
+    <div class="closing">
+      <h2>Your next step.</h2>
+      <p class="lead">One hour online, at a time that suits you. I show it live, on your own plans.</p>
+      <a class="btn primary" href="https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour" target="_blank" rel="noopener">Book one hour online <span aria-hidden="true">&nearr;</span></a>
+      <p class="ask">Which site starts next?</p>
+    </div>
+    <figure class="portrait"><img src="assets/victor.jpg" width="640" height="640" alt="Victor Cassius Bhatoolaul"><figcaption>Victor Cassius Bhatoolaul<span>Founder, One Live Build</span></figcaption></figure>
+  </div>
+  <footer class="sf"><img src="assets/olb-mark.svg" alt="" width="64" height="64"><span>One Live Build · owned by Peak Performance Wellness Ltd, Curepipe, Mauritius · victor@ppwellness.co</span><span class="right">For builders and contractors · November 2026</span></footer>
+</section>
+
+</main>
+<nav class="book-nav" aria-label="Turn the page"><button id="previous-page" type="button" aria-label="Previous page">&larr;</button><div class="page-dots" role="group" aria-label="Choose page"><button type="button" aria-label="Page 1" data-page="0"><span></span></button><button type="button" aria-label="Page 2" data-page="1"><span></span></button><button type="button" aria-label="Page 3" data-page="2"><span></span></button><button type="button" aria-label="Page 4" data-page="3"><span></span></button><button type="button" aria-label="Page 5" data-page="4"><span></span></button><button type="button" aria-label="Page 6" data-page="5"><span></span></button><button type="button" aria-label="Page 7" data-page="6"><span></span></button><button type="button" aria-label="Page 8" data-page="7"><span></span></button></div><button id="next-page" type="button" aria-label="Next page">&rarr;</button></nav>
+<p class="sr-only" id="page-announcement" aria-live="polite"></p>
+<script>
+(() => {
+  const deck = document.querySelector('.deck'), slides = [...document.querySelectorAll('.slide')], dots = [...document.querySelectorAll('[data-page]')];
+  const prev = document.querySelector('#previous-page'), next = document.querySelector('#next-page');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const column = matchMedia('(max-width: 999px)'); // phones: the slides stack and the page scrolls down
+  let current = 0;
+  const topOf = (s) => s.getBoundingClientRect().top + scrollY;
+  function update() {
+    if (column.matches) { const y = scrollY + innerHeight * 0.3; current = 0; slides.forEach((s, i) => { if (topOf(s) <= y) current = i; }); }
+    else current = Math.max(0, Math.min(slides.length - 1, Math.round(deck.scrollLeft / deck.clientWidth)));
+    dots.forEach((d, i) => { if (i === current) d.setAttribute('aria-current', 'page'); else d.removeAttribute('aria-current'); });
+    prev.disabled = current === 0; next.disabled = current === slides.length - 1;
+    document.querySelector('#page-announcement').textContent = 'Page ' + (current + 1) + ' of ' + slides.length;
+  }
+  function go(n) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    const behavior = reduce.matches ? 'instant' : 'smooth';
+    if (column.matches) scrollTo({ top: topOf(slides[n]), behavior });
+    else deck.scrollTo({ left: n * deck.clientWidth, behavior });
+  }
+  prev.addEventListener('click', () => go(current - 1));
+  next.addEventListener('click', () => go(current + 1));
+  dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
+  deck.addEventListener('scroll', update, { passive: true });
+  addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', () => { if (!column.matches) deck.scrollLeft = current * deck.clientWidth; update(); });
+  if (column.addEventListener) column.addEventListener('change', update);
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('[role=dialog],dialog')) return;
+    if (e.key === 'ArrowRight') { go(current + 1); e.preventDefault(); }
+    if (e.key === 'ArrowLeft') { go(current - 1); e.preventDefault(); }
+    if (e.key === 'Home' && !column.matches) go(0);
+    if (e.key === 'End' && !column.matches) go(slides.length - 1);
+  });
+  document.querySelectorAll('img.zoom').forEach((im) => {
+    im.tabIndex = 0;
+    im.setAttribute('role', 'button');
+    im.setAttribute('aria-label', 'Enlarge: ' + im.alt);
+    const open = () => {
+      let dlg = document.querySelector('.image-dialog');
+      if (!dlg) {
+        dlg = document.createElement('dialog');
+        dlg.className = 'image-dialog';
+        dlg.setAttribute('aria-label', 'Picture, enlarged');
+        dlg.innerHTML = '<div class="image-toolbar"><p>Picture detail</p><button class="zoom-toggle" type="button">Enlarge</button><button class="close-image" type="button">Close</button></div><div class="image-pan"><img alt=""></div>';
+        document.body.append(dlg);
+        dlg.querySelector('.close-image').onclick = () => dlg.close();
+        dlg.querySelector('.zoom-toggle').onclick = () => { const p = dlg.querySelector('.image-pan'); p.classList.toggle('zoomed'); dlg.querySelector('.zoom-toggle').textContent = p.classList.contains('zoomed') ? 'Fit to screen' : 'Enlarge'; };
+      }
+      dlg.querySelector('.image-pan').classList.remove('zoomed');
+      dlg.querySelector('.zoom-toggle').textContent = 'Enlarge';
+      const t = dlg.querySelector('.image-pan img'); t.src = im.currentSrc || im.src; t.alt = im.alt;
+      dlg.showModal();
+    };
+    im.addEventListener('click', open);
+    im.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
+  update();
+})();
+</script>
+</body>
+</html>
