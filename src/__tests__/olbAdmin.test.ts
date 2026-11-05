@@ -294,4 +294,29 @@ describe('set-up script checks', () => {
     expect(script.checkPassword('long enough')).toBeNull();
     expect(script.makeSecret()).toMatch(/^[0-9a-f]{64}$/);
   });
+  it('writes to Production only unless --preview is given', () => {
+    expect(script.envTargets(['--users', 'a@example.com'])).toEqual(['production']);
+    expect(script.envTargets([])).toEqual(['production']);
+    expect(script.envTargets(['--users', 'a@example.com', '--preview'])).toEqual(['production', 'preview']);
+    expect(script.parseArgs(['--preview', '--users', 'a@example.com'])).toEqual({ users: 'a@example.com', preview: true, help: false });
+    expect(script.USAGE).toContain('--preview');
+    expect(script.USAGE).toContain('default: Production only');
+  });
+  it('stops on an unknown argument without repeating it (it could be a password typed by mistake)', () => {
+    const typo = `pw-${randomBytes(6).toString('hex')}`;
+    let message = '';
+    try { script.parseArgs(['--users', 'a@example.com', '--password', typo]); } catch (error) { message = String(error); }
+    expect(message).toContain('Unknown or incomplete option');
+    expect(message).not.toContain(typo);
+    expect(message).not.toContain('--password');
+    expect(() => script.parseArgs(['--users'])).toThrow('Unknown or incomplete option');
+  });
+  it('prints its help without a terminal and without touching Vercel', async () => {
+    const { execFileSync } = await import('node:child_process');
+    const { fileURLToPath } = await import('node:url');
+    const file = fileURLToPath(new URL('../../tools/set-admin-pass.mjs', import.meta.url));
+    const out = execFileSync(process.execPath, [file, '--help'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    expect(out).toContain('--preview');
+    expect(out).toContain('Production only');
+  });
 });

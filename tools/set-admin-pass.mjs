@@ -1,15 +1,16 @@
 // Sets up the One Live Build admin sign-in (onelivebuild.com/admin) on Vercel.
-// Victor runs this himself, in a terminal, from the repo folder:
-//
-//   node tools/set-admin-pass.mjs --users "first@example.com,second@example.com"
+// Victor runs this himself, in a terminal, from the repo folder. See USAGE below
+// (`node tools/set-admin-pass.mjs --help` prints it).
 //
 // It asks for the password twice with nothing shown on screen. The password is never an
 // argument, never printed, never logged and never written to a file: only its PBKDF2-SHA256
 // hash leaves this computer. It then writes three settings to the Vercel project
-// ppw-designer-2d, for Preview and Production:
+// ppw-designer-2d, for Production only (add --preview to also write them for Preview):
 //   OLB_ADMIN_USERS      the emails that may sign in (comma list)
 //   OLB_ADMIN_PASS_HASH  pbkdf2:<rounds>:<salt hex>:<hash hex>   (sensitive: unreadable after)
 //   OLB_ADMIN_SECRET     a fresh random key that signs the 30-day cookie (sensitive)
+// Production only by default because every preview deployment, built from any branch by
+// anyone with push access, would otherwise receive the hash and the cookie key too.
 // A fresh secret signs everyone out. The Vercel token is read from the junk files folder at
 // run time and never printed. Settings apply to the next deployment (a merge, or Redeploy).
 import { pbkdf2Sync, randomBytes } from 'node:crypto';
@@ -24,6 +25,37 @@ const TEAM_ID = 'team_bptfse7K2LapV0JdqPKKuRiM'; // victor-ppw
 const PROJECT = 'ppw-designer-2d';
 const TOKEN_FILE = 'C:\\Users\\Victor\\Documents\\junk files\\vercel-token.txt';
 const EMAIL = /^[^\s@,;<>"']+@[^\s@,;<>"']+\.[^\s@,;<>"']+$/;
+
+export const USAGE = `Set the One Live Build admin sign-in (onelivebuild.com/admin) on Vercel.
+
+  node tools/set-admin-pass.mjs --users "first@example.com,second@example.com"
+
+  --users "<emails>"  the emails that may sign in, comma list (asked for if left out)
+  --preview           also write the settings for Preview deployments (default: Production only;
+                      with --preview every preview build, from any branch, accepts the password)
+  --help              show this and stop
+
+The password is asked for twice, with nothing shown while you type. It is never an argument.
+The settings apply to the next deployment: the merge, or Redeploy in Vercel.`;
+
+/** Production only, unless --preview is given. */
+export function envTargets(argv) {
+  return argv.includes('--preview') ? ['production', 'preview'] : ['production'];
+}
+
+/** Checks the arguments; an unknown one stops the script without echoing it (it could be a
+ * password typed by mistake). */
+export function parseArgs(argv) {
+  const options = { users: null, preview: false, help: false };
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--help' || arg === '-h') options.help = true;
+    else if (arg === '--preview') options.preview = true;
+    else if (arg === '--users' && i + 1 < argv.length) options.users = argv[++i];
+    else throw new Error(`Unknown or incomplete option (#${i + 1}). Nothing was changed.\n\n${USAGE}`);
+  }
+  return options;
+}
 
 /** "pbkdf2:<rounds>:<salt hex>:<hash hex>", the format server/adminAuth.ts reads. */
 export function makePasswordHash(password, { rounds = PBKDF2_ROUNDS, salt = randomBytes(16) } = {}) {
@@ -96,11 +128,15 @@ function askVisible(question) {
 }
 
 async function main() {
+  const argv = process.argv.slice(2);
+  const options = parseArgs(argv);
+  if (options.help) { console.log(USAGE); return; }
   if (!process.stdin.isTTY || typeof process.stdin.setRawMode !== 'function') {
     throw new Error('Run this in a terminal window: it reads the password from the keyboard.');
   }
-  const flag = process.argv.indexOf('--users');
-  const users = parseUsers(flag >= 0 ? process.argv[flag + 1] : await askVisible('Emails that may sign in (comma list): '));
+  const targets = envTargets(argv);
+  const where = targets.includes('preview') ? 'Production and Preview' : 'Production only';
+  const users = parseUsers(options.users ?? await askVisible('Emails that may sign in (comma list): '));
 
   const password = await askHidden('Password (nothing shows while you type): ');
   const problem = checkPassword(password);
@@ -108,7 +144,7 @@ async function main() {
   const again = await askHidden('Type it again: ');
   if (again !== password) throw new Error('The two did not match. Nothing was changed.');
 
-  console.log(`\nProject ${PROJECT}, Preview and Production:`);
+  console.log(`\nProject ${PROJECT}, ${where}:`);
   console.log(`  OLB_ADMIN_USERS     ${users.join(', ')}`);
   console.log(`  OLB_ADMIN_PASS_HASH PBKDF2-SHA256, ${PBKDF2_ROUNDS.toLocaleString('en')} rounds, new random salt`);
   console.log('  OLB_ADMIN_SECRET    new random key (anyone signed in is signed out)');
@@ -116,7 +152,6 @@ async function main() {
 
   const token = readFileSync(TOKEN_FILE, 'utf8').trim();
   if (token.length < 10) throw new Error('The Vercel token file is empty.');
-  const targets = ['production', 'preview'];
   const body = [
     { key: 'OLB_ADMIN_USERS', value: users.join(','), type: 'encrypted', target: targets },
     { key: 'OLB_ADMIN_PASS_HASH', value: makePasswordHash(password), type: 'sensitive', target: targets },
@@ -136,7 +171,7 @@ async function main() {
   const failed = (result.failed ?? []).map((entry) => entry.error?.key ?? entry.error?.code ?? 'unknown');
   console.log(`Saved on Vercel: ${written.join(', ') || '(none reported)'}${failed.length ? `. Failed: ${failed.join(', ')}` : ''}`);
   if (failed.length) process.exitCode = 1;
-  else console.log('Done. The next deployment (the merge, or Redeploy in Vercel) uses them.');
+  else console.log(`Done (${where}). The next deployment (the merge, or Redeploy in Vercel) uses them.`);
 }
 
 const runDirectly = process.argv[1] && resolve(process.argv[1]).toLowerCase() === fileURLToPath(import.meta.url).toLowerCase();
