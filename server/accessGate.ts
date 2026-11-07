@@ -19,6 +19,9 @@ export type AccessDependencies = {
   clientIp: string;
   namespace: string;
   codeHash?: string;
+  /** onelivebuild.com admin sign-in (server/olbSite.ts): when it says yes, the same pages
+   * open as with the studio code. Absent on every other host. */
+  signedIn?: () => Promise<boolean>;
 };
 
 export async function digest(value: string): Promise<string> {
@@ -102,6 +105,10 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
   const destination = safeDestination(isAccess ? url.searchParams.get('next') : url.pathname + url.search);
   const brand = brandFor(url, deps.namespace);
   const show = (message = '', status = 200, extra: Record<string, string> = {}) => page(destination, message, status, extra, brand);
+  if (deps.signedIn && (await deps.signedIn().catch(() => false))) {
+    if (isAccess) return new Response(null, { status: 303, headers: { Location: destination, 'Cache-Control': 'no-store' } });
+    return null;
+  }
   const namespace = `ppw:studio-access:v1:${deps.namespace}:${url.host}`;
   const cookie = (request.headers.get('cookie') ?? '').split(';').map((v) => v.trim()).find((v) => v.startsWith(`${ACCESS_COOKIE}=`))?.slice(ACCESS_COOKIE.length + 1);
   if (cookie && /^[a-f0-9]{64}$/.test(cookie)) {

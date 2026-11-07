@@ -167,6 +167,8 @@
 }
 .olb-home-footer {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-top: auto;
@@ -177,6 +179,29 @@
 }
 .olb-home-footer a {
   color: #1e3d32;
+}
+.olb-home-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 8px 18px;
+}
+.olb-home-footer-links form {
+  margin: 0;
+}
+.olb-home-footer-links button {
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1.5px solid #1e3d32;
+  border-radius: 999px;
+  background: transparent;
+  color: #1e3d32;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.olb-home-footer-links button:hover {
+  background: #1e3d320f;
 }
 @media (max-width: 900px) {
   .olb-home-hero {

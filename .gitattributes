@@ -1,0 +1,3 @@
+# The One Live Build decks are copies of approved pages: keep their bytes exactly
+# (CRLF included), so the sha256 in server/olbDecks.ts holds on every checkout.
+public/decks/** -text

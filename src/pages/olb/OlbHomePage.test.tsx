@@ -25,6 +25,14 @@ describe('onelivebuild.com front page', () => {
     expect(container.textContent).toContain('Peak Performance Wellness Ltd');
     expect(document.title).toBe('One Live Build');
   });
+  it('lives at /home (the landing is "/") and signs out with a plain form', () => {
+    act(() => root.render(<MemoryRouter><OlbHomePage /></MemoryRouter>));
+    expect(container.querySelector('a[aria-label="One Live Build home"]')!.getAttribute('href')).toBe('/home');
+    const form = container.querySelector('footer form')!;
+    expect(form.getAttribute('method')).toBe('post');
+    expect(form.getAttribute('action')).toBe('/admin/sign-out');
+    expect(form.querySelector('button[type="submit"]')!.textContent).toBe('Sign out');
+  });
   it('carries no prices, no WhatsApp and no meeting links', () => {
     act(() => root.render(<MemoryRouter><OlbHomePage /></MemoryRouter>));
     const text = container.innerHTML;

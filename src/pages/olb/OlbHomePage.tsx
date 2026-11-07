@@ -12,7 +12,8 @@ export const OLB_DECKS = [
   { href: '/pitch/plumbing', label: 'Plumbing companies', line: 'A bathroom planning session.' },
 ] as const;
 
-/** onelivebuild.com's front page (behind the passcode like the rest of the site's own pages).
+/** The One Live Build software's front page, at onelivebuild.com/home (behind the studio code
+ * or the admin sign-in, like the rest of the site's own pages; "/" is the public landing).
  * designer.ppwellness.co keeps the shop as its front door. */
 export default function OlbHomePage() {
   useEffect(() => {
@@ -21,7 +22,7 @@ export default function OlbHomePage() {
   return (
     <main className="olb-home">
       <header className="olb-home-header">
-        <Link to="/" aria-label="One Live Build home">
+        <Link to="/home" aria-label="One Live Build home">
           <OlbLockup height={32} />
         </Link>
         <nav aria-label="One Live Build">
@@ -68,7 +69,13 @@ export default function OlbHomePage() {
       </section>
       <footer className="olb-home-footer">
         <span>Peak Performance Wellness Ltd · Mauritius</span>
-        <Link to="/studio">Studio</Link>
+        <span className="olb-home-footer-links">
+          <Link to="/studio">Studio</Link>
+          {/* A plain form: middleware.ts clears the sign-in and the code on this browser. */}
+          <form method="post" action="/admin/sign-out">
+            <button type="submit">Sign out</button>
+          </form>
+        </span>
       </footer>
     </main>
   );
