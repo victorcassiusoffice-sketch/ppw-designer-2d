@@ -8,16 +8,18 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { LOADING_TIPS } from './lessonData';
+import { loadingTipsFor } from './lessonData';
+import type { LessonTextKey } from '../../i18n/lessonMessages';
 import { useLessonsStore } from './lessonsStore';
 import { useLessonText } from './useLessonText';
-import { rectOf } from './dom';
+import { coarsePointer, rectOf } from './dom';
+import { lastPointerWasTouch } from './pointerKind';
 
 export const LOADING_SELECTORS = ['[data-testid="loading-3d"]', '.world-walk-loading', '.city-loading'] as const;
 
 export function LoadingTips(): JSX.Element | null {
   const t = useLessonText();
-  const [shown, setShown] = useState<{ tip: number; rect: { x: number; y: number; w: number; h: number } } | null>(null);
+  const [shown, setShown] = useState<{ tip: LessonTextKey; rect: { x: number; y: number; w: number; h: number } } | null>(null);
   const currentPanel = useRef<Element | null>(null);
 
   useEffect(() => {
@@ -40,7 +42,9 @@ export function LoadingTips(): JSX.Element | null {
       const rect = rectOf(panel)!;
       if (panel !== currentPanel.current) {
         currentPanel.current = panel;
-        const tip = useLessonsStore.getState().nextTipIndex() % LOADING_TIPS.length;
+        // Keyboard tips on a laptop, touch tips on a phone.
+        const pool = loadingTipsFor(lastPointerWasTouch() ?? coarsePointer());
+        const tip = pool[useLessonsStore.getState().nextTipIndex() % pool.length];
         setShown({ tip, rect });
       } else {
         setShown((prev) => (prev ? { ...prev, rect } : prev));
@@ -64,8 +68,8 @@ export function LoadingTips(): JSX.Element | null {
   // Under the panel's centre line, inside its box when it is tall enough.
   const top = Math.min(innerHeight - 64, shown.rect.y + Math.max(shown.rect.h * 0.72, 110));
   return createPortal(
-    <p className="lessons-loading-tip" data-lessons-loading-tip={LOADING_TIPS[shown.tip]} style={{ left, top, width }}>
-      <span>{t('lesson.ui.tip')}</span> {t(LOADING_TIPS[shown.tip])}
+    <p className="lessons-loading-tip" data-lessons-loading-tip={shown.tip} style={{ left, top, width }}>
+      <span>{t('lesson.ui.tip')}</span> {t(shown.tip)}
     </p>,
     document.body,
   );

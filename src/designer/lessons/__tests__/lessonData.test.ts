@@ -8,11 +8,14 @@ import path from 'node:path';
 import { DESIGNER_MODES } from '../../useDesignerMode';
 import {
   HOUSE_TOOL_LESSON,
+  KEYBOARD_TIPS,
   LESSON_IDS,
   LESSONS,
   LOADING_TIPS,
+  loadingTipsFor,
   MODE_LESSON,
   TOOL_LESSON,
+  TOUCH_TIPS,
   tooltipTargets,
 } from '../lessonData';
 import { QUEST_STEP_INFO, QUEST_STEPS } from '../quest';
@@ -109,5 +112,17 @@ describe('the clips', () => {
       expect(existsSync(path.join(root, clip)), clip).toBe(true);
       expect(existsSync(path.join(root, clip.replace(/\.webm$/, '.webp'))), `${clip} poster`).toBe(true);
     }
+  });
+});
+
+describe('loading tips', () => {
+  it('a phone never gets a keyboard tip, a laptop never a touch tip, and both get some', () => {
+    const phone = loadingTipsFor(true);
+    const laptop = loadingTipsFor(false);
+    expect(phone.length).toBeGreaterThan(1);
+    expect(laptop.length).toBeGreaterThan(1);
+    for (const key of phone) expect(KEYBOARD_TIPS.has(key), key).toBe(false);
+    for (const key of laptop) expect(TOUCH_TIPS.has(key), key).toBe(false);
+    for (const key of LOADING_TIPS) expect(phone.includes(key) || laptop.includes(key), key).toBe(true);
   });
 });

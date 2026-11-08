@@ -368,6 +368,23 @@ export const LOADING_TIPS: readonly LessonTextKey[] = [
   'lesson.tip.hold',
 ];
 
+/** Tips that need a keyboard: never on a phone. */
+export const KEYBOARD_TIPS: ReadonlySet<LessonTextKey> = new Set<LessonTextKey>([
+  'lesson.tip.esc',
+  'lesson.tip.floorShift',
+  'lesson.tip.undo',
+  'lesson.tip.rotate',
+  'lesson.tip.measure',
+  'lesson.tip.walkDoors',
+]);
+/** Tips about touch: never on a laptop. */
+export const TOUCH_TIPS: ReadonlySet<LessonTextKey> = new Set<LessonTextKey>(['lesson.tip.hold']);
+
+/** The loading tips for this device. */
+export function loadingTipsFor(touch: boolean): readonly LessonTextKey[] {
+  return LOADING_TIPS.filter((key) => (touch ? !KEYBOARD_TIPS.has(key) : !TOUCH_TIPS.has(key)));
+}
+
 /** Every button that gets a tooltip, with its lesson. */
 export function tooltipTargets(): Array<{ selector: string; id: LessonId }> {
   return LESSON_IDS.flatMap((id) => LESSONS[id].tooltipOn.map((selector) => ({ selector, id })));
