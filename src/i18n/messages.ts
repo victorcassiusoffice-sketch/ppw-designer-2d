@@ -1836,6 +1836,19 @@ export const messageRows = {
     '显示完整平面图',
     'Ajustar todo el plano',
   ],
+  // Lessons (One Live Build game programme, part 2, 8 Nov 2026): the `?`
+  // panel's tabs. The lessons' own words load with the lessons code after
+  // the first picture, from src/i18n/lessonMessages.ts (same four columns).
+  'Lessons and keyboard shortcuts': [
+    'Lessons and keyboard shortcuts',
+    'Leçons et raccourcis clavier',
+    '课程与键盘快捷键',
+    'Lecciones y atajos de teclado',
+  ],
+  Lessons: ['Lessons', 'Leçons', '课程', 'Lecciones'],
+  'Keyboard keys': ['Keys', 'Touches', '按键', 'Teclas'],
+  'Close lessons and keys': ['Close', 'Fermer', '关闭', 'Cerrar'],
+  'Loading lessons…': ['Loading lessons…', 'Chargement des leçons…', '正在加载课程…', 'Cargando lecciones…'],
 } as const satisfies Record<string, readonly [string, string, string, string]>;
 export type TranslationKey = keyof typeof messageRows;
 export type TranslationValues = Readonly<Record<string, string | number>>;

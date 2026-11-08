@@ -1,0 +1,664 @@
+/* Lessons layer (game programme part 2, 8 Nov 2026).
+ * Colours come from the theme tokens (--ui-*, set by data-ui-theme on both
+ * looks), with the ivory values as fallbacks. One Live Build pages
+ * (data-brand="olb") get the deck's palm green and its text face.
+ * Loaded with the lessons code, after the first picture. */
+
+:root {
+  --lessons-surface: var(--ui-surface, #fffdf7);
+  --lessons-raised: var(--ui-raised, #ede6d9);
+  --lessons-ink: var(--ui-ink, #192c26);
+  --lessons-muted: var(--ui-muted, #53635a);
+  --lessons-line: var(--ui-line, #b8b9ab);
+  --lessons-accent: var(--ui-accent, #245c48);
+  --lessons-on-accent: var(--ui-on-accent, #ffffff);
+  --lessons-soft: var(--ui-soft, #dceadd);
+  --lessons-focus: var(--ui-focus, #0c6b58);
+  --lessons-shadow: 0 10px 28px rgba(25, 35, 30, 0.22), 0 2px 6px rgba(25, 35, 30, 0.12);
+  --lessons-font: inherit;
+}
+:root[data-brand='olb'] {
+  --lessons-accent: var(--olb-palm, #1e3d32);
+  --lessons-on-accent: #ffffff;
+  --lessons-font: var(--olb-text, inherit);
+}
+:root[data-brand='olb'][data-ui-theme='ocean'],
+:root[data-brand='olb'][data-ui-theme='slate'] {
+  --lessons-accent: var(--ui-accent);
+  --lessons-on-accent: var(--ui-on-accent);
+}
+
+/* ── The card ─────────────────────────────────────────────────────── */
+.lessons-card {
+  position: fixed;
+  z-index: 70;
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  overflow: auto;
+  padding: 12px 14px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--lessons-line);
+  background: var(--lessons-surface);
+  color: var(--lessons-ink);
+  box-shadow: var(--lessons-shadow);
+  font-family: var(--lessons-font);
+  font-size: 14px;
+  line-height: 1.4;
+  animation: lessons-pop 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.lessons-card.is-compact {
+  padding: 10px 12px;
+}
+/* Just arrived or just moved: presses go through to the plan for a moment
+   (see markSettling in dom.ts). */
+[data-lessons-settling] button,
+button[data-lessons-settling] {
+  pointer-events: none !important;
+}
+/* The smallest screens with a tool open: name and buttons, one row each. */
+.lessons-card.is-tight {
+  padding: 8px 10px;
+}
+.lessons-card.is-tight .lessons-card__eyebrow,
+.lessons-card.is-tight .lessons-card__head .lessons-sound {
+  /* The speaker stays in the Lessons list and the quest panel. */
+  display: none;
+}
+.lessons-card.is-tight .lessons-card__foot {
+  margin-top: 6px;
+}
+/* One row: the bulb, the name, How, Got it. */
+.lessons-card.is-mini {
+  padding: 6px 8px;
+}
+.lessons-card__mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lessons-card__mini .lessons-icon {
+  flex: none;
+  color: var(--lessons-muted);
+}
+.lessons-card__mini .lessons-card__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lessons-card__mini button {
+  flex: none;
+}
+/* Never in the way: a card's body lets a press through to whatever is under
+   it (the canvas gets it, and the card folds). Only its buttons take clicks.
+   While any press is held, nothing of the lessons takes the pointer. */
+.lessons-card,
+.lessons-quest:not(.lessons-quest--chip) {
+  pointer-events: none;
+}
+.lessons-card :is(button, a, input, label),
+.lessons-quest :is(button, a, input, label) {
+  pointer-events: auto;
+}
+:root[data-lessons-pressing] :is(.lessons-card, .lessons-chip, .lessons-quest, .lessons-tooltip, .lessons-card *, .lessons-quest *) {
+  pointer-events: none;
+}
+.lessons-card__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 8px;
+}
+.lessons-card__eyebrow {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lessons-muted);
+}
+.lessons-card__title {
+  grid-column: 1;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.lessons-card__head .lessons-sound {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.lessons-card__line {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+.lessons-card__body {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  align-items: flex-start;
+}
+.lessons-card__media {
+  flex: 0 0 auto;
+  width: 132px;
+  height: 82px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--lessons-line);
+  background: var(--lessons-raised);
+}
+.lessons-card__steps {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 13px;
+  display: grid;
+  gap: 4px;
+}
+.lessons-card__keys {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--lessons-muted);
+}
+.lessons-card__keys span {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--lessons-soft);
+  color: var(--lessons-ink);
+  font-weight: 650;
+  font-size: 11px;
+}
+.lessons-card__foot {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+@media (max-width: 460px) {
+  .lessons-card__media {
+    width: 112px;
+    height: 70px;
+  }
+  .lessons-card__steps {
+    font-size: 13px;
+  }
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────── */
+.lessons-primary,
+.lessons-quiet,
+.lessons-sound {
+  min-height: 44px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 120ms ease-out, box-shadow 120ms ease-out;
+}
+.lessons-primary {
+  padding: 0 16px;
+  border: 1px solid var(--lessons-accent);
+  background: var(--lessons-accent);
+  color: var(--lessons-on-accent);
+}
+.lessons-quiet {
+  padding: 0 12px;
+  border: 1px solid var(--lessons-line);
+  background: var(--lessons-surface);
+  color: var(--lessons-ink);
+}
+.lessons-quiet:hover {
+  background: var(--lessons-raised);
+}
+.lessons-sound {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--lessons-line);
+  background: var(--lessons-surface);
+  color: var(--lessons-muted);
+}
+.lessons-sound[aria-pressed='true'] {
+  background: var(--lessons-soft);
+  color: var(--lessons-ink);
+}
+.lessons-sound.is-compact {
+  padding: 0;
+  width: 44px;
+}
+:is(.lessons-primary, .lessons-quiet, .lessons-sound, .lessons-chip):focus-visible {
+  outline: 3px solid var(--lessons-focus);
+  outline-offset: 2px;
+}
+.lessons-icon {
+  flex: 0 0 auto;
+}
+
+/* ── The folded card ──────────────────────────────────────────────── */
+.lessons-chip {
+  position: fixed;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--lessons-line);
+  background: var(--lessons-surface);
+  color: var(--lessons-ink);
+  box-shadow: 0 4px 12px rgba(25, 35, 30, 0.18);
+  font: inherit;
+  font-family: var(--lessons-font);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+/* ── Tooltip ──────────────────────────────────────────────────────── */
+.lessons-tooltip {
+  position: fixed;
+  z-index: 85;
+  box-sizing: border-box;
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--lessons-ink);
+  color: var(--lessons-surface);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  font-family: var(--lessons-font);
+  pointer-events: none;
+  animation: lessons-fade 120ms ease-out;
+}
+.lessons-tooltip__name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.lessons-tooltip kbd {
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid currentColor;
+  font: inherit;
+  font-size: 12px;
+  text-align: center;
+}
+.lessons-tooltip__line {
+  font-size: 12.5px;
+  opacity: 0.9;
+}
+
+/* ── The first-build quest ────────────────────────────────────────── */
+.lessons-quest {
+  position: fixed;
+  z-index: 65;
+  box-sizing: border-box;
+  width: min(300px, calc(100vw - 16px));
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--lessons-line);
+  background: var(--lessons-surface);
+  color: var(--lessons-ink);
+  box-shadow: var(--lessons-shadow);
+  font-family: var(--lessons-font);
+  font-size: 14px;
+  line-height: 1.35;
+  animation: lessons-pop 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.lessons-quest h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.lessons-quest p {
+  margin: 6px 0 0;
+}
+.lessons-quest--chip {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font: inherit;
+  font-family: var(--lessons-font);
+  font-weight: 650;
+  cursor: pointer;
+}
+.lessons-quest--finale {
+  width: min(340px, calc(100vw - 16px));
+  text-align: left;
+}
+.lessons-quest__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lessons-quest__head h2 {
+  flex: 1 1 auto;
+}
+.lessons-quest__count {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--lessons-muted);
+  white-space: nowrap;
+}
+.lessons-quest__bar {
+  height: 6px;
+  margin: 8px 0 6px;
+  border-radius: 99px;
+  background: var(--lessons-raised);
+  overflow: hidden;
+}
+.lessons-quest__bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lessons-accent);
+  transition: width 300ms ease-out;
+}
+.lessons-quest__steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+.lessons-quest__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  font-size: 14px;
+}
+.lessons-quest__step[data-done='true'] .lessons-quest__label {
+  color: var(--lessons-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.lessons-quest__step[data-next='true'] .lessons-quest__label {
+  font-weight: 650;
+}
+.lessons-quest__mark {
+  flex: 0 0 18px;
+  text-align: center;
+  color: var(--lessons-accent);
+  font-weight: 700;
+}
+.lessons-quest__label {
+  flex: 1 1 auto;
+}
+.lessons-quest__part {
+  color: var(--lessons-muted);
+  font-weight: 500;
+}
+.lessons-quest__show {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.lessons-quest__foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+.lessons-quest__head .lessons-quiet {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+/* ── Celebration ──────────────────────────────────────────────────── */
+.lessons-burst {
+  position: fixed;
+  z-index: 75;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.lessons-burst i {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--lessons-accent);
+  animation: lessons-burst 900ms cubic-bezier(0.15, 0.8, 0.3, 1) forwards;
+}
+.lessons-burst i:nth-child(3n + 1) {
+  background: #e0b44c;
+}
+.lessons-burst i:nth-child(3n + 2) {
+  background: #8f4e2a;
+  border-radius: 50%;
+}
+.lessons-burst.is-big i {
+  width: 10px;
+  height: 10px;
+  animation-duration: 1400ms;
+}
+
+/* ── Landing ring and snap pulse ──────────────────────────────────── */
+.lessons-ring {
+  position: fixed;
+  z-index: 75;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.lessons-ring::after {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: -22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--lessons-accent);
+  opacity: 0;
+}
+.lessons-ring--land::after {
+  animation: lessons-land 480ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+.lessons-ring--snap::after {
+  left: -10px;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  animation: lessons-snap 300ms ease-out forwards;
+}
+
+/* ── Loading tip ──────────────────────────────────────────────────── */
+.lessons-loading-tip {
+  position: fixed;
+  /* Above the Walk screen (z-index 1000, lane A) so its loading tip shows;
+     it takes no presses, so it can never block anything. */
+  z-index: 1001;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #23392f;
+  font-family: var(--lessons-font);
+  font-size: 13.5px;
+  line-height: 1.35;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(25, 35, 30, 0.12);
+}
+.lessons-loading-tip span {
+  font-weight: 700;
+}
+
+/* ── Lessons list (inside the ? panel) ────────────────────────────── */
+.lessons-list {
+  font-size: 14px;
+}
+.lessons-list__count {
+  margin: 0 0 8px;
+  font-weight: 650;
+}
+.lessons-list__settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-bottom: 12px;
+}
+.lessons-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.lessons-switch input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--lessons-accent);
+}
+.lessons-list__group h3 {
+  margin: 12px 0 4px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.lessons-list__group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lessons-list__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(42, 41, 38, 0.14);
+}
+.lessons-list__row--quest {
+  border: 1px solid rgba(42, 41, 38, 0.18);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.lessons-list__mark {
+  flex: 0 0 20px;
+  text-align: center;
+  font-weight: 700;
+}
+.lessons-list__row[data-done='true'] .lessons-list__mark {
+  color: #2f7a5d;
+}
+.lessons-list__text {
+  flex: 1 1 auto;
+  display: grid;
+  gap: 1px;
+}
+.lessons-list__text span {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.lessons-list__row .lessons-quiet,
+.lessons-list__row .lessons-primary {
+  flex: 0 0 auto;
+  min-height: 40px;
+  font-size: 13px;
+}
+.lessons-list__foot {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.lessons-list__foot p {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────── */
+@keyframes lessons-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lessons-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes lessons-burst {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--a)) translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateX(var(--d)) scale(0.6);
+  }
+}
+@keyframes lessons-land {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+@keyframes lessons-snap {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lessons-card,
+  .lessons-quest,
+  .lessons-tooltip,
+  .lessons-quest__bar i,
+  :is(.lessons-primary, .lessons-quiet, .lessons-sound) {
+    animation: none !important;
+    transition: none !important;
+  }
+  .lessons-burst,
+  .lessons-ring {
+    display: none;
+  }
+}

@@ -95,6 +95,10 @@ export function SimsBottomToolbar() {
       setBrowse({ mode: 'category', value: 'all' });
       setCategoryHome(category === undefined);
       setQuery('');
+      // An explicit request to open wins over the fold a tool put on the strip
+      // (lessons 2026-11-08: Floor on, then "Show me" Furnish — the restore of
+      // the pre-tool state used to fold the strip straight back).
+      minimizedBeforePenRef.current = null;
       setMinimized(false);
       setSelected(null);
       if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
