@@ -118,7 +118,8 @@ for (const device of ['desktop', 'phone']) {
   await page.locator('[data-lessons-tooltip]').waitFor({ timeout: 5000 });
   await shot(page, 'desktop-tooltip-measure', 'desktop');
   await page.mouse.move(640, 600);
-  await page.route('**/assets/ThreeStage*', async (route) => {
+  // The 3D module: assets/ThreeStage-*.js in a build, src/components/three/ThreeStage.tsx on the dev server.
+  await page.route('**/*ThreeStage*', async (route) => {
     await sleep(2500);
     await route.continue();
   });
