@@ -1,0 +1,185 @@
+{
+  "at": "2026-11-08T12:44:22.909Z",
+  "recorder": "tools/lessons/record-clips-2026-11-08.mjs",
+  "clips": 16,
+  "totalBytes": 227327,
+  "maxBytes": 27476,
+  "rows": [
+    {
+      "id": "cladding",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 3.07,
+      "audioStreams": 0,
+      "bytes": 9248,
+      "sha256": "cb240f9260c9c142",
+      "posterBytes": 4022
+    },
+    {
+      "id": "door",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 3.6,
+      "audioStreams": 0,
+      "bytes": 6342,
+      "sha256": "e09d9cebb22fd369",
+      "posterBytes": 2064
+    },
+    {
+      "id": "eyedropper",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 3.07,
+      "audioStreams": 0,
+      "bytes": 23429,
+      "sha256": "9228f4200a0bcf2f",
+      "posterBytes": 3928
+    },
+    {
+      "id": "floor",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 3.07,
+      "audioStreams": 0,
+      "bytes": 6117,
+      "sha256": "f8dfc2ad7628e1a5",
+      "posterBytes": 2902
+    },
+    {
+      "id": "furnish",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 5.13,
+      "audioStreams": 0,
+      "bytes": 24250,
+      "sha256": "55d91bb013a3b432",
+      "posterBytes": 8922
+    },
+    {
+      "id": "garden",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 2.87,
+      "audioStreams": 0,
+      "bytes": 8109,
+      "sha256": "21d318b40c4371af",
+      "posterBytes": 4032
+    },
+    {
+      "id": "item",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 2.13,
+      "audioStreams": 0,
+      "bytes": 11326,
+      "sha256": "68a5993d6b8ead72",
+      "posterBytes": 5394
+    },
+    {
+      "id": "measure",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 3.33,
+      "audioStreams": 0,
+      "bytes": 10252,
+      "sha256": "899bd71efe2dbf48",
+      "posterBytes": 4532
+    },
+    {
+      "id": "remove",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 2.73,
+      "audioStreams": 0,
+      "bytes": 24257,
+      "sha256": "afa49fd930899281",
+      "posterBytes": 4304
+    },
+    {
+      "id": "room",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 2.6,
+      "audioStreams": 0,
+      "bytes": 8278,
+      "sha256": "d71eee1fd7966f84",
+      "posterBytes": 3734
+    },
+    {
+      "id": "select",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 3.73,
+      "audioStreams": 0,
+      "bytes": 27476,
+      "sha256": "253c3df1eae29e82",
+      "posterBytes": 5594
+    },
+    {
+      "id": "stairs",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 6.33,
+      "audioStreams": 0,
+      "bytes": 11517,
+      "sha256": "4790d40292a1d139",
+      "posterBytes": 5630
+    },
+    {
+      "id": "view3d",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 4.93,
+      "audioStreams": 0,
+      "bytes": 9398,
+      "sha256": "10d5c8f09a2641ca",
+      "posterBytes": 4446
+    },
+    {
+      "id": "walk",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 3.07,
+      "audioStreams": 0,
+      "bytes": 10606,
+      "sha256": "c8e83f0e029179c4",
+      "posterBytes": 4436
+    },
+    {
+      "id": "wallpaint",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 6.53,
+      "audioStreams": 0,
+      "bytes": 13296,
+      "sha256": "8dd8a77bbc42e115",
+      "posterBytes": 4102
+    },
+    {
+      "id": "walls",
+      "codec": "vp9",
+      "width": 480,
+      "height": 300,
+      "seconds": 5.2,
+      "audioStreams": 0,
+      "bytes": 23426,
+      "sha256": "a224c0cc9ec5d4c5",
+      "posterBytes": 4350
+    }
+  ]
+}
