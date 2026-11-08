@@ -95,6 +95,9 @@ export function opensWithoutStudioCode(pathname: string): boolean {
   if (pathname.startsWith('/products/')) return true;
   if (pathname.startsWith('/draco/')) return true;
   if (pathname.startsWith('/showcase/')) return true;
+  // The lesson clips and posters (silent, recorded from the app): the tool
+  // cards show them on /demo and /embed too.
+  if (pathname.startsWith('/lessons/')) return true;
   return false;
 }
 

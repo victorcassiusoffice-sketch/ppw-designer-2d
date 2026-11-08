@@ -41,6 +41,12 @@ for (const device of ['desktop', 'phone']) {
   });
   page.on('response', (r) => {
     if (r.status() >= 400) run.httpErrors.push(`${r.status()} ${r.url().slice(0, 160)}`);
+    // A clip or poster must come back as a video or a picture, never as the code page.
+    if (r.url().includes('/lessons/')) {
+      const type = r.headers()['content-type'] ?? '';
+      run.lessonFiles = (run.lessonFiles ?? 0) + 1;
+      if (!/^(video|image)\//.test(type)) run.httpErrors.push(`not a clip (${type}) ${r.url().slice(0, 160)}`);
+    }
   });
   const tap = (locator) => (phone ? locator.tap() : locator.click());
   try {
@@ -54,6 +60,13 @@ for (const device of ['desktop', 'phone']) {
     await page.locator('[data-lesson-card="floor"]').waitFor({ timeout: 15000 });
     run.checks.floorCard = true;
     await page.waitForTimeout(800);
+    // The clip plays (desktop) or its poster shows (phone, compact card: no media).
+    run.checks.clip = await page.evaluate(() => {
+      const media = document.querySelector('[data-lesson-card="floor"] .lessons-card__media');
+      if (!media) return 'no media in this card size';
+      if (media instanceof HTMLVideoElement) return media.readyState >= 2 ? 'playing' : `readyState ${media.readyState}`;
+      return media instanceof HTMLImageElement && media.naturalWidth > 0 ? 'poster' : 'poster missing';
+    });
     await page.screenshot({ path: path.join(out, `${device}-plan-floor-card.png`) });
     await tap(page.locator('[data-lesson-card="floor"]').getByRole('button', { name: 'Got it' }));
     await tap(page.getByRole('button', { name: 'Done', exact: true }).first()).catch(() => page.keyboard.press('Escape'));
@@ -86,7 +99,7 @@ await browser.close();
 await fs.writeFile(path.join(out, 'smoke-report.json'), JSON.stringify(report, null, 2));
 for (const r of report.runs) {
   console.log(
-    `${r.device}: checks ${JSON.stringify(r.checks)} · console errors ${r.consoleErrors.length} · page errors ${r.pageErrors.length} · failed GETs ${r.failedRequests.length} · http>=400 ${r.httpErrors.length} · blocked writes ${r.blockedWrites}${r.fatal ? ` · FATAL ${r.fatal}` : ''}`,
+    `${r.device}: checks ${JSON.stringify(r.checks)} · lesson files ${r.lessonFiles ?? 0} · console errors ${r.consoleErrors.length} · page errors ${r.pageErrors.length} · failed GETs ${r.failedRequests.length} · http>=400 ${r.httpErrors.length} · blocked writes ${r.blockedWrites}${r.fatal ? ` · FATAL ${r.fatal}` : ''}`,
   );
   for (const e of [...r.consoleErrors, ...r.pageErrors, ...r.failedRequests, ...r.httpErrors].slice(0, 5)) console.log('  ', e);
 }

@@ -26,7 +26,7 @@ Part 2 of the One Live Build game programme (8 Nov 2026, plan `06-Roadmap/_hando
 | `placement.ts`, `dom.ts`, `usePlacement.ts` | Where a card may sit, measured on the page every 400 ms |
 | `LessonCard.tsx`, `QuestHost.tsx`, `ToolTips.tsx`, `BuildFeedback.tsx`, `LoadingTips.tsx`, `LessonsList.tsx`, `SoundToggle.tsx`, `sound.ts` | The surfaces |
 | `src/i18n/lessonMessages.ts` | The words in English, French, Simplified Chinese and Spanish (same four columns as `messages.ts`; a separate file so the first download does not carry them) |
-| `public/lessons/` | 16 clips + posters, recorded from our own app (`tools/lessons/record-clips-2026-11-08.mjs`) |
+| `public/lessons/` | 16 clips + posters, recorded from our own app (`tools/lessons/record-clips-2026-11-08.mjs`); `/lessons/` opens without the studio code (`server/accessGate.ts`), so `/demo` and `/embed` show them |
 
 ## Adding a tool (part 4)
 

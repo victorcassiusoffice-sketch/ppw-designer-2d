@@ -36,7 +36,7 @@ describe('server-side studio access', () => {
     expect(response!.headers.get('cache-control')).toContain('no-store');
     expect(command).not.toHaveBeenCalled();
   });
-  it.each(['/demo', '/demo?view=3d', '/embed', '/embed/designer', '/pitch/construction', '/pitch/developers', '/pitch/merchants', '/assets/index.js', '/models/house.glb', '/products/catalogue.json', '/draco/decoder.js', '/showcase/designer-plan.webp', '/favicon.ico', '/ppw-favicon.svg'])('opens %s without the studio code', async (path) => {
+  it.each(['/demo', '/demo?view=3d', '/embed', '/embed/designer', '/pitch/construction', '/pitch/developers', '/pitch/merchants', '/assets/index.js', '/models/house.glb', '/products/catalogue.json', '/draco/decoder.js', '/showcase/designer-plan.webp', '/lessons/floor.webm', '/lessons/floor.webp', '/favicon.ico', '/ppw-favicon.svg'])('opens %s without the studio code', async (path) => {
     const { deps, command } = setup();
     expect(opensWithoutStudioCode(new URL(`https://designer.example${path}`).pathname)).toBe(true);
     expect(await handleAccess(new Request(`https://designer.example${path}`), deps)).toBeNull();
