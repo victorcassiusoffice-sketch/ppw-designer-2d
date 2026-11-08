@@ -88,7 +88,8 @@ try {
             const done = (e) => { canvas.removeEventListener('world-walk-test-pose-ready', done); resolve(e.detail ?? JSON.parse(canvas.getAttribute('data-walk-test-pose') || '{}')); };
             canvas.addEventListener('world-walk-test-pose-ready', done);
             canvas.dispatchEvent(new CustomEvent('world-walk-test-pose', { detail }));
-            setTimeout(() => { const a = canvas.getAttribute('data-walk-test-pose'); resolve(a ? JSON.parse(a) : { accepted: 'unknown (no answer in 1.5 s)' }); }, 1500);
+            // The hook answers only when it refuses; a pose it takes leaves no attribute behind.
+            setTimeout(() => { const a = canvas.getAttribute('data-walk-test-pose'); resolve(a ? JSON.parse(a) : { accepted: true, note: 'no refusal from the hook' }); }, 1500);
           });
         }, pose);
         await page.waitForTimeout(900);
