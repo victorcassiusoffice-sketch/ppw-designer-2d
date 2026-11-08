@@ -12,6 +12,7 @@
  *   node scripts/product-engine/index.mjs adopt --run test-2026-11-08 --tool tripo
  *   node scripts/product-engine/index.mjs run --tool tripo --remake --yes --cap 12 --adopt   # the batch, straight to the catalogue
  *   node scripts/product-engine/index.mjs people --only nadia --dry-run | --yes
+ *   node scripts/product-engine/index.mjs views --only <id> --front <url|file> --left <url|file> [--back …] [--right …] [--page <listing url>]   # $0: a listing's side shots, cleaned, on the row
  *
  * ⛔ Nothing spends without `--yes`, and never past `--cap` (USD). Run `--dry-run` first and show the
  * bill. The Fal key is read at run time from its path by lib/fal.mjs and never printed.
@@ -22,16 +23,17 @@ import path from 'node:path';
 import process from 'node:process';
 import { createHash } from 'node:crypto';
 import sharp from 'sharp';
-import { loadCatalogue, loadInputRows, photoUrlOf, publicPhotoUrl, readJson, readManifest, readThumbs, writeJson, writeManifest, writeThumbs } from './lib/catalog.mjs';
+import { loadCatalogue, loadInputRows, photoUrlOf, publicPhotoUrl, readJson, readManifest, readThumbs, setRowFields, writeJson, writeManifest, writeThumbs } from './lib/catalog.mjs';
+import { VIEW_ORDER, cleanProductShot, multiviewPlan, multiviewUrls, viewFile, viewsOf } from './lib/views.mjs';
 import { auditAll } from './lib/photo.mjs';
 import { CANDIDATES_DIR, CATALOG_MODELS_DIR, CHARACTERS_JSON, COURTS_JSON, MODELS_DIR, PRODUCTS_JSON, PUBLIC_DIR, RAW_DIR, ROOT, SPEND_LOG, TOPDOWN_DIR, WALK_THUMBS_DIR, runDir } from './lib/paths.mjs';
 import { PERSON_TOOL, PICTURE_TOOL, PRICES_READ_ON, TOOLS, TOOL_KEYS, money } from './lib/prices.mjs';
 import * as fal from './lib/fal.mjs';
-import { bakeYaw, catalogueIsFlat, detectUp, footprintYaw, frontAfterYaw, headDirection, photoFaceSign, pitchedExtents, rawShapeCheck, readBody } from './lib/shape.mjs';
+import { bakeTransform, bakeYaw, baseTilt, catalogueIsFlat, detectUp, footprintYaw, frontAfterYaw, headDirection, levelCorrection, photoFaceSign, pitchedExtents, rawShapeCheck, readBody } from './lib/shape.mjs';
 import { ART_HEAD, headAgreesWithArt, pickModelFront, swappedFor } from './lib/orient.mjs';
 import { BUDGETS, makeCopies } from './lib/optimize.mjs';
 import { measureCharacter, measureProduct, openBrowser, renderHtml, startDevServer } from './lib/browser.mjs';
-import { evaluateGate } from './lib/gate.mjs';
+import { GATE_LIMITS, evaluateGate, rerollWorth } from './lib/gate.mjs';
 import { gateSheetHtml, personSheetHtml, photoAuditHtml, productSheetHtml } from './lib/review.mjs';
 import { CHARACTER_BYTE_CAP, PEOPLE, PERSON_LICENCE, characterPaths, drawPicture, makeBody, mergeClips, optimiseCharacter, rawPersonFiles } from './lib/people.mjs';
 import { optimizeGlb } from '../optimize-models.mjs';
@@ -244,13 +246,15 @@ async function cmdRun() {
   const adopt = flag('adopt');
   const parallel = Math.max(1, Number(args.parallel ?? 3));
 
+  // A row with extra views (a listing's front and side shots) goes to a tool's multiview endpoint when it has one.
+  const plans = Object.fromEntries(rows.map((row) => [row.id, multiviewPlan(viewsOf(row), photoUrlOf(row.photo))]));
   const jobs = [];
-  for (const row of rows) for (const key of toolKeys) jobs.push({ row, tool: TOOLS[key] });
+  for (const row of rows) for (const key of toolKeys) jobs.push({ row, tool: TOOLS[key], multiview: Boolean(TOOLS[key].multiview && plans[row.id].use) });
   const bill = jobs.reduce((s, j) => s + j.tool.price, 0);
   log(`\nproduct engine · prices read on fal.ai ${PRICES_READ_ON} · run ${RUN_NAME}${adopt ? ' · ADOPT (writes the catalogue)' : ' · candidates'}`);
-  for (const key of toolKeys) log(`  ${TOOLS[key].label.padEnd(44)} ${money(TOOLS[key].price)} each  (${TOOLS[key].endpoint})`);
+  for (const key of toolKeys) log(`  ${TOOLS[key].label.padEnd(44)} ${money(TOOLS[key].price)} each  (${TOOLS[key].endpoint}${TOOLS[key].multiview ? `; with views ${TOOLS[key].multiview.endpoint}, the same price` : ''})`);
   log(`\n${jobs.length} generation(s) for ${rows.length} product(s):`);
-  for (const row of rows) log(`  ${row.id.padEnd(34)} ${`${row.dimensions_cm.length}×${row.dimensions_cm.width}×${row.dimensions_cm.height} cm`.padEnd(20)} photo ${audits[row.id].width}×${audits[row.id].height} ${audits[row.id].format}  → ${toolKeys.map((k) => money(TOOLS[k].price)).join(' + ')}`);
+  for (const row of rows) log(`  ${row.id.padEnd(34)} ${`${row.dimensions_cm.length}×${row.dimensions_cm.width}×${row.dimensions_cm.height} cm`.padEnd(20)} photo ${audits[row.id].width}×${audits[row.id].height} ${audits[row.id].format}  → ${toolKeys.map((k) => money(TOOLS[k].price)).join(' + ')}${plans[row.id].use ? `  · ${plans[row.id].why}` : plans[row.id].skipped?.length ? `  · ${plans[row.id].why}` : ''}`);
   if (skipped.length) { log(`\nskipped (listed for Victor):`); for (const r of skipped) log(`  ${r.id.padEnd(34)} ${audits[r.id].status}: ${audits[r.id].why || r.dimsProblem || ''}`); }
   log(`\nBILL ${money(bill)} (cap ${money(CAP)}, re-rolls come out of the cap)`);
   if (DRY) { log('--dry-run: nothing sent, nothing spent.'); return { bill, jobs: jobs.length, skipped }; }
@@ -270,27 +274,39 @@ async function cmdRun() {
     const rawDir = ensureDir(path.join(RAW_RUN_DIR, tool.key));
     const photoUrl = await publicPhotoUrl(photoUrlOf(row.photo));
     if (!photoUrl) return { id: row.id, tool: tool.key, error: 'the photo could not be given a public URL' };
-    const result = { id: row.id, tool: tool.key, endpoint: tool.endpoint, price: 0, attempts: [] };
+    // Several views → the multiview endpoint (the same price); a view that cannot be given a URL drops the job back to the one photo.
+    const plan = plans[row.id];
+    let views = null;
+    let viewUrls = null;
+    if (job.multiview) {
+      viewUrls = await multiviewUrls(plan);
+      if (viewUrls.every(Boolean)) views = plan.names;
+      else log(`   ! ${row.id}/${tool.key}: a view has no public URL (${plan.names.filter((_, i) => !viewUrls[i]).join(', ')}); the one photo is used`);
+    }
+    const endpoint = views ? tool.multiview.endpoint : tool.endpoint;
+    const result = { id: row.id, tool: tool.key, endpoint, price: 0, attempts: [], views };
     let bodyFile = null;
     let prep = null;
     for (let attempt = 1; attempt <= 2; attempt++) {
       chargeOrStop(tool.price, `${row.id} via ${tool.key}`);
-      log(`→ ${row.id} via ${tool.label} (attempt ${attempt})`);
+      log(`→ ${row.id} via ${tool.label}${views ? ` with ${views.length} views (${views.join(' + ')})` : ''} (attempt ${attempt})`);
       const t0 = Date.now();
+      const seed = attempt === 1 ? undefined : Math.floor(Math.random() * 1e9);
+      const input = views ? tool.multiview.input(viewUrls, seed) : tool.input(photoUrl, seed);
       let t;
       try {
-        t = await fal.run(tool.endpoint, tool.input(photoUrl, attempt === 1 ? undefined : Math.floor(Math.random() * 1e9)), { label: `${row.id} ${tool.key} a${attempt}`, onStatus: (s, q) => log(`   … ${row.id}/${tool.key} ${s}${q !== null ? ` (queue ${q})` : ''}`) });
+        t = await fal.run(endpoint, input, { label: `${row.id} ${tool.key} a${attempt}${views ? ` views ${views.join('+')}` : ''}`, onStatus: (s, q) => log(`   … ${row.id}/${tool.key} ${s}${q !== null ? ` (queue ${q})` : ''}`) });
       } catch (e) {
         spentThisRun -= tool.price;
         const seconds = Math.round((Date.now() - t0) / 1000);
-        fal.logSpend({ id: row.id, tool: tool.key, endpoint: tool.endpoint, price_usd: 0, seconds, ok: false, error: String(e).slice(0, 400), attempt });
+        fal.logSpend({ id: row.id, tool: tool.key, endpoint, views, price_usd: 0, seconds, ok: false, error: String(e).slice(0, 400), attempt });
         result.attempts.push({ attempt, ok: false, error: String(e).slice(0, 400), seconds });
         if (fal.isBalanceError(e)) { stop = 'Fal refused on balance: Victor tops up on his Fal login, then the run resumes'; }
         return { ...result, error: `fal: ${String(e).slice(0, 300)}` };
       }
       const url = tool.glbUrl(t.out);
       if (!url) {
-        fal.logSpend({ id: row.id, tool: tool.key, endpoint: tool.endpoint, price_usd: tool.price, seconds: t.seconds, request_id: t.request_id, ok: false, error: 'no glb in the answer', keys: Object.keys(t.out ?? {}), attempt });
+        fal.logSpend({ id: row.id, tool: tool.key, endpoint, views, price_usd: tool.price, seconds: t.seconds, request_id: t.request_id, ok: false, error: 'no glb in the answer', keys: Object.keys(t.out ?? {}), attempt });
         return { ...result, price: result.price + tool.price, error: `no glb in the answer (keys ${Object.keys(t.out ?? {}).join(', ')})` };
       }
       const bytes = await fal.download(url);
@@ -299,14 +315,15 @@ async function cmdRun() {
       result.price += tool.price;
       bodyFile = path.join(rawDir, `${row.id}.a${attempt}.glb`);
       prep = await prepareBody(downloaded, bodyFile, dims);
-      const { raw, shape, up, detected, squared } = prep;
-      fal.logSpend({ id: row.id, tool: tool.key, endpoint: tool.endpoint, price_usd: tool.price, seconds: t.seconds, metrics: t.metrics, bytes: bytes.length, raw_triangles: raw.triangles, request_id: t.request_id, ok: true, attempt, shape_pass: shape.pass });
-      result.attempts.push({ attempt, ok: true, request_id: t.request_id, seconds: t.seconds, inference_s: t.metrics?.inference_time ?? null, rawBytes: bytes.length, rawTriangles: raw.triangles, rawExtents: raw.extents, up, photoFace: prep.face, bakeYaw: detected.bakeYaw, squaredDeg: squared?.degrees ?? 0, shape });
-      log(`   ✓ ${row.id}/${tool.key} ${(bytes.length / 1048576).toFixed(1)} MB, ${raw.triangles.toLocaleString()} tris in ${t.seconds}s · shape ${shape.pass ? 'ok' : `WRONG (aspect ${(shape.aspectError * 100).toFixed(0)} %, height ${(shape.heightError * 100).toFixed(0)} %)`} · up ${up}${detected.bakeYaw ? ' (quarter turn baked)' : ''}${squared ? ` · turned ${squared.degrees.toFixed(1)}° to square the footprint` : ''}   (spent ${money(spentThisRun)})`);
+      const { raw, shape, up, detected, squared, level } = prep;
+      fal.logSpend({ id: row.id, tool: tool.key, endpoint, views, price_usd: tool.price, seconds: t.seconds, metrics: t.metrics, bytes: bytes.length, raw_triangles: raw.triangles, request_id: t.request_id, ok: true, attempt, shape_pass: shape.pass });
+      result.attempts.push({ attempt, ok: true, request_id: t.request_id, seconds: t.seconds, inference_s: t.metrics?.inference_time ?? null, rawBytes: bytes.length, rawTriangles: raw.triangles, rawExtents: raw.extents, up, photoFace: prep.face, bakeYaw: detected.bakeYaw, squaredDeg: squared?.degrees ?? 0, level, shape });
+      log(`   ✓ ${row.id}/${tool.key} ${(bytes.length / 1048576).toFixed(1)} MB, ${raw.triangles.toLocaleString()} tris in ${t.seconds}s · shape ${shape.pass ? 'ok' : `WRONG (aspect ${(shape.aspectError * 100).toFixed(0)} %, height ${(shape.heightError * 100).toFixed(0)} %)`} · up ${up}${detected.bakeYaw ? ' (quarter turn baked)' : ''}${squared ? ` · turned ${squared.degrees.toFixed(1)}° to square the footprint` : ''}${level?.corrected ? ` · levelled ${level.corrected.pitchDeg.toFixed(1)}° / ${level.corrected.rollDeg.toFixed(1)}°` : ''}   (spent ${money(spentThisRun)})`);
       if (shape.pass) break;
       if (attempt === 2) log(`   ✗ ${row.id}/${tool.key}: wrong shape twice; listed for Victor, no body`);
+      else if (!rerollWorth(shape)) { log(`   ✗ ${row.id}/${tool.key}: wrong shape by more than ${Math.round((GATE_LIMITS.rawShapeTolerance + 0.05) * 100)} %: a new seed does not close such a gap (no re-roll); listed for Victor${views ? '' : ', a side photo of it would'}`); break; }
       else if (spentThisRun + tool.price > CAP) { log(`   ✗ ${row.id}/${tool.key}: wrong shape and no room under the cap for a re-roll`); break; }
-      else log(`   ↻ ${row.id}/${tool.key}: wrong shape, one re-roll`);
+      else log(`   ↻ ${row.id}/${tool.key}: wrong shape, a near miss, one re-roll`);
     }
     if (!prep) return { ...result, error: 'no body' };
     return finishBody({ row, tool, bodyFile, prep, result, audit: audits[row.id], adopt, b, photoUrl });
@@ -336,7 +353,7 @@ async function cmdRun() {
     const evDir = path.join(RUN_DIR, 'evidence', row.id);
     olds[row.id] = {
       entry, bytes: fs.statSync(servedPath).size, triangles: oldBody.triangles, measure: strip(measure),
-      gate: evaluateGate({ photo: audits[row.id], shape: rawShapeCheck(pitchedExtents(oldBody.extents, oldUp), row.dimensions_cm), measure, copies: { served: { bytes: fs.statSync(servedPath).size, triangles: oldBody.triangles }, phone: entry.phoneUrl && fs.existsSync(path.join(PUBLIC_DIR, entry.phoneUrl.replace(/^\//, ''))) ? { bytes: fs.statSync(path.join(PUBLIC_DIR, entry.phoneUrl.replace(/^\//, ''))).size, triangles: (await readBody(path.join(PUBLIC_DIR, entry.phoneUrl.replace(/^\//, '')))).triangles } : null }, facing: facingFor({ id: row.id, body: oldBody, up: oldUp, dims: row.dimensions_cm, frontEdge: row.front_edge, entry }) }),
+      gate: evaluateGate({ photo: audits[row.id], shape: rawShapeCheck(pitchedExtents(oldBody.extents, oldUp), row.dimensions_cm), measure, copies: { served: { bytes: fs.statSync(servedPath).size, triangles: oldBody.triangles }, phone: entry.phoneUrl && fs.existsSync(path.join(PUBLIC_DIR, entry.phoneUrl.replace(/^\//, ''))) ? { bytes: fs.statSync(path.join(PUBLIC_DIR, entry.phoneUrl.replace(/^\//, ''))).size, triangles: (await readBody(path.join(PUBLIC_DIR, entry.phoneUrl.replace(/^\//, '')))).triangles } : null }, facing: facingFor({ id: row.id, body: oldBody, up: oldUp, dims: row.dimensions_cm, frontEdge: row.front_edge, entry }), level: oldUp === '+y' ? baseTilt(oldBody) : undefined }),
       evidence: { front: await saveEvidence(evDir, 'old-front', measure.front), catalogue: await saveEvidence(evDir, 'old-catalogue', measure.catalogue), eye: await saveEvidence(evDir, 'old-eye', measure.eye), plan: await saveEvidence(evDir, 'old-plan', measure.plan?.png) },
     };
   }
@@ -351,7 +368,8 @@ async function cmdRun() {
 /**
  * From a raw download to a body ready to fit, $0: which way is up (a flat product's photo face),
  * a squared footprint (a generator that aligns the body to a three-quarter photo hands it back
- * turned; the smallest box around the footprint finds the turn, which is baked in), and the raw
+ * turned; the smallest box around the footprint finds the turn, which is baked in), a level base
+ * (a body handed back tilted is levelled by the plane through its lowest vertices), and the raw
  * shape check. `photoFront` is the axis the photo side faces after that turn.
  */
 async function prepareBody(downloaded, bodyFile, dims) {
@@ -361,20 +379,39 @@ async function prepareBody(downloaded, bodyFile, dims) {
   const detected = detectUp(raw.extents, dims, face.sign);
   const up = detected.up;
   let squared = null;
+  let level = null;
   if (detected.bakeYaw) await bakeYaw(downloaded, bodyFile);
   else if (!catalogueIsFlat(dims)) {
     const yaw = footprintYaw(raw);
-    if (Math.abs(yaw.degrees) >= 2) { await bakeYaw(downloaded, bodyFile, yaw.yaw); squared = yaw; } else fs.copyFileSync(downloaded, bodyFile);
+    const yawRad = Math.abs(yaw.degrees) >= 2 ? yaw.yaw : 0;
+    if (yawRad) squared = yaw;
+    // The base plane, measured after the yaw; a tilt past 1° is baked out with it.
+    const tilt = baseTilt(yawRad ? await rotatedView(raw, yawRad) : raw);
+    const tilted = Math.abs(tilt.pitchDeg) > 1 || Math.abs(tilt.rollDeg) > 1;
+    if (yawRad || tilted) await bakeTransform(downloaded, bodyFile, { yawRad, ...(tilted ? levelCorrection(tilt) : {}) });
+    else fs.copyFileSync(downloaded, bodyFile);
+    if (yawRad || tilted) raw = await readBody(bodyFile);
+    level = { ...baseTilt(raw), ...(tilted ? { corrected: { pitchDeg: tilt.pitchDeg, rollDeg: tilt.rollDeg } } : {}) };
   } else fs.copyFileSync(downloaded, bodyFile);
-  if (detected.bakeYaw || squared) raw = await readBody(bodyFile);
+  if (detected.bakeYaw) raw = await readBody(bodyFile);
   const shape = rawShapeCheck(pitchedExtents(raw.extents, up), dims);
-  return { raw, face, detected, up, squared, shape, photoFront: frontAfterYaw(squared?.yaw ?? 0) };
+  return { raw, face, detected, up, squared, level, shape, photoFront: frontAfterYaw(squared?.yaw ?? 0) };
+}
+
+/** The body's vertices as they would sit after a yaw about y, for a measurement before anything is written. */
+async function rotatedView(body, yawRad) {
+  const c = Math.cos(yawRad);
+  const s = Math.sin(yawRad);
+  // world matrices are column-major 4×4; a yaw about y on the left: R · M.
+  const rot = [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1];
+  const mul = (a, b) => { const o = new Array(16).fill(0); for (let r = 0; r < 4; r++) for (let col = 0; col < 4; col++) for (let k = 0; k < 4; k++) o[col * 4 + r] += a[k * 4 + r] * b[col * 4 + k]; return o; };
+  return { ...body, prims: body.prims.map((p) => ({ ...p, world: mul(rot, p.world) })) };
 }
 
 /** Everything after the body exists: facing, the two copies, the measurement in the browser, the gate, the evidence, the manifest row. */
 async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, photoUrl }) {
   const dims = row.dimensions_cm;
-  const { raw: body, up, detected: bake, squared, shape } = prep;
+  const { raw: body, up, detected: bake, squared, shape, level } = prep;
   const rawDir = path.dirname(bodyFile);
   const orient = orientNewBody({ id: row.id, body, up, dims, frontEdge: row.front_edge, defaultFront: prep.photoFront ?? '+z' });
   const model = { modelFront: orient.modelFront, modelUp: up === '+y' ? undefined : up, lengthAxis: 'auto' };
@@ -387,7 +424,7 @@ async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, 
   const servedBody = await readBody(servedPath);
   const facing = facingFor({ id: row.id, body: servedBody, up, dims, frontEdge: row.front_edge, entry: model });
   const measure = await serialMeasure(() => measureProduct(b.page, { product: { id: row.id, dimensions_cm: dims, front_edge: row.front_edge }, model, servedUrl, phoneUrl }));
-  const gate = evaluateGate({ photo: audit, shape, measure, copies: { served: copies.served, phone: copies.phone }, facing });
+  const gate = evaluateGate({ photo: audit, shape, measure, copies: { served: copies.served, phone: copies.phone }, facing, level: level ?? undefined });
   const evDir = path.join(RUN_DIR, 'evidence', row.id);
   const evidence = {
     front: await saveEvidence(evDir, `${tool.key}-front`, measure.front),
@@ -401,12 +438,12 @@ async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, 
   if (measure.catalogue) fs.writeFileSync(path.join(picDir, `${row.id}-catalogue.png`), dataUrlBuffer(measure.catalogue));
   const last = result.attempts[result.attempts.length - 1] ?? {};
   const entry = manifestEntryFor({ model, servedUrl, phoneUrl, source: {
-    engine: 'scripts/product-engine', run: RUN_NAME, tool: tool.key, endpoint: tool.endpoint, price_usd: result.price, seconds: last.seconds, inference_s: last.inference_s, request_id: last.request_id,
+    engine: 'scripts/product-engine', run: RUN_NAME, tool: tool.key, endpoint: result.endpoint ?? tool.endpoint, ...(result.views ? { views: result.views, view_photos: viewsOf(row) } : {}), price_usd: result.price, seconds: last.seconds, inference_s: last.inference_s, request_id: last.request_id,
     photo: photoUrl ? (photoUrl.startsWith('data:') ? row.photo : photoUrl) : row.photo, generated_at: result.generated_at ?? new Date().toISOString(), reprocessed_at: result.reprocessed_at, raw_bytes: last.rawBytes, raw_triangles: last.rawTriangles, bytes: copies.served.bytes, triangles: copies.served.triangles,
-    phone_bytes: copies.phone.bytes, phone_triangles: copies.phone.triangles, orient: { ...orient, head: orient.head ? { x: +orient.head.x.toFixed(3), z: +orient.head.z.toFixed(3) } : undefined, up, bakeYaw: bake?.bakeYaw ?? false, squaredDeg: squared?.degrees ?? 0, upWhy: bake?.why }, gate: { pass: gate.pass, failed: gate.failed },
+    phone_bytes: copies.phone.bytes, phone_triangles: copies.phone.triangles, orient: { ...orient, head: orient.head ? { x: +orient.head.x.toFixed(3), z: +orient.head.z.toFixed(3) } : undefined, up, bakeYaw: bake?.bakeYaw ?? false, squaredDeg: squared?.degrees ?? 0, level: level ? { pitchDeg: +level.pitchDeg.toFixed(2), rollDeg: +level.rollDeg.toFixed(2), corrected: level.corrected ?? undefined } : undefined, upWhy: bake?.why }, gate: { pass: gate.pass, failed: gate.failed },
   } });
   log(`   ${gate.pass ? 'GATE PASS' : `GATE FAIL: ${gate.failed.join(' · ')}`} · served ${Math.round(copies.served.bytes / 1024)} KB/${copies.served.triangles} tris · phone ${Math.round(copies.phone.bytes / 1024)} KB/${copies.phone.triangles} tris · plan ${(measure.plan?.coverage.x * 100).toFixed(0)}×${(measure.plan?.coverage.y * 100).toFixed(0)} %`);
-  return { ...result, servedUrl, phoneUrl, copies, model, orient: { ...orient, head: undefined }, up, bake, squared, shape, facing: { ...facing, head: undefined }, measure: strip(measure), gate, evidence, entry, pictures: { plan: path.relative(ROOT, path.join(picDir, `${row.id}-plan.png`)), catalogue: path.relative(ROOT, path.join(picDir, `${row.id}-catalogue.png`)) } };
+  return { ...result, servedUrl, phoneUrl, copies, model, orient: { ...orient, head: undefined }, up, bake, squared, level, shape, facing: { ...facing, head: undefined }, measure: strip(measure), gate, evidence, entry, pictures: { plan: path.relative(ROOT, path.join(picDir, `${row.id}-plan.png`)), catalogue: path.relative(ROOT, path.join(picDir, `${row.id}-catalogue.png`)) } };
 }
 
 /** run.json, the candidates manifest (or the catalogue), one sheet per product, SUMMARY.md. */
@@ -426,7 +463,7 @@ async function writeRunOutputs({ runRecord, rows, audits, cat, manifest, adopt, 
     if (old) sheetRows.push({ label: 'today (September body)', note: `${old.entry.source?.model ?? ''}\n${Math.round(old.bytes / 1024)} KB · ${old.triangles.toLocaleString()} tris`, photo: audits[row.id].thumb, front: toDataUrl(path.join(ROOT, old.evidence.front ?? '')), catalogue: toDataUrl(path.join(ROOT, old.evidence.catalogue ?? '')), eye: toDataUrl(path.join(ROOT, old.evidence.eye ?? '')), plan: toDataUrl(path.join(ROOT, old.evidence.plan ?? '')), gate: old.gate });
     for (const r of results.filter((x) => x.id === row.id)) {
       const last = r.attempts?.[r.attempts.length - 1];
-      sheetRows.push({ label: TOOLS[r.tool].label, note: r.error ? `ERROR: ${r.error}` : `${money(r.price)} · ${last?.seconds ?? '?'} s (model ${last?.inference_s ? `${Math.round(last.inference_s)} s` : '?'})${r.attempts?.length > 1 ? ` · ${r.attempts.length} tries` : ''}\nraw ${last ? `${(last.rawBytes / 1048576).toFixed(1)} MB · ${last.rawTriangles.toLocaleString()} tris` : ''}\nserved ${r.copies ? `${Math.round(r.copies.served.bytes / 1024)} KB · ${r.copies.served.triangles.toLocaleString()} tris` : ''}\nphone ${r.copies ? `${Math.round(r.copies.phone.bytes / 1024)} KB · ${r.copies.phone.triangles.toLocaleString()} tris` : ''}\n${r.squared ? `turned ${r.squared.degrees.toFixed(1)}° to square the footprint\n` : ''}${r.orient?.why ?? ''}`, photo: audits[row.id].thumb, front: toDataUrl(path.join(ROOT, r.evidence?.front ?? '')), catalogue: toDataUrl(path.join(ROOT, r.evidence?.catalogue ?? '')), eye: toDataUrl(path.join(ROOT, r.evidence?.eye ?? '')), plan: toDataUrl(path.join(ROOT, r.evidence?.plan ?? '')), gate: r.gate });
+      sheetRows.push({ label: `${TOOLS[r.tool].label}${r.views ? ` · ${r.views.length} views (${r.views.join(' + ')})` : ''}`, note: r.error ? `ERROR: ${r.error}` : `${money(r.price)} · ${last?.seconds ?? '?'} s (model ${last?.inference_s ? `${Math.round(last.inference_s)} s` : '?'})${r.attempts?.length > 1 ? ` · ${r.attempts.length} tries` : ''}\nraw ${last ? `${(last.rawBytes / 1048576).toFixed(1)} MB · ${last.rawTriangles.toLocaleString()} tris` : ''}\nserved ${r.copies ? `${Math.round(r.copies.served.bytes / 1024)} KB · ${r.copies.served.triangles.toLocaleString()} tris` : ''}\nphone ${r.copies ? `${Math.round(r.copies.phone.bytes / 1024)} KB · ${r.copies.phone.triangles.toLocaleString()} tris` : ''}\n${r.squared ? `turned ${r.squared.degrees.toFixed(1)}° to square the footprint\n` : ''}${r.level?.corrected ? `levelled from ${r.level.corrected.pitchDeg.toFixed(1)}° / ${r.level.corrected.rollDeg.toFixed(1)}°\n` : ''}${r.orient?.why ?? ''}`, photo: audits[row.id].thumb, front: toDataUrl(path.join(ROOT, r.evidence?.front ?? '')), catalogue: toDataUrl(path.join(ROOT, r.evidence?.catalogue ?? '')), eye: toDataUrl(path.join(ROOT, r.evidence?.eye ?? '')), plan: toDataUrl(path.join(ROOT, r.evidence?.plan ?? '')), gate: r.gate });
     }
     await renderHtml(b, productSheetHtml({ title: `${row.name} (${row.id})`, subtitle: `run ${RUN_NAME} · every row is the same product fitted to its catalogue size by the app's own code; the eye-level picture is an engine render at the Walk camera height`, product: row, rows: sheetRows }), path.join(RUN_DIR, `sheet-${row.id}.png`), { width: 1700 });
   }
@@ -463,8 +500,8 @@ async function cmdReprocess() {
     const prep = await prepareBody(downloaded, bodyFile, row.dimensions_cm);
     log(`   shape ${prep.shape.pass ? 'ok' : `WRONG (aspect ${(prep.shape.aspectError * 100).toFixed(0)} %, height ${(prep.shape.heightError * 100).toFixed(0)} %)`} · up ${prep.up}${prep.detected.bakeYaw ? ' (quarter turn baked)' : ''}${prep.squared ? ` · turned ${prep.squared.degrees.toFixed(1)}° to square the footprint` : ''}`);
     const result = {
-      id: row.id, tool: tool.key, endpoint: tool.endpoint, price: old.price ?? 0, generated_at: old.entry?.source?.generated_at, reprocessed_at: new Date().toISOString(), reprocessed_attempt: attemptNo,
-      attempts: (old.attempts ?? []).map((a) => (a.attempt === attemptNo ? { ...a, up: prep.up, bakeYaw: prep.detected.bakeYaw, squaredDeg: prep.squared?.degrees ?? 0, shape: prep.shape, rawExtents: prep.raw.extents } : a)),
+      id: row.id, tool: tool.key, endpoint: old.endpoint ?? tool.endpoint, views: old.views ?? null, price: old.price ?? 0, generated_at: old.entry?.source?.generated_at, reprocessed_at: new Date().toISOString(), reprocessed_attempt: attemptNo,
+      attempts: (old.attempts ?? []).map((a) => (a.attempt === attemptNo ? { ...a, up: prep.up, bakeYaw: prep.detected.bakeYaw, squaredDeg: prep.squared?.degrees ?? 0, level: prep.level, shape: prep.shape, rawExtents: prep.raw.extents } : a)),
     };
     const fresh = await finishBody({ row, tool, bodyFile, prep, result, audit: audits[row.id], adopt: false, b, photoUrl: old.entry?.source?.photo ?? null });
     const i = run.results.findIndex((r) => r.id === old.id && r.tool === old.tool);
@@ -684,15 +721,68 @@ async function cmdResume() {
   log(`resumed ${id}: keys ${Object.keys(r.out ?? {}).join(', ')} → ${path.relative(ROOT, out)}`);
 }
 
+// ---------------------------------------------------------------- views ($0: a listing's front and side shots onto the row)
+/**
+ * A listing's extra shots of a product, cleaned (dimension arrows and callouts painted out, cropped
+ * to the product, squared, 1024 px WebP) into `public/products/photos/views/<id>-<view>.webp`, and
+ * named on the row as `photo_views` (with the source URLs in `photo_views_source`). From then on a
+ * Tripo run of that product uses the multiview endpoint, the same price. A before/after sheet lands
+ * in the run folder so the eye can check that only arrows and text went.
+ */
+async function cmdViews() {
+  const only = list('only');
+  if (!only || only.length !== 1) throw new Error('--only <one product id>');
+  const id = only[0];
+  const cat = loadCatalogue();
+  const row = findProduct(cat.all, id);
+  if (!row) throw new Error(`unknown product ${id}`);
+  const given = VIEW_ORDER.filter((v) => typeof args[v] === 'string');
+  if (!given.length) throw new Error(`give at least one of --${VIEW_ORDER.join(' --')} <url|file>`);
+  ensureDir(RUN_DIR);
+  const prev = viewsOf(row);
+  const prevSource = row.raw?.photo_views_source ?? {};
+  const views = { ...prev };
+  const source = { ...prevSource, page: typeof args.page === 'string' ? args.page : prevSource.page, at: new Date().toISOString(), cleaned: !flag('no-clean') };
+  const tiles = [];
+  for (const view of given) {
+    const where = args[view];
+    const bytes = /^https?:/i.test(where) ? await fal.download(where) : fs.readFileSync(path.resolve(where));
+    const { file, url } = viewFile(id, view);
+    ensureDir(path.dirname(file));
+    let note;
+    if (flag('no-clean')) {
+      await sharp(bytes).rotate().flatten({ background: '#ffffff' }).resize(1024, 1024, { fit: 'contain', background: '#ffffff' }).webp({ quality: 90 }).toFile(file);
+      note = 'as given (no cleaning)';
+    } else {
+      const r = await cleanProductShot(bytes);
+      fs.writeFileSync(file, r.buffer);
+      note = `${r.source.width}×${r.source.height} → product ${r.product.width}×${r.product.height} px; ${r.patches - 1} other patch(es) painted out (${r.paintedPixels.toLocaleString()} px, ${((1 - r.keptFraction) * 100).toFixed(1)} % of the ink)`;
+    }
+    views[view] = url;
+    source[view] = where.startsWith('/') || /^[a-zA-Z]:/.test(where) ? path.basename(where) : where;
+    log(`→ ${id} ${view}: ${note} → ${path.relative(ROOT, file)} (${Math.round(fs.statSync(file).size / 1024)} KB)`);
+    tiles.push({ view, before: await sharp(bytes).rotate().flatten({ background: '#ffffff' }).resize(420, 420, { fit: 'contain', background: '#ffffff' }).png().toBuffer(), after: await sharp(file).resize(420, 420, { fit: 'contain', background: '#ffffff' }).png().toBuffer(), note });
+  }
+  const sheet = path.join(RUN_DIR, `views-${id}.png`);
+  const comps = tiles.flatMap((t, i) => [{ input: t.before, left: 0, top: i * 420 }, { input: t.after, left: 420, top: i * 420 }]);
+  await sharp({ create: { width: 840, height: 420 * tiles.length, channels: 3, background: '#ffffff' } }).composite(comps).png().toFile(sheet);
+  const ok = setRowFields(id, { photo_views: views, photo_views_source: source }, row.source === 'courts' ? COURTS_JSON : PRODUCTS_JSON);
+  if (!ok) throw new Error(`the row ${id} was not found in its file`);
+  const plan = multiviewPlan(views, photoUrlOf(row.photo));
+  log(`\n${id}: views on the row: ${Object.keys(views).join(', ')} · Tripo would use ${plan.use ? plan.why : `one photo (${plan.why})`} · before/after ${path.relative(ROOT, sheet)}`);
+  return { id, views, plan };
+}
+
 // ---------------------------------------------------------------- main
 function help() {
-  log(fs.readFileSync(new URL(import.meta.url)).toString().split('\n').slice(1, 17).join('\n'));
+  log(fs.readFileSync(new URL(import.meta.url)).toString().split('\n').slice(1, 18).join('\n'));
 }
 
 try {
   if (command === 'audit') await cmdAudit();
   else if (command === 'gate') await cmdGate();
   else if (command === 'run') await cmdRun();
+  else if (command === 'views') await cmdViews();
   else if (command === 'reprocess') await cmdReprocess();
   else if (command === 'adopt') await cmdAdopt();
   else if (command === 'people') await cmdPeople();

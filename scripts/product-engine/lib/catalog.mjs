@@ -11,9 +11,17 @@ export function readJson(file, fallback) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
+/** The indent and line ends a JSON file already uses, so a one-field edit stays a one-line diff. */
+export function jsonStyle(text) {
+  const m = text.match(/^(\{|\[)\r?\n([ \t]+)/);
+  return { indent: m ? m[2] : '  ', eol: /\r\n/.test(text) ? '\r\n' : '\n', finalNewline: /\r?\n$/.test(text) || !text.length };
+}
+
 export function writeJson(file, data) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
+  const style = fs.existsSync(file) ? jsonStyle(fs.readFileSync(file, 'utf8')) : { indent: '  ', eol: '\n', finalNewline: true };
+  const text = JSON.stringify(data, null, style.indent).replace(/\n/g, style.eol);
+  fs.writeFileSync(file, style.finalNewline ? `${text}${style.eol}` : text);
 }
 
 const rowsOf = (data) => (Array.isArray(data) ? data : Array.isArray(data?.products) ? data.products : Array.isArray(data?.rows) ? data.rows : []);
@@ -114,12 +122,17 @@ export const writeManifest = (m) => writeJson(MANIFEST, m);
 export const readThumbs = () => readJson(THUMBS_MANIFEST, {});
 export const writeThumbs = (t) => writeJson(THUMBS_MANIFEST, t);
 
-/** Set `topdown_image_url` on a products.json row, touching nothing else in the file. */
-export function setTopdownUrl(productId, url) {
-  const data = readJson(PRODUCTS_JSON);
+/** Set fields on a products.json row, touching nothing else in the file. */
+export function setRowFields(productId, fields, file = PRODUCTS_JSON) {
+  const data = readJson(file);
   const row = rowsOf(data).find((r) => r.id === productId);
   if (!row) return false;
-  row.topdown_image_url = url;
-  writeJson(PRODUCTS_JSON, data);
+  Object.assign(row, fields);
+  writeJson(file, data);
   return true;
+}
+
+/** Set `topdown_image_url` on a products.json row, touching nothing else in the file. */
+export function setTopdownUrl(productId, url) {
+  return setRowFields(productId, { topdown_image_url: url });
 }

@@ -12,9 +12,22 @@ export const GATE_LIMITS = {
   planFootprint: 0.98,
   planOpaqueMin: 0.03,
   rawShapeTolerance: 0.15,
+  levelDeg: 2,
 };
 
-export function evaluateGate({ photo, shape, measure, copies, facing }) {
+/**
+ * Is a second roll of the dice worth its price? A new seed moves a body's proportions by a few
+ * points, not twenty: the test run's treadmill went 19.5 % → 22 % on its re-roll. So only a near
+ * miss (within `slack` of the tolerance on every judged ratio) is rolled again; a body further off
+ * is listed for Victor with the one thing that closes such a gap, a side photo.
+ */
+export function rerollWorth(shape, { tolerance = GATE_LIMITS.rawShapeTolerance, slack = 0.05 } = {}) {
+  if (!shape || shape.pass) return false;
+  const near = (e) => Number.isFinite(e) && e <= tolerance + slack;
+  return near(shape.aspectError) && (shape.heightJudged === false || near(shape.heightError));
+}
+
+export function evaluateGate({ photo, shape, measure, copies, facing, level }) {
   const checks = [];
   const add = (name, pass, detail) => checks.push({ name, pass: Boolean(pass), detail });
   const fmt = (n, d = 1) => (Number.isFinite(n) ? n.toFixed(d) : '?');
@@ -31,6 +44,7 @@ export function evaluateGate({ photo, shape, measure, copies, facing }) {
   } else add('envelope within 1 cm', false, measure?.errors?.join('; ') || 'not measured');
 
   add('stands on the floor', Number.isFinite(measure?.floorM) && Math.abs(measure.floorM * 100) <= GATE_LIMITS.floorCm, measure ? `base at ${fmt((measure.floorM ?? NaN) * 100, 2)} cm` : 'not measured');
+  if (level) add(`stands level (base within ${GATE_LIMITS.levelDeg}°)`, Number.isFinite(level.pitchDeg) && Number.isFinite(level.rollDeg) && Math.abs(level.pitchDeg) <= GATE_LIMITS.levelDeg && Math.abs(level.rollDeg) <= GATE_LIMITS.levelDeg, `base plane pitched ${fmt(level.pitchDeg)}°, rolled ${fmt(level.rollDeg)}° (${level.n ?? '?'} vertices)${level.corrected ? `; levelled from ${fmt(level.corrected.pitchDeg)}° / ${fmt(level.corrected.rollDeg)}°` : ''}`);
   const pivot = measure?.pivotOffsetM;
   add('centred pivot', pivot && Math.abs(pivot.x * 100) <= GATE_LIMITS.pivotCm && Math.abs(pivot.z * 100) <= GATE_LIMITS.pivotCm, pivot ? `off by ${fmt(pivot.x * 100, 2)} / ${fmt(pivot.z * 100, 2)} cm` : 'not measured');
 

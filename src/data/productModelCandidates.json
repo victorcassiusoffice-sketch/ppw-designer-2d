@@ -16,7 +16,7 @@
         "request_id": "01a1bb00-f328-7bf2-b39c-40b09ad2e799",
         "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
         "generated_at": "2026-11-08T11:55:48.579Z",
-        "reprocessed_at": "2026-11-08T13:24:52.465Z",
+        "reprocessed_at": "2026-11-08T17:37:57.040Z",
         "raw_bytes": 26909040,
         "raw_triangles": 496198,
         "bytes": 135260,
@@ -34,6 +34,10 @@
           "up": "+y",
           "bakeYaw": false,
           "squaredDeg": 0,
+          "level": {
+            "pitchDeg": 0.06,
+            "rollDeg": 0.15
+          },
           "upWhy": "the product is not flat; y stays up"
         },
         "gate": {
@@ -180,7 +184,7 @@
         "request_id": "01a1bb03-7506-7443-bfbf-74b16775597c",
         "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
         "generated_at": "2026-11-08T12:00:11.766Z",
-        "reprocessed_at": "2026-11-08T13:25:02.937Z",
+        "reprocessed_at": "2026-11-08T17:38:09.417Z",
         "raw_bytes": 2788844,
         "raw_triangles": 34683,
         "bytes": 136364,
@@ -191,13 +195,17 @@
           "modelFront": "-z",
           "why": "art right: head (-0.02, -0.74) → modelFront -z",
           "head": {
-            "x": -0.023,
+            "x": -0.024,
             "z": -0.742
           },
           "swapped": true,
           "up": "+y",
           "bakeYaw": false,
-          "squaredDeg": -33.5,
+          "squaredDeg": -33.35,
+          "level": {
+            "pitchDeg": 0.05,
+            "rollDeg": 0.01
+          },
           "upWhy": "the product is not flat; y stays up"
         },
         "gate": {
@@ -270,7 +278,7 @@
         "request_id": "01a1bb04-6b2c-7720-9cfa-a13bd9405664",
         "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
         "generated_at": "2026-11-08T12:01:13.010Z",
-        "reprocessed_at": "2026-11-08T13:25:04.966Z",
+        "reprocessed_at": "2026-11-08T17:38:11.895Z",
         "raw_bytes": 8060412,
         "raw_triangles": 26243,
         "bytes": 208168,
@@ -288,6 +296,10 @@
           "up": "+y",
           "bakeYaw": false,
           "squaredDeg": 0,
+          "level": {
+            "pitchDeg": -0.03,
+            "rollDeg": 0
+          },
           "upWhy": "the product is not flat; y stays up"
         },
         "gate": {

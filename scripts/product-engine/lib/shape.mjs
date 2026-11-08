@@ -253,18 +253,109 @@ export async function photoFaceSign(body, { maxTriangles = 30000 } = {}) {
   return { sign: vPos >= vNeg ? 1 : -1, why: `texture variance +z ${vPos.toFixed(0)} vs −z ${vNeg.toFixed(0)}`, vPos, vNeg };
 }
 
-/** Turn the whole scene a quarter turn about y (for a slab thin along x) and write it back. */
-export async function bakeYaw(file, outFile, yawRad = Math.PI / 2) {
+/** Quaternion [x, y, z, w] for a turn about one axis. */
+export function axisQuat(axis, rad) {
+  const s = Math.sin(rad / 2);
+  const c = Math.cos(rad / 2);
+  return axis === 'x' ? [s, 0, 0, c] : axis === 'y' ? [0, s, 0, c] : [0, 0, s, c];
+}
+/** a ⊗ b: apply b first, then a. */
+export function mulQuat(a, b) {
+  const [ax, ay, az, aw] = a;
+  const [bx, by, bz, bw] = b;
+  return [aw * bx + ax * bw + ay * bz - az * by, aw * by - ax * bz + ay * bw + az * bx, aw * bz + ax * by - ay * bx + az * bw, aw * bw - ax * bx - ay * by - az * bz];
+}
+/** Rotate a point by a quaternion. */
+export function rotatePoint(q, p) {
+  const [qx, qy, qz, qw] = q;
+  const [px, py, pz] = p;
+  const ix = qw * px + qy * pz - qz * py;
+  const iy = qw * py + qz * px - qx * pz;
+  const iz = qw * pz + qx * py - qy * px;
+  const iw = -qx * px - qy * py - qz * pz;
+  return [ix * qw + iw * -qx + iy * -qz - iz * -qy, iy * qw + iw * -qy + iz * -qx - ix * -qz, iz * qw + iw * -qz + ix * -qy - iy * -qx];
+}
+
+/**
+ * The turn that bakes a yaw (about y) and then a levelling (pitch about x, roll about z) into the
+ * scene: one pivot node above everything, so the file's own nodes are untouched.
+ */
+export function bakeQuat({ yawRad = 0, pitchRad = 0, rollRad = 0 } = {}) {
+  let q = axisQuat('y', yawRad);
+  if (pitchRad) q = mulQuat(axisQuat('x', pitchRad), q);
+  if (rollRad) q = mulQuat(axisQuat('z', rollRad), q);
+  return q;
+}
+
+/** Turn the whole scene (yaw about y, then a levelling pitch and roll) and write it back. */
+export async function bakeTransform(file, outFile, turn) {
   const io = await getIO();
   const doc = await io.read(file);
   const scene = doc.getRoot().getDefaultScene() ?? doc.getRoot().listScenes()[0];
-  const pivot = doc.createNode('engine-yaw').setRotation([0, Math.sin(yawRad / 2), 0, Math.cos(yawRad / 2)]);
+  const pivot = doc.createNode('engine-turn').setRotation(bakeQuat(turn));
   for (const child of scene.listChildren()) {
     scene.removeChild(child);
     pivot.addChild(child);
   }
   scene.addChild(pivot);
   await io.write(outFile, doc);
+}
+
+/** Turn the whole scene a quarter turn about y (for a slab thin along x) and write it back. */
+export async function bakeYaw(file, outFile, yawRad = Math.PI / 2) {
+  return bakeTransform(file, outFile, { yawRad });
+}
+
+/**
+ * Is the body standing level? A plane y = a·x + b·z + c through the lowest `frac` of the vertices
+ * (the feet, the deck, the base): its slope about x is the pitch, about z the roll, in degrees.
+ * A generator that aligns the body to a photo taken from above can hand back a tilted body; the
+ * fit would then put a leaning product on the floor. `n` vertices were used.
+ */
+export function baseTilt(body, { frac = 0.03, sample = 60000 } = {}) {
+  const pts = [];
+  let total = 0;
+  for (const p of body.prims) total += p.positions.length / 3;
+  const stride = Math.max(1, Math.floor(total / sample));
+  let k = 0;
+  for (const p of body.prims) {
+    for (let i = 0; i < p.positions.length; i += 3) {
+      if (k++ % stride) continue;
+      pts.push(apply(p.world, p.positions[i], p.positions[i + 1], p.positions[i + 2]));
+    }
+  }
+  if (pts.length < 12) return { pitchDeg: 0, rollDeg: 0, n: 0 };
+  const ys = pts.map((p) => p[1]).sort((a, b) => a - b);
+  const cut = ys[Math.min(ys.length - 1, Math.floor(ys.length * frac))];
+  const base = pts.filter((p) => p[1] <= cut);
+  let sxx = 0; let szz = 0; let sxz = 0; let sx = 0; let sz = 0; let sy = 0; let sxy = 0; let szy = 0;
+  const n = base.length;
+  for (const [x, y, z] of base) { sxx += x * x; szz += z * z; sxz += x * z; sx += x; sz += z; sy += y; sxy += x * y; szy += z * y; }
+  const sol = solve3([[sxx, sxz, sx], [sxz, szz, sz], [sx, sz, n]], [sxy, szy, sy]);
+  if (!sol) return { pitchDeg: 0, rollDeg: 0, n };
+  const [a, b] = sol;
+  return { pitchDeg: (Math.atan(b) * 180) / Math.PI, rollDeg: (Math.atan(a) * 180) / Math.PI, n };
+}
+
+/** The pitch (about x) and roll (about z) that level a base plane measured by `baseTilt`. */
+export function levelCorrection(tilt) {
+  return { pitchRad: (tilt.pitchDeg * Math.PI) / 180, rollRad: (-tilt.rollDeg * Math.PI) / 180 };
+}
+
+function solve3(A, v) {
+  const m = A.map((r, i) => [...r, v[i]]);
+  for (let i = 0; i < 3; i++) {
+    let piv = i;
+    for (let r = i + 1; r < 3; r++) if (Math.abs(m[r][i]) > Math.abs(m[piv][i])) piv = r;
+    [m[i], m[piv]] = [m[piv], m[i]];
+    if (Math.abs(m[i][i]) < 1e-12) return null;
+    for (let r = 0; r < 3; r++) {
+      if (r === i) continue;
+      const f = m[r][i] / m[i][i];
+      for (let c = i; c < 4; c++) m[r][c] -= f * m[i][c];
+    }
+  }
+  return [m[0][3] / m[0][0], m[1][3] / m[1][1], m[2][3] / m[2][2]];
 }
 
 /**
@@ -304,6 +395,16 @@ export function footprintYaw(body, { sample = 24000, stepDeg = 0.5 } = {}) {
     const r = (deg * Math.PI) / 180;
     const a = area(Math.cos(r), Math.sin(r));
     if (a < best.area * 0.9995) best = { deg, area: a };
+  }
+  // Then a fine pass around the best coarse step: on a 2 m product half a degree of yaw adds
+  // 1.7 cm to the width the fit must undo; a twentieth of a degree is nothing.
+  if (best.deg !== 0) {
+    const fine = stepDeg / 10;
+    for (let deg = best.deg - stepDeg; deg <= best.deg + stepDeg + 1e-9; deg += fine) {
+      const r = (deg * Math.PI) / 180;
+      const a = area(Math.cos(r), Math.sin(r));
+      if (a < best.area) best = { deg: Math.round(deg / fine) * fine, area: a };
+    }
   }
   return { yaw: (best.deg * Math.PI) / 180, degrees: best.deg, areaBefore: before, areaAfter: best.area };
 }

@@ -6,6 +6,22 @@
  */
 export const PRICES_READ_ON = '2026-11-08';
 
+/** Tripo's options, the same for one photo and for several views. */
+const tripoOptions = (seed) => ({
+  texture: true,
+  pbr: true,
+  texture_quality: 'standard',
+  geometry_quality: 'standard',
+  quad: false,
+  // Enough faces for the laptop copy's simplify to keep the silhouette; far less to download than the adaptive default.
+  face_limit: 40000,
+  // Turn the body to match the photo, so its front is the photo's front.
+  orientation: 'align_image',
+  auto_size: false,
+  texture_alignment: 'original_image',
+  ...(seed === undefined ? {} : { model_seed: seed, texture_seed: seed }),
+});
+
 /** Image → 3D body. `input` builds the request; `glbUrl` finds the body in the answer. */
 export const TOOLS = {
   tripo: {
@@ -14,21 +30,17 @@ export const TOOLS = {
     label: 'Tripo H3.1, standard textures + PBR',
     price: 0.3,
     priceNote: '$0.20 no texture · $0.30 standard textures · $0.40 HD; +$0.20 detailed geometry; +$0.05 quad (neither used)',
-    input: (imageUrl, seed) => ({
-      image_url: imageUrl,
-      texture: true,
-      pbr: true,
-      texture_quality: 'standard',
-      geometry_quality: 'standard',
-      quad: false,
-      // Enough faces for the laptop copy's simplify to keep the silhouette; far less to download than the adaptive default.
-      face_limit: 40000,
-      // Turn the body to match the photo, so its front is the photo's front.
-      orientation: 'align_image',
-      auto_size: false,
-      texture_alignment: 'original_image',
-      ...(seed === undefined ? {} : { model_seed: seed, texture_seed: seed }),
-    }),
+    input: (imageUrl, seed) => ({ image_url: imageUrl, ...tripoOptions(seed) }),
+    /**
+     * Several views of the same product (a listing's front and side shots): the same price and
+     * options on fal (both pages carry the same pricing sentence, read 2026-11-08). The list is
+     * positional, [front, left, back, right], the front required, at least two images.
+     */
+    multiview: {
+      endpoint: 'tripo3d/h3.1/multiview-to-3d',
+      label: 'Tripo H3.1 multiview, standard textures + PBR',
+      input: (imageUrls, seed) => ({ image_urls: imageUrls, ...tripoOptions(seed) }),
+    },
     glbUrl: (out) => out?.model_urls?.pbr_model?.url ?? out?.model_mesh?.url ?? out?.model_urls?.glb?.url ?? null,
     reroll: 'seed',
   },
