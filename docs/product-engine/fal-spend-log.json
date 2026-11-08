@@ -1,0 +1,254 @@
+[
+  {
+    "at": "2026-11-08T11:55:28.159Z",
+    "id": "k1-nordictrack-2450",
+    "tool": "tripo",
+    "endpoint": "tripo3d/h3.1/image-to-3d",
+    "price_usd": 0.3,
+    "seconds": 162,
+    "metrics": {
+      "inference_time": 143.8619999885559
+    },
+    "bytes": 2712356,
+    "raw_triangles": 35740,
+    "request_id": "01a1bb00-f349-7bf2-86f9-602b54240fe7",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T11:55:40.642Z",
+    "id": "k1-nordictrack-2450",
+    "tool": "hunyuan",
+    "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+    "price_usd": 0.525,
+    "seconds": 167,
+    "metrics": {
+      "inference_time": 161.40300011634827
+    },
+    "bytes": 26909040,
+    "raw_triangles": 496198,
+    "request_id": "01a1bb00-f328-7bf2-b39c-40b09ad2e799",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": true
+  },
+  {
+    "at": "2026-11-08T11:56:31.177Z",
+    "id": "k1-nordictrack-2450",
+    "tool": "meshy",
+    "endpoint": "meshy/v7.1/image-to-3d",
+    "price_usd": 1.2,
+    "seconds": 223,
+    "metrics": {
+      "inference_time": 215.64100003242493
+    },
+    "bytes": 7748304,
+    "raw_triangles": 26664,
+    "request_id": "01a1bb00-f349-71a2-984b-a76c1659dcbf",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T12:00:05.648Z",
+    "id": "emcar-jinko-475",
+    "tool": "tripo",
+    "endpoint": "tripo3d/h3.1/image-to-3d",
+    "price_usd": 0.3,
+    "seconds": 252,
+    "metrics": {
+      "inference_time": 125.0550000667572
+    },
+    "bytes": 4475760,
+    "raw_triangles": 33498,
+    "request_id": "01a1bb03-c7da-7c80-9a55-79bceea08638",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": true
+  },
+  {
+    "at": "2026-11-08T12:00:07.468Z",
+    "id": "k1-nordictrack-2450",
+    "tool": "tripo",
+    "endpoint": "tripo3d/h3.1/image-to-3d",
+    "price_usd": 0.3,
+    "seconds": 274,
+    "metrics": {
+      "inference_time": 155.0389997959137
+    },
+    "bytes": 2788844,
+    "raw_triangles": 34683,
+    "request_id": "01a1bb03-7506-7443-bfbf-74b16775597c",
+    "ok": true,
+    "attempt": 2,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T12:01:09.875Z",
+    "id": "k1-nordictrack-2450",
+    "tool": "meshy",
+    "endpoint": "meshy/v7.1/image-to-3d",
+    "price_usd": 1.2,
+    "seconds": 271,
+    "metrics": {
+      "inference_time": 266.7869999408722
+    },
+    "bytes": 8060412,
+    "raw_triangles": 26243,
+    "request_id": "01a1bb04-6b2c-7720-9cfa-a13bd9405664",
+    "ok": true,
+    "attempt": 2,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T12:02:31.184Z",
+    "id": "emcar-jinko-475",
+    "tool": "hunyuan",
+    "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+    "price_usd": 0.525,
+    "seconds": 116,
+    "metrics": {
+      "inference_time": 114.20300006866455
+    },
+    "bytes": 43815764,
+    "raw_triangles": 500000,
+    "request_id": "01a1bb07-cabc-7f43-ab52-4a9c2661f90c",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": true
+  },
+  {
+    "at": "2026-11-08T12:03:08.740Z",
+    "id": "emcar-jinko-475",
+    "tool": "meshy",
+    "endpoint": "meshy/v7.1/image-to-3d",
+    "price_usd": 1.2,
+    "seconds": 172,
+    "metrics": {
+      "inference_time": 166.83100008964539
+    },
+    "bytes": 9853084,
+    "raw_triangles": 23628,
+    "request_id": "01a1bb07-c4c4-7b72-adcb-3a2c4798e120",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": true
+  },
+  {
+    "at": "2026-11-08T12:03:29.115Z",
+    "id": "k1-bowflex-xtreme-2se",
+    "tool": "tripo",
+    "endpoint": "tripo3d/h3.1/image-to-3d",
+    "price_usd": 0.3,
+    "seconds": 131,
+    "metrics": {
+      "inference_time": 124.71399998664856
+    },
+    "bytes": 3500356,
+    "raw_triangles": 38743,
+    "request_id": "01a1bb08-bd79-7481-b164-30365ab17ae3",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T12:05:30.150Z",
+    "id": "k1-bowflex-xtreme-2se",
+    "tool": "meshy",
+    "endpoint": "meshy/v7.1/image-to-3d",
+    "price_usd": 1.2,
+    "seconds": 167,
+    "metrics": {
+      "inference_time": 162.28400015830994
+    },
+    "bytes": 13197552,
+    "raw_triangles": 29354,
+    "request_id": "01a1bb09-ff79-79b3-9ee4-e0567b3be2c7",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T12:06:09.166Z",
+    "id": "k1-bowflex-xtreme-2se",
+    "tool": "hunyuan",
+    "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+    "price_usd": 0.525,
+    "seconds": 156,
+    "metrics": {
+      "inference_time": 154.96900010108948
+    },
+    "bytes": 44144708,
+    "raw_triangles": 499696,
+    "request_id": "01a1bb0a-8a81-7430-8954-c9cac7440403",
+    "ok": true,
+    "attempt": 1,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T12:06:12.785Z",
+    "id": "k1-bowflex-xtreme-2se",
+    "tool": "tripo",
+    "endpoint": "tripo3d/h3.1/image-to-3d",
+    "price_usd": 0.3,
+    "seconds": 161,
+    "metrics": {
+      "inference_time": 154.00699996948242
+    },
+    "bytes": 3477860,
+    "raw_triangles": 36946,
+    "request_id": "01a1bb0a-cbc6-7f50-830a-a2a828e66778",
+    "ok": true,
+    "attempt": 2,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T12:09:22.869Z",
+    "id": "k1-bowflex-xtreme-2se",
+    "tool": "hunyuan",
+    "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+    "price_usd": 0.525,
+    "seconds": 173,
+    "metrics": {
+      "inference_time": 165.78600001335144
+    },
+    "bytes": 56346076,
+    "raw_triangles": 459236,
+    "request_id": "01a1bb0d-3f4c-7862-8589-726cdfd9a15f",
+    "ok": true,
+    "attempt": 2,
+    "shape_pass": false
+  },
+  {
+    "at": "2026-11-08T12:10:54.988Z",
+    "id": "nadia",
+    "kind": "picture",
+    "endpoint": "fal-ai/flux/dev",
+    "price_usd": 0.025,
+    "seconds": 8,
+    "metrics": {
+      "inference_time": 2.8940000534057617
+    },
+    "bytes": 768498,
+    "request_id": "01a1bb11-73bd-7070-8b54-aa59e2400941",
+    "ok": true,
+    "prompt": "Full-body studio photograph of a woman in her early thirties, medium-brown skin, black hair tied back in a low bun, a plain teal t-shirt, dark blue straight jeans and white trainers. A made-up person who does not exist. Standing straight in a relaxed A-pose, arms held slightly away from the body, legs slightly apart, facing the camera, neutral calm expression. The whole body is visible from the top of the head to the soles of the shoes, with clear empty space above the head and below the feet. Plain light-grey seamless studio background, soft even lighting, no shadow on the background, no props. Everyday clothes with no logos, no text, no patterns. Photorealistic, 85 mm lens, sharp focus."
+  },
+  {
+    "at": "2026-11-08T12:13:31.990Z",
+    "id": "nadia",
+    "kind": "person",
+    "endpoint": "meshy/v7.1/image-to-3d",
+    "price_usd": 1.52,
+    "seconds": 133,
+    "metrics": {
+      "inference_time": 127.99899983406067
+    },
+    "bytes": 26114736,
+    "request_id": "01a1bb11-997d-7230-9aad-822fc73e422c",
+    "ok": true,
+    "rig_task_id": "01a1bb13-1648-732d-bb49-93e0c90ca85e",
+    "seed": 1011969725
+  }
+]

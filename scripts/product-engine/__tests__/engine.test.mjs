@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normaliseRow, photoUrlOf } from '../lib/catalog.mjs';
-import { catalogueIsFlat, detectUp, pitchedExtents, rawShapeCheck } from '../lib/shape.mjs';
+import { catalogueIsFlat, detectUp, footprintYaw, frontAfterYaw, pitchedExtents, rawShapeCheck } from '../lib/shape.mjs';
 import { ART_HEAD, headAgreesWithArt, pickModelFront, swappedFor } from '../lib/orient.mjs';
 import { evaluateGate } from '../lib/gate.mjs';
 import { PERSON_TOOL, PICTURE_TOOL, TOOLS } from '../lib/prices.mjs';
@@ -132,4 +132,28 @@ test('the bill: three products through three tools is $6.08, one person is $1.55
   assert.equal(TOOLS.hunyuan.input('u').face_count, undefined, 'a custom face count would add $0.15');
   assert.equal(PERSON_TOOL.input('u', 1.68).rigging_height_meters, 1.68);
   assert.equal(PERSON_TOOL.input('u', 1.68).animation_action_id, 0);
+});
+
+test('a diagonal body is squared: the yaw that makes the smallest box around the footprint', () => {
+  // A 2.05 × 0.95 box of points, turned 31° about y as Tripo's align_image hands back a three-quarter photo.
+  const turn = (31 * Math.PI) / 180;
+  const pts = [];
+  for (let i = 0; i <= 20; i++) for (let j = 0; j <= 10; j++) {
+    const x = -1.025 + (i / 20) * 2.05;
+    const z = -0.475 + (j / 10) * 0.95;
+    pts.push(Math.cos(turn) * x + Math.sin(turn) * z, 0.5, -Math.sin(turn) * x + Math.cos(turn) * z);
+  }
+  const body = { prims: [{ positions: Float32Array.from(pts), world: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] }] };
+  const y = footprintYaw(body);
+  assert.ok(Math.abs(Math.abs(y.degrees) - 31) <= 0.5, `found ${y.degrees}°`);
+  assert.ok(y.areaAfter < y.areaBefore * 0.7, 'the squared box is far smaller');
+  // An already-square body is left alone.
+  const square = { prims: [{ positions: Float32Array.from([-1, 0, -0.5, 1, 0, -0.5, 1, 0, 0.5, -1, 0, 0.5]), world: body.prims[0].world }] };
+  assert.equal(footprintYaw(square).degrees, 0);
+  // The photo side follows the turn and snaps to an axis.
+  assert.equal(frontAfterYaw(0), '+z');
+  assert.equal(frontAfterYaw((31 * Math.PI) / 180), '+z');
+  assert.equal(frontAfterYaw(Math.PI / 2), '+x');
+  assert.equal(frontAfterYaw(-Math.PI / 2), '-x');
+  assert.equal(frontAfterYaw(Math.PI), '-z');
 });

@@ -1,0 +1,174 @@
+{
+  "run": "test-2026-11-08",
+  "at": "2026-11-08T13:38:30.889Z",
+  "spent_usd": 1.545,
+  "spent_this_time_usd": 0,
+  "cap_usd": 10,
+  "people": [
+    {
+      "id": "nadia",
+      "label": "Nadia",
+      "heightM": 1.68,
+      "reused": true,
+      "paid_at": "2026-11-08T12:13:32.491Z",
+      "picture": {
+        "url": "https://v3b.fal.media/files/b/0ab1a3e0/x-b_YGBlTLyii9X3V_7Gr.png",
+        "bytes": 768498,
+        "width": 768,
+        "height": 1024,
+        "request_id": "01a1bb11-73bd-7070-8b54-aa59e2400941",
+        "seconds": 8,
+        "prompt": "Full-body studio photograph of a woman in her early thirties, medium-brown skin, black hair tied back in a low bun, a plain teal t-shirt, dark blue straight jeans and white trainers. A made-up person who does not exist. Standing straight in a relaxed A-pose, arms held slightly away from the body, legs slightly apart, facing the camera, neutral calm expression. The whole body is visible from the top of the head to the soles of the shoes, with clear empty space above the head and below the feet. Plain light-grey seamless studio background, soft even lighting, no shadow on the background, no props. Everyday clothes with no logos, no text, no patterns. Photorealistic, 85 mm lens, sharp focus.",
+        "seed": 845699500,
+        "file": "models-raw\\people\\nadia-picture.png",
+        "reused": true
+      },
+      "body": {
+        "request_id": "01a1bb11-997d-7230-9aad-822fc73e422c",
+        "seconds": 133,
+        "rawBytes": 26114736,
+        "rigTaskId": "01a1bb13-1648-732d-bb49-93e0c90ca85e",
+        "files": {
+          "rigged": "models-raw\\people\\nadia-rigged.glb",
+          "walk": "models-raw\\people\\nadia-walk.glb",
+          "run": "models-raw\\people\\nadia-run.glb",
+          "idle": "models-raw\\people\\nadia-idle.glb",
+          "model": "models-raw\\people\\nadia-model.glb"
+        },
+        "reused": true
+      },
+      "clips": [
+        {
+          "name": "idle",
+          "channels": 66,
+          "duration": 3.9999999664723873
+        },
+        {
+          "name": "walk",
+          "channels": 66,
+          "duration": 1.0333332680165768
+        },
+        {
+          "name": "run",
+          "channels": 66,
+          "duration": 0.6333333514630795
+        }
+      ],
+      "served": {
+        "bytes": 439944,
+        "triangles": 20671,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 148816
+          }
+        ],
+        "animations": [
+          "idle",
+          "walk",
+          "run"
+        ],
+        "skins": 1,
+        "extents": [
+          0.00730635404586792,
+          0.016799999475479128,
+          0.0033542573451995853
+        ],
+        "sha256": "2c167910382a198c0985a8fa8758a20fce78cc4a7068f0525156c49356e09a30"
+      },
+      "measure": {
+        "bindHeightM": 1.680000119238107,
+        "footprint": {
+          "x": 0.7393333558732775,
+          "z": 0.3394188995499841
+        },
+        "stats": {
+          "triangles": 20671,
+          "materials": 1,
+          "texturesTotal": 1,
+          "texturesLoaded": 1,
+          "baseColorMaps": 1
+        },
+        "clips": [
+          {
+            "name": "idle",
+            "duration": 4.0333333015441895,
+            "tracks": 66
+          },
+          {
+            "name": "walk",
+            "duration": 1.066666603088379,
+            "tracks": 66
+          },
+          {
+            "name": "run",
+            "duration": 0.6666666865348816,
+            "tracks": 66
+          }
+        ],
+        "errors": []
+      },
+      "evidence": {
+        "picture": "docs/product-engine/runs/test-2026-11-08/people/nadia-picture.webp",
+        "full": "docs/product-engine/runs/test-2026-11-08/people/nadia-full.webp",
+        "walk": "docs/product-engine/runs/test-2026-11-08/people/nadia-walk.webp",
+        "run": "docs/product-engine/runs/test-2026-11-08/people/nadia-run.webp",
+        "idle": "docs/product-engine/runs/test-2026-11-08/people/nadia-idle.webp",
+        "thumbnail": "docs/product-engine/runs/test-2026-11-08/people/nadia-thumb.webp"
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "under the 1.5 MB character cap",
+            "pass": true,
+            "detail": "430 KB"
+          },
+          {
+            "name": "three clips idle / walk / run",
+            "pass": true,
+            "detail": "idle 4.03 s, walk 1.07 s, run 0.67 s"
+          },
+          {
+            "name": "rigged (a skin)",
+            "pass": true,
+            "detail": "1 skin(s)"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "1/1"
+          },
+          {
+            "name": "no load or clip errors",
+            "pass": true,
+            "detail": "none"
+          },
+          {
+            "name": "height sane",
+            "pass": true,
+            "detail": "bind pose 1.68 m, scaled to 1.70 m in Walk"
+          }
+        ],
+        "failed": []
+      },
+      "entry": {
+        "id": "nadia",
+        "label": "Nadia",
+        "url": "/models/world-characters/nadia.glb",
+        "thumbnailUrl": "/models/world-characters/nadia.png",
+        "clips": {
+          "idle": "idle",
+          "walk": "walk",
+          "run": "run"
+        },
+        "heightM": 1.680000119238107,
+        "bytes": 439944,
+        "licence": "Generated 2026-11: FLUX.1 [dev] picture + Meshy 7.1 body, rig and clips through fal.ai (model pages: Commercial use). A made-up person; no photo of anyone was used.",
+        "source": "docs/product-engine/runs/test-2026-11-08/people.json",
+        "realHeightM": 1.68
+      }
+    }
+  ]
+}

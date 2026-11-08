@@ -1,0 +1,3244 @@
+{
+  "run": "test-2026-11-08",
+  "at": "2026-11-08T12:09:37.704Z",
+  "main": "d2a8633fe547289c1fc2a8ae8e751b8160a9266d",
+  "mode": "candidates",
+  "prices_read_on": "2026-11-08",
+  "cap_usd": 8.45,
+  "bill_usd": 6.075,
+  "spent_usd": 8.4,
+  "tools": [
+    "tripo",
+    "meshy",
+    "hunyuan"
+  ],
+  "skipped": [],
+  "results": [
+    {
+      "id": "k1-nordictrack-2450",
+      "tool": "hunyuan",
+      "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+      "price": 0.525,
+      "generated_at": "2026-11-08T11:55:48.579Z",
+      "reprocessed_at": "2026-11-08T13:24:52.465Z",
+      "reprocessed_attempt": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb00-f328-7bf2-b39c-40b09ad2e799",
+          "seconds": 167,
+          "inference_s": 161.40300011634827,
+          "rawBytes": 26909040,
+          "rawTriangles": 496198,
+          "rawExtents": [
+            0.8739399909973145,
+            0.7326571308715867,
+            0.4653770505808418
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": true,
+            "aspectError": 0.1297452663632701,
+            "heightError": 0.04157149250153413,
+            "heightJudged": true,
+            "body": {
+              "long": 0.8739399909973145,
+              "short": 0.4653770505808418,
+              "height": 0.7326571308715867
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": 0
+        }
+      ],
+      "servedUrl": "/models/candidates/hunyuan/k1-nordictrack-2450.glb",
+      "phoneUrl": "/models/candidates/hunyuan/k1-nordictrack-2450-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\hunyuan\\k1-nordictrack-2450.glb",
+          "bytes": 135260,
+          "triangles": 19998,
+          "rawBytes": 26909040,
+          "passes": [
+            {
+              "ratio": 0.040306490554173936,
+              "error": 0.001,
+              "triangles": 26320
+            },
+            {
+              "ratio": 0.7598784194528876,
+              "error": 0.003,
+              "triangles": 19998,
+              "permissive": true
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\hunyuan\\k1-nordictrack-2450-phone.glb",
+          "bytes": 44892,
+          "triangles": 4964,
+          "passes": [
+            {
+              "ratio": 0.010076622638543484,
+              "error": 0.02,
+              "triangles": 12826
+            },
+            {
+              "ratio": 0.389833151411196,
+              "error": 0.06,
+              "triangles": 4964,
+              "permissive": true
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "art right: head (0.72, -0.01) → modelFront +z",
+        "swapped": false
+      },
+      "up": "+y",
+      "bake": {
+        "up": "+y",
+        "bakeYaw": false,
+        "why": "the product is not flat; y stays up"
+      },
+      "squared": null,
+      "shape": {
+        "pass": true,
+        "aspectError": 0.1297452663632701,
+        "heightError": 0.04157149250153413,
+        "heightJudged": true,
+        "body": {
+          "long": 0.8739399909973145,
+          "short": 0.4653770505808418,
+          "height": 0.7326571308715867
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 1.00) with modelFront +z",
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-nordictrack-2450",
+        "servedUrl": "/models/candidates/hunyuan/k1-nordictrack-2450.glb",
+        "phoneUrl": "/models/candidates/hunyuan/k1-nordictrack-2450-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 95,
+          "heightCm": 165,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": -1.0842021724855044e-19,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 19998,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4964,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 475,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.8171196546052631
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 13.0 %, height off by 4.2 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 95.0 × 165.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at -0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "19,998 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "132 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,964 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "44 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,964 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "81.7 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront +z"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/hunyuan-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/hunyuan-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/hunyuan-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/hunyuan-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/hunyuan/k1-nordictrack-2450.glb",
+        "phoneUrl": "/models/candidates/hunyuan/k1-nordictrack-2450-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "hunyuan",
+          "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+          "price_usd": 0.525,
+          "seconds": 167,
+          "inference_s": 161.40300011634827,
+          "request_id": "01a1bb00-f328-7bf2-b39c-40b09ad2e799",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
+          "generated_at": "2026-11-08T11:55:48.579Z",
+          "reprocessed_at": "2026-11-08T13:24:52.465Z",
+          "raw_bytes": 26909040,
+          "raw_triangles": 496198,
+          "bytes": 135260,
+          "triangles": 19998,
+          "phone_bytes": 44892,
+          "phone_triangles": 4964,
+          "orient": {
+            "modelFront": "+z",
+            "why": "art right: head (0.72, -0.01) → modelFront +z",
+            "head": {
+              "x": 0.722,
+              "z": -0.01
+            },
+            "swapped": false,
+            "up": "+y",
+            "bakeYaw": false,
+            "squaredDeg": 0,
+            "upWhy": "the product is not flat; y stays up"
+          },
+          "gate": {
+            "pass": true,
+            "failed": []
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\hunyuan\\pictures\\k1-nordictrack-2450-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\hunyuan\\pictures\\k1-nordictrack-2450-catalogue.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "tool": "tripo",
+      "endpoint": "tripo3d/h3.1/image-to-3d",
+      "price": 0.3,
+      "generated_at": "2026-11-08T12:00:09.426Z",
+      "reprocessed_at": "2026-11-08T13:25:01.135Z",
+      "reprocessed_attempt": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb03-c7da-7c80-9a55-79bceea08638",
+          "seconds": 252,
+          "inference_s": 125.0550000667572,
+          "rawBytes": 4475760,
+          "rawTriangles": 33498,
+          "rawExtents": [
+            0.5919716802675034,
+            1,
+            0.0665081360731699
+          ],
+          "up": "+z",
+          "photoFace": {
+            "sign": 1,
+            "why": "texture variance +z 10074 vs −z 9964",
+            "vPos": 10073.990731787893,
+            "vNeg": 9964.26154358457
+          },
+          "bakeYaw": true,
+          "shape": {
+            "pass": true,
+            "aspectError": 0.006638034354434936,
+            "heightError": 3.2188327649080777,
+            "heightJudged": false,
+            "body": {
+              "long": 1,
+              "short": 0.5919716802675034,
+              "height": 0.0665081360731699
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": 0
+        }
+      ],
+      "servedUrl": "/models/candidates/tripo/emcar-jinko-475.glb",
+      "phoneUrl": "/models/candidates/tripo/emcar-jinko-475-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\tripo\\emcar-jinko-475.glb",
+          "bytes": 242712,
+          "triangles": 20000,
+          "rawBytes": 4475600,
+          "passes": [
+            {
+              "ratio": 0.5970505701832945,
+              "error": 0.001,
+              "triangles": 20000
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\tripo\\emcar-jinko-475-phone.glb",
+          "bytes": 97164,
+          "triangles": 4988,
+          "passes": [
+            {
+              "ratio": 0.14926264254582364,
+              "error": 0.02,
+              "triangles": 4988
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "modelUp": "+z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "photo side (tool default)"
+      },
+      "up": "+z",
+      "bake": {
+        "up": "+z",
+        "bakeYaw": true,
+        "why": "flat product built as an upright slab, thin along x; a quarter turn makes it thin along z, then photo face +z turns up"
+      },
+      "squared": null,
+      "shape": {
+        "pass": true,
+        "aspectError": 0.006638034354434936,
+        "heightError": 3.2188327649080777,
+        "heightJudged": false,
+        "body": {
+          "long": 1,
+          "short": 0.5919716802675034,
+          "height": 0.0665081360731699
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "flat",
+        "detail": "flat product lies down (modelUp +z); the plan picture shows the top face"
+      },
+      "measure": {
+        "id": "emcar-jinko-475",
+        "servedUrl": "/models/candidates/tripo/emcar-jinko-475.glb",
+        "phoneUrl": "/models/candidates/tripo/emcar-jinko-475-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 190.3,
+          "widthCm": 113.39999999999999,
+          "heightCm": 3.0000000000000004,
+          "errCm": {
+            "length": 0,
+            "width": 1.4210854715202004e-14,
+            "height": 4.440892098500626e-16
+          }
+        },
+        "floorM": -4.683753385137379e-17,
+        "pivotOffsetM": {
+          "x": -1.1102230246251565e-16,
+          "z": 1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4988,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 610,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 1
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 0.7 % (flat product: thickness not judged, the fit squashes it)"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 190.3 × 113.4 × 3.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at -0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by -0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "237 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,988 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "95 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,988 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "100.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "flat product lies down (modelUp +z); the plan picture shows the top face"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/tripo-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/tripo-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/tripo-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/tripo-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/tripo/emcar-jinko-475.glb",
+        "phoneUrl": "/models/candidates/tripo/emcar-jinko-475-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "modelUp": "+z",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "tripo",
+          "endpoint": "tripo3d/h3.1/image-to-3d",
+          "price_usd": 0.3,
+          "seconds": 252,
+          "inference_s": 125.0550000667572,
+          "request_id": "01a1bb03-c7da-7c80-9a55-79bceea08638",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-jinko-475.webp",
+          "generated_at": "2026-11-08T12:00:09.426Z",
+          "reprocessed_at": "2026-11-08T13:25:01.135Z",
+          "raw_bytes": 4475760,
+          "raw_triangles": 33498,
+          "bytes": 242712,
+          "triangles": 20000,
+          "phone_bytes": 97164,
+          "phone_triangles": 4988,
+          "orient": {
+            "modelFront": "+z",
+            "why": "photo side (tool default)",
+            "up": "+z",
+            "bakeYaw": true,
+            "squaredDeg": 0,
+            "upWhy": "flat product built as an upright slab, thin along x; a quarter turn makes it thin along z, then photo face +z turns up"
+          },
+          "gate": {
+            "pass": true,
+            "failed": []
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\tripo\\pictures\\emcar-jinko-475-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\tripo\\pictures\\emcar-jinko-475-catalogue.png"
+      }
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "tool": "tripo",
+      "endpoint": "tripo3d/h3.1/image-to-3d",
+      "price": 0.6,
+      "generated_at": "2026-11-08T12:00:11.766Z",
+      "reprocessed_at": "2026-11-08T13:25:02.937Z",
+      "reprocessed_attempt": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb00-f349-7bf2-86f9-602b54240fe7",
+          "seconds": 162,
+          "inference_s": 143.8619999885559,
+          "rawBytes": 2712356,
+          "rawTriangles": 35740,
+          "rawExtents": [
+            0.9172331242389609,
+            0.8708032965660095,
+            1.0881744960697866
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.4502204808597996,
+            "heightError": 0.00575952667137986,
+            "heightJudged": true,
+            "body": {
+              "long": 1.0881744960697866,
+              "short": 0.9172331242389609,
+              "height": 0.8708032965660095
+            },
+            "tolerance": 0.15
+          }
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "request_id": "01a1bb03-7506-7443-bfbf-74b16775597c",
+          "seconds": 274,
+          "inference_s": 155.0389997959137,
+          "rawBytes": 2788844,
+          "rawTriangles": 34683,
+          "rawExtents": [
+            0.5940815998638238,
+            0.8818637728691101,
+            1.0005507456617848
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.21951823141469423,
+            "heightError": 0.0950458381834532,
+            "heightJudged": true,
+            "body": {
+              "long": 1.0005507456617848,
+              "short": 0.5940815998638238,
+              "height": 0.8818637728691101
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": -33.5
+        }
+      ],
+      "servedUrl": "/models/candidates/tripo/k1-nordictrack-2450.glb",
+      "phoneUrl": "/models/candidates/tripo/k1-nordictrack-2450-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\tripo\\k1-nordictrack-2450.glb",
+          "bytes": 136364,
+          "triangles": 20000,
+          "rawBytes": 2788668,
+          "passes": [
+            {
+              "ratio": 0.5766513854049534,
+              "error": 0.001,
+              "triangles": 20000
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\tripo\\k1-nordictrack-2450-phone.glb",
+          "bytes": 49076,
+          "triangles": 4997,
+          "passes": [
+            {
+              "ratio": 0.14416284635123836,
+              "error": 0.02,
+              "triangles": 4997
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "-z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "-z",
+        "why": "art right: head (-0.02, -0.74) → modelFront -z",
+        "swapped": true
+      },
+      "up": "+y",
+      "bake": {
+        "up": "+y",
+        "bakeYaw": false,
+        "why": "the product is not flat; y stays up"
+      },
+      "squared": {
+        "yaw": -0.5846852994181003,
+        "degrees": -33.5,
+        "areaBefore": 1.0199794392950647,
+        "areaAfter": 0.5944087883635305
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.21951823141469423,
+        "heightError": 0.0950458381834532,
+        "heightJudged": true,
+        "body": {
+          "long": 1.0005507456617848,
+          "short": 0.5940815998638238,
+          "height": 0.8818637728691101
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped",
+        "swapped": true
+      },
+      "measure": {
+        "id": "k1-nordictrack-2450",
+        "servedUrl": "/models/candidates/tripo/k1-nordictrack-2450.glb",
+        "phoneUrl": "/models/candidates/tripo/k1-nordictrack-2450-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 95,
+          "heightCm": 165,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4997,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 475,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.8317639802631579
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 22.0 %, height off by 9.5 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 95.0 × 165.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "133 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,997 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "48 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,997 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "83.2 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/tripo-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/tripo-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/tripo-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/tripo-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/tripo/k1-nordictrack-2450.glb",
+        "phoneUrl": "/models/candidates/tripo/k1-nordictrack-2450-phone.glb",
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "tripo",
+          "endpoint": "tripo3d/h3.1/image-to-3d",
+          "price_usd": 0.6,
+          "seconds": 274,
+          "inference_s": 155.0389997959137,
+          "request_id": "01a1bb03-7506-7443-bfbf-74b16775597c",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
+          "generated_at": "2026-11-08T12:00:11.766Z",
+          "reprocessed_at": "2026-11-08T13:25:02.937Z",
+          "raw_bytes": 2788844,
+          "raw_triangles": 34683,
+          "bytes": 136364,
+          "triangles": 20000,
+          "phone_bytes": 49076,
+          "phone_triangles": 4997,
+          "orient": {
+            "modelFront": "-z",
+            "why": "art right: head (-0.02, -0.74) → modelFront -z",
+            "head": {
+              "x": -0.023,
+              "z": -0.742
+            },
+            "swapped": true,
+            "up": "+y",
+            "bakeYaw": false,
+            "squaredDeg": -33.5,
+            "upWhy": "the product is not flat; y stays up"
+          },
+          "gate": {
+            "pass": false,
+            "failed": [
+              "raw shape within 15 %"
+            ]
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\tripo\\pictures\\k1-nordictrack-2450-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\tripo\\pictures\\k1-nordictrack-2450-catalogue.png"
+      }
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "tool": "meshy",
+      "endpoint": "meshy/v7.1/image-to-3d",
+      "price": 2.4,
+      "generated_at": "2026-11-08T12:01:13.010Z",
+      "reprocessed_at": "2026-11-08T13:25:04.966Z",
+      "reprocessed_attempt": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb00-f349-71a2-984b-a76c1659dcbf",
+          "seconds": 223,
+          "inference_s": 215.64100003242493,
+          "rawBytes": 7748304,
+          "rawTriangles": 26664,
+          "rawExtents": [
+            1.0652030110359192,
+            1.6816450357437134,
+            1.903065025806427
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.17207501898335803,
+            "heightError": 0.09786924315684882,
+            "heightJudged": true,
+            "body": {
+              "long": 1.903065025806427,
+              "short": 1.0652030110359192,
+              "height": 1.6816450357437134
+            },
+            "tolerance": 0.15
+          }
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "request_id": "01a1bb04-6b2c-7720-9cfa-a13bd9405664",
+          "seconds": 271,
+          "inference_s": 266.7869999408722,
+          "rawBytes": 8060412,
+          "rawTriangles": 26243,
+          "rawExtents": [
+            1.0793650150299072,
+            1.6822729706764221,
+            1.9030000567436218
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.18296585233320972,
+            "heightError": 0.09831668881816431,
+            "heightJudged": true,
+            "body": {
+              "long": 1.9030000567436218,
+              "short": 1.0793650150299072,
+              "height": 1.6822729706764221
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": 0
+        }
+      ],
+      "servedUrl": "/models/candidates/meshy/k1-nordictrack-2450.glb",
+      "phoneUrl": "/models/candidates/meshy/k1-nordictrack-2450-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\meshy\\k1-nordictrack-2450.glb",
+          "bytes": 208168,
+          "triangles": 19999,
+          "rawBytes": 8060412,
+          "passes": [
+            {
+              "ratio": 0.7621079907022825,
+              "error": 0.001,
+              "triangles": 19999
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\meshy\\k1-nordictrack-2450-phone.glb",
+          "bytes": 75148,
+          "triangles": 4986,
+          "passes": [
+            {
+              "ratio": 0.19052699767557063,
+              "error": 0.02,
+              "triangles": 11773
+            },
+            {
+              "ratio": 0.4247005860868088,
+              "error": 0.06,
+              "triangles": 4986,
+              "permissive": true
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "-z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "-z",
+        "why": "art right: head (0.03, -0.73) → modelFront -z",
+        "swapped": true
+      },
+      "up": "+y",
+      "bake": {
+        "up": "+y",
+        "bakeYaw": false,
+        "why": "the product is not flat; y stays up"
+      },
+      "squared": null,
+      "shape": {
+        "pass": false,
+        "aspectError": 0.18296585233320972,
+        "heightError": 0.09831668881816431,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9030000567436218,
+          "short": 1.0793650150299072,
+          "height": 1.6822729706764221
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped",
+        "swapped": true
+      },
+      "measure": {
+        "id": "k1-nordictrack-2450",
+        "servedUrl": "/models/candidates/meshy/k1-nordictrack-2450.glb",
+        "phoneUrl": "/models/candidates/meshy/k1-nordictrack-2450-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 95,
+          "heightCm": 165,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 19999,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4986,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 475,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.8846073190789474
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 18.3 %, height off by 9.8 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 95.0 × 165.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "19,999 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "203 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,986 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "73 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,986 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "88.5 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/meshy-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/meshy-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/meshy-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/meshy-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/meshy/k1-nordictrack-2450.glb",
+        "phoneUrl": "/models/candidates/meshy/k1-nordictrack-2450-phone.glb",
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "meshy",
+          "endpoint": "meshy/v7.1/image-to-3d",
+          "price_usd": 2.4,
+          "seconds": 271,
+          "inference_s": 266.7869999408722,
+          "request_id": "01a1bb04-6b2c-7720-9cfa-a13bd9405664",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
+          "generated_at": "2026-11-08T12:01:13.010Z",
+          "reprocessed_at": "2026-11-08T13:25:04.966Z",
+          "raw_bytes": 8060412,
+          "raw_triangles": 26243,
+          "bytes": 208168,
+          "triangles": 19999,
+          "phone_bytes": 75148,
+          "phone_triangles": 4986,
+          "orient": {
+            "modelFront": "-z",
+            "why": "art right: head (0.03, -0.73) → modelFront -z",
+            "head": {
+              "x": 0.027,
+              "z": -0.732
+            },
+            "swapped": true,
+            "up": "+y",
+            "bakeYaw": false,
+            "squaredDeg": 0,
+            "upWhy": "the product is not flat; y stays up"
+          },
+          "gate": {
+            "pass": false,
+            "failed": [
+              "raw shape within 15 %"
+            ]
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\meshy\\pictures\\k1-nordictrack-2450-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\meshy\\pictures\\k1-nordictrack-2450-catalogue.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "tool": "hunyuan",
+      "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+      "price": 0.525,
+      "generated_at": "2026-11-08T12:02:36.338Z",
+      "reprocessed_at": "2026-11-08T13:25:08.209Z",
+      "reprocessed_attempt": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb07-cabc-7f43-ab52-4a9c2661f90c",
+          "seconds": 116,
+          "inference_s": 114.20300006866455,
+          "rawBytes": 43815764,
+          "rawTriangles": 500000,
+          "rawExtents": [
+            0.5927020013332367,
+            1.038185141835941,
+            0.10813101219457999
+          ],
+          "up": "-z",
+          "photoFace": {
+            "sign": -1,
+            "why": "texture variance +z 912 vs −z 991",
+            "vPos": 912.0007192949688,
+            "vNeg": 991.2352654608976
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": true,
+            "aspectError": 0.04378891820449373,
+            "heightError": 5.606827880506727,
+            "heightJudged": false,
+            "body": {
+              "long": 1.038185141835941,
+              "short": 0.5927020013332367,
+              "height": 0.10813101219457999
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": 0
+        }
+      ],
+      "servedUrl": "/models/candidates/hunyuan/emcar-jinko-475.glb",
+      "phoneUrl": "/models/candidates/hunyuan/emcar-jinko-475-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\hunyuan\\emcar-jinko-475.glb",
+          "bytes": 175104,
+          "triangles": 20000,
+          "rawBytes": 43815764,
+          "passes": [
+            {
+              "ratio": 0.04,
+              "error": 0.001,
+              "triangles": 20000
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\hunyuan\\emcar-jinko-475-phone.glb",
+          "bytes": 60772,
+          "triangles": 5000,
+          "passes": [
+            {
+              "ratio": 0.01,
+              "error": 0.02,
+              "triangles": 5000
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "modelUp": "-z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "photo side (tool default)"
+      },
+      "up": "-z",
+      "bake": {
+        "up": "-z",
+        "bakeYaw": false,
+        "why": "flat product built as an upright slab, thin along z; photo face -z turns up"
+      },
+      "squared": null,
+      "shape": {
+        "pass": true,
+        "aspectError": 0.04378891820449373,
+        "heightError": 5.606827880506727,
+        "heightJudged": false,
+        "body": {
+          "long": 1.038185141835941,
+          "short": 0.5927020013332367,
+          "height": 0.10813101219457999
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "flat",
+        "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+      },
+      "measure": {
+        "id": "emcar-jinko-475",
+        "servedUrl": "/models/candidates/hunyuan/emcar-jinko-475.glb",
+        "phoneUrl": "/models/candidates/hunyuan/emcar-jinko-475-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 190.29999999999998,
+          "widthCm": 113.40000000000006,
+          "heightCm": 2.9999999999999996,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 5.684341886080802e-14,
+            "height": 4.440892098500626e-16
+          }
+        },
+        "floorM": 3.209238430557093e-17,
+        "pivotOffsetM": {
+          "x": 1.1102230246251565e-16,
+          "z": 2.220446049250313e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 610,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 1
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 4.4 % (flat product: thickness not judged, the fit squashes it)"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 190.3 × 113.4 × 3.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "171 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "59 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "100.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/hunyuan-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/hunyuan-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/hunyuan-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/hunyuan-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/hunyuan/emcar-jinko-475.glb",
+        "phoneUrl": "/models/candidates/hunyuan/emcar-jinko-475-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "modelUp": "-z",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "hunyuan",
+          "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+          "price_usd": 0.525,
+          "seconds": 116,
+          "inference_s": 114.20300006866455,
+          "request_id": "01a1bb07-cabc-7f43-ab52-4a9c2661f90c",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-jinko-475.webp",
+          "generated_at": "2026-11-08T12:02:36.338Z",
+          "reprocessed_at": "2026-11-08T13:25:08.209Z",
+          "raw_bytes": 43815764,
+          "raw_triangles": 500000,
+          "bytes": 175104,
+          "triangles": 20000,
+          "phone_bytes": 60772,
+          "phone_triangles": 5000,
+          "orient": {
+            "modelFront": "+z",
+            "why": "photo side (tool default)",
+            "up": "-z",
+            "bakeYaw": false,
+            "squaredDeg": 0,
+            "upWhy": "flat product built as an upright slab, thin along z; photo face -z turns up"
+          },
+          "gate": {
+            "pass": true,
+            "failed": []
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\hunyuan\\pictures\\emcar-jinko-475-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\hunyuan\\pictures\\emcar-jinko-475-catalogue.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "tool": "meshy",
+      "endpoint": "meshy/v7.1/image-to-3d",
+      "price": 1.2,
+      "generated_at": "2026-11-08T12:03:11.911Z",
+      "reprocessed_at": "2026-11-08T13:25:12.942Z",
+      "reprocessed_attempt": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb07-c4c4-7b72-adcb-3a2c4798e120",
+          "seconds": 172,
+          "inference_s": 166.83100008964539,
+          "rawBytes": 9853084,
+          "rawTriangles": 23628,
+          "rawExtents": [
+            1.122515857219696,
+            1.9029669761657715,
+            0.043014099821448326
+          ],
+          "up": "+z",
+          "photoFace": {
+            "sign": 1,
+            "why": "texture variance +z 3329 vs −z 2633",
+            "vPos": 3328.9733018434545,
+            "vNeg": 2633.4663187314673
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": true,
+            "aspectError": 0.010213186534370946,
+            "heightError": 0.43382820941266714,
+            "heightJudged": false,
+            "body": {
+              "long": 1.9029669761657715,
+              "short": 1.122515857219696,
+              "height": 0.043014099821448326
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": 0
+        }
+      ],
+      "servedUrl": "/models/candidates/meshy/emcar-jinko-475.glb",
+      "phoneUrl": "/models/candidates/meshy/emcar-jinko-475-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\meshy\\emcar-jinko-475.glb",
+          "bytes": 373400,
+          "triangles": 19998,
+          "rawBytes": 9853084,
+          "passes": [
+            {
+              "ratio": 0.8464533604198409,
+              "error": 0.001,
+              "triangles": 19998
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\meshy\\emcar-jinko-475-phone.glb",
+          "bytes": 134708,
+          "triangles": 4960,
+          "passes": [
+            {
+              "ratio": 0.21161334010496022,
+              "error": 0.02,
+              "triangles": 14159
+            },
+            {
+              "ratio": 0.3531322833533442,
+              "error": 0.06,
+              "triangles": 4960,
+              "permissive": true
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "modelUp": "+z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "photo side (tool default)"
+      },
+      "up": "+z",
+      "bake": {
+        "up": "+z",
+        "bakeYaw": false,
+        "why": "flat product built as an upright slab, thin along z; photo face +z turns up"
+      },
+      "squared": null,
+      "shape": {
+        "pass": true,
+        "aspectError": 0.010213186534370946,
+        "heightError": 0.43382820941266714,
+        "heightJudged": false,
+        "body": {
+          "long": 1.9029669761657715,
+          "short": 1.122515857219696,
+          "height": 0.043014099821448326
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "flat",
+        "detail": "flat product lies down (modelUp +z); the plan picture shows the top face"
+      },
+      "measure": {
+        "id": "emcar-jinko-475",
+        "servedUrl": "/models/candidates/meshy/emcar-jinko-475.glb",
+        "phoneUrl": "/models/candidates/meshy/emcar-jinko-475-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 190.3,
+          "widthCm": 113.40000000000006,
+          "heightCm": 3.0000000000000115,
+          "errCm": {
+            "length": 0,
+            "width": 5.684341886080802e-14,
+            "height": 1.1546319456101628e-14
+          }
+        },
+        "floorM": -7.806255641895632e-17,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 19998,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4960,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 610,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9996445952868852
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 1.0 % (flat product: thickness not judged, the fit squashes it)"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 190.3 × 113.4 × 3.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at -0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "19,998 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": false,
+            "detail": "365 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,960 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "132 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,960 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "100.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "flat product lies down (modelUp +z); the plan picture shows the top face"
+          }
+        ],
+        "failed": [
+          "laptop copy ≤ 350 KB"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/meshy-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/meshy-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/meshy-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/meshy-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/meshy/emcar-jinko-475.glb",
+        "phoneUrl": "/models/candidates/meshy/emcar-jinko-475-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "modelUp": "+z",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "meshy",
+          "endpoint": "meshy/v7.1/image-to-3d",
+          "price_usd": 1.2,
+          "seconds": 172,
+          "inference_s": 166.83100008964539,
+          "request_id": "01a1bb07-c4c4-7b72-adcb-3a2c4798e120",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-jinko-475.webp",
+          "generated_at": "2026-11-08T12:03:11.911Z",
+          "reprocessed_at": "2026-11-08T13:25:12.942Z",
+          "raw_bytes": 9853084,
+          "raw_triangles": 23628,
+          "bytes": 373400,
+          "triangles": 19998,
+          "phone_bytes": 134708,
+          "phone_triangles": 4960,
+          "orient": {
+            "modelFront": "+z",
+            "why": "photo side (tool default)",
+            "up": "+z",
+            "bakeYaw": false,
+            "squaredDeg": 0,
+            "upWhy": "flat product built as an upright slab, thin along z; photo face +z turns up"
+          },
+          "gate": {
+            "pass": false,
+            "failed": [
+              "laptop copy ≤ 350 KB"
+            ]
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\meshy\\pictures\\emcar-jinko-475-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\meshy\\pictures\\emcar-jinko-475-catalogue.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "tool": "meshy",
+      "endpoint": "meshy/v7.1/image-to-3d",
+      "price": 1.2,
+      "generated_at": "2026-11-08T12:05:33.287Z",
+      "reprocessed_at": "2026-11-08T13:25:15.846Z",
+      "reprocessed_attempt": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb09-ff79-79b3-9ee4-e0567b3be2c7",
+          "seconds": 167,
+          "inference_s": 162.28400015830994,
+          "rawBytes": 13197552,
+          "rawTriangles": 29354,
+          "rawExtents": [
+            1.4498980045318604,
+            1.902691125869751,
+            1.2635631561279297
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.27233750793546,
+            "heightError": 0.2810480119295666,
+            "heightJudged": true,
+            "body": {
+              "long": 1.4498980045318604,
+              "short": 1.2635631561279297,
+              "height": 1.902691125869751
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": 0
+        }
+      ],
+      "servedUrl": "/models/candidates/meshy/k1-bowflex-xtreme-2se.glb",
+      "phoneUrl": "/models/candidates/meshy/k1-bowflex-xtreme-2se-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\meshy\\k1-bowflex-xtreme-2se.glb",
+          "bytes": 452800,
+          "triangles": 19990,
+          "rawBytes": 13197552,
+          "passes": [
+            {
+              "ratio": 0.6813381481229134,
+              "error": 0.001,
+              "triangles": 24762
+            },
+            {
+              "ratio": 0.80768920119538,
+              "error": 0.003,
+              "triangles": 19990,
+              "permissive": true
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\meshy\\k1-bowflex-xtreme-2se-phone.glb",
+          "bytes": 148276,
+          "triangles": 4975,
+          "passes": [
+            {
+              "ratio": 0.17033453703072834,
+              "error": 0.02,
+              "triangles": 20198
+            },
+            {
+              "ratio": 0.24754926230319835,
+              "error": 0.06,
+              "triangles": 4975,
+              "permissive": true
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "art top: weak head signal, default kept",
+        "swapped": false
+      },
+      "up": "+y",
+      "bake": {
+        "up": "+y",
+        "bakeYaw": false,
+        "why": "the product is not flat; y stays up"
+      },
+      "squared": null,
+      "shape": {
+        "pass": false,
+        "aspectError": 0.27233750793546,
+        "heightError": 0.2810480119295666,
+        "heightJudged": true,
+        "body": {
+          "long": 1.4498980045318604,
+          "short": 1.2635631561279297,
+          "height": 1.902691125869751
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art-weak",
+        "detail": "art law: no clear head (|head| 0.13 < 0.15), symmetric body; confirm on the sheet",
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-bowflex-xtreme-2se",
+        "servedUrl": "/models/candidates/meshy/k1-bowflex-xtreme-2se.glb",
+        "phoneUrl": "/models/candidates/meshy/k1-bowflex-xtreme-2se-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 130.00000000000003,
+          "heightCm": 210,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 2.842170943040401e-14,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 19990,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4975,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 649,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.3897462442218798
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 27.2 %, height off by 28.1 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 130.0 × 210.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "19,990 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": false,
+            "detail": "442 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,975 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "145 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,975 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "39.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: no clear head (|head| 0.13 < 0.15), symmetric body; confirm on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %",
+          "laptop copy ≤ 350 KB"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/meshy-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/meshy-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/meshy-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/meshy-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/meshy/k1-bowflex-xtreme-2se.glb",
+        "phoneUrl": "/models/candidates/meshy/k1-bowflex-xtreme-2se-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "meshy",
+          "endpoint": "meshy/v7.1/image-to-3d",
+          "price_usd": 1.2,
+          "seconds": 167,
+          "inference_s": 162.28400015830994,
+          "request_id": "01a1bb09-ff79-79b3-9ee4-e0567b3be2c7",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-bowflex-xtreme-2se.webp",
+          "generated_at": "2026-11-08T12:05:33.287Z",
+          "reprocessed_at": "2026-11-08T13:25:15.846Z",
+          "raw_bytes": 13197552,
+          "raw_triangles": 29354,
+          "bytes": 452800,
+          "triangles": 19990,
+          "phone_bytes": 148276,
+          "phone_triangles": 4975,
+          "orient": {
+            "modelFront": "+z",
+            "why": "art top: weak head signal, default kept",
+            "head": {
+              "x": 0.012,
+              "z": -0.123
+            },
+            "swapped": false,
+            "up": "+y",
+            "bakeYaw": false,
+            "squaredDeg": 0,
+            "upWhy": "the product is not flat; y stays up"
+          },
+          "gate": {
+            "pass": false,
+            "failed": [
+              "raw shape within 15 %",
+              "laptop copy ≤ 350 KB"
+            ]
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\meshy\\pictures\\k1-bowflex-xtreme-2se-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\meshy\\pictures\\k1-bowflex-xtreme-2se-catalogue.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "tool": "tripo",
+      "endpoint": "tripo3d/h3.1/image-to-3d",
+      "price": 0.6,
+      "generated_at": "2026-11-08T12:06:14.942Z",
+      "reprocessed_at": "2026-11-08T13:25:19.274Z",
+      "reprocessed_attempt": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb08-bd79-7481-b164-30365ab17ae3",
+          "seconds": 131,
+          "inference_s": 124.71399998664856,
+          "rawBytes": 3500356,
+          "rawTriangles": 38743,
+          "rawExtents": [
+            0.7789032379350607,
+            1,
+            0.8852620978289854
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.27926128274577433,
+            "heightError": 0.10271351115616865,
+            "heightJudged": true,
+            "body": {
+              "long": 0.8852620978289854,
+              "short": 0.7789032379350607,
+              "height": 1
+            },
+            "tolerance": 0.15
+          }
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "request_id": "01a1bb0a-cbc6-7f50-830a-a2a828e66778",
+          "seconds": 161,
+          "inference_s": 154.00699996948242,
+          "rawBytes": 3477860,
+          "rawTriangles": 36946,
+          "rawExtents": [
+            0.7951906883821516,
+            1,
+            0.8519531859017725
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.3205868682430162,
+            "heightError": 0.14582642842892996,
+            "heightJudged": true,
+            "body": {
+              "long": 0.8519531859017725,
+              "short": 0.7951906883821516,
+              "height": 1
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": 0
+        }
+      ],
+      "servedUrl": "/models/candidates/tripo/k1-bowflex-xtreme-2se.glb",
+      "phoneUrl": "/models/candidates/tripo/k1-bowflex-xtreme-2se-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\tripo\\k1-bowflex-xtreme-2se.glb",
+          "bytes": 185020,
+          "triangles": 20000,
+          "rawBytes": 3477860,
+          "passes": [
+            {
+              "ratio": 0.5413305905916743,
+              "error": 0.001,
+              "triangles": 20000
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\tripo\\k1-bowflex-xtreme-2se-phone.glb",
+          "bytes": 74828,
+          "triangles": 4990,
+          "passes": [
+            {
+              "ratio": 0.13533264764791858,
+              "error": 0.02,
+              "triangles": 4990
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "art top: weak head signal, default kept",
+        "swapped": true
+      },
+      "up": "+y",
+      "bake": {
+        "up": "+y",
+        "bakeYaw": false,
+        "why": "the product is not flat; y stays up"
+      },
+      "squared": null,
+      "shape": {
+        "pass": false,
+        "aspectError": 0.3205868682430162,
+        "heightError": 0.14582642842892996,
+        "heightJudged": true,
+        "body": {
+          "long": 0.8519531859017725,
+          "short": 0.7951906883821516,
+          "height": 1
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art-weak",
+        "detail": "art law: no clear head (|head| 0.03 < 0.15), symmetric body; confirm on the sheet",
+        "swapped": true
+      },
+      "measure": {
+        "id": "k1-bowflex-xtreme-2se",
+        "servedUrl": "/models/candidates/tripo/k1-bowflex-xtreme-2se.glb",
+        "phoneUrl": "/models/candidates/tripo/k1-bowflex-xtreme-2se-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 130,
+          "heightCm": 210,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 2.220446049250313e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4990,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 649,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.772172031490755
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 32.1 %, height off by 14.6 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 130.0 × 210.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "181 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,990 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "73 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,990 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "77.2 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: no clear head (|head| 0.03 < 0.15), symmetric body; confirm on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/tripo-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/tripo-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/tripo-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/tripo-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/tripo/k1-bowflex-xtreme-2se.glb",
+        "phoneUrl": "/models/candidates/tripo/k1-bowflex-xtreme-2se-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "tripo",
+          "endpoint": "tripo3d/h3.1/image-to-3d",
+          "price_usd": 0.6,
+          "seconds": 161,
+          "inference_s": 154.00699996948242,
+          "request_id": "01a1bb0a-cbc6-7f50-830a-a2a828e66778",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-bowflex-xtreme-2se.webp",
+          "generated_at": "2026-11-08T12:06:14.942Z",
+          "reprocessed_at": "2026-11-08T13:25:19.274Z",
+          "raw_bytes": 3477860,
+          "raw_triangles": 36946,
+          "bytes": 185020,
+          "triangles": 20000,
+          "phone_bytes": 74828,
+          "phone_triangles": 4990,
+          "orient": {
+            "modelFront": "+z",
+            "why": "art top: weak head signal, default kept",
+            "head": {
+              "x": 0.023,
+              "z": -0.023
+            },
+            "swapped": true,
+            "up": "+y",
+            "bakeYaw": false,
+            "squaredDeg": 0,
+            "upWhy": "the product is not flat; y stays up"
+          },
+          "gate": {
+            "pass": false,
+            "failed": [
+              "raw shape within 15 %"
+            ]
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\tripo\\pictures\\k1-bowflex-xtreme-2se-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\tripo\\pictures\\k1-bowflex-xtreme-2se-catalogue.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "tool": "hunyuan",
+      "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+      "price": 1.05,
+      "generated_at": "2026-11-08T12:09:31.541Z",
+      "reprocessed_at": "2026-11-08T13:25:21.938Z",
+      "reprocessed_attempt": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "01a1bb0a-8a81-7430-8954-c9cac7440403",
+          "seconds": 156,
+          "inference_s": 154.96900010108948,
+          "rawBytes": 44144708,
+          "rawTriangles": 499696,
+          "rawExtents": [
+            0.6840510070323944,
+            0.9319601497909689,
+            0.8872800486272954
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.1774511097769146,
+            "heightError": 0.025347773594698815,
+            "heightJudged": true,
+            "body": {
+              "long": 0.8872800486272954,
+              "short": 0.6840510070323944,
+              "height": 0.9319601497909689
+            },
+            "tolerance": 0.15
+          }
+        },
+        {
+          "attempt": 2,
+          "ok": true,
+          "request_id": "01a1bb0d-3f4c-7862-8589-726cdfd9a15f",
+          "seconds": 173,
+          "inference_s": 165.78600001335144,
+          "rawBytes": 56346076,
+          "rawTriangles": 459236,
+          "rawExtents": [
+            0.6713716072963076,
+            0.91252515936638,
+            0.8886121902778399
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "shape": {
+            "pass": false,
+            "aspectError": 0.16065832495686624,
+            "heightError": 0.0024602178585162765,
+            "heightJudged": true,
+            "body": {
+              "long": 0.8886121902778399,
+              "short": 0.6713716072963076,
+              "height": 0.91252515936638
+            },
+            "tolerance": 0.15
+          },
+          "squaredDeg": 3.5
+        }
+      ],
+      "servedUrl": "/models/candidates/hunyuan/k1-bowflex-xtreme-2se.glb",
+      "phoneUrl": "/models/candidates/hunyuan/k1-bowflex-xtreme-2se-phone.glb",
+      "copies": {
+        "served": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\hunyuan\\k1-bowflex-xtreme-2se.glb",
+          "bytes": 346660,
+          "triangles": 19768,
+          "rawBytes": 56346136,
+          "passes": [
+            {
+              "ratio": 0.04355059272356697,
+              "error": 0.001,
+              "triangles": 73356
+            },
+            {
+              "ratio": 0.2726430012541578,
+              "error": 0.003,
+              "triangles": 19768,
+              "permissive": true
+            }
+          ]
+        },
+        "phone": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\_designer-game-1-products-2026-11-08\\public\\models\\candidates\\hunyuan\\k1-bowflex-xtreme-2se-phone.glb",
+          "bytes": 132528,
+          "triangles": 4874,
+          "passes": [
+            {
+              "ratio": 0.010887648180891742,
+              "error": 0.02,
+              "triangles": 40850
+            },
+            {
+              "ratio": 0.12239902080783353,
+              "error": 0.06,
+              "triangles": 4874,
+              "permissive": true
+            }
+          ]
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "art top: weak head signal, default kept",
+        "swapped": true
+      },
+      "up": "+y",
+      "bake": {
+        "up": "+y",
+        "bakeYaw": false,
+        "why": "the product is not flat; y stays up"
+      },
+      "squared": {
+        "yaw": 0.061086523819801536,
+        "degrees": 3.5,
+        "areaBefore": 0.6107738006042335,
+        "areaAfter": 0.5957184510571438
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.16065832495686624,
+        "heightError": 0.0024602178585162765,
+        "heightJudged": true,
+        "body": {
+          "long": 0.8886121902778399,
+          "short": 0.6713716072963076,
+          "height": 0.91252515936638
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art-weak",
+        "detail": "art law: no clear head (|head| 0.05 < 0.15), symmetric body; confirm on the sheet",
+        "swapped": true
+      },
+      "measure": {
+        "id": "k1-bowflex-xtreme-2se",
+        "servedUrl": "/models/candidates/hunyuan/k1-bowflex-xtreme-2se.glb",
+        "phoneUrl": "/models/candidates/hunyuan/k1-bowflex-xtreme-2se-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 129.99999999999997,
+          "heightCm": 209.99999999999997,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 2.842170943040401e-14,
+            "height": 2.842170943040401e-14
+          }
+        },
+        "floorM": -2.168404344971009e-19,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 19768,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4874,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 649,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.4274424595531587
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 16.1 %, height off by 0.2 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 130.0 × 210.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at -0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "19,768 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "339 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,874 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "129 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,874 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "42.7 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: no clear head (|head| 0.05 < 0.15), symmetric body; confirm on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/hunyuan-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/hunyuan-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/hunyuan-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/hunyuan-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/hunyuan/k1-bowflex-xtreme-2se.glb",
+        "phoneUrl": "/models/candidates/hunyuan/k1-bowflex-xtreme-2se-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "test-2026-11-08",
+          "tool": "hunyuan",
+          "endpoint": "fal-ai/hunyuan3d-v3/image-to-3d",
+          "price_usd": 1.05,
+          "seconds": 173,
+          "inference_s": 165.78600001335144,
+          "request_id": "01a1bb0d-3f4c-7862-8589-726cdfd9a15f",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-bowflex-xtreme-2se.webp",
+          "generated_at": "2026-11-08T12:09:31.541Z",
+          "reprocessed_at": "2026-11-08T13:25:21.938Z",
+          "raw_bytes": 56346076,
+          "raw_triangles": 459236,
+          "bytes": 346660,
+          "triangles": 19768,
+          "phone_bytes": 132528,
+          "phone_triangles": 4874,
+          "orient": {
+            "modelFront": "+z",
+            "why": "art top: weak head signal, default kept",
+            "head": {
+              "x": 0.048,
+              "z": -0.003
+            },
+            "swapped": true,
+            "up": "+y",
+            "bakeYaw": false,
+            "squaredDeg": 3.5,
+            "upWhy": "the product is not flat; y stays up"
+          },
+          "gate": {
+            "pass": false,
+            "failed": [
+              "raw shape within 15 %"
+            ]
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\test-2026-11-08\\hunyuan\\pictures\\k1-bowflex-xtreme-2se-plan.png",
+        "catalogue": "models-raw\\runs\\test-2026-11-08\\hunyuan\\pictures\\k1-bowflex-xtreme-2se-catalogue.png"
+      }
+    }
+  ],
+  "olds": {
+    "k1-nordictrack-2450": {
+      "entry": {
+        "url": "/models/k1-nordictrack-2450.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
+          "generated_at": "2026-09-17T11:46:16.134Z",
+          "bytes": 129216,
+          "raw_bytes": 4980024,
+          "triangles": 20000,
+          "request_id": "01a0af2a-87ed-7fc2-b980-7de8ec01c5f2",
+          "seconds": 383,
+          "orient": {
+            "art": "right",
+            "head": {
+              "x": 0.534,
+              "z": -0.006
+            },
+            "set": "2026-09-17T12:09:53.177Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-nordictrack-2450-phone.glb"
+      },
+      "bytes": 129216,
+      "triangles": 20000,
+      "measure": {
+        "id": "k1-nordictrack-2450",
+        "servedUrl": "/models/k1-nordictrack-2450.glb",
+        "phoneUrl": "/models/k1-nordictrack-2450-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 95,
+          "heightCm": 165,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 475,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9999917763157895
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 38.9 %, height off by 13.8 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 95.0 × 165.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "126 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "49 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "100.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront +z"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/old-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/old-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/old-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/k1-nordictrack-2450/old-plan.webp"
+      }
+    },
+    "emcar-jinko-475": {
+      "entry": {
+        "url": "/models/emcar-jinko-475.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-jinko-475.webp",
+          "generated_at": "2026-09-17T11:52:12.613Z",
+          "bytes": 203860,
+          "raw_bytes": 7385308,
+          "triangles": 20000,
+          "request_id": "01a0af34-91b9-7df0-b34c-da5959fc3d6c",
+          "seconds": 80,
+          "orient": {
+            "note": "photo slab laid flat: photo face (-z) up",
+            "set": "2026-09-17T12:09:53.437Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "modelUp": "-z",
+        "phoneUrl": "/models/emcar-jinko-475-phone.glb"
+      },
+      "bytes": 203860,
+      "triangles": 20000,
+      "measure": {
+        "id": "emcar-jinko-475",
+        "servedUrl": "/models/emcar-jinko-475.glb",
+        "phoneUrl": "/models/emcar-jinko-475-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 190.3,
+          "widthCm": 113.4,
+          "heightCm": 2.9999999999999973,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 2.6645352591003757e-15
+          }
+        },
+        "floorM": 2.949029909160572e-17,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -2.220446049250313e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 610,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9962842597336066
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 5.0 % (flat product: thickness not judged, the fit squashes it)"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 190.3 × 113.4 × 3.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "199 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "75 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "99.6 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/old-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/old-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/old-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/emcar-jinko-475/old-plan.webp"
+      }
+    },
+    "k1-bowflex-xtreme-2se": {
+      "entry": {
+        "url": "/models/k1-bowflex-xtreme-2se.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-bowflex-xtreme-2se.webp",
+          "generated_at": "2026-09-17T11:52:22.176Z",
+          "bytes": 331136,
+          "raw_bytes": 7904156,
+          "triangles": 34890,
+          "request_id": "01a0af33-672f-7773-b301-93e8fff09c29",
+          "seconds": 166,
+          "orient": {
+            "art": "top",
+            "head": {
+              "x": 0.137,
+              "z": -0.384
+            },
+            "set": "2026-09-17T12:09:53.352Z"
+          }
+        },
+        "modelFront": "+x",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-bowflex-xtreme-2se-phone.glb"
+      },
+      "bytes": 331136,
+      "triangles": 34890,
+      "measure": {
+        "id": "k1-bowflex-xtreme-2se",
+        "servedUrl": "/models/k1-bowflex-xtreme-2se.glb",
+        "phoneUrl": "/models/k1-bowflex-xtreme-2se-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 130,
+          "heightCm": 210,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 34890,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 9676,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 649,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.5456336069915254
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 31.0 %, height off by 1.5 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 130.0 × 210.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": false,
+            "detail": "34,890 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "323 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": false,
+            "detail": "9,676 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "130 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "9,676 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "54.6 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's top side (score 0.94) with modelFront +x, axes swapped"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %",
+          "laptop copy ≤ 25,000 triangles",
+          "phone copy ≤ 7,500 triangles"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/old-front.webp",
+        "catalogue": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/old-catalogue.webp",
+        "eye": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/old-eye.webp",
+        "plan": "docs/product-engine/runs/test-2026-11-08/evidence/k1-bowflex-xtreme-2se/old-plan.webp"
+      }
+    }
+  },
+  "stop": null,
+  "reprocessed": [
+    {
+      "at": "2026-11-08T12:12:07.746Z",
+      "main": "d2a8633fe547289c1fc2a8ae8e751b8160a9266d",
+      "results": [
+        "k1-nordictrack-2450/hunyuan",
+        "emcar-jinko-475/tripo",
+        "k1-nordictrack-2450/tripo",
+        "k1-nordictrack-2450/meshy",
+        "emcar-jinko-475/hunyuan",
+        "emcar-jinko-475/meshy",
+        "k1-bowflex-xtreme-2se/meshy",
+        "k1-bowflex-xtreme-2se/tripo",
+        "k1-bowflex-xtreme-2se/hunyuan"
+      ]
+    },
+    {
+      "at": "2026-11-08T13:25:27.501Z",
+      "main": "d2a8633fe547289c1fc2a8ae8e751b8160a9266d",
+      "results": [
+        "k1-nordictrack-2450/hunyuan",
+        "emcar-jinko-475/tripo",
+        "k1-nordictrack-2450/tripo",
+        "k1-nordictrack-2450/meshy",
+        "emcar-jinko-475/hunyuan",
+        "emcar-jinko-475/meshy",
+        "k1-bowflex-xtreme-2se/meshy",
+        "k1-bowflex-xtreme-2se/tripo",
+        "k1-bowflex-xtreme-2se/hunyuan"
+      ]
+    }
+  ]
+}

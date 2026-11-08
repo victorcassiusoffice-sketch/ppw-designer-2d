@@ -77,18 +77,40 @@ export async function optimizeGlb(inPath, outPath, opts = {}) {
     textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [base, base], slots: /baseColor/i, quality: 82 }),
     textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [mr, mr], slots: /metallicRoughness|normal|occlusion|emissive/i, quality: 70 }),
   );
-  // 3. Geometry: weld, simplify (bounded error), then Draco.
+  // 3. Geometry: weld, simplify (bounded error), then Draco. The error bound wins over the
+  // ratio: a very dense body (Hunyuan3D v3 hands back ~500k triangles) stops well above the
+  // target at the first bound, so the bound is loosened in steps until the count is within 15 %
+  // of the target or the bound reaches `maxError` (product engine, 2026-11-08).
   await MeshoptSimplifier.ready;
-  await doc.transform(dedup(), weld(), simplify({ simplifier: MeshoptSimplifier, ratio, error }), prune(), draco({ method: 'edgebreaker' }));
-  await io.write(outPath, doc);
-  let triangles = 0;
-  for (const mesh of doc.getRoot().listMeshes()) {
-    for (const prim of mesh.listPrimitives()) {
-      const idx = prim.getIndices();
-      triangles += idx ? idx.getCount() / 3 : prim.getAttribute('POSITION').getCount() / 3;
+  const count = () => {
+    let n = 0;
+    for (const mesh of doc.getRoot().listMeshes()) {
+      for (const prim of mesh.listPrimitives()) {
+        const idx = prim.getIndices();
+        n += idx ? idx.getCount() / 3 : prim.getAttribute('POSITION').getCount() / 3;
+      }
     }
+    return n;
+  };
+  const maxError = opts.maxError ?? Math.max(error, 0.05);
+  await doc.transform(dedup(), weld(), simplify({ simplifier: MeshoptSimplifier, ratio, error }));
+  let bound = error;
+  const passes = [{ ratio, error, triangles: count() }];
+  // A generator's UV atlas splits most vertices (two or three copies per position); the simplifier
+  // locks those seams and stalls far above the target. The later passes may collapse across the
+  // seams (Permissive) and drop specks (Prune); textures smear a little at the seams, which the
+  // first bounded pass never does, so this only happens when the first pass fell short.
+  const permissive = { ...MeshoptSimplifier, simplify: (indices, positions, stride, targetCount, targetError, flags = []) => MeshoptSimplifier.simplify(indices, positions, stride, targetCount, targetError, [...flags, 'Permissive', 'Prune']) };
+  while (opts.ratio === undefined && count() > target * 1.15 && bound < maxError) {
+    bound = Math.min(maxError, bound * 3);
+    const again = Math.min(1, target / Math.max(1, count()));
+    await doc.transform(simplify({ simplifier: permissive, ratio: again, error: bound }));
+    passes.push({ ratio: again, error: bound, triangles: count(), permissive: true });
   }
-  return { inBytes: fs.statSync(inPath).size, outBytes: fs.statSync(outPath).size, triangles };
+  await doc.transform(prune(), draco({ method: 'edgebreaker' }));
+  await io.write(outPath, doc);
+  const triangles = count();
+  return { inBytes: fs.statSync(inPath).size, outBytes: fs.statSync(outPath).size, triangles, passes };
 }
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));

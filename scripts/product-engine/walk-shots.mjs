@@ -7,6 +7,9 @@
  *
  *   node scripts/product-engine/walk-shots.mjs --only k1-nordictrack-2450 --bodies tripo --run test-2026-11-08
  *
+ * `--character <id>` preselects a Walk character (the chooser's saved choice); `--moving` also catches
+ * the walker mid-stride, walking then running (third person), before the first-person shot.
+ *
  * Read-only against the app: same-origin GET only, nothing written by the page. $0.
  */
 import fs from 'node:fs';
@@ -23,6 +26,8 @@ const bodies = opt('--bodies', null);
 const label = opt('--label', bodies ?? 'catalogue');
 const RUN_DIR = runDir(opt('--run', `${new Date().toISOString().slice(0, 10)}-walk`));
 const gpu = opt('--gpu', 'swiftshader');
+const character = opt('--character', null);
+const moving = args.includes('--moving');
 if (!only.length) { console.error('--only <product ids>'); process.exit(2); }
 
 const cat = loadCatalogue();
@@ -55,11 +60,12 @@ try {
       });
       const shots = {};
       try {
-        await page.addInitScript((p) => {
+        await page.addInitScript(({ p, character: who }) => {
           localStorage.clear();
           localStorage.setItem('ppw_designer_coach_v1', '1');
           localStorage.setItem('ppw_property_v2', JSON.stringify({ state: { property: p, showGrid: true, pxPerMetre: 100 }, version: 2 }));
-        }, { id: 'p', name: 'Walk shot', activeRoomId: 'r1', rooms: [room], wallHeightM: 2.7 });
+          if (who) localStorage.setItem('olb-world-character-v1', who);
+        }, { p: { id: 'p', name: 'Walk shot', activeRoomId: 'r1', rooms: [room], wallHeightM: 2.7 }, character });
         await page.goto(`${server.base}/designer${bodies ? `?bodies=${encodeURIComponent(bodies)}` : ''}`, { waitUntil: 'domcontentloaded' });
         await page.waitForSelector('.konvajs-content canvas', { state: 'attached', timeout: 60000 });
         await page.waitForTimeout(500);
@@ -96,7 +102,21 @@ try {
         const dir = path.join(RUN_DIR, 'walk', id);
         fs.mkdirSync(dir, { recursive: true });
         shots.third = path.join(dir, `${label}-${device.name}-third.png`);
-        await page.screenshot({ path: shots.third });
+        await page.screenshot({ path: shots.third, timeout: 120000 });
+        if (moving) {
+          // Mid-stride: W held (walk), then Shift + W (run); keys up between so the clip changes show.
+          await page.keyboard.down('KeyW');
+          await page.waitForTimeout(900);
+          shots.walking = path.join(dir, `${label}-${device.name}-walking.png`);
+          await page.screenshot({ path: shots.walking, timeout: 120000 });
+          await page.keyboard.down('ShiftLeft');
+          await page.waitForTimeout(900);
+          shots.running = path.join(dir, `${label}-${device.name}-running.png`);
+          await page.screenshot({ path: shots.running, timeout: 120000 });
+          await page.keyboard.up('ShiftLeft');
+          await page.keyboard.up('KeyW');
+          await page.waitForTimeout(400);
+        }
         // First person: V on a keyboard; on the phone the toolbar's view button.
         if (device.touch) {
           const view = page.locator('.world-walk-toolbar button').filter({ hasText: /view|first|third/i }).first();
@@ -104,8 +124,8 @@ try {
         } else await page.keyboard.press('KeyV');
         await page.waitForTimeout(900);
         shots.first = path.join(dir, `${label}-${device.name}-first.png`);
-        await page.screenshot({ path: shots.first });
-        results.push({ id, device: device.name, bodies: label, posed, errors, blocked, shots: Object.fromEntries(Object.entries(shots).map(([k, v]) => [k, path.relative(ROOT, v).split(path.sep).join('/')])) });
+        await page.screenshot({ path: shots.first, timeout: 120000 });
+        results.push({ id, device: device.name, bodies: label, character, posed, errors, blocked, shots: Object.fromEntries(Object.entries(shots).map(([k, v]) => [k, path.relative(ROOT, v).split(path.sep).join('/')])) });
         console.log(`✓ ${id} ${device.name} ${label}: pose ${JSON.stringify(posed)} · ${errors.length} console error(s)`);
       } catch (e) {
         results.push({ id, device: device.name, bodies: label, error: String(e).slice(0, 400), errors, blocked });

@@ -1,0 +1,126 @@
+{
+  "at": "2026-11-08T13:34:54.759Z",
+  "bodies": "meshy",
+  "results": [
+    {
+      "id": "k1-nordictrack-2450",
+      "device": "laptop",
+      "bodies": "meshy",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/meshy-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/meshy-laptop-first.png"
+      }
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "device": "phone",
+      "bodies": "meshy",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/meshy-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/meshy-phone-first.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "device": "laptop",
+      "bodies": "meshy",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/meshy-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/meshy-laptop-first.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "device": "phone",
+      "bodies": "meshy",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/meshy-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/meshy-phone-first.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "device": "laptop",
+      "bodies": "meshy",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/meshy-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/meshy-laptop-first.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "device": "phone",
+      "bodies": "meshy",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/meshy-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/meshy-phone-first.png"
+      }
+    }
+  ]
+}

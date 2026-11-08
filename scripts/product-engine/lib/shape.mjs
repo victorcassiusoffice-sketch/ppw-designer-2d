@@ -254,15 +254,65 @@ export async function photoFaceSign(body, { maxTriangles = 30000 } = {}) {
 }
 
 /** Turn the whole scene a quarter turn about y (for a slab thin along x) and write it back. */
-export async function bakeYaw(file, outFile) {
+export async function bakeYaw(file, outFile, yawRad = Math.PI / 2) {
   const io = await getIO();
   const doc = await io.read(file);
   const scene = doc.getRoot().getDefaultScene() ?? doc.getRoot().listScenes()[0];
-  const pivot = doc.createNode('engine-yaw').setRotation([0, Math.SQRT1_2, 0, Math.SQRT1_2]);
+  const pivot = doc.createNode('engine-yaw').setRotation([0, Math.sin(yawRad / 2), 0, Math.cos(yawRad / 2)]);
   for (const child of scene.listChildren()) {
     scene.removeChild(child);
     pivot.addChild(child);
   }
   scene.addChild(pivot);
   await io.write(outFile, doc);
+}
+
+/**
+ * The yaw (about y) that squares the body's footprint: the turn that makes the smallest
+ * axis-aligned rectangle around the vertices seen from above. A generator that aligns the body
+ * to a three-quarter photo (Tripo's `align_image`) hands back a diagonal body; its axis-aligned
+ * box then has the wrong proportions and the per-axis fit would distort it. Returns radians in
+ * (-45°, 45°]; the 90° ambiguity is left to the axis swap and `modelFront`. `sample` vertices at most.
+ */
+export function footprintYaw(body, { sample = 24000, stepDeg = 0.5 } = {}) {
+  const pts = [];
+  let total = 0;
+  for (const p of body.prims) total += p.positions.length / 3;
+  const stride = Math.max(1, Math.floor(total / sample));
+  let k = 0;
+  for (const p of body.prims) {
+    for (let i = 0; i < p.positions.length; i += 3) {
+      if (k++ % stride) continue;
+      const [x, , z] = apply(p.world, p.positions[i], p.positions[i + 1], p.positions[i + 2]);
+      pts.push(x, z);
+    }
+  }
+  if (pts.length < 6) return { yaw: 0, areaBefore: 0, areaAfter: 0, degrees: 0 };
+  const area = (c, s) => {
+    let minX = Infinity; let maxX = -Infinity; let minZ = Infinity; let maxZ = -Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      const x = c * pts[i] + s * pts[i + 1];
+      const z = -s * pts[i] + c * pts[i + 1];
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+    }
+    return (maxX - minX) * (maxZ - minZ);
+  };
+  const before = area(1, 0);
+  let best = { deg: 0, area: before };
+  for (let deg = -45 + stepDeg; deg <= 45; deg += stepDeg) {
+    const r = (deg * Math.PI) / 180;
+    const a = area(Math.cos(r), Math.sin(r));
+    if (a < best.area * 0.9995) best = { deg, area: a };
+  }
+  return { yaw: (best.deg * Math.PI) / 180, degrees: best.deg, areaBefore: before, areaAfter: best.area };
+}
+
+/** The axis the body's photo side faces after a yaw: the +z face turned by `yawRad`, snapped to an axis. */
+export function frontAfterYaw(yawRad, front = '+z') {
+  const base = { '+z': 0, '+x': Math.PI / 2, '-z': Math.PI, '-x': -Math.PI / 2 }[front] ?? 0;
+  const a = base + yawRad;
+  const snapped = Math.round(a / (Math.PI / 2)) * (Math.PI / 2);
+  const n = ((Math.round(snapped / (Math.PI / 2)) % 4) + 4) % 4;
+  return ['+z', '+x', '-z', '-x'][n];
 }

@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import sharp from 'sharp';
-import { dedup, draco, mergeDocuments, prune, resample, textureCompress } from '@gltf-transform/functions';
+import { dedup, draco, mergeDocuments, prune, resample, textureCompress, unpartition } from '@gltf-transform/functions';
 import * as fal from './fal.mjs';
 import { PERSON_TOOL, PICTURE_TOOL } from './prices.mjs';
 import { CHARACTERS_DIR, RAW_PEOPLE_DIR } from './paths.mjs';
@@ -116,7 +116,8 @@ export async function mergeClips(baseFile, clips, outFile) {
     }
     report.push({ name, channels: retargeted, duration: Math.max(...copied.listSamplers().map((s) => { const v = s.getInput().getArray(); return v[v.length - 1] - v[0]; })) });
   }
-  await target.transform(dedup(), resample(), prune());
+  // mergeDocuments leaves one buffer per clip file; a GLB may hold one, so the buffers are joined first.
+  await target.transform(unpartition(), dedup(), resample(), prune());
   await io.write(outFile, target);
   return report;
 }
@@ -141,6 +142,16 @@ export async function optimiseCharacter(inFile, outFile) {
   const body = await readBody(outFile);
   const bytes = fs.statSync(outFile).size;
   return { bytes, triangles: body.triangles, textures: body.textures, animations: body.animations, skins: body.skins, extents: body.extents, sha256: createHash('sha256').update(fs.readFileSync(outFile)).digest('hex') };
+}
+
+/** The raw files a paid run left on disk for this person (picture, rigged body, the three clips), or null. */
+export function rawPersonFiles(person) {
+  const file = (k) => path.join(RAW_PEOPLE_DIR, `${person.id}-${k}.glb`);
+  const picture = path.join(RAW_PEOPLE_DIR, `${person.id}-picture.png`);
+  const files = { rigged: file('rigged'), walk: file('walk'), run: file('run'), idle: file('idle'), model: file('model') };
+  if (!fs.existsSync(picture) || ['rigged', 'walk', 'run', 'idle'].some((k) => !fs.existsSync(files[k]))) return null;
+  if (!fs.existsSync(files.model)) delete files.model;
+  return { picture, files };
 }
 
 export function characterPaths(person) {
