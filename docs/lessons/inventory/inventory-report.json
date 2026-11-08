@@ -1,0 +1,307 @@
+{
+  "base": "http://127.0.0.1:5182",
+  "at": "2026-11-08T12:47:24.011Z",
+  "rows": [
+    {
+      "device": "desktop",
+      "id": "select",
+      "title": "Select — move, rotate or delete an object (Esc)",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "walls",
+      "title": "Walls — click to drop points. Close the shape for a room, or press Finish walls to leave them open. +/- change the unit mid-draw.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Walls",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "room-box",
+      "title": "Box — a rectangular room; set its size",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "door",
+      "title": "Door — hover a wall to place a door, doorway or window; click an existing one to remove it. F flips which way it opens, H swaps the hinge.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Openings",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "floor",
+      "title": "Floor — click a tile, drag an area, or Room to lay the whole room. Shift fills the room, Ctrl erases.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Floor",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "wallpaint",
+      "title": "Wall paint — click a wall to paint it; the plan lifts to show the walls. Room paints every wall of the room.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Paint",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "cladding",
+      "title": "Cladding — sample demo boards. Click a wall to clad it.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Cladding",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "measure",
+      "title": "Measure (M) — click any wall to retype its exact length",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Measure",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "remove",
+      "title": "Remove — click a wall or an object to delete it (Esc to stop)",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Remove",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "eyedropper",
+      "title": null,
+      "note": "key E",
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "garden",
+      "title": "Garden — draw, move and resize outdoor surfaces",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Garden",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "furnish",
+      "title": null,
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "view3d",
+      "title": null,
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "walk",
+      "title": null,
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "desktop",
+      "id": "help",
+      "title": null,
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "select",
+      "title": "Select — move, rotate or delete an object (Esc)",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "walls",
+      "title": "Walls — click to drop points. Close the shape for a room, or press Finish walls to leave them open. +/- change the unit mid-draw.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Walls",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "room-box",
+      "title": "Box — a rectangular room; set its size",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "door",
+      "title": "Door — hover a wall to place a door, doorway or window; click an existing one to remove it. F flips which way it opens, H swaps the hinge.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Openings",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "floor",
+      "title": "Floor — click a tile, drag an area, or Room to lay the whole room. Shift fills the room, Ctrl erases.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Floor",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "wallpaint",
+      "title": "Wall paint — click a wall to paint it; the plan lifts to show the walls. Room paints every wall of the room.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Paint",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "cladding",
+      "title": "Cladding — sample demo boards. Click a wall to clad it.",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Cladding",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "measure",
+      "title": "Measure (M) — click any wall to retype its exact length",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Measure",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "remove",
+      "title": "Remove — click a wall or an object to delete it (Esc to stop)",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Remove",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "eyedropper",
+      "title": null,
+      "note": "key E",
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "garden",
+      "title": "Garden — draw, move and resize outdoor surfaces",
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Garden",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "furnish",
+      "title": null,
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "view3d",
+      "title": null,
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "walk",
+      "title": null,
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    },
+    {
+      "device": "phone",
+      "id": "help",
+      "title": null,
+      "note": null,
+      "ok": true,
+      "dirty": [],
+      "activeTool": "Select",
+      "overflowX": false
+    }
+  ],
+  "errors": []
+}

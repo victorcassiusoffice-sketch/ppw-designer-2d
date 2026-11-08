@@ -3,9 +3,15 @@
  *
  * Triggered by `?` key or a `?` icon in the TopBar overflow. Modal
  * with categorised shortcut rows. Esc dismisses.
+ *
+ * Lessons (game programme part 2, 8 Nov 2026): two tabs, Lessons first (every
+ * lesson ticked when done, any one replayed, the first-build quest, tips and
+ * sounds on or off), then the key list. The Lessons tab's code loads only
+ * when the panel opens, so the first picture never carries it.
  */
 
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useAppPreferences } from '../i18n/AppPreferences';
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { useDesignStore } from '../store/designStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
@@ -94,12 +100,22 @@ const DEFAULT_SHORTCUTS: Array<{ category: string; rows: ShortcutRow[] }> = [
   },
 ];
 
+export type HelpTab = 'lessons' | 'keys';
+
+const LessonsList = lazy(() => import('./lessons/LessonsList'));
+
 export interface HelpOverlayProps {
   open: boolean;
   onClose: () => void;
+  /** Which tab shows (Lessons by default). */
+  tab?: HelpTab;
+  onTab?: (tab: HelpTab) => void;
 }
 
 export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
+  const { t } = useAppPreferences();
+  const tab: HelpTab = props.tab ?? 'lessons';
+  const tabRefs = useRef<Record<HelpTab, HTMLButtonElement | null>>({ lessons: null, keys: null });
   useEffect(() => {
     if (!props.open) return undefined;
     function onKey(e: KeyboardEvent): void {
@@ -111,11 +127,23 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
 
   if (!props.open) return null;
 
+  const tabs: Array<{ id: HelpTab; label: string }> = [
+    { id: 'lessons', label: t('Lessons') },
+    { id: 'keys', label: t('Keyboard keys') },
+  ];
+  const onTabKey = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    event.preventDefault();
+    const next: HelpTab = tab === 'lessons' ? 'keys' : 'lessons';
+    props.onTab?.(next);
+    tabRefs.current[next]?.focus();
+  };
+
   return (
     <div
       role="dialog"
       aria-modal
-      aria-label="Keyboard shortcuts"
+      aria-label={t('Lessons and keyboard shortcuts')}
       style={{
         position: 'fixed', inset: 0, zIndex: 950,
         background: 'rgba(42,41,38,0.55)',
@@ -139,12 +167,45 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
           overflowY: 'auto',
         }}
       >
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Designer shortcuts</h2>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <div role="tablist" aria-label={t('Lessons and keyboard shortcuts')} style={{ display: 'flex', gap: 6 }}>
+            {tabs.map((item) => {
+              const on = item.id === tab;
+              return (
+                <button
+                  key={item.id}
+                  ref={(el) => {
+                    tabRefs.current[item.id] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`help-tab-${item.id}`}
+                  aria-selected={on}
+                  aria-controls={`help-panel-${item.id}`}
+                  tabIndex={on ? 0 : -1}
+                  onKeyDown={onTabKey}
+                  onClick={() => props.onTab?.(item.id)}
+                  style={{
+                    minHeight: 40,
+                    padding: '0 14px',
+                    borderRadius: 8,
+                    border: `1px solid ${on ? CHROME_ACTIVE_BG : CHROME_RIM}`,
+                    background: on ? CHROME_ACTIVE_BG : CHROME_BG,
+                    color: on ? CHROME_ACTIVE_TEXT : CHROME_TEXT,
+                    fontSize: 15,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
           <button
             type="button"
             onClick={props.onClose}
-            aria-label="Close help"
+            aria-label={t('Close lessons and keys')}
             style={{
               width: 40,
               height: 40,
@@ -161,21 +222,32 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
           </button>
         </header>
 
-        {DEFAULT_SHORTCUTS.map((cat) => (
-          <section key={cat.category} style={{ marginBottom: 18 }}>
-            <h3 style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: CHROME_TEXT_2 }}>
-              {cat.category}
-            </h3>
-            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-              {cat.rows.map((r) => (
-                <li key={r.keys} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, minHeight: 36, alignItems: 'center', padding: '4px 0', borderBottom: `1px solid ${CHROME_RIM}`, fontSize: 13 }}>
-                  <code style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT, padding: '2px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{r.keys}</code>
-                  <span style={{ color: CHROME_TEXT_2, textAlign: 'right' }}>{r.label}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+        {tab === 'lessons' ? (
+          <div role="tabpanel" id="help-panel-lessons" aria-labelledby="help-tab-lessons">
+            <Suspense fallback={<p role="status" style={{ color: CHROME_TEXT_2, fontSize: 13 }}>{t('Loading lessons…')}</p>}>
+              <LessonsList onClose={props.onClose} />
+            </Suspense>
+          </div>
+        ) : (
+          <div role="tabpanel" id="help-panel-keys" aria-labelledby="help-tab-keys">
+            <h2 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 600 }}>Designer shortcuts</h2>
+            {DEFAULT_SHORTCUTS.map((cat) => (
+              <section key={cat.category} style={{ marginBottom: 18 }}>
+                <h3 style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: CHROME_TEXT_2 }}>
+                  {cat.category}
+                </h3>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                  {cat.rows.map((r) => (
+                    <li key={r.keys} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, minHeight: 36, alignItems: 'center', padding: '4px 0', borderBottom: `1px solid ${CHROME_RIM}`, fontSize: 13 }}>
+                      <code style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT, padding: '2px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{r.keys}</code>
+                      <span style={{ color: CHROME_TEXT_2, textAlign: 'right' }}>{r.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -227,7 +299,7 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
       type="button"
       onClick={onOpen}
       aria-label="Open keyboard shortcuts help"
-      title="Keyboard shortcuts (?)"
+      title="Lessons and keys (?)"
       // Repair round 1 (2026-08-29): 44 px on the phone tier (<md), 40 px at
       // md+ — the contract's control heights; it was a flat 40 at 390.
       className="h-11 w-11 md:h-10 md:w-10 transition-colors duration-[120ms] ease-out hover:bg-[#f3f1ec] hover:border-[rgba(42,41,38,0.35)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] motion-reduce:transition-none"
