@@ -1,0 +1,4226 @@
+{
+  "at": "2026-11-08T10:21:00.349Z",
+  "main": "db1096fd79e37bc2cf128c7e0027b2a8d1884518",
+  "results": [
+    {
+      "id": "k1-nordictrack-gx10",
+      "entry": {
+        "url": "/models/k1-nordictrack-gx10.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-gx10.webp",
+          "generated_at": "2026-09-17T11:45:11.311Z",
+          "bytes": 204192,
+          "raw_bytes": 6179528,
+          "triangles": 21490,
+          "request_id": "01a0af2a-8642-7d80-af85-1bebb1d21b7f",
+          "seconds": 318,
+          "orient": {
+            "art": "right",
+            "head": {
+              "x": 0.15,
+              "z": -0.004
+            },
+            "set": "2026-09-17T12:09:53.210Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-nordictrack-gx10-phone.glb"
+      },
+      "served": {
+        "bytes": 204192,
+        "triangles": 21490,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 97212
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 22060
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 81304,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.262995982155984,
+        "heightError": 0.12111057615310189,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9851490259170532,
+          "short": 0.6811037063598633,
+          "height": 1.5120962858200073
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art-weak",
+        "detail": "art law: no clear head (|head| 0.15 < 0.15), symmetric body; confirm on the sheet",
+        "head": {
+          "x": 0.14810258037075158,
+          "z": -0.002867882899629853,
+          "n": 2945
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-nordictrack-gx10",
+        "servedUrl": "/models/k1-nordictrack-gx10.glb",
+        "phoneUrl": "/models/k1-nordictrack-gx10-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 150,
+          "widthCm": 65,
+          "heightCm": 130,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 21490,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 444,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.5608350049268018
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 26.3 %, height off by 12.1 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 150.0 × 65.0 × 130.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "21,490 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "199 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "79 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "56.1 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: no clear head (|head| 0.15 < 0.15), symmetric body; confirm on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-gx10/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-gx10/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-gx10/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-gx10/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "entry": {
+        "url": "/models/k1-nordictrack-2450.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
+          "generated_at": "2026-09-17T11:46:16.134Z",
+          "bytes": 129216,
+          "raw_bytes": 4980024,
+          "triangles": 20000,
+          "request_id": "01a0af2a-87ed-7fc2-b980-7de8ec01c5f2",
+          "seconds": 383,
+          "orient": {
+            "art": "right",
+            "head": {
+              "x": 0.534,
+              "z": -0.006
+            },
+            "set": "2026-09-17T12:09:53.177Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-nordictrack-2450-phone.glb"
+      },
+      "served": {
+        "bytes": 129216,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 38724
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 17526
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 50168,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.38891484891428907,
+        "heightError": 0.13766671614003137,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9870879650115967,
+          "short": 1.5069023370742798,
+          "height": 1.379184365272522
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 1.00) with modelFront +z",
+        "head": {
+          "x": 0.5330291793785413,
+          "z": -0.0007248055626601757,
+          "n": 1083
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-nordictrack-2450",
+        "servedUrl": "/models/k1-nordictrack-2450.glb",
+        "phoneUrl": "/models/k1-nordictrack-2450-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 95,
+          "heightCm": 165,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 475,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9999917763157895
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 38.9 %, height off by 13.8 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 95.0 × 165.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "126 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "49 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "100.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront +z"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-2450/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-2450/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-2450/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-2450/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-nordictrack-tour-de-france",
+      "entry": {
+        "url": "/models/k1-nordictrack-tour-de-france.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-tour-de-france.webp",
+          "generated_at": "2026-09-17T11:47:25.634Z",
+          "bytes": 242796,
+          "raw_bytes": 6419548,
+          "triangles": 22160,
+          "request_id": "01a0af2a-87ed-7fc2-b980-7df1b72e8276",
+          "seconds": 452,
+          "orient": {
+            "art": "right",
+            "head": {
+              "x": -0.011,
+              "z": -0.84
+            },
+            "set": "2026-09-17T12:09:53.190Z"
+          }
+        },
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-nordictrack-tour-de-france-phone.glb"
+      },
+      "served": {
+        "bytes": 242796,
+        "triangles": 22160,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 123278
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 33722
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 94448,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.3127403495098592,
+        "heightError": 0.015035884479759712,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9836390018463135,
+          "short": 0.6547958254814148,
+          "height": 1.7584319114685059
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped",
+        "head": {
+          "x": -0.015122216207919158,
+          "z": -0.8558987890285825,
+          "n": 1780
+        },
+        "swapped": true
+      },
+      "measure": {
+        "id": "k1-nordictrack-tour-de-france",
+        "servedUrl": "/models/k1-nordictrack-tour-de-france.glb",
+        "phoneUrl": "/models/k1-nordictrack-tour-de-france-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 150,
+          "widthCm": 64.99999999999999,
+          "heightCm": 135,
+          "errCm": {
+            "length": 0,
+            "width": 1.4210854715202004e-14,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -5.551115123125783e-17
+        },
+        "served": {
+          "triangles": 22160,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 444,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.5585321649774775
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 31.3 %, height off by 1.5 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 150.0 × 65.0 × 135.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "22,160 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "237 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "92 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "55.9 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-tour-de-france/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-tour-de-france/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-tour-de-france/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-tour-de-france/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-schwinn-700ic",
+      "entry": {
+        "url": "/models/k1-schwinn-700ic.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-schwinn-700ic.webp",
+          "generated_at": "2026-09-17T11:48:25.626Z",
+          "bytes": 197728,
+          "raw_bytes": 5809468,
+          "triangles": 20884,
+          "request_id": "01a0af2a-87ef-7ae2-b0c6-24dff0a138cb",
+          "seconds": 512,
+          "orient": {
+            "art": "left",
+            "head": {
+              "x": -0.451,
+              "z": 0.004
+            },
+            "set": "2026-09-17T12:09:53.224Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-schwinn-700ic-phone.glb"
+      },
+      "served": {
+        "bytes": 197728,
+        "triangles": 20884,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 96284
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 19128
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 75904,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.002046162841737735,
+        "heightError": 0.06040575380674461,
+        "heightJudged": true,
+        "body": {
+          "long": 1.951582908630371,
+          "short": 0.896309494972229,
+          "height": 1.986504077911377
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's left side (score 1.00) with modelFront +z",
+        "head": {
+          "x": -0.4501418738367211,
+          "z": 0.0025039382020088383,
+          "n": 4123
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-schwinn-700ic",
+        "servedUrl": "/models/k1-schwinn-700ic.glb",
+        "phoneUrl": "/models/k1-schwinn-700ic-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 120,
+          "widthCm": 55.00000000000001,
+          "heightCm": 130,
+          "errCm": {
+            "length": 0,
+            "width": 7.105427357601002e-15,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20884,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 469,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.43589044176439234
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 0.2 %, height off by 6.0 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 120.0 × 55.0 × 130.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,884 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "193 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "74 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "43.6 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's left side (score 1.00) with modelFront +z"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-schwinn-700ic/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-schwinn-700ic/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-schwinn-700ic/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-schwinn-700ic/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-proform-carbon-tl",
+      "entry": {
+        "url": "/models/k1-proform-carbon-tl.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-proform-carbon-tl.webp",
+          "generated_at": "2026-09-17T11:48:36.743Z",
+          "bytes": 138796,
+          "raw_bytes": 3859056,
+          "triangles": 24130,
+          "request_id": "01a0af2a-87e9-7700-9922-0be368978457",
+          "seconds": 523,
+          "orient": {
+            "art": "right",
+            "head": {
+              "x": 0.03,
+              "z": -0.761
+            },
+            "set": "2026-09-17T12:09:53.236Z"
+          }
+        },
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-proform-carbon-tl-phone.glb"
+      },
+      "served": {
+        "bytes": 138796,
+        "triangles": 24130,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 35760
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 6732
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 56468,
+        "triangles": 6580
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.0014950236893557605,
+        "heightError": 0.07868333242877375,
+        "heightJudged": true,
+        "body": {
+          "long": 1.988318920135498,
+          "short": 0.9403342008590698,
+          "height": 1.4756741523742676
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped",
+        "head": {
+          "x": 0.023456399655134585,
+          "z": -0.768887053620783,
+          "n": 8311
+        },
+        "swapped": true
+      },
+      "measure": {
+        "id": "k1-proform-carbon-tl",
+        "servedUrl": "/models/k1-proform-carbon-tl.glb",
+        "phoneUrl": "/models/k1-proform-carbon-tl-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 179.99999999999997,
+          "widthCm": 85,
+          "heightCm": 145.00000000000003,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 2.842170943040401e-14
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 1.1102230246251565e-16,
+          "z": -1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 24130,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 6580,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 484,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.7646423844266529
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 0.1 %, height off by 7.9 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 180.0 × 85.0 × 145.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "24,130 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "136 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "6,580 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "55 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "6,580 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "76.5 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-proform-carbon-tl/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-proform-carbon-tl/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-proform-carbon-tl/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-proform-carbon-tl/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-nordictrack-rw900",
+      "entry": {
+        "url": "/models/k1-nordictrack-rw900.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-rw900.webp",
+          "generated_at": "2026-09-17T11:49:36.465Z",
+          "bytes": 198460,
+          "raw_bytes": 5818456,
+          "triangles": 20000,
+          "request_id": "01a0af2a-9077-7761-aa05-996393ab631a",
+          "seconds": 583,
+          "orient": {
+            "art": "left",
+            "head": {
+              "x": 0.745,
+              "z": -0.004
+            },
+            "set": "2026-09-17T12:09:53.263Z"
+          }
+        },
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-nordictrack-rw900-phone.glb"
+      },
+      "served": {
+        "bytes": 198460,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 101594
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 19072
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 79716,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.5803964879661401,
+        "heightError": 0.33760604278567197,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9875890016555786,
+          "short": 1.1842066049575806,
+          "height": 1.3293055295944214
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's left side (score 1.00) with modelFront -z",
+        "head": {
+          "x": 0.7435007655707506,
+          "z": -0.009185520201376427,
+          "n": 958
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-nordictrack-rw900",
+        "servedUrl": "/models/k1-nordictrack-rw900.glb",
+        "phoneUrl": "/models/k1-nordictrack-rw900-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 220.00000000000003,
+          "widthCm": 55.00000000000001,
+          "heightCm": 110.00000000000001,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 7.105427357601002e-15,
+            "height": 1.4210854715202004e-14
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 256,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.4053306579589844
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 58.0 %, height off by 33.8 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 220.0 × 55.0 × 110.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "194 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "78 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "40.5 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's left side (score 1.00) with modelFront -z"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-rw900/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-rw900/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-rw900/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-rw900/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-nordictrack-x16",
+      "entry": {
+        "url": "/models/k1-nordictrack-x16.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-x16.webp",
+          "generated_at": "2026-09-17T11:49:47.802Z",
+          "bytes": 180872,
+          "raw_bytes": 5601848,
+          "triangles": 23146,
+          "request_id": "01a0af2a-9079-7ae2-a9e7-f7ea5739abad",
+          "seconds": 594,
+          "orient": {
+            "art": "right",
+            "head": {
+              "x": -0.037,
+              "z": -0.292
+            },
+            "set": "2026-09-17T12:09:53.248Z"
+          }
+        },
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-nordictrack-x16-phone.glb"
+      },
+      "served": {
+        "bytes": 180872,
+        "triangles": 23146,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 68952
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 21808
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 68428,
+        "triangles": 4998
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.382631676348359,
+        "heightError": 0.17704238709236692,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9739010334014893,
+          "short": 0.5551935434341431,
+          "height": 1.5793136358261108
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 0.98) with modelFront -z, axes swapped",
+        "head": {
+          "x": -0.0553657492789858,
+          "z": -0.2907481064096219,
+          "n": 4350
+        },
+        "swapped": true
+      },
+      "measure": {
+        "id": "k1-nordictrack-x16",
+        "servedUrl": "/models/k1-nordictrack-x16.glb",
+        "phoneUrl": "/models/k1-nordictrack-x16-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 180.00000000000003,
+          "widthCm": 70,
+          "heightCm": 175,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": -1.1102230246251565e-16,
+          "z": 1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 23146,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4998,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 398,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.6795550015703518
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 38.3 %, height off by 17.7 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 180.0 × 70.0 × 175.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by -0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "23,146 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "177 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "4,998 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "67 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,998 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "68.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 0.98) with modelFront -z, axes swapped"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-x16/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-x16/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-x16/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-nordictrack-x16/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-vision-t600-03",
+      "entry": {
+        "url": "/models/k1-vision-t600-03.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-vision-t600-03.webp",
+          "generated_at": "2026-09-17T11:50:52.895Z",
+          "bytes": 161452,
+          "raw_bytes": 4540420,
+          "triangles": 20000,
+          "request_id": "01a0af2f-5b73-7c02-b6d3-989aaffa305c",
+          "seconds": 342,
+          "orient": {
+            "art": "right",
+            "head": {
+              "x": -0.531,
+              "z": 0.014
+            },
+            "set": "2026-09-17T12:09:53.272Z"
+          }
+        },
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-vision-t600-03-phone.glb"
+      },
+      "served": {
+        "bytes": 161452,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 63900
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 20292
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 65872,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.14062254972460983,
+        "heightError": 0.11003088049728818,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9862970113754272,
+          "short": 1.1006289720535278,
+          "height": 1.3889409303665161
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z",
+        "head": {
+          "x": -0.5287407422140811,
+          "z": 0.024350123407212584,
+          "n": 2039
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-vision-t600-03",
+        "servedUrl": "/models/k1-vision-t600-03.glb",
+        "phoneUrl": "/models/k1-vision-t600-03-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 210,
+          "widthCm": 100.00000000000003,
+          "heightCm": 165,
+          "errCm": {
+            "length": 0,
+            "width": 2.842170943040401e-14,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 488,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9999919953893442
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 14.1 %, height off by 11.0 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 210.0 × 100.0 × 165.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "158 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "64 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "100.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-t600-03/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-t600-03/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-t600-03/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-t600-03/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-matrix-mg-glute",
+      "entry": {
+        "url": "/models/k1-matrix-mg-glute.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-matrix-mg-glute.webp",
+          "generated_at": "2026-09-17T11:50:53.590Z",
+          "bytes": 95820,
+          "raw_bytes": 5087304,
+          "triangles": 20000,
+          "request_id": "01a0af31-6812-7290-8965-f0d46b0266f7",
+          "seconds": 208
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-matrix-mg-glute-phone.glb"
+      },
+      "served": {
+        "bytes": 95820,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 31898
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 9330
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 39148,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.33288542500043805,
+        "heightError": 0.8216967093542176,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9878530502319336,
+          "short": 1.986518383026123,
+          "height": 0.4135141968727112
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art-weak",
+        "detail": "art law: no clear head (|head| 0.10 < 0.15), symmetric body; confirm on the sheet",
+        "head": {
+          "x": -0.09119019043742174,
+          "z": 0.03730171760954253,
+          "n": 2904
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-matrix-mg-glute",
+        "servedUrl": "/models/k1-matrix-mg-glute.glb",
+        "phoneUrl": "/models/k1-matrix-mg-glute-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 150,
+          "widthCm": 100,
+          "heightCm": 175,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 683,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 1
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 33.3 %, height off by 82.2 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 150.0 × 100.0 × 175.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "94 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "38 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "100.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: no clear head (|head| 0.10 < 0.15), symmetric body; confirm on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-matrix-mg-glute/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-matrix-mg-glute/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-matrix-mg-glute/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-matrix-mg-glute/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-vision-t600e-02",
+      "entry": {
+        "url": "/models/k1-vision-t600e-02.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-vision-t600e-02.webp",
+          "generated_at": "2026-09-17T11:50:57.929Z",
+          "bytes": 161452,
+          "raw_bytes": 4540420,
+          "triangles": 20000,
+          "request_id": "01a0af30-58b5-7d73-aa11-d72f57fc91bb",
+          "seconds": 282,
+          "orient": {
+            "art": "left",
+            "head": {
+              "x": -0.531,
+              "z": 0.014
+            },
+            "set": "2026-09-17T12:09:53.287Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-vision-t600e-02-phone.glb"
+      },
+      "served": {
+        "bytes": 161452,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 63900
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 20292
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 65872,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.14062254972460983,
+        "heightError": 0.11003088049728818,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9862970113754272,
+          "short": 1.1006289720535278,
+          "height": 1.3889409303665161
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's left side (score 1.00) with modelFront +z",
+        "head": {
+          "x": -0.5287407422140811,
+          "z": 0.024350123407212584,
+          "n": 2039
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-vision-t600e-02",
+        "servedUrl": "/models/k1-vision-t600e-02.glb",
+        "phoneUrl": "/models/k1-vision-t600e-02-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 210,
+          "widthCm": 100,
+          "heightCm": 165,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -5.551115123125783e-17
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 488,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9999919953893442
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 14.1 %, height off by 11.0 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 210.0 × 100.0 × 165.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "158 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "64 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "100.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's left side (score 1.00) with modelFront +z"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-t600e-02/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-t600e-02/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-t600e-02/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-t600e-02/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-matrix-versa-adabd",
+      "entry": {
+        "url": "/models/k1-matrix-versa-adabd.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-matrix-versa-adabd.webp",
+          "generated_at": "2026-09-17T11:51:09.563Z",
+          "bytes": 156968,
+          "raw_bytes": 4875080,
+          "triangles": 24614,
+          "request_id": "01a0af32-5270-7672-a4fc-a2f88194a3d7",
+          "seconds": 164,
+          "orient": {
+            "art": "left",
+            "head": {
+              "x": 0.864,
+              "z": 0.401
+            },
+            "set": "2026-09-17T12:09:53.310Z"
+          }
+        },
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-matrix-versa-adabd-phone.glb"
+      },
+      "served": {
+        "bytes": 156968,
+        "triangles": 24614,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 50612
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 11988
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 56128,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.03762031327672338,
+        "heightError": 0.12173476953129697,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9140077829360962,
+          "short": 1.4533313512802124,
+          "height": 1.9866440296173096
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's left side (score 0.91) with modelFront -z",
+        "head": {
+          "x": 0.8658741730063748,
+          "z": 0.39519929284028343,
+          "n": 1106
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-matrix-versa-adabd",
+        "servedUrl": "/models/k1-matrix-versa-adabd.glb",
+        "phoneUrl": "/models/k1-matrix-versa-adabd-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 165,
+          "widthCm": 129.99999999999997,
+          "heightCm": 195,
+          "errCm": {
+            "length": 0,
+            "width": 2.842170943040401e-14,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 24614,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 807,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.6239556710811648
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 3.8 %, height off by 12.2 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 165.0 × 130.0 × 195.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "24,614 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "153 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "55 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "62.4 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's left side (score 0.91) with modelFront -z"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-matrix-versa-adabd/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-matrix-versa-adabd/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-matrix-versa-adabd/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-matrix-versa-adabd/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-vision-smith",
+      "entry": {
+        "url": "/models/k1-vision-smith.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-vision-smith.webp",
+          "generated_at": "2026-09-17T11:52:04.157Z",
+          "bytes": 182432,
+          "raw_bytes": 5370632,
+          "triangles": 21910,
+          "request_id": "01a0af32-7de2-7911-ae0c-a71eca70c7d3",
+          "seconds": 207,
+          "orient": {
+            "art": "top",
+            "head": {
+              "x": -0.024,
+              "z": 0.192
+            },
+            "set": "2026-09-17T12:09:53.328Z"
+          }
+        },
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-vision-smith-phone.glb"
+      },
+      "served": {
+        "bytes": 182432,
+        "triangles": 21910,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 80220
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 15806
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 71140,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.35127937234218737,
+        "heightError": 0.007027789956071794,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9304721355438232,
+          "short": 1.0476586818695068,
+          "height": 1.987239956855774
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's top side (score 0.98) with modelFront -z",
+        "head": {
+          "x": -0.03791131706176298,
+          "z": 0.2153317435600379,
+          "n": 5478
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-vision-smith",
+        "servedUrl": "/models/k1-vision-smith.glb",
+        "phoneUrl": "/models/k1-vision-smith-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 225,
+          "widthCm": 165,
+          "heightCm": 229.99999999999997,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 2.842170943040401e-14
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 21910,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 751,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.3204685419440746
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 35.1 %, height off by 0.7 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 225.0 × 165.0 × 230.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "21,910 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "178 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "69 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "32.0 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's top side (score 0.98) with modelFront -z"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-smith/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-smith/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-smith/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-vision-smith/old-eye.webp"
+      }
+    },
+    {
+      "id": "emcar-victron-175",
+      "entry": {
+        "url": "/models/emcar-victron-175.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-175.webp",
+          "generated_at": "2026-09-17T11:52:07.767Z",
+          "bytes": 189660,
+          "raw_bytes": 6010424,
+          "triangles": 20000,
+          "request_id": "01a0af34-9474-7d73-aa9b-0c3a688dd755",
+          "seconds": 74,
+          "orient": {
+            "note": "photo slab laid flat: photo face (-z) up",
+            "set": "2026-09-17T12:09:53.438Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "modelUp": "-z",
+        "phoneUrl": "/models/emcar-victron-175-phone.glb"
+      },
+      "served": {
+        "bytes": 189660,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 98098
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 25154
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 76432,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.004916027659386944,
+        "heightError": 6.662333197070503,
+        "heightJudged": false,
+        "body": {
+          "long": 1.9861969947814941,
+          "short": 0.8978682160377502,
+          "height": 0.30745258927345276
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "flat",
+        "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+      },
+      "measure": {
+        "id": "emcar-victron-175",
+        "servedUrl": "/models/emcar-victron-175.glb",
+        "phoneUrl": "/models/emcar-victron-175-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 148.5,
+          "widthCm": 66.79999999999998,
+          "heightCm": 3.000000000000004,
+          "errCm": {
+            "length": 0,
+            "width": 1.4210854715202004e-14,
+            "height": 3.9968028886505635e-15
+          }
+        },
+        "floorM": -2.0816681711721685e-17,
+        "pivotOffsetM": {
+          "x": -1.1102230246251565e-16,
+          "z": -1.6653345369377348e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 461,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9682373576464208
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 0.5 % (flat product: thickness not judged, the fit squashes it)"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 148.5 × 66.8 × 3.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at -0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by -0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "185 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "75 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "96.8 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-175/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-175/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-175/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-175/old-eye.webp"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "entry": {
+        "url": "/models/emcar-jinko-475.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-jinko-475.webp",
+          "generated_at": "2026-09-17T11:52:12.613Z",
+          "bytes": 203860,
+          "raw_bytes": 7385308,
+          "triangles": 20000,
+          "request_id": "01a0af34-91b9-7df0-b34c-da5959fc3d6c",
+          "seconds": 80,
+          "orient": {
+            "note": "photo slab laid flat: photo face (-z) up",
+            "set": "2026-09-17T12:09:53.437Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "modelUp": "-z",
+        "phoneUrl": "/models/emcar-jinko-475-phone.glb"
+      },
+      "served": {
+        "bytes": 203860,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 86040
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 47550
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 76776,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.04997305665992007,
+        "heightError": 5.95780387311425,
+        "heightJudged": false,
+        "body": {
+          "long": 1.9874379634857178,
+          "short": 1.127949595451355,
+          "height": 0.21799585223197937
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "flat",
+        "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+      },
+      "measure": {
+        "id": "emcar-jinko-475",
+        "servedUrl": "/models/emcar-jinko-475.glb",
+        "phoneUrl": "/models/emcar-jinko-475-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 190.3,
+          "widthCm": 113.4,
+          "heightCm": 2.9999999999999973,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 2.6645352591003757e-15
+          }
+        },
+        "floorM": 2.949029909160572e-17,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -2.220446049250313e-16
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 610,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9962842597336066
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 5.0 % (flat product: thickness not judged, the fit squashes it)"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 190.3 × 113.4 × 3.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "199 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "75 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "99.6 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-jinko-475/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-jinko-475/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-jinko-475/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-jinko-475/old-eye.webp"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "entry": {
+        "url": "/models/k1-bowflex-xtreme-2se.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/k1-bowflex-xtreme-2se.webp",
+          "generated_at": "2026-09-17T11:52:22.176Z",
+          "bytes": 331136,
+          "raw_bytes": 7904156,
+          "triangles": 34890,
+          "request_id": "01a0af33-672f-7773-b301-93e8fff09c29",
+          "seconds": 166,
+          "orient": {
+            "art": "top",
+            "head": {
+              "x": 0.137,
+              "z": -0.384
+            },
+            "set": "2026-09-17T12:09:53.352Z"
+          }
+        },
+        "modelFront": "+x",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-bowflex-xtreme-2se-phone.glb"
+      },
+      "served": {
+        "bytes": 331136,
+        "triangles": 34890,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 155204
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 37332
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 133396,
+        "triangles": 9676
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.30990731116613884,
+        "heightError": 0.014522265839447733,
+        "heightJudged": true,
+        "body": {
+          "long": 1.8855680227279663,
+          "short": 1.7327035665512085,
+          "height": 1.9596080780029297
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's top side (score 0.94) with modelFront +x, axes swapped",
+        "head": {
+          "x": 0.1430535132979449,
+          "z": -0.4034107520630977,
+          "n": 2939
+        },
+        "swapped": true
+      },
+      "measure": {
+        "id": "k1-bowflex-xtreme-2se",
+        "servedUrl": "/models/k1-bowflex-xtreme-2se.glb",
+        "phoneUrl": "/models/k1-bowflex-xtreme-2se-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 204.99999999999997,
+          "widthCm": 130,
+          "heightCm": 210,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 34890,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 9676,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 649,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.5456336069915254
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 31.0 %, height off by 1.5 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 205.0 × 130.0 × 210.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": false,
+            "detail": "34,890 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "323 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": false,
+            "detail": "9,676 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "130 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "9,676 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "54.6 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's top side (score 0.94) with modelFront +x, axes swapped"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %",
+          "laptop copy ≤ 25,000 triangles",
+          "phone copy ≤ 7,500 triangles"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-bowflex-xtreme-2se/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-bowflex-xtreme-2se/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-bowflex-xtreme-2se/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/k1-bowflex-xtreme-2se/old-eye.webp"
+      }
+    },
+    {
+      "id": "emcar-sunpower-flex-100",
+      "entry": {
+        "url": "/models/emcar-sunpower-flex-100.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-sunpower-flex-100.webp",
+          "generated_at": "2026-09-17T11:52:38.476Z",
+          "bytes": 151540,
+          "raw_bytes": 5180860,
+          "triangles": 20000,
+          "request_id": "01a0af34-a569-7482-a80b-e1ed47697677",
+          "seconds": 101,
+          "orient": {
+            "note": "photo slab laid flat: photo face (-z) up",
+            "set": "2026-09-17T12:09:53.438Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "modelUp": "-z",
+        "phoneUrl": "/models/emcar-sunpower-flex-100-phone.glb"
+      },
+      "served": {
+        "bytes": 151540,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 63520
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 23450
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 63552,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 2.0928951930447988,
+        "heightError": 47.404780740254836,
+        "heightJudged": false,
+        "body": {
+          "long": 1.9877489805221558,
+          "short": 0.3067221939563751,
+          "height": 1.6517863273620605
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "flat",
+        "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+      },
+      "measure": {
+        "id": "emcar-sunpower-flex-100",
+        "servedUrl": "/models/emcar-sunpower-flex-100.glb",
+        "phoneUrl": "/models/emcar-sunpower-flex-100-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 116.5,
+          "widthCm": 55.599999999999994,
+          "heightCm": 1.9999999999999998,
+          "errCm": {
+            "length": 0,
+            "width": 7.105427357601002e-15,
+            "height": 2.220446049250313e-16
+          }
+        },
+        "floorM": -1.734723475976807e-18,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 5.551115123125783e-17
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 489,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.1379509362218814
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 209.3 % (flat product: thickness not judged, the fit squashes it)"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 116.5 × 55.6 × 2.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at -0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "148 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "62 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "13.8 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "flat product lies down (modelUp -z); the plan picture shows the top face"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-sunpower-flex-100/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-sunpower-flex-100/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-sunpower-flex-100/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-sunpower-flex-100/old-eye.webp"
+      }
+    },
+    {
+      "id": "emcar-victron-superpack-12-100",
+      "entry": {
+        "url": "/models/emcar-victron-superpack-12-100.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-superpack-12-100.webp",
+          "generated_at": "2026-09-17T11:53:01.162Z",
+          "bytes": 125604,
+          "raw_bytes": 1182600,
+          "triangles": 20000,
+          "request_id": "01a0af35-a81e-7a02-8c9c-9865664ba721",
+          "seconds": 57
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/emcar-victron-superpack-12-100-phone.glb"
+      },
+      "served": {
+        "bytes": 125604,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 63604
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 46144,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.6169320901684566,
+        "heightError": 0.2772385698013747,
+        "heightJudged": true,
+        "body": {
+          "long": 1.983267068862915,
+          "short": 0.6392988562583923,
+          "height": 1.6887367963790894
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "photo-side",
+        "assumed": true,
+        "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet",
+        "head": {
+          "x": 0.014033311179907242,
+          "z": -0.001869261967811022,
+          "n": 8555
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "emcar-victron-superpack-12-100",
+        "servedUrl": "/models/emcar-victron-superpack-12-100.glb",
+        "phoneUrl": "/models/emcar-victron-superpack-12-100-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 33,
+          "widthCm": 17.2,
+          "heightCm": 22.000000000000004,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 3.552713678800501e-15
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 1,
+          "texturesLoaded": 1,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 1,
+          "texturesLoaded": 1,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 534,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9639037628745318
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 61.7 %, height off by 27.7 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 33.0 × 17.2 × 22.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "1/1 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "123 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "45 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 1/1 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "96.4 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-superpack-12-100/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-superpack-12-100/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-superpack-12-100/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-superpack-12-100/old-eye.webp"
+      }
+    },
+    {
+      "id": "emcar-victron-multiplus-12-3000",
+      "entry": {
+        "url": "/models/emcar-victron-multiplus-12-3000.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-multiplus-12-3000.webp",
+          "generated_at": "2026-09-17T11:53:03.037Z",
+          "bytes": 156776,
+          "raw_bytes": 4883980,
+          "triangles": 20000,
+          "request_id": "01a0af34-d30b-74d1-b3db-7d9baab91095",
+          "seconds": 113
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/emcar-victron-multiplus-12-3000-phone.glb"
+      },
+      "served": {
+        "bytes": 156776,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 71942
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 13830
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 60512,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.17234080252135697,
+        "heightError": 0.29025102352652266,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9769220352172852,
+          "short": 1.4248608350753784,
+          "height": 1.9687165021896362
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "photo-side",
+        "assumed": true,
+        "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet",
+        "head": {
+          "x": 0.08678985167954967,
+          "z": -0.4575745370637478,
+          "n": 3604
+        },
+        "swapped": true
+      },
+      "measure": {
+        "id": "emcar-victron-multiplus-12-3000",
+        "servedUrl": "/models/emcar-victron-multiplus-12-3000.glb",
+        "phoneUrl": "/models/emcar-victron-multiplus-12-3000-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 25.8,
+          "widthCm": 21.8,
+          "heightCm": 36.2,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": -2.7755575615628914e-17
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 865,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.8947513999277457
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 17.2 %, height off by 29.0 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 25.8 × 21.8 × 36.2 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "153 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "59 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "89.5 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-multiplus-12-3000/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-multiplus-12-3000/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-multiplus-12-3000/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-multiplus-12-3000/old-eye.webp"
+      }
+    },
+    {
+      "id": "emcar-victron-phoenix-12-1200",
+      "entry": {
+        "url": "/models/emcar-victron-phoenix-12-1200.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-phoenix-12-1200.webp",
+          "generated_at": "2026-09-17T11:53:04.741Z",
+          "bytes": 100744,
+          "raw_bytes": 4103812,
+          "triangles": 20000,
+          "request_id": "01a0af35-867d-7190-9ad7-ee7699254caa",
+          "seconds": 69
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/emcar-victron-phoenix-12-1200-phone.glb"
+      },
+      "served": {
+        "bytes": 100744,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 33118
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 4152
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 37924,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.9128442899393879,
+        "heightError": 0.7803393476443251,
+        "heightJudged": true,
+        "body": {
+          "long": 1.987280011177063,
+          "short": 0.6658231019973755,
+          "height": 1.1435078382492065
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "photo-side",
+        "assumed": true,
+        "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet",
+        "head": {
+          "x": 0.013490403972710707,
+          "z": 0.16433604255335052,
+          "n": 5310
+        },
+        "swapped": true
+      },
+      "measure": {
+        "id": "emcar-victron-phoenix-12-1200",
+        "servedUrl": "/models/emcar-victron-phoenix-12-1200.glb",
+        "phoneUrl": "/models/emcar-victron-phoenix-12-1200-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 23.19999999999999,
+          "widthCm": 36.20000000000001,
+          "heightCm": 11.7,
+          "errCm": {
+            "length": 1.0658141036401503e-14,
+            "width": 7.105427357601002e-15,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": -1.3877787807814457e-17,
+          "z": 2.7755575615628914e-17
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 656,
+          "height": 1024,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9325844369283537
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 91.3 %, height off by 78.0 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 23.2 × 36.2 × 11.7 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by -0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "98 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "37 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "93.3 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-phoenix-12-1200/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-phoenix-12-1200/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-phoenix-12-1200/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-phoenix-12-1200/old-eye.webp"
+      }
+    },
+    {
+      "id": "emcar-victron-agm-200",
+      "entry": {
+        "url": "/models/emcar-victron-agm-200.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-agm-200.webp",
+          "generated_at": "2026-09-17T11:53:05.132Z",
+          "bytes": 136036,
+          "raw_bytes": 5022548,
+          "triangles": 20000,
+          "request_id": "01a0af35-b63c-74c2-9e49-8f1921b40782",
+          "seconds": 57
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/emcar-victron-agm-200-phone.glb"
+      },
+      "served": {
+        "bytes": 136036,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 62314
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 10382
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 53420,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 0.3092658202380869,
+        "heightError": 0.08617878894369198,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9857230186462402,
+          "short": 0.658150315284729,
+          "height": 1.275938868522644
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "photo-side",
+        "assumed": true,
+        "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet",
+        "head": {
+          "x": 0.09193622387416535,
+          "z": -0.0891768020271326,
+          "n": 12305
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "emcar-victron-agm-200",
+        "servedUrl": "/models/emcar-victron-agm-200.glb",
+        "phoneUrl": "/models/emcar-victron-agm-200-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 54.6,
+          "widthCm": 12.5,
+          "heightCm": 32.3,
+          "errCm": {
+            "length": 0,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 234,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.9819210737179487
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 30.9 %, height off by 8.6 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 54.6 × 12.5 × 32.3 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "133 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "52 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "98.2 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-agm-200/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-agm-200/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-agm-200/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-agm-200/old-eye.webp"
+      }
+    },
+    {
+      "id": "emcar-victron-mppt-100-30",
+      "entry": {
+        "url": "/models/emcar-victron-mppt-100-30.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-mppt-100-30.webp",
+          "generated_at": "2026-09-17T11:53:17.636Z",
+          "bytes": 148936,
+          "raw_bytes": 5395672,
+          "triangles": 20000,
+          "request_id": "01a0af35-c92b-70c2-9064-901664386438",
+          "seconds": 65
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/emcar-victron-mppt-100-30-phone.glb"
+      },
+      "served": {
+        "bytes": 148936,
+        "triangles": 20000,
+        "textures": [
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 72374
+          },
+          {
+            "mime": "image/webp",
+            "labelled": "image/webp",
+            "bytes": 14404
+          }
+        ]
+      },
+      "phone": {
+        "bytes": 60624,
+        "triangles": 5000
+      },
+      "shape": {
+        "pass": false,
+        "aspectError": 1.5310530346796565,
+        "heightError": 0.012970297213295234,
+        "heightJudged": true,
+        "body": {
+          "long": 1.9880039691925049,
+          "short": 0.29559773206710815,
+          "height": 1.407486915588379
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "photo-side",
+        "assumed": true,
+        "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet",
+        "head": {
+          "x": 0.08796154400966456,
+          "z": -0.27373019988838704,
+          "n": 4006
+        },
+        "swapped": false
+      },
+      "measure": {
+        "id": "emcar-victron-mppt-100-30",
+        "servedUrl": "/models/emcar-victron-mppt-100-30.glb",
+        "phoneUrl": "/models/emcar-victron-mppt-100-30-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 18.600000000000005,
+          "widthCm": 7.000000000000001,
+          "heightCm": 13,
+          "errCm": {
+            "length": 3.552713678800501e-15,
+            "width": 8.881784197001252e-16,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 1.3877787807814457e-17,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 385,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.6722909902597403
+          }
+        }
+      },
+      "gate": {
+        "pass": false,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": false,
+            "detail": "footprint aspect off by 153.1 %, height off by 1.3 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 18.6 × 7.0 × 13.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "145 KB"
+          },
+          {
+            "name": "phone copy ≤ 7,500 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "59 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "67.2 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "no plan art for this product: the front is the photo side (tool default modelFront +z); the eye confirms it on the sheet"
+          }
+        ],
+        "failed": [
+          "raw shape within 15 %"
+        ]
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-mppt-100-30/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-mppt-100-30/old-catalogue.webp",
+        "plan": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-mppt-100-30/old-plan.webp",
+        "eye": "docs/product-engine/runs/2026-11-08-gate/evidence/emcar-victron-mppt-100-30/old-eye.webp"
+      }
+    }
+  ],
+  "madePhone": [
+    {
+      "id": "k1-nordictrack-gx10",
+      "phoneUrl": "/models/k1-nordictrack-gx10-phone.glb",
+      "bytes": 81304,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "phoneUrl": "/models/k1-nordictrack-2450-phone.glb",
+      "bytes": 50168,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-nordictrack-tour-de-france",
+      "phoneUrl": "/models/k1-nordictrack-tour-de-france-phone.glb",
+      "bytes": 94448,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-schwinn-700ic",
+      "phoneUrl": "/models/k1-schwinn-700ic-phone.glb",
+      "bytes": 75904,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-proform-carbon-tl",
+      "phoneUrl": "/models/k1-proform-carbon-tl-phone.glb",
+      "bytes": 56468,
+      "triangles": 6580
+    },
+    {
+      "id": "k1-nordictrack-rw900",
+      "phoneUrl": "/models/k1-nordictrack-rw900-phone.glb",
+      "bytes": 79716,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-nordictrack-x16",
+      "phoneUrl": "/models/k1-nordictrack-x16-phone.glb",
+      "bytes": 68428,
+      "triangles": 4998
+    },
+    {
+      "id": "k1-vision-t600-03",
+      "phoneUrl": "/models/k1-vision-t600-03-phone.glb",
+      "bytes": 65872,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-matrix-mg-glute",
+      "phoneUrl": "/models/k1-matrix-mg-glute-phone.glb",
+      "bytes": 39148,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-vision-t600e-02",
+      "phoneUrl": "/models/k1-vision-t600e-02-phone.glb",
+      "bytes": 65872,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-matrix-versa-adabd",
+      "phoneUrl": "/models/k1-matrix-versa-adabd-phone.glb",
+      "bytes": 56128,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-vision-smith",
+      "phoneUrl": "/models/k1-vision-smith-phone.glb",
+      "bytes": 71140,
+      "triangles": 5000
+    },
+    {
+      "id": "emcar-victron-175",
+      "phoneUrl": "/models/emcar-victron-175-phone.glb",
+      "bytes": 76432,
+      "triangles": 5000
+    },
+    {
+      "id": "emcar-jinko-475",
+      "phoneUrl": "/models/emcar-jinko-475-phone.glb",
+      "bytes": 76776,
+      "triangles": 5000
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "phoneUrl": "/models/k1-bowflex-xtreme-2se-phone.glb",
+      "bytes": 133396,
+      "triangles": 9676
+    },
+    {
+      "id": "emcar-sunpower-flex-100",
+      "phoneUrl": "/models/emcar-sunpower-flex-100-phone.glb",
+      "bytes": 63552,
+      "triangles": 5000
+    },
+    {
+      "id": "emcar-victron-superpack-12-100",
+      "phoneUrl": "/models/emcar-victron-superpack-12-100-phone.glb",
+      "bytes": 46144,
+      "triangles": 5000
+    },
+    {
+      "id": "emcar-victron-multiplus-12-3000",
+      "phoneUrl": "/models/emcar-victron-multiplus-12-3000-phone.glb",
+      "bytes": 60512,
+      "triangles": 5000
+    },
+    {
+      "id": "emcar-victron-phoenix-12-1200",
+      "phoneUrl": "/models/emcar-victron-phoenix-12-1200-phone.glb",
+      "bytes": 37924,
+      "triangles": 5000
+    },
+    {
+      "id": "emcar-victron-agm-200",
+      "phoneUrl": "/models/emcar-victron-agm-200-phone.glb",
+      "bytes": 53420,
+      "triangles": 5000
+    },
+    {
+      "id": "emcar-victron-mppt-100-30",
+      "phoneUrl": "/models/emcar-victron-mppt-100-30-phone.glb",
+      "bytes": 60624,
+      "triangles": 5000
+    }
+  ]
+}

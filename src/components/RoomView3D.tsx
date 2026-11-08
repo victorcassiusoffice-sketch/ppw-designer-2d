@@ -99,7 +99,7 @@ import { resolvedWallSurfaces, constructionHex, paintSide } from '../designer/wa
 import { findCladdingProduct } from '../data/claddingCatalog';
 import { getProductById, productImageUrl, productTopDownUrl } from '../data/products';
 import { hasFurniturePreview, FURNITURE_PREVIEW_NOTE } from '../data/dimensionalPreview';
-import { productModelFor } from '../data/productModels';
+import { bodyUrlFor, productModelFor } from '../data/productModels';
 import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPreview';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
 import { RoomViewControls, type CameraView } from './RoomViewControls';
@@ -342,7 +342,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
         fill: itemFillForCategory(p.category),
         productId: p.id,
         frontEdge: p.front_edge,
-        meshUrl: body?.url,
+        meshUrl: body ? bodyUrlFor(body) : undefined,
         preferMesh: body?.preferMesh,
         modelFront: body?.modelFront,
         lengthAxis: body?.lengthAxis,
@@ -820,7 +820,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       z0: elevationM + mountM, z1: elevationM + mountM + heightM,
       rotationDeg: pose.rotation, lengthM: product.dimensions_cm.length / 100, widthM: product.dimensions_cm.width / 100, heightM,
       hex: itemFillForCategory(product.category), placement, frontEdge: product.front_edge,
-      meshUrl: model?.url, preferMesh: model?.preferMesh, modelFront: model?.modelFront, modelUp: model?.modelUp, lengthAxis: model?.lengthAxis };
+      meshUrl: model ? bodyUrlFor(model) : undefined, preferMesh: model?.preferMesh, modelFront: model?.modelFront, modelUp: model?.modelUp, lengthAxis: model?.lengthAxis };
     if (placement === 'roof' && showRoof) {
       const owner = property.rooms.find(room => isRoofRoom(room) && room.levelId === level && pointInPolygon({ x: pose.xM + pose.w / 2, y: pose.yM + pose.h / 2 }, room.polygon));
       const surface = owner && createRoofSurface(owner.polygon, elevationM, roofConfigOf(property));

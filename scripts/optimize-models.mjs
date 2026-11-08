@@ -63,6 +63,10 @@ export async function optimizeGlb(inPath, outPath, opts = {}) {
     }
   }
   const ratio = opts.ratio ?? Math.min(1, target / Math.max(1, rawTriangles));
+  // The simplifier's error bound (a fraction of the mesh radius). 0.001 keeps a laptop body's
+  // silhouette; a phone copy from an already-simplified body needs a looser bound to reach
+  // its target (product engine, 2026-11-08: 0.001 stopped at 14-23 k triangles instead of 5 k).
+  const error = opts.error ?? 0.001;
   // 1. Trust the bytes, not the label.
   for (const tex of doc.getRoot().listTextures()) {
     const real = sniffMime(tex.getImage() ?? new Uint8Array());
@@ -75,7 +79,7 @@ export async function optimizeGlb(inPath, outPath, opts = {}) {
   );
   // 3. Geometry: weld, simplify (bounded error), then Draco.
   await MeshoptSimplifier.ready;
-  await doc.transform(dedup(), weld(), simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.001 }), prune(), draco({ method: 'edgebreaker' }));
+  await doc.transform(dedup(), weld(), simplify({ simplifier: MeshoptSimplifier, ratio, error }), prune(), draco({ method: 'edgebreaker' }));
   await io.write(outPath, doc);
   let triangles = 0;
   for (const mesh of doc.getRoot().listMeshes()) {

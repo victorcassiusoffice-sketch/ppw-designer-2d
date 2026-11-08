@@ -1,0 +1,7 @@
+{
+  "_about": "Hand flags the photo audit cannot see by itself. A row here overrides the automatic verdict. status: wrong | usable. Keep the why short.",
+  "k1-bench-adjustable-fid": {
+    "status": "wrong",
+    "why": "the photo is a Rogue bench accessory kit (bracket, plate, bolts), not the bench; found 17 Sep 2026 when the generator built a bracket. A real bench photo is needed."
+  }
+}

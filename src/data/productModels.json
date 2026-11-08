@@ -20,7 +20,8 @@
       }
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-nordictrack-gx10-phone.glb"
   },
   "k1-nordictrack-2450": {
     "url": "/models/k1-nordictrack-2450.glb",
@@ -43,7 +44,8 @@
       }
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-nordictrack-2450-phone.glb"
   },
   "k1-nordictrack-tour-de-france": {
     "url": "/models/k1-nordictrack-tour-de-france.glb",
@@ -66,7 +68,8 @@
       }
     },
     "modelFront": "-z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-nordictrack-tour-de-france-phone.glb"
   },
   "k1-schwinn-700ic": {
     "url": "/models/k1-schwinn-700ic.glb",
@@ -89,7 +92,8 @@
       }
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-schwinn-700ic-phone.glb"
   },
   "k1-proform-carbon-tl": {
     "url": "/models/k1-proform-carbon-tl.glb",
@@ -112,7 +116,8 @@
       }
     },
     "modelFront": "-z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-proform-carbon-tl-phone.glb"
   },
   "k1-nordictrack-rw900": {
     "url": "/models/k1-nordictrack-rw900.glb",
@@ -135,7 +140,8 @@
       }
     },
     "modelFront": "-z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-nordictrack-rw900-phone.glb"
   },
   "k1-nordictrack-x16": {
     "url": "/models/k1-nordictrack-x16.glb",
@@ -158,7 +164,8 @@
       }
     },
     "modelFront": "-z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-nordictrack-x16-phone.glb"
   },
   "k1-vision-t600-03": {
     "url": "/models/k1-vision-t600-03.glb",
@@ -181,7 +188,8 @@
       }
     },
     "modelFront": "-z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-vision-t600-03-phone.glb"
   },
   "k1-matrix-mg-glute": {
     "url": "/models/k1-matrix-mg-glute.glb",
@@ -196,7 +204,8 @@
       "seconds": 208
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-matrix-mg-glute-phone.glb"
   },
   "k1-vision-t600e-02": {
     "url": "/models/k1-vision-t600e-02.glb",
@@ -219,7 +228,8 @@
       }
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-vision-t600e-02-phone.glb"
   },
   "k1-matrix-versa-adabd": {
     "url": "/models/k1-matrix-versa-adabd.glb",
@@ -242,7 +252,8 @@
       }
     },
     "modelFront": "-z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-matrix-versa-adabd-phone.glb"
   },
   "k1-vision-smith": {
     "url": "/models/k1-vision-smith.glb",
@@ -265,7 +276,8 @@
       }
     },
     "modelFront": "-z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-vision-smith-phone.glb"
   },
   "emcar-victron-175": {
     "url": "/models/emcar-victron-175.glb",
@@ -285,7 +297,8 @@
     },
     "modelFront": "+z",
     "lengthAxis": "auto",
-    "modelUp": "-z"
+    "modelUp": "-z",
+    "phoneUrl": "/models/emcar-victron-175-phone.glb"
   },
   "emcar-jinko-475": {
     "url": "/models/emcar-jinko-475.glb",
@@ -305,7 +318,8 @@
     },
     "modelFront": "+z",
     "lengthAxis": "auto",
-    "modelUp": "-z"
+    "modelUp": "-z",
+    "phoneUrl": "/models/emcar-jinko-475-phone.glb"
   },
   "k1-bowflex-xtreme-2se": {
     "url": "/models/k1-bowflex-xtreme-2se.glb",
@@ -328,7 +342,8 @@
       }
     },
     "modelFront": "+x",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/k1-bowflex-xtreme-2se-phone.glb"
   },
   "emcar-sunpower-flex-100": {
     "url": "/models/emcar-sunpower-flex-100.glb",
@@ -348,7 +363,8 @@
     },
     "modelFront": "+z",
     "lengthAxis": "auto",
-    "modelUp": "-z"
+    "modelUp": "-z",
+    "phoneUrl": "/models/emcar-sunpower-flex-100-phone.glb"
   },
   "emcar-victron-superpack-12-100": {
     "url": "/models/emcar-victron-superpack-12-100.glb",
@@ -363,7 +379,8 @@
       "seconds": 57
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/emcar-victron-superpack-12-100-phone.glb"
   },
   "emcar-victron-multiplus-12-3000": {
     "url": "/models/emcar-victron-multiplus-12-3000.glb",
@@ -378,7 +395,8 @@
       "seconds": 113
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/emcar-victron-multiplus-12-3000-phone.glb"
   },
   "emcar-victron-phoenix-12-1200": {
     "url": "/models/emcar-victron-phoenix-12-1200.glb",
@@ -393,7 +411,8 @@
       "seconds": 69
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/emcar-victron-phoenix-12-1200-phone.glb"
   },
   "emcar-victron-agm-200": {
     "url": "/models/emcar-victron-agm-200.glb",
@@ -408,7 +427,8 @@
       "seconds": 57
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/emcar-victron-agm-200-phone.glb"
   },
   "emcar-victron-mppt-100-30": {
     "url": "/models/emcar-victron-mppt-100-30.glb",
@@ -423,6 +443,7 @@
       "seconds": 65
     },
     "modelFront": "+z",
-    "lengthAxis": "auto"
+    "lengthAxis": "auto",
+    "phoneUrl": "/models/emcar-victron-mppt-100-30-phone.glb"
   }
 }
