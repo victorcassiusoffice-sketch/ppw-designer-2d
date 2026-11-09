@@ -1,0 +1,106 @@
+/* Build look tokens, version 1. One Live Build and Trade Folder, shared screens only.
+   Cut byte for byte from the vault handoff OLB-TRADEFOLDER-INTEGRATION-2026-10-27.md; tests compare SHA-256.
+   Each app sets its own fonts in --build-font-text and --build-font-display.
+   Contrast computed 27 Oct 2026: chip ink on chip tint 6.9:1 or more; status colour on the page 3:1 or more. */
+:root {
+  --build-font-text: system-ui, sans-serif;
+  --build-font-display: var(--build-font-text);
+  --build-sp-1: 6px;
+  --build-sp-2: 10px;
+  --build-sp-3: 14px;
+  --build-sp-4: 20px;
+  --build-sp-5: 28px;
+  --build-sp-6: 36px;
+  --build-sp-7: 48px;
+  --build-type-caption: 12px;
+  --build-type-label: 14px;
+  --build-type-body: 16px;
+  --build-type-lead: 20px;
+  --build-type-title: 28px;
+  --build-type-display: 36px;
+  --build-radius-lg: 20px;
+  --build-radius-md: 14px;
+  --build-radius-sm: 10px;
+  --build-radius-pill: 999px;
+  --build-tap: 48px;
+  --build-ease: cubic-bezier(0.2, 0, 0.2, 1);
+  --build-dur-fast: 150ms;
+  --build-dur-base: 220ms;
+  --build-dur-slow: 320ms;
+  --build-shadow-1: 0 1px 2px rgba(38, 34, 28, 0.06), 0 2px 6px rgba(38, 34, 28, 0.06);
+  --build-shadow-2: 0 2px 4px rgba(38, 34, 28, 0.06), 0 8px 24px rgba(38, 34, 28, 0.08);
+  --build-draft: #7b7b84;
+  --build-draft-tint: #ececee;
+  --build-draft-ink: #3f3f47;
+  --build-sent: #4a7aa6;
+  --build-sent-tint: #e3edf6;
+  --build-sent-ink: #244d72;
+  --build-quote: #876194;
+  --build-quote-tint: #efe6f3;
+  --build-quote-ink: #563a63;
+  --build-booked: #6871a1;
+  --build-booked-tint: #e6e8f4;
+  --build-booked-ink: #3a4174;
+  --build-working: #938428;
+  --build-working-tint: #f2eecd;
+  --build-working-ink: #574d12;
+  --build-done: #3d8580;
+  --build-done-tint: #dcefed;
+  --build-done-ink: #1f5754;
+  --build-invoiced: #9a647f;
+  --build-invoiced-tint: #f4e5ec;
+  --build-invoiced-ink: #663a50;
+  --build-paid: #48735d;
+  --build-paid-tint: #dfede4;
+  --build-paid-ink: #274a39;
+  --build-lost: #797981;
+  --build-lost-tint: #ebebee;
+  --build-lost-ink: #45454d;
+  --build-changed: #a9602a;
+  --build-changed-tint: #f6e6d7;
+  --build-changed-ink: #6f3a12;
+}
+:root[data-theme='dark'] {
+  --build-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --build-shadow-2: 0 2px 4px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --build-draft: #a3a3ab;
+  --build-draft-tint: #2c2c31;
+  --build-draft-ink: #e2e2e7;
+  --build-sent: #7fb0dc;
+  --build-sent-tint: #1d2c3a;
+  --build-sent-ink: #cfe3f5;
+  --build-quote: #b996c6;
+  --build-quote-tint: #2e2333;
+  --build-quote-ink: #ead9f1;
+  --build-booked: #9ea6d6;
+  --build-booked-tint: #23263a;
+  --build-booked-ink: #dde1f6;
+  --build-working: #cdbb52;
+  --build-working-tint: #2f2b14;
+  --build-working-ink: #f1e8b4;
+  --build-done: #6fc0b9;
+  --build-done-tint: #16302e;
+  --build-done-ink: #cdeeea;
+  --build-invoiced: #cf98b3;
+  --build-invoiced-tint: #33222b;
+  --build-invoiced-ink: #f4dbe7;
+  --build-paid: #7fb898;
+  --build-paid-tint: #18291f;
+  --build-paid-ink: #d4eddf;
+  --build-lost: #a5a5ad;
+  --build-lost-tint: #2a2a2f;
+  --build-lost-ink: #e3e3e8;
+  --build-changed: #e0955c;
+  --build-changed-tint: #33231a;
+  --build-changed-ink: #f6dcc8;
+}
+.build-num {
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --build-dur-fast: 0ms;
+    --build-dur-base: 0ms;
+    --build-dur-slow: 0ms;
+  }
+}

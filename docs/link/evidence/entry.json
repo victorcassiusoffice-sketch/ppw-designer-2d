@@ -1,0 +1,781 @@
+{
+  "method": "Local compiled static closures; byte-for-byte SHA-256 plus raw and per-file gzip. Public App, ThreeStage, DemoDesignerPage and main and their transitive static imports; includes House startup preload JS/CSS. Dynamic graph checked separately for private leakage. HTML selector overhead listed separately (baseline can be Vite-only, before its existing pitch finalizer); not a timing benchmark.",
+  "baseline": {
+    "roots": {
+      "main": "assets/main-CF-ba9-e.js",
+      "App": "assets/App-B5wwESDr.js",
+      "ThreeStage": "assets/ThreeStage-ni7ySFBK.js",
+      "DemoDesignerPage": "assets/DemoDesignerPage-Cb8y6-fB.js"
+    },
+    "perEntry": {
+      "main": {
+        "files": 3,
+        "raw": 251834,
+        "gzip": 85303
+      },
+      "App": {
+        "files": 24,
+        "raw": 2063798,
+        "gzip": 644805
+      },
+      "ThreeStage": {
+        "files": 15,
+        "raw": 1419375,
+        "gzip": 412227
+      },
+      "DemoDesignerPage": {
+        "files": 26,
+        "raw": 2069360,
+        "gzip": 647500
+      }
+    },
+    "early": [
+      {
+        "file": "assets/App-B5TQ62NV.css",
+        "raw": 209838,
+        "gzip": 38416,
+        "sha256": "cbca14f206150850e0736c5daa790cda799b9c8d662f821e8f94ea343e46c6c7"
+      },
+      {
+        "file": "assets/App-B5wwESDr.js",
+        "raw": 1103400,
+        "gzip": 337711,
+        "sha256": "8c87d6233cb123369a92d50de29e8749b07a88b94afb0580d969b48ceab090a7"
+      },
+      {
+        "file": "assets/CurrencySwitcher-w9XGT_dF.js",
+        "raw": 2642,
+        "gzip": 1446,
+        "sha256": "c24213fd75b7de53d8c012cd40f0420b61ee53af5ad8c873765bcf24cd5cb791"
+      },
+      {
+        "file": "assets/DemoDesignerPage-Cb8y6-fB.js",
+        "raw": 4846,
+        "gzip": 2376,
+        "sha256": "fd5d17d2f3bdb67dfcb716def1fa024fbd85c0c4c3b845778926b1f68f5c3259"
+      },
+      {
+        "file": "assets/LocaleThemeControls-D-PiKnP0.js",
+        "raw": 3170,
+        "gzip": 1308,
+        "sha256": "a7595bacd18e5a6e0ad9dd3f659ac62f5a04c8ffe2cf30620e294821428b8f17"
+      },
+      {
+        "file": "assets/RequireMerchant-BvJGo3r3.js",
+        "raw": 5153,
+        "gzip": 2292,
+        "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a"
+      },
+      {
+        "file": "assets/ThreeStage-ni7ySFBK.js",
+        "raw": 96804,
+        "gzip": 33873,
+        "sha256": "ca349c90ef121e34b45fea6d3a214405a8a2fa03ef0fb1768e22dac4dcc70802"
+      },
+      {
+        "file": "assets/buildSkinStore-BHv0hLR7.js",
+        "raw": 744,
+        "gzip": 460,
+        "sha256": "7ed6c65b612c1a9db3bfad1f6973812b9e13337a68d79631c0b5acdb4b88be52"
+      },
+      {
+        "file": "assets/buildingServices-CHMEMEWI.js",
+        "raw": 187873,
+        "gzip": 56335,
+        "sha256": "2ecfe7abb5b8ebc6f72f0dbaa109a34ef90fd7d2ce35cf25b5a05bb7ac58a4a2"
+      },
+      {
+        "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
+        "raw": 6105,
+        "gzip": 2573,
+        "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87"
+      },
+      {
+        "file": "assets/cartStore-9E2Wqe3d.js",
+        "raw": 12564,
+        "gzip": 4556,
+        "sha256": "052c0b0dee27388162c54218f89a902d43e8a81780474d1c6d6fb1243e1de45a"
+      },
+      {
+        "file": "assets/commission-BSjTNLTx.js",
+        "raw": 52,
+        "gzip": 72,
+        "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09"
+      },
+      {
+        "file": "assets/currency-BJM98sMj.js",
+        "raw": 325,
+        "gzip": 253,
+        "sha256": "d64f7348228267db932666dcf6d004fecc96af6840e7acb5fe8e09e2b6a71b26"
+      },
+      {
+        "file": "assets/designsApi-C7T9eg7c.js",
+        "raw": 16071,
+        "gzip": 5351,
+        "sha256": "ee52af32885d8865844c2f08a70d286e60d94ce4cf4d51a1da0a30a418e91a99"
+      },
+      {
+        "file": "assets/downloadJson-DhXa1J4E.js",
+        "raw": 276,
+        "gzip": 233,
+        "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad"
+      },
+      {
+        "file": "assets/embedMessages-BIa44F5a.js",
+        "raw": 716,
+        "gzip": 319,
+        "sha256": "eca3fa419597e6f5c6148696fec50907ca90341605dd329622c18a1945f0734e"
+      },
+      {
+        "file": "assets/main-CB3fRIv-.css",
+        "raw": 74931,
+        "gzip": 14845,
+        "sha256": "887507e9cc6ad254c8b621802fa14c9d799f9ac9b3b17dcef57f0c4b3fd02ea4"
+      },
+      {
+        "file": "assets/main-CF-ba9-e.js",
+        "raw": 87906,
+        "gzip": 31645,
+        "sha256": "6599bd2b84ea3345fc942918326ddd1e88b83e4379671fb7109c2640b3643ceb"
+      },
+      {
+        "file": "assets/merchantFurniture-ZuMdbwJD.js",
+        "raw": 2710,
+        "gzip": 1372,
+        "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1"
+      },
+      {
+        "file": "assets/middleware-BoNmX9tp.js",
+        "raw": 3758,
+        "gzip": 1361,
+        "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41"
+      },
+      {
+        "file": "assets/productImageSafety-CDXX3Z8N.js",
+        "raw": 434,
+        "gzip": 292,
+        "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac"
+      },
+      {
+        "file": "assets/productSurfaceLighting-DydIkrqH.js",
+        "raw": 37587,
+        "gzip": 14023,
+        "sha256": "cf950fee2d09e783f0d95b76f471e2befcecc02ef4969bdaa47a54eaa768d7c2"
+      },
+      {
+        "file": "assets/propertyStore-Bz6hyYv2.js",
+        "raw": 90799,
+        "gzip": 30384,
+        "sha256": "90493bb71e9fe29cedc75508d71ca3151e8cecd0eb43a66c9c30914e792f0ac9"
+      },
+      {
+        "file": "assets/quotedProducts-2NCXztC6.js",
+        "raw": 392,
+        "gzip": 265,
+        "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae"
+      },
+      {
+        "file": "assets/renderQualityStore-C9bUrQhM.js",
+        "raw": 27262,
+        "gzip": 10880,
+        "sha256": "4bfac3218bcf0d2d3de8a8ab4b1c9f7a453580af477559672bf21d22392e2173"
+      },
+      {
+        "file": "assets/serviceFixtureMeshes-BrBGCkwR.js",
+        "raw": 4345,
+        "gzip": 1877,
+        "sha256": "d174601a8824c294b2c4212d4dd7d225bbb48986b0f00f7d53613a752f2b924f"
+      },
+      {
+        "file": "assets/showcaseSafety-vfpeCbFJ.js",
+        "raw": 721,
+        "gzip": 457,
+        "sha256": "784273dbc0943a415aefb1fe20b10008a55b8d87b542b08be024d80e635cabc2"
+      },
+      {
+        "file": "assets/types-BR-OoGj9.js",
+        "raw": 54910,
+        "gzip": 12621,
+        "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7"
+      },
+      {
+        "file": "assets/vendor-konva-Bc1v_MBG.js",
+        "raw": 292603,
+        "gzip": 89280,
+        "sha256": "3943d83c5bae1c7f254e3adb9504abb635b62d7ec0013d58154bdd8743c335ef"
+      },
+      {
+        "file": "assets/vendor-react-CS4MHxMm.js",
+        "raw": 142362,
+        "gzip": 45622,
+        "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d"
+      },
+      {
+        "file": "assets/vendor-router-YSxUxVSZ.js",
+        "raw": 21566,
+        "gzip": 8036,
+        "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96"
+      },
+      {
+        "file": "assets/vendor-three-DcegUlMo.js",
+        "raw": 745009,
+        "gzip": 191257,
+        "sha256": "c5732deb6d9bc1302f24ff23f1bac195ebe54db2a05036818aac0cfce61ea0dc"
+      }
+    ],
+    "total": {
+      "files": 32,
+      "raw": 3237874,
+      "gzip": 941791
+    },
+    "leaks": []
+  },
+  "candidate": {
+    "roots": {
+      "main": "assets/main-CF-ba9-e.js",
+      "App": "assets/App-B5wwESDr.js",
+      "ThreeStage": "assets/ThreeStage-ni7ySFBK.js",
+      "DemoDesignerPage": "assets/DemoDesignerPage-Cb8y6-fB.js"
+    },
+    "perEntry": {
+      "main": {
+        "files": 3,
+        "raw": 251834,
+        "gzip": 85303
+      },
+      "App": {
+        "files": 24,
+        "raw": 2063798,
+        "gzip": 644805
+      },
+      "ThreeStage": {
+        "files": 15,
+        "raw": 1419375,
+        "gzip": 412227
+      },
+      "DemoDesignerPage": {
+        "files": 26,
+        "raw": 2069360,
+        "gzip": 647500
+      }
+    },
+    "early": [
+      {
+        "file": "assets/App-B5TQ62NV.css",
+        "raw": 209838,
+        "gzip": 38416,
+        "sha256": "cbca14f206150850e0736c5daa790cda799b9c8d662f821e8f94ea343e46c6c7"
+      },
+      {
+        "file": "assets/App-B5wwESDr.js",
+        "raw": 1103400,
+        "gzip": 337711,
+        "sha256": "8c87d6233cb123369a92d50de29e8749b07a88b94afb0580d969b48ceab090a7"
+      },
+      {
+        "file": "assets/CurrencySwitcher-w9XGT_dF.js",
+        "raw": 2642,
+        "gzip": 1446,
+        "sha256": "c24213fd75b7de53d8c012cd40f0420b61ee53af5ad8c873765bcf24cd5cb791"
+      },
+      {
+        "file": "assets/DemoDesignerPage-Cb8y6-fB.js",
+        "raw": 4846,
+        "gzip": 2376,
+        "sha256": "fd5d17d2f3bdb67dfcb716def1fa024fbd85c0c4c3b845778926b1f68f5c3259"
+      },
+      {
+        "file": "assets/LocaleThemeControls-D-PiKnP0.js",
+        "raw": 3170,
+        "gzip": 1308,
+        "sha256": "a7595bacd18e5a6e0ad9dd3f659ac62f5a04c8ffe2cf30620e294821428b8f17"
+      },
+      {
+        "file": "assets/RequireMerchant-BvJGo3r3.js",
+        "raw": 5153,
+        "gzip": 2292,
+        "sha256": "4c99dbb51caa75d74466531e328055fae6ae5f3e6dcc99ffe11d7663eabc067a"
+      },
+      {
+        "file": "assets/ThreeStage-ni7ySFBK.js",
+        "raw": 96804,
+        "gzip": 33873,
+        "sha256": "ca349c90ef121e34b45fea6d3a214405a8a2fa03ef0fb1768e22dac4dcc70802"
+      },
+      {
+        "file": "assets/buildSkinStore-BHv0hLR7.js",
+        "raw": 744,
+        "gzip": 460,
+        "sha256": "7ed6c65b612c1a9db3bfad1f6973812b9e13337a68d79631c0b5acdb4b88be52"
+      },
+      {
+        "file": "assets/buildingServices-CHMEMEWI.js",
+        "raw": 187873,
+        "gzip": 56335,
+        "sha256": "2ecfe7abb5b8ebc6f72f0dbaa109a34ef90fd7d2ce35cf25b5a05bb7ac58a4a2"
+      },
+      {
+        "file": "assets/buildingServicesCatalog-gFhvLWEg.js",
+        "raw": 6105,
+        "gzip": 2573,
+        "sha256": "8624f5e33dbca491f9c3e82d6e8e62576f671cf72a26f7019d34dc22730f7c87"
+      },
+      {
+        "file": "assets/cartStore-9E2Wqe3d.js",
+        "raw": 12564,
+        "gzip": 4556,
+        "sha256": "052c0b0dee27388162c54218f89a902d43e8a81780474d1c6d6fb1243e1de45a"
+      },
+      {
+        "file": "assets/commission-BSjTNLTx.js",
+        "raw": 52,
+        "gzip": 72,
+        "sha256": "5b790d824a31c21a2ada49a89fbba9d12237723c6198fe99928f0bbdb1f73e09"
+      },
+      {
+        "file": "assets/currency-BJM98sMj.js",
+        "raw": 325,
+        "gzip": 253,
+        "sha256": "d64f7348228267db932666dcf6d004fecc96af6840e7acb5fe8e09e2b6a71b26"
+      },
+      {
+        "file": "assets/designsApi-C7T9eg7c.js",
+        "raw": 16071,
+        "gzip": 5351,
+        "sha256": "ee52af32885d8865844c2f08a70d286e60d94ce4cf4d51a1da0a30a418e91a99"
+      },
+      {
+        "file": "assets/downloadJson-DhXa1J4E.js",
+        "raw": 276,
+        "gzip": 233,
+        "sha256": "23702cf2049c3dab613ab3e8f35424a037d2724d2b95b665c19f8408277711ad"
+      },
+      {
+        "file": "assets/embedMessages-BIa44F5a.js",
+        "raw": 716,
+        "gzip": 319,
+        "sha256": "eca3fa419597e6f5c6148696fec50907ca90341605dd329622c18a1945f0734e"
+      },
+      {
+        "file": "assets/main-CB3fRIv-.css",
+        "raw": 74931,
+        "gzip": 14845,
+        "sha256": "887507e9cc6ad254c8b621802fa14c9d799f9ac9b3b17dcef57f0c4b3fd02ea4"
+      },
+      {
+        "file": "assets/main-CF-ba9-e.js",
+        "raw": 87906,
+        "gzip": 31645,
+        "sha256": "6599bd2b84ea3345fc942918326ddd1e88b83e4379671fb7109c2640b3643ceb"
+      },
+      {
+        "file": "assets/merchantFurniture-ZuMdbwJD.js",
+        "raw": 2710,
+        "gzip": 1372,
+        "sha256": "fdc4778e4ab0fa7ad62d1b300fddf00591be0ac7a39f2af171917c4764ba2fd1"
+      },
+      {
+        "file": "assets/middleware-BoNmX9tp.js",
+        "raw": 3758,
+        "gzip": 1361,
+        "sha256": "0c0ccfa6008a209b080c6e288788fc8444113de02a6cc9047a1e6bca97dcdf41"
+      },
+      {
+        "file": "assets/productImageSafety-CDXX3Z8N.js",
+        "raw": 434,
+        "gzip": 292,
+        "sha256": "87bf55821f9fe3572f30f0d15ae72ba45adb58994c11fc7cf3dc4ca3eea84aac"
+      },
+      {
+        "file": "assets/productSurfaceLighting-DydIkrqH.js",
+        "raw": 37587,
+        "gzip": 14023,
+        "sha256": "cf950fee2d09e783f0d95b76f471e2befcecc02ef4969bdaa47a54eaa768d7c2"
+      },
+      {
+        "file": "assets/propertyStore-Bz6hyYv2.js",
+        "raw": 90799,
+        "gzip": 30384,
+        "sha256": "90493bb71e9fe29cedc75508d71ca3151e8cecd0eb43a66c9c30914e792f0ac9"
+      },
+      {
+        "file": "assets/quotedProducts-2NCXztC6.js",
+        "raw": 392,
+        "gzip": 265,
+        "sha256": "7055bddbfbcb10c49b33f54310543f654678906dd894ef9c3a4373bdb370a1ae"
+      },
+      {
+        "file": "assets/renderQualityStore-C9bUrQhM.js",
+        "raw": 27262,
+        "gzip": 10880,
+        "sha256": "4bfac3218bcf0d2d3de8a8ab4b1c9f7a453580af477559672bf21d22392e2173"
+      },
+      {
+        "file": "assets/serviceFixtureMeshes-BrBGCkwR.js",
+        "raw": 4345,
+        "gzip": 1877,
+        "sha256": "d174601a8824c294b2c4212d4dd7d225bbb48986b0f00f7d53613a752f2b924f"
+      },
+      {
+        "file": "assets/showcaseSafety-vfpeCbFJ.js",
+        "raw": 721,
+        "gzip": 457,
+        "sha256": "784273dbc0943a415aefb1fe20b10008a55b8d87b542b08be024d80e635cabc2"
+      },
+      {
+        "file": "assets/types-BR-OoGj9.js",
+        "raw": 54910,
+        "gzip": 12621,
+        "sha256": "384ad74d544ec8784044ee311ef2185e41608b1eb8aa7078b87e7b31704749b7"
+      },
+      {
+        "file": "assets/vendor-konva-Bc1v_MBG.js",
+        "raw": 292603,
+        "gzip": 89280,
+        "sha256": "3943d83c5bae1c7f254e3adb9504abb635b62d7ec0013d58154bdd8743c335ef"
+      },
+      {
+        "file": "assets/vendor-react-CS4MHxMm.js",
+        "raw": 142362,
+        "gzip": 45622,
+        "sha256": "78c12159127eb5210a3c6d1150a83df9e465d2f94e64544ea03c4bb8473a833d"
+      },
+      {
+        "file": "assets/vendor-router-YSxUxVSZ.js",
+        "raw": 21566,
+        "gzip": 8036,
+        "sha256": "8b108eefb296d8e18925dd084c19f7fb2a65e9572a34e201937b90a05612da96"
+      },
+      {
+        "file": "assets/vendor-three-DcegUlMo.js",
+        "raw": 745009,
+        "gzip": 191257,
+        "sha256": "c5732deb6d9bc1302f24ff23f1bac195ebe54db2a05036818aac0cfce61ea0dc"
+      }
+    ],
+    "total": {
+      "files": 32,
+      "raw": 3237874,
+      "gzip": 941791
+    },
+    "leaks": []
+  },
+  "htmlBytes": {
+    "index.html": {
+      "before": {
+        "raw": 4149,
+        "gzip": 1944,
+        "sha256": "965a69d06cb3da1e438ec8af39e6017c41964aaedba239172d09b28e7d970196"
+      },
+      "after": {
+        "raw": 7024,
+        "gzip": 2816,
+        "sha256": "9a5b2c973c233e207c25bed02994ca3a29b3575268ed7469613f96260196722b"
+      },
+      "beforeWithBasePlumbingSelector": {
+        "raw": 6049,
+        "gzip": 2519,
+        "sha256": "09837151ce68caa23ac6188ccb8b187a1ffd766af6ac4d6745e67141c986baf7"
+      },
+      "deltaVsBasePlumbingSelector": {
+        "raw": 975,
+        "gzip": 297
+      }
+    },
+    "olb.html": {
+      "before": {
+        "raw": 5066,
+        "gzip": 2203,
+        "sha256": "485f48704e890472f485ca0ec3cc6b3374a7e11135b66abf8427104a0de72f5c"
+      },
+      "after": {
+        "raw": 7902,
+        "gzip": 3055,
+        "sha256": "30c214ebc5feee97879d5fc29bb6cb99b9e28f9be3dbe861b84ed90a30cc9a6c"
+      },
+      "beforeWithBasePlumbingSelector": {
+        "raw": 6966,
+        "gzip": 2776,
+        "sha256": "b1fcdfc10e30ac2d188df5fd4d3a9e531e70ca2488ab8bf9113cf66fb4cfb9a0"
+      },
+      "deltaVsBasePlumbingSelector": {
+        "raw": 936,
+        "gzip": 279
+      }
+    }
+  },
+  "routeRows": [
+    {
+      "shell": "index.html",
+      "route": "/demo",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 30,
+      "raw": 3232312,
+      "gzip": 939096
+    },
+    {
+      "shell": "index.html",
+      "route": "/demo?view=2d&pitch=1",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 4,
+      "raw": 326765,
+      "gzip": 100148
+    },
+    {
+      "shell": "index.html",
+      "route": "/demo?view=3d&pitch=1",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 30,
+      "raw": 3232312,
+      "gzip": 939096
+    },
+    {
+      "shell": "index.html",
+      "route": "/embed/designer",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 30,
+      "raw": 3232312,
+      "gzip": 939096
+    },
+    {
+      "shell": "index.html",
+      "route": "/pitch/plumbing",
+      "mode": "plumbing",
+      "scripts": [
+        "assets/plumbing/plumbingMain-C1-Hx54G.js"
+      ],
+      "files": 4,
+      "raw": 292472,
+      "gzip": 92475
+    },
+    {
+      "shell": "index.html",
+      "route": "/pitch/eco-city",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 4,
+      "raw": 326765,
+      "gzip": 100148
+    },
+    {
+      "shell": "index.html",
+      "route": "/home",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 4,
+      "raw": 326765,
+      "gzip": 100148
+    },
+    {
+      "shell": "index.html",
+      "route": "/designer-preview",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 4,
+      "raw": 326765,
+      "gzip": 100148
+    },
+    {
+      "shell": "index.html",
+      "route": "/designer",
+      "mode": "studio",
+      "scripts": [
+        "assets/studio/studio-DRjzGKZy.js"
+      ],
+      "files": 4,
+      "raw": 326699,
+      "gzip": 99861
+    },
+    {
+      "shell": "index.html",
+      "route": "/designer/?panel=build#w=x",
+      "mode": "studio",
+      "scripts": [
+        "assets/studio/studio-DRjzGKZy.js"
+      ],
+      "files": 4,
+      "raw": 326699,
+      "gzip": 99861
+    },
+    {
+      "shell": "olb.html",
+      "route": "/demo",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 30,
+      "raw": 3232312,
+      "gzip": 939096
+    },
+    {
+      "shell": "olb.html",
+      "route": "/demo?view=2d&pitch=1",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 4,
+      "raw": 326765,
+      "gzip": 100148
+    },
+    {
+      "shell": "olb.html",
+      "route": "/demo?view=3d&pitch=1",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 30,
+      "raw": 3232312,
+      "gzip": 939096
+    },
+    {
+      "shell": "olb.html",
+      "route": "/embed/designer",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 30,
+      "raw": 3232312,
+      "gzip": 939096
+    },
+    {
+      "shell": "olb.html",
+      "route": "/pitch/plumbing",
+      "mode": "plumbing",
+      "scripts": [
+        "assets/plumbing/plumbingMain-C1-Hx54G.js"
+      ],
+      "files": 4,
+      "raw": 292472,
+      "gzip": 92475
+    },
+    {
+      "shell": "olb.html",
+      "route": "/pitch/eco-city",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 4,
+      "raw": 326765,
+      "gzip": 100148
+    },
+    {
+      "shell": "olb.html",
+      "route": "/home",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 4,
+      "raw": 326765,
+      "gzip": 100148
+    },
+    {
+      "shell": "olb.html",
+      "route": "/designer-preview",
+      "mode": "primary",
+      "scripts": [
+        "assets/vendor-react-CS4MHxMm.js",
+        "assets/vendor-router-YSxUxVSZ.js",
+        "assets/main-CF-ba9-e.js"
+      ],
+      "files": 4,
+      "raw": 326765,
+      "gzip": 100148
+    },
+    {
+      "shell": "olb.html",
+      "route": "/designer",
+      "mode": "studio",
+      "scripts": [
+        "assets/studio/studio-DRjzGKZy.js"
+      ],
+      "files": 4,
+      "raw": 326699,
+      "gzip": 99861
+    },
+    {
+      "shell": "olb.html",
+      "route": "/designer/?panel=build#w=x",
+      "mode": "studio",
+      "scripts": [
+        "assets/studio/studio-DRjzGKZy.js"
+      ],
+      "files": 4,
+      "raw": 326699,
+      "gzip": 99861
+    }
+  ],
+  "private": {
+    "pilotChunks": [
+      {
+        "file": "assets/studio/BuildDashboard-qMsuvQ5K.js",
+        "raw": 222658,
+        "gzip": 69489,
+        "sha256": "df365472e4df48a15158576739c78bb965997ca8f7afd7404d2d421bea6c4b03"
+      }
+    ],
+    "pilotStyles": [
+      {
+        "file": "assets/studio/BuildDashboard-DTVka1lI.css",
+        "raw": 11326,
+        "gzip": 3071,
+        "sha256": "f9fe0b6b842edd07456351d64258eda4beea6a45061efefc04d50f8a979948b5"
+      }
+    ],
+    "lazyOnly": {
+      "files": 2,
+      "raw": 233984,
+      "gzip": 72560
+    }
+  },
+  "failures": []
+}

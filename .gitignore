@@ -6,6 +6,7 @@ node_modules
 dist
 dist-ssr
 build
+!src/components/build/
 
 # Logs
 logs

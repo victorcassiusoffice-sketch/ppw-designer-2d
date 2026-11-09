@@ -1,0 +1,10 @@
+{
+  "name": "@olb/build-link",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "ajv": "8.20.0",
+    "uqr": "0.1.3"
+  }
+}

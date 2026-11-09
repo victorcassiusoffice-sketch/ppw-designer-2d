@@ -1,0 +1,153 @@
+{
+  "startedAt": "2026-11-09T16:33:58.906Z",
+  "base": "http://127.0.0.1:5293",
+  "width": 1280,
+  "textScale": 1,
+  "steps": [
+    "Fixture plan measured → reviewed package → real file downloaded; geometry and privacy reconciled",
+    "Actual Trade Folder main: chose exported OLB work file, confirmed job, entered line prices, made and downloaded quote",
+    "Approve quote by named engineer",
+    "Actual Trade Folder progress file downloaded for the same quote/request",
+    "Accept invoice by named engineer",
+    "Record paid by named engineer",
+    "Offline CSV without amounts + local backup export/restore; invalid backup leaves last good ledger untouched",
+    "Pinned protocol → idempotent quote → named approval → status → invoice accepted → payment recorded → changed routing → new revision; original retained"
+  ],
+  "layout": [
+    {
+      "note": "empty dashboard",
+      "docWidth": 1280,
+      "viewport": 1280,
+      "surfaceWidth": 1280,
+      "scrollWidth": 1280,
+      "controlCount": 15,
+      "minTargetWidth": 61.609375,
+      "minTargetHeight": 48,
+      "bad": []
+    },
+    {
+      "note": "package inspector",
+      "docWidth": 1280,
+      "viewport": 1280,
+      "surfaceWidth": 752,
+      "scrollWidth": 752,
+      "controlCount": 30,
+      "minTargetWidth": 48,
+      "minTargetHeight": 48,
+      "bad": []
+    },
+    {
+      "note": "populated dashboard",
+      "docWidth": 1280,
+      "viewport": 1280,
+      "surfaceWidth": 1280,
+      "scrollWidth": 1280,
+      "controlCount": 18,
+      "minTargetWidth": 61.609375,
+      "minTargetHeight": 48,
+      "bad": []
+    }
+  ],
+  "network": {
+    "errors": [],
+    "pageErrors": [],
+    "attemptedWrites": [],
+    "apiRequests": [
+      "/api/products",
+      "/api/products",
+      "/api/products"
+    ],
+    "externalRequests": [
+      "https://api.exchangerate.host/latest"
+    ],
+    "httpErrors": []
+  },
+  "sharing": {
+    "requestLinkChars": 0,
+    "qrOffered": false,
+    "photoBytes": 16634
+  },
+  "crossApp": {
+    "tfMain": "911c0e7918d97ffcb22e4d6af91250937c20638f",
+    "method": "Built local Trade Folder: file chooser → checked import → confirm job → manual price inputs → make quote → file download",
+    "requestId": "b692d1ab-a6ca-424b-9601-b3809ed5d738",
+    "requestHash": "e7495f98611e31a9ed7733c053062cc78fd1b1d07458d047ae42d76f864c3cc5",
+    "planHash": "935104e78f6f35bfcd35597c5050981922e73decb386e6af19084f7292734fa7",
+    "quoteId": "9225bdbd-99e9-44e7-a4b0-6d1fffff0199",
+    "quoteHash": "d379875d2ba53d497132cc87682eb974758c9673f88b3da916a7c749b4e5d5c1",
+    "replyMatches": true,
+    "attachedPictureBytes": 16634,
+    "statusId": "6e3f872c-70d8-47a5-99b7-d82bd26c2239",
+    "statusHash": "b50b39a8ab5821c2bfbd4e770a9b1140f8dd75d4c834553b43f47993152fbd42"
+  },
+  "contrast": [
+    {
+      "selector": "#build-title",
+      "ratio": 11.35
+    },
+    {
+      "selector": ".bd-needs h2",
+      "ratio": 11.39
+    },
+    {
+      "selector": ".bd-needs p",
+      "ratio": 8.41
+    },
+    {
+      "selector": ".bd-needs .bd-kicker",
+      "ratio": 8.41
+    },
+    {
+      "selector": ".bd-need-actions button",
+      "ratio": 9.24
+    },
+    {
+      "selector": ".bd-money span",
+      "ratio": 12.1
+    },
+    {
+      "selector": ".bd-row small",
+      "ratio": 6.01
+    },
+    {
+      "selector": ".bd-chip[data-kind=\"quote\"]",
+      "ratio": 7.92
+    }
+  ],
+  "sendCount": 2,
+  "privateAssets": [
+    "/assets/studio/App-B5TQ62NV.css",
+    "/assets/studio/App-DehZZ0Mm.js",
+    "/assets/studio/BuildDashboard-DTVka1lI.css",
+    "/assets/studio/BuildDashboard-qMsuvQ5K.js",
+    "/assets/studio/CurrencySwitcher-Br5ubusH.js",
+    "/assets/studio/LessonsLayer-Cj6SlGlJ.js",
+    "/assets/studio/LocaleThemeControls-C_DwPGLV.js",
+    "/assets/studio/RequireMerchant-BvJGo3r3.js",
+    "/assets/studio/buildSkinStore-CNRW5cRW.js",
+    "/assets/studio/buildingServices-CkAkYeKa.js",
+    "/assets/studio/buildingServicesCatalog-gFhvLWEg.js",
+    "/assets/studio/cartStore-DT0r3fiX.js",
+    "/assets/studio/commission-BSjTNLTx.js",
+    "/assets/studio/currency-w2WQgh7W.js",
+    "/assets/studio/designsApi-Cze1KGGk.js",
+    "/assets/studio/downloadJson-DhXa1J4E.js",
+    "/assets/studio/merchantFurniture-ZuMdbwJD.js",
+    "/assets/studio/middleware-BoNmX9tp.js",
+    "/assets/studio/productImageSafety-CDXX3Z8N.js",
+    "/assets/studio/propertyStore-CWbJ2Voj.js",
+    "/assets/studio/quotedProducts-2NCXztC6.js",
+    "/assets/studio/renderQualityStore-Zaw4iznu.js",
+    "/assets/studio/showcaseSafety-vfpeCbFJ.js",
+    "/assets/studio/sound-BNqaZpTI.js",
+    "/assets/studio/sound-CNjs6-hh.css",
+    "/assets/studio/studio-CB3fRIv-.css",
+    "/assets/studio/studio-DRjzGKZy.js",
+    "/assets/studio/types-BR-OoGj9.js",
+    "/assets/studio/vendor-konva-Bc1v_MBG.js",
+    "/assets/studio/vendor-react-CS4MHxMm.js",
+    "/assets/studio/vendor-router-YSxUxVSZ.js"
+  ],
+  "passed": true,
+  "finishedAt": "2026-11-09T16:34:27.681Z"
+}

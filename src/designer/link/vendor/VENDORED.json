@@ -1,0 +1,50 @@
+{
+  "repo": "victorcassiusoffice-sketch/tradefolder",
+  "commit": "aa810520ef0736862ea50489f065266736ba2050",
+  "files": [
+    {
+      "path": "src/lib/jobPack/types.ts",
+      "local": "src/designer/link/vendor/tradefolder/lib/jobPack/types.ts",
+      "sha256": "a8c327fe1b5d75e56c326bda8ea947671fcc2fc486d399344099d4b342f9d3d8"
+    },
+    {
+      "path": "src/lib/jobPack/protocol.ts",
+      "local": "src/designer/link/vendor/tradefolder/lib/jobPack/protocol.ts",
+      "sha256": "30a39c1429b36caf210e1bffebc5dd481da62b67b744d7fc43697c51d62e2d6b"
+    },
+    {
+      "path": "src/lib/jobPack/job-pack.schema.json",
+      "local": "src/designer/link/vendor/tradefolder/lib/jobPack/job-pack.schema.json",
+      "sha256": "cc1f5ba6ecbfd5e00d89ccf82991f0a4ccc37a0eb414bf972845070833c28071"
+    },
+    {
+      "path": "src/lib/links/carry.ts",
+      "local": "src/designer/link/vendor/tradefolder/lib/links/carry.ts",
+      "sha256": "3c21aae38124b427fe9ef1dc268d0045043991e432d149b5ec0e55a96a25a328"
+    },
+    {
+      "path": "src/lib/links/signed.ts",
+      "local": "src/designer/link/vendor/tradefolder/lib/links/signed.ts",
+      "sha256": "f0e9e24e7d091085654de40234a786faf991325b692e70f6fdaef4a91df3ba84"
+    },
+    {
+      "path": "src/lib/money.ts",
+      "local": "src/designer/link/vendor/tradefolder/lib/money.ts",
+      "sha256": "e1f819ecb2e94f7666db508c4b53a08c65615aade262fb91fcf8b6ff8b88482a"
+    },
+    {
+      "path": "docs/JOB-PACK-CONTRACT.md",
+      "local": "docs/link/JOB-PACK-CONTRACT.md",
+      "sha256": "291aa8219917710661ffaa3ab230507f26391ed78a080e8dfd8e1cdaaffe2690"
+    },
+    {
+      "path": "docs/job-pack.schema.json",
+      "local": "docs/link/job-pack.schema.json",
+      "sha256": "cc1f5ba6ecbfd5e00d89ccf82991f0a4ccc37a0eb414bf972845070833c28071"
+    }
+  ],
+  "port": {
+    "path": "src/lib/jobPack/records.ts",
+    "sha256": "83e83e3e58dce711d84040dc472a395000ed28b114e31e8b68ef16caea4e5e40"
+  }
+}
