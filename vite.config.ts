@@ -21,6 +21,21 @@ export default defineConfig(({ mode }) => ({
     studioEntry(mode === 'olb-studio'),
     firstPicturePreload(),
     {
+      name: 'render-product-model-manifests',
+      enforce: 'pre',
+      apply: 'build',
+      transform(source, id) {
+        if (!/\/src\/data\/product(?:Models|ModelCandidates)\.json$/.test(id)) return;
+        // The renderer uses the source SKU for merchant aliases. The generation
+        // reports stay in the source manifests for the offline product engine.
+        const code = JSON.stringify(JSON.parse(source), (key, value) => {
+          if (key !== 'source') return value;
+          return typeof value?.sku === 'string' ? { sku: value.sku } : undefined;
+        });
+        return { code, map: null };
+      },
+    },
+    {
       name: 'defer-walk-collision-math',
       enforce: 'pre',
       resolveId(source, importer) {
