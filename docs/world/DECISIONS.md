@@ -194,3 +194,7 @@ Rubric movement: items 5, 20, 24, 28 and 29 move from 1 to 2 with the proofs abo
 | Walk laptop<3s | 5,700 / 5,183.5 ms | 4,299 / 4,165.9 | 3,536 / 3,398.4 | 3,576 / 3,449.5 | Separately authorised startup-stage attribution from retained delivery/decode/render evidence, without lowering image quality or changing thresholds. |
 | Site laptop<3s | 5,262 / 5,184.2 | 4,838 / 4,718.8 | 3,418 / 3,282.8 | 3,265 / 3,139.2 | Same bounded stage attribution; no early feature request exists to remove. |
 | Every-run loading paint≤1s | 0/20 | 9/20 | 17/20 | 19/20 (Walk laptop 4/5; one HTML response ended after 1 s) | A separately authorised visible-frame capture can establish which content paints; FCP/DOM alone cannot. |
+
+## Walk placement — 11 November 2026
+
+A visit uses a private copy of the design. Choosing a floor, placing the person on land or a supported roof, and opening a door during the visit are session actions. The walker needs a clear capsule and a supporting surface. Stairs remain the physical route between levels during ordinary movement.
