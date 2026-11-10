@@ -224,7 +224,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
           onPointerMove={moveStick} onPointerUp={stopStick} onPointerCancel={stopStick} onLostPointerCapture={stopStick}>
           <span className="world-walk-stick-knob" /><span className="world-walk-stick-label">Move + turn</span>
         </div>
-        {touchControls && <div className="world-walk-stick world-look-stick" aria-label={tx('Look around')} role="application"
+        {touchControls && <div className="world-look-stick" aria-label={tx('Look around')} role="application"
           onPointerDown={e => { aimStick.current = e.pointerId; e.currentTarget.setPointerCapture(e.pointerId); steerLook(e); }}
           onPointerMove={steerLook} onPointerUp={stopLook} onPointerCancel={stopLook} onLostPointerCapture={stopLook}>
           <span className="world-walk-stick-knob"/><span className="world-walk-stick-label">{tx('Look')}</span>
