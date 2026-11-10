@@ -11,6 +11,9 @@ import type { Property } from '../store/propertyStore';
 import type { WalkCharacter } from './characters';
 import { createWalkWorld } from './scene';
 import { capsuleClear, createWalker, doorTransform, followCamera, groundHeight, interactionDoor, pullInCamera, stepWalker, toggleDoor } from './collision';
+import { GROUND_LEVEL_ID } from '../designer/levels';
+import { cutawayState } from '../designer/roomSolids';
+import { pickSpawn, spawnAt, spawnOnLevel, type PlacementHint } from './placement';
 import { findWalkSpawn } from './spawn';
 import { WalkFrameMeasurement, type FrameMeasurementResult } from './frameMeasurement';
 import { hideStaticDoorLeaves, renderWalkSurface } from './stageSurface';
@@ -20,6 +23,7 @@ export interface WalkStatus {
   mode: 'first' | 'third'; door: string | null; blocked: boolean; locked: boolean;
   animation: 'idle' | 'walk' | 'run'; position: number[]; camera: number[];
   fps: number; low1: number; frames: number; entryMs: number;
+  grounded?: boolean; levelId?: string; cutaway?: boolean; overview?: boolean; notice?: string;
 }
 
 export const WALK_SPEED_M_S = 1.45;
@@ -35,6 +39,15 @@ export class WalkRuntime {
   private keys = new Set<string>();
   private stick = { x: 0, y: 0 };
   private running = false;
+  private levelId: string;
+  private cutaway = true;
+  private overview = false;
+  private cutawayAt = -Infinity;
+  private route: THREE.Vector3[] = [];
+  private routeRequest = 0;
+  private stalled = 0;
+  private notice = '';
+  private lookStick = { x: 0, y: 0 };
   private mode: 'first' | 'third' = 'third';
   private actor = new THREE.Group();
   private mixer: THREE.AnimationMixer | null = null;
@@ -63,6 +76,7 @@ export class WalkRuntime {
   private inputMeasure: { inputAt: number; handlerAt: number; source: string; key: string; mode: string; x: number; z: number } | null = null;
   private frameMeasurement: WalkFrameMeasurement | null = null;
   private frameMeasurementTimer: number | undefined;
+  private disposeProjectionHook?: () => void;
   private disposeTestHook?: () => void;
   private testCameraBaseline = false;
   private testPose: { position: number[]; yaw: number; frames: number } | null = null;
@@ -127,11 +141,15 @@ export class WalkRuntime {
     canvas.dispatchEvent(new CustomEvent('world-walk-frame-result', { detail: result }));
   }
 
-  constructor(private host: Host, solids: SceneSolids, property: Property,
-    private onStatus: (status: WalkStatus) => void, _onExit: () => void) {
+  constructor(private host: Host, private solids: SceneSolids, property: Property,
+    private onStatus: (status: WalkStatus) => void, _onExit: () => void, initial?: { levelId: string; point?: PlacementHint['point'] }) {
     this.world = createWalkWorld(solids, property);
-    const spawn = findWalkSpawn(this.world, property);
-    if (!spawn) { this.world.dispose(); throw new Error('No safe standing space was found. Add a room or a clear entrance, then try again.'); }
+    this.levelId = initial?.levelId ?? this.world.groundLevelId ?? GROUND_LEVEL_ID;
+    this.world.roofActive = this.world.roofSurfaces?.some(r => r.levelId === this.levelId) ?? false;
+    const spawn = initial?.point ? spawnAt(this.world, initial.point, this.levelId)
+      : initial ? spawnOnLevel(this.world, this.levelId)
+      : findWalkSpawn(this.world, property) ?? spawnOnLevel(this.world, this.levelId);
+    if (!spawn) { this.world.dispose(); throw new Error('No clear standing space on this surface. Choose a floor or another spot on the land.'); }
     this.walker = createWalker(this.world, spawn.position);
     this.eyeHeight = spawn.position.y + 1.55;
     this.look.rotation.order = 'YXZ';
@@ -166,6 +184,17 @@ export class WalkRuntime {
     document.addEventListener('visibilitychange', this.onVisibility);
     host.renderer.domElement.addEventListener('world-walk-measure-input', this.onMeasureInput);
     host.renderer.domElement.addEventListener('world-walk-measure-frames', this.onMeasureFrames);
+    if (typeof __TEST_HOOKS__ !== 'undefined' && __TEST_HOOKS__) {
+      const canvas = host.renderer.domElement;
+      const project = (event: Event) => {
+        const { x, y, height, reply } = (event as CustomEvent).detail;
+        const point = new THREE.Vector3(x, height, y).project(this.camera);
+        const rect = canvas.getBoundingClientRect();
+        if (point.z <= 1) reply({ x: rect.left + (point.x+1)*rect.width/2, y: rect.top + (1-point.y)*rect.height/2 });
+      };
+      canvas.addEventListener('world-walk-project', project);
+      this.disposeProjectionHook = () => canvas.removeEventListener('world-walk-project', project);
+    }
     // Vite removes this fixture bridge from production. It exists only to make
     // the old/new camera evidence use the same valid pose in the actual scene.
     if (import.meta.env.DEV) {
@@ -176,20 +205,14 @@ export class WalkRuntime {
         const coordinates = detail?.position;
         let valid = Array.isArray(coordinates) && coordinates.length === 3 && coordinates.every(Number.isFinite) && Number.isFinite(detail?.yaw);
         const position = valid ? new THREE.Vector3(...coordinates as [number, number, number]) : new THREE.Vector3();
-        if (valid) {
-          const support = groundHeight(this.world, position.x, position.z, position.y + .05, .1);
-          valid = support !== null && Math.abs(position.y - support) < .015 && capsuleClear(this.world, createWalker(this.world, position));
-        }
+        if (valid) valid = this.teleport(position, detail.yaw);
         if (!valid || !this.ready) {
           const result = { accepted: false, reason: 'Pose must have floor support and capsule clearance in a ready visit.' };
           canvas.setAttribute('data-walk-test-pose', JSON.stringify(result));
           canvas.dispatchEvent(new CustomEvent('world-walk-test-pose-ready', { detail: result }));
           return;
         }
-        this.clearInput(); this.walker = createWalker(this.world, position); this.mode = 'third';
-        this.look.rotation.set(0, detail.yaw, 0, 'YXZ'); this.actor.rotation.y = detail.yaw + Math.PI;
-        this.actor.position.copy(position); this.eyeHeight = position.y + 1.55;
-        this.follow.copy(position).add(new THREE.Vector3(0, 1.6, 0)); this.followReady = false;
+        this.mode = 'third';
         this.testCameraBaseline = detail.baselineCamera === true;
         this.testPose = { position: position.toArray(), yaw: detail.yaw, frames: 0 };
         this.lastStatus = -Infinity;
@@ -197,6 +220,60 @@ export class WalkRuntime {
       canvas.addEventListener('world-walk-test-pose', testPose);
       this.disposeTestHook = () => canvas.removeEventListener('world-walk-test-pose', testPose);
     }
+  }
+
+  /** Only supported, clear positions can become a new visit pose. */
+  teleport(position: THREE.Vector3, yaw: number): boolean {
+    if (!this.ready || this.disposed || !Number.isFinite(yaw) || !position.toArray().every(Number.isFinite)) return false;
+    const support = groundHeight(this.world, position.x, position.z, position.y + .025, .28);
+    const allowance = this.world.roofActive ? .24 : .015;
+    if (support === null || Math.abs(position.y - support) > allowance || !capsuleClear(this.world, createWalker(this.world, position))) return false;
+    this.clearInput();
+    this.walker = createWalker(this.world, position);
+    this.look.rotation.set(0, yaw, 0, 'YXZ');
+    this.actor.rotation.y = yaw + Math.PI;
+    this.actor.position.copy(position);
+    this.eyeHeight = position.y + 1.55;
+    this.followReady = false; this.cutawayAt = -Infinity; this.lastStatus = -Infinity;
+    this.notice = '';
+    return true;
+  }
+
+  chooseLevel(levelId: string): boolean {
+    const p = this.walker.position;
+    const spawn = spawnOnLevel(this.world, levelId, { x: p.x, y: p.z });
+    if (!spawn) { this.notice = 'No clear standing surface on this level.'; this.lastStatus = -Infinity; return false; }
+    const previous = this.world.roofActive;
+    this.world.roofActive = this.world.roofSurfaces?.some(r => r.levelId === levelId) ?? false;
+    if (!this.teleport(spawn.position, this.look.rotation.y)) { this.world.roofActive = previous; return false; }
+    this.levelId = levelId;
+    return true;
+  }
+
+  toggleCutaway(): void { this.cutaway = !this.cutaway; this.cutawayAt = -Infinity; this.lastStatus = -Infinity; }
+  toggleOverview(): void { this.overview = !this.overview; this.followReady = false; this.cutawayAt = -Infinity; this.lastStatus = -Infinity; }
+  setLookStick(x: number, y: number): void { this.lookStick = { x, y }; }
+
+  async moveToScreen(clientX: number, clientY: number): Promise<void> {
+    if (!this.ready || this.disposed || this.controls.isLocked) return;
+    const rect = this.host.renderer.domElement.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2(2 * (clientX - rect.left) / rect.width - 1, 1 - 2 * (clientY - rect.top) / rect.height), this.camera);
+    this.route = [];
+    const id = ++this.routeRequest;
+    const levels = new Set([this.levelId, ...this.world.floors.map(f => f.levelId ?? this.world.groundLevelId ?? GROUND_LEVEL_ID)]);
+    const targets = [...levels].filter(level => this.world.roofActive || !this.world.roofSurfaces?.some(r => r.levelId === level))
+      .map(level => pickSpawn(this.world, ray.ray, level)).filter((hit): hit is NonNullable<typeof hit> => !!hit)
+      .sort((a,b) => a.position.distanceToSquared(ray.ray.origin) - b.position.distanceToSquared(ray.ray.origin));
+    if (targets.length) {
+      const { walkingRoute } = await import('./navigation');
+      if (this.disposed || id !== this.routeRequest) return;
+      this.route = walkingRoute(this.world, this.walker.position, targets[0].position) ?? [];
+    }
+    this.stalled = 0;
+    this.notice = this.route.length ? '' : 'No clear route. Open a door or choose a nearer spot.';
+    this.lastStatus = -Infinity;
   }
 
   async load(character: WalkCharacter, startedAt: number, onProgress?: (message: string) => void): Promise<void> {
@@ -263,21 +340,24 @@ export class WalkRuntime {
     if (target?.matches('input,textarea,select') || event.ctrlKey || event.metaKey || event.altKey) return;
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'].includes(event.code)) {
       if (!event.repeat && !event.code.startsWith('Shift')) this.measureInput('keyboard', event.code, event.timeStamp);
-      event.preventDefault(); this.keys.add(event.code);
+      event.preventDefault(); this.route = []; this.routeRequest++; this.keys.add(event.code);
     }
     if (event.repeat) return;
+    if (event.code === 'KeyB') { event.preventDefault(); this.toggleOverview(); }
     if (event.code === 'KeyV') { event.preventDefault(); this.toggleView(); }
     if (event.code === 'KeyE') { event.preventDefault(); this.interact(); }
   }
-  clearInput(): void { this.keys.clear(); this.stick = { x: 0, y: 0 }; this.inputMeasure = null; this.measurementArmed = false; }
+  clearInput(): void { this.route = []; this.routeRequest++; this.lookStick = { x: 0, y: 0 }; this.keys.clear(); this.stick = { x: 0, y: 0 }; this.inputMeasure = null; this.measurementArmed = false; }
   setStick(x: number, y: number): void {
     if (!this.ready || this.disposed) return;
     if (y && !this.stick.y) this.measureInput('touch', 'stick');
+    if (x || y) { this.route = []; this.routeRequest++; }
     this.stick = { x, y };
   }
   setRunning(value: boolean): void { if (this.ready && !this.disposed) this.running = value; }
   toggleView(): void {
     if (!this.ready || this.disposed) return;
+    this.overview = false; this.cutawayAt = -Infinity;
     this.mode = this.mode === 'first' ? 'third' : 'first'; this.clearInput(); this.followReady = false; this.lastStatus = -Infinity;
   }
   /** True means this Escape only frees the mouse; the UI exits on false. */
@@ -338,7 +418,13 @@ export class WalkRuntime {
     this.eyeHeight = THREE.MathUtils.lerp(this.eyeHeight, this.eye.y, 1 - Math.exp(-18 * dt));
     this.look.getWorldDirection(this.direction);
     let firstPersonCamera = this.mode === 'first';
-    if (this.mode === 'first') {
+    if (this.overview) {
+      const bounds = this.host.bounds.current;
+      const radius = Math.max(5, bounds.radius * 1.6);
+      this.desired.copy(bounds.centre);
+      this.camera.position.copy(bounds.centre).add(new THREE.Vector3(Math.sin(this.euler.y) * radius, radius, Math.cos(this.euler.y) * radius));
+      this.actor.visible = true; firstPersonCamera = false;
+    } else if (this.mode === 'first') {
       this.desired.copy(this.eye); this.desired.y = this.eyeHeight;
       this.camera.position.copy(pullInCamera(this.world, this.eye, this.desired, .08));
     }
@@ -360,7 +446,7 @@ export class WalkRuntime {
       if (view.firstPerson) this.actor.visible = false;
     }
     this.camera.quaternion.copy(this.look.quaternion);
-    if (this.mode === 'third') {
+    if (this.mode === 'third' || this.overview) {
       this.camera.lookAt(this.desired);
     }
     const canvas = this.host.renderer.domElement;
@@ -380,14 +466,26 @@ export class WalkRuntime {
     if (!this.paused && !document.hidden) {
       this.euler.setFromQuaternion(this.look.quaternion, 'YXZ');
       // Phone stick steers and moves with one thumb; the second pad optionally looks around.
-      this.euler.y -= this.stick.x * dt * 1.9;
+      this.euler.y -= (this.stick.x + this.lookStick.x) * dt * 1.9;
+      this.euler.x = THREE.MathUtils.clamp(this.euler.x - this.lookStick.y * dt * 1.6, -1.35, 1.35);
       this.look.quaternion.setFromEuler(this.euler);
       const x = Number(this.keys.has('KeyD') || this.keys.has('ArrowRight')) - Number(this.keys.has('KeyA') || this.keys.has('ArrowLeft'));
       const z = Number(this.keys.has('KeyS') || this.keys.has('ArrowDown')) - Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) + this.stick.y;
       const speed = this.running || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? RUN_SPEED_M_S : WALK_SPEED_M_S;
       this.velocity.set(x, 0, z); if (this.velocity.lengthSq() > 1) this.velocity.normalize();
       this.velocity.multiplyScalar(speed).applyAxisAngle(THREE.Object3D.DEFAULT_UP, this.euler.y);
+      const target = this.route[0];
+      if (target) {
+        this.velocity.set(target.x - this.walker.position.x, 0, target.z - this.walker.position.z);
+        const distance = this.velocity.length();
+        if (distance <= .08) { this.route.shift(); this.velocity.set(0, 0, 0); }
+        else this.velocity.multiplyScalar(Math.min(speed, distance / Math.max(dt, .001)) / distance);
+      }
       const movement = stepWalker(this.world, this.walker, this.velocity, dt);
+      if (target && this.route.length) {
+        this.stalled = movement.movedM < .001 ? this.stalled + dt : 0;
+        if (this.stalled > .6) { this.route = []; this.notice = 'The route is blocked.'; }
+      }
       const actualSpeed = dt ? movement.movedM / dt : 0;
       const next = actualSpeed < .08 ? 'idle' : actualSpeed > 2.1 ? 'run' : 'walk';
       if (next !== this.animation) {
@@ -402,6 +500,17 @@ export class WalkRuntime {
       }
       this.syncView(dt);
       const canvas = this.host.renderer.domElement;
+      if (now - this.cutawayAt > 120) {
+        const eye = this.camera.position, feet = this.walker.position;
+        const visibility = this.cutaway && !this.overview
+          ? cutawayState(this.solids, { x: eye.x, y: eye.z, z: eye.y }, { x: feet.x, y: feet.z, z: feet.y + .8 }) : null;
+        for (const wall of this.host.visitWalls?.() ?? []) {
+          const lowered = visibility?.get(wall.solid.key) === 'stub';
+          wall.full.visible = !lowered; wall.stub.visible = lowered;
+        }
+        for (const roof of this.host.visitRoofs?.() ?? []) roof.visible = this.overview || !!this.world.roofActive;
+        this.cutawayAt = now;
+      }
       renderWalkSurface(this.host, this.camera);
       // Collect only when explicitly armed, and publish once at the deadline.
       // Unlike the historical HUD, this retains long stalls and window tails.
@@ -428,7 +537,11 @@ export class WalkRuntime {
         const sorted = [...this.frames].sort((a, b) => b - a), slow = sorted.slice(0, Math.max(1, Math.ceil(sorted.length * .01)));
         const door = interactionDoor(this.world, this.eye, this.direction, this.retainedDoor, 2);
         if (!door || (door.id === this.retainedDoor && Math.abs(door.angle) < .01 && Math.abs(door.targetAngle) < .01)) this.retainedDoor = null;
-        this.onStatus({ mode: this.mode, door: door ? (door.targetAngle ? 'Close door' : 'Open door') : null,
+        const feet = this.walker.position;
+        const floor = this.world.floors.find(f => Math.abs((f.elevationM ?? 0) - feet.y) < .025);
+        if (floor?.levelId && !this.world.roofActive) this.levelId = floor.levelId;
+        this.onStatus({ mode: this.mode, levelId: this.levelId, grounded: this.walker.grounded,
+          overview: this.overview, cutaway: this.cutaway, notice: this.notice, door: door ? (door.targetAngle ? 'Close door' : 'Open door') : null,
           blocked: now < this.blockedUntil, locked: this.controls.isLocked, animation: this.animation,
           position: this.walker.position.toArray(), camera: this.camera.position.toArray(),
           fps: this.frames.length ? 1000 * this.frames.length / this.frames.reduce((a, b) => a + b, 0) : 0,
@@ -450,7 +563,7 @@ export class WalkRuntime {
     this.controls.removeEventListener('lock', this.onLock);
     this.host.renderer.domElement.removeEventListener('world-walk-measure-input', this.onMeasureInput);
     this.host.renderer.domElement.removeEventListener('world-walk-measure-frames', this.onMeasureFrames);
-    this.disposeTestHook?.();
+    this.disposeTestHook?.(); this.disposeProjectionHook?.();
     window.removeEventListener('keyup', this.onKeyUp, true); window.removeEventListener('blur', this.onBlur);
     window.removeEventListener('focus', this.onFocus); document.removeEventListener('visibilitychange', this.onVisibility);
     this.mixer?.stopAllAction(); disposeObject(this.actor);

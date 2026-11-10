@@ -14,6 +14,27 @@
 import { LOCALES, type AppLocale } from './messages';
 
 export const lessonRows = {
+  'lesson.place-person.name': ["Place a person", "Placer une personne", "放置人物", "Colocar una persona"],
+  'lesson.place-person.line': ["Start a visit at a spot you choose.", "Commencez une visite à l’endroit choisi.", "从所选位置开始参观。", "Empieza la visita en el lugar que elijas."],
+  'lesson.place-person.s1': ["Drag the person onto a clear surface.", "Faites glisser la personne sur une surface libre.", "将人物拖到空旷的表面。", "Arrastra la persona hasta una superficie libre."],
+  'lesson.place-person.s2': ["Release at the green ring, or tap the spot.", "Relâchez sur le cercle vert ou touchez cet endroit.", "在绿色圆环处松开，或轻点该位置。", "Suelta en el círculo verde o toca el lugar."],
+  'lesson.walk-level.name': ["Choose a floor", "Choisir un étage", "选择楼层", "Elegir un piso"],
+  'lesson.walk-level.line': ["Visit a storey or a supported roof.", "Visitez un étage ou une toiture praticable.", "前往楼层或可站立的屋面。", "Visita un piso o una cubierta transitable."],
+  'lesson.walk-level.s1': ["Open the level picker in Walk.", "Ouvrez la liste des niveaux pendant la visite.", "在行走模式下打开楼层列表。", "Abre el selector de niveles del recorrido."],
+  'lesson.walk-level.s2': ["Choose where to stand. Stairs are optional for placement.", "Choisissez où vous placer, même sans escalier.", "选择站立位置，放置人物无需楼梯。", "Elige dónde situarte, incluso sin escaleras."],
+  'lesson.walk-cutaway.name': ["Cutaway walls", "Murs en coupe", "墙体剖切", "Muros en corte"],
+  'lesson.walk-cutaway.line': ["See the person behind near walls.", "Voyez la personne derrière les murs proches.", "查看近处墙体后的人物。", "Ve a la persona detrás de los muros cercanos."],
+  'lesson.walk-cutaway.s1': ["Turn on Cutaway during a visit.", "Activez Coupe pendant la visite.", "参观时启用剖切。", "Activa Vista en corte durante la visita."],
+  'lesson.walk-cutaway.s2': ["Move around. The visible cut follows you.", "Déplacez-vous. La coupe vous suit.", "四处走动，剖切视图会跟随人物。", "Camina y el corte seguirá tu posición."],
+  'lesson.walk-overview.name': ["Whole build", "Vue d’ensemble", "建筑全景", "Vista general"],
+  'lesson.walk-overview.line': ["Pull back to see the whole building.", "Reculez pour voir le bâtiment entier.", "拉远镜头查看整栋建筑。", "Aleja la cámara para ver todo el edificio."],
+  'lesson.walk-overview.s1': ["Choose Whole build or press B.", "Choisissez Vue d’ensemble ou appuyez sur B.", "选择建筑全景或按 B。", "Elige Vista general o pulsa B."],
+  'lesson.walk-overview.s2': ["Use it again to return to the person.", "Activez-la à nouveau pour revenir à la personne.", "再次选择即可返回人物视角。", "Vuelve a pulsar para regresar a la persona."],
+  'lesson.walk-to.name': ["Tap to walk", "Toucher pour marcher", "点选目的地", "Tocar para caminar"],
+  'lesson.walk-to.line': ["Walk to a visible spot on a clear route.", "Rejoignez un point visible par un passage libre.", "沿畅通路线走到可见位置。", "Camina hasta un lugar visible con paso libre."],
+  'lesson.walk-to.s1': ["Tap the floor or land while visiting.", "Touchez le sol ou le terrain pendant la visite.", "参观时轻点地板或地面。", "Toca el suelo o el terreno durante el recorrido."],
+  'lesson.walk-to.s2': ["Open closed doors on the route and tap again.", "Ouvrez les portes sur le trajet puis touchez à nouveau.", "打开路线上的门，再次轻点目的地。", "Abre las puertas cerradas y vuelve a tocar."],
+
   // ── Card chrome ─────────────────────────────────────────────────────
   'lesson.ui.tip': ['Tip', 'Astuce', '提示', 'Consejo'],
   'lesson.ui.gotIt': ['Got it', 'Compris', '知道了', 'Entendido'],

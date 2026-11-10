@@ -239,12 +239,15 @@ export interface ThreeStageSurface {
   sky: { readonly current: THREE.Mesh | null };
   bounds: { readonly current: { centre: THREE.Vector3; radius: number } };
   fogClearance: number;
+  visitWalls?: () => readonly Pick<WallEntry, 'solid' | 'full' | 'stub'>[];
+  visitRoofs?: () => readonly THREE.Object3D[];
   release(): void;
 }
 
 export interface ThreeStageHandle {
   /** A private deferred viewer may render its own camera without changing the design. */
   beginWalk(): ThreeStageSurface | null;
+  walkRay?(x: number, y: number): THREE.Ray | null;
   viewHover(x:number|null,y?:number):void;
   hitErase(x:number,y:number):ThreeEraseTarget|null;
   setEraseHover(target:ThreeEraseTarget|null,floorOutline?:readonly {x:number;y:number}[]):void;
@@ -1737,8 +1740,16 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return {
           scene, renderer, fill: fillRef, sky: skyRef,
           bounds: boundsRef, fogClearance: FOG_CLEARANCE_M,
+          visitWalls: () => wallsRef.current, visitRoofs: () => roofsRef.current,
           release() { walkOwnsFrames.current = false; requestRender(); },
         };
+      },
+      walkRay(x, y) {
+        const view = cameraRef.current;
+        if (!view || width < 8 || height < 8) return null;
+        const caster = new THREE.Raycaster();
+        caster.setFromCamera(new THREE.Vector2(x / width * 2 - 1, 1 - y / height * 2), view);
+        return caster.ray;
       },
       viewHover(x,y) {
         if(x===null||y===undefined||!viewHoverEnabled||brushHex!==undefined||brushConstruction||catalogPreview||solids.activeRoof){

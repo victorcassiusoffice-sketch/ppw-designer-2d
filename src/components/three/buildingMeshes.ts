@@ -155,6 +155,27 @@ function clippedHalf(polygon: Polygon, axis: 'x' | 'y', ridge: number, direction
   return output;
 }
 
+/** Local XYZ triangles shared by the displayed roof and the private walk collider. */
+export function roofTopVertices(surface: NonNullable<ReturnType<typeof createRoofSurface>>): number[] {
+  const { polygon: points, config: clean, axis, ridge } = surface;
+  const height = (point: Vertex) => roofHeightAt(surface, point) - surface.elevationM;
+  const topPositions: number[] = [];
+  const addTop = (a: Vertex, b: Vertex, c: Vertex) => {
+    const cross = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    // Upward normals in the x/elevation/z world frame.
+    for (const point of cross > 0 ? [a, c, b] : [a, b, c]) {
+      topPositions.push(point.x, height(point), point.y);
+    }
+  };
+  const triangles = THREE.ShapeUtils.triangulateShape(points.map((point) => new THREE.Vector2(point.x, point.y)), []);
+  for (const triangle of triangles) {
+    const face = triangle.map((index) => points[index]);
+    const pieces = clean.style === 'gable' ? [clippedHalf(face, axis, ridge, 1), clippedHalf(face, axis, ridge, -1)] : [face];
+    for (const piece of pieces) for (let i = 1; i + 1 < piece.length; i++) addTop(piece[0], piece[i], piece[i + 1]);
+  }
+  return topPositions;
+}
+
 /** Polygon roof with true-pitch slopes, overhanging eaves, fascia and felt/tile/metal finish. */
 export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfig): THREE.Group {
   const group = new THREE.Group();
@@ -164,22 +185,9 @@ export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfi
   if (!surface) return group;
   const { polygon: points, config: clean, axis, ridge } = surface;
   const height = (point: Vertex) => roofHeightAt(surface, point) - elevationM;
-  const topPositions: number[] = [];
+  const topPositions = roofTopVertices(surface);
   const uv: number[] = [];
-  const addTop = (a: Vertex, b: Vertex, c: Vertex) => {
-    const cross = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-    // Upward normals in the x/elevation/z world frame.
-    for (const point of cross > 0 ? [a, c, b] : [a, b, c]) {
-      topPositions.push(point.x, height(point), point.y);
-      uv.push(point.x, point.y);
-    }
-  };
-  const triangles = THREE.ShapeUtils.triangulateShape(points.map((point) => new THREE.Vector2(point.x, point.y)), []);
-  for (const triangle of triangles) {
-    const face = triangle.map((index) => points[index]);
-    const pieces = clean.style === 'gable' ? [clippedHalf(face, axis, ridge, 1), clippedHalf(face, axis, ridge, -1)] : [face];
-    for (const piece of pieces) for (let i = 1; i + 1 < piece.length; i++) addTop(piece[0], piece[i], piece[i + 1]);
-  }
+  for (let i = 0; i < topPositions.length; i += 3) uv.push(topPositions[i], topPositions[i + 2]);
   if (topPositions.length === 0) return group;
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(topPositions, 3));

@@ -29,6 +29,11 @@ export const LESSON_IDS = [
   'garden',
   'view3d',
   'walk',
+  'place-person',
+  'walk-level',
+  'walk-cutaway',
+  'walk-overview',
+  'walk-to',
 ] as const;
 export type LessonId = (typeof LESSON_IDS)[number];
 
@@ -320,6 +325,31 @@ export const LESSONS: Readonly<Record<LessonId, Lesson>> = {
     tooltipOn: ['.world-walk-launch'],
     clip: clip('walk'),
     open: { kind: 'walk' },
+  },
+  'place-person': {
+    id: 'place-person', group: 'look', name: 'lesson.place-person.name', line: 'lesson.place-person.line',
+    steps: [{ text: 'lesson.place-person.s1' }, { text: 'lesson.place-person.s2' }],
+    anchors: ['[data-testid="place-walker"]'], tooltipOn: ['[data-testid="place-walker"]'], open: { kind: 'walk' },
+  },
+  'walk-level': {
+    id: 'walk-level', group: 'look', name: 'lesson.walk-level.name', line: 'lesson.walk-level.line',
+    steps: [{ text: 'lesson.walk-level.s1' }, { text: 'lesson.walk-level.s2' }],
+    anchors: ['[aria-label="Walk level"]'], tooltipOn: ['[aria-label="Walk level"]'], open: { kind: 'walk' },
+  },
+  'walk-cutaway': {
+    id: 'walk-cutaway', group: 'look', name: 'lesson.walk-cutaway.name', line: 'lesson.walk-cutaway.line',
+    steps: [{ text: 'lesson.walk-cutaway.s1' }, { text: 'lesson.walk-cutaway.s2' }],
+    anchors: ['[data-testid="walk-cutaway"]'], tooltipOn: ['[data-testid="walk-cutaway"]'], open: { kind: 'walk' },
+  },
+  'walk-overview': {
+    id: 'walk-overview', group: 'look', name: 'lesson.walk-overview.name', line: 'lesson.walk-overview.line',
+    steps: [{ text: 'lesson.walk-overview.s1' }, { text: 'lesson.walk-overview.s2' }],
+    anchors: ['[data-testid="walk-overview"]'], tooltipOn: ['[data-testid="walk-overview"]'], open: { kind: 'walk' },
+  },
+  'walk-to': {
+    id: 'walk-to', group: 'look', name: 'lesson.walk-to.name', line: 'lesson.walk-to.line',
+    steps: [{ text: 'lesson.walk-to.s1' }, { text: 'lesson.walk-to.s2' }],
+    anchors: ['.world-walk-look'], tooltipOn: [], open: { kind: 'walk' },
   },
 };
 

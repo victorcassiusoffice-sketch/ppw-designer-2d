@@ -78,6 +78,7 @@ export function capsuleClear(world: WalkWorld, state: WalkerState): boolean {
     if (box.distanceToPoint(axis) < state.radius - .002) return false;
   }
   if (queryCapsule(world.bvh, capsuleLine(state), state.radius - .002, false).hit) return false;
+  if (world.roofActive && queryCapsule(world.roofBVH ?? null, capsuleLine(state), state.radius - .002, false).hit) return false;
   return world.doors.every(door => !doorOverlaps(door, state, door.angle));
 }
 
@@ -87,7 +88,9 @@ function resolveWalker(world: WalkWorld, state: WalkerState): boolean {
   for (let pass = 0; pass < 4; pass++) {
     const staticResult = queryCapsule(world.bvh, line, state.radius, true);
     grounded ||= staticResult.grounded;
-    let touched = staticResult.hit;
+    const roof = world.roofActive && queryCapsule(world.roofBVH ?? null, line, state.radius, true);
+    grounded ||= !!roof && roof.grounded;
+    let touched = staticResult.hit || (!!roof && roof.hit);
     for (const door of world.doors) {
       const matrix = doorMatrix(door), inverse = matrix.clone().invert();
       const local = new Line3(line.start.clone().applyMatrix4(inverse), line.end.clone().applyMatrix4(inverse));
@@ -108,12 +111,14 @@ function resolveWalker(world: WalkWorld, state: WalkerState): boolean {
 /** Highest physical surface below the probe, in metres. No invented floor planes. */
 export function groundHeight(world: WalkWorld, x: number, z: number, fromY: number, distance: number): number | null {
   const ray = new Ray(new Vector3(x, fromY, z), DOWN);
-  const hit = world.bvh?.raycastFirst(ray, DoubleSide, 0, distance);
+  const floor = world.bvh?.raycastFirst(ray, DoubleSide, 0, distance);
+  const roof = world.roofActive ? world.roofBVH?.raycastFirst(ray, DoubleSide, 0, distance) : null;
+  const hit = roof && (!floor || roof.distance < floor.distance) ? roof : floor;
   return hit && hit.face && Math.abs(hit.face.normal.y) > .5 ? hit.point.y : null;
 }
 
 /** Return the authored tread beneath this point, never a generic furniture step. */
-function stairHeightAt(stair: WalkStair, x: number, z: number, margin = 0): number | null {
+export function stairHeightAt(stair: WalkStair, x: number, z: number, margin = 0): number | null {
   const angle = stair.stair.rotation * Math.PI / 180;
   const dx = x - stair.stair.x, dz = z - stair.stair.y;
   const across = dx * Math.cos(angle) + dz * Math.sin(angle);
@@ -162,6 +167,10 @@ function simulate(world: WalkWorld, state: WalkerState, velocity: Vector3, dt: n
       } else state.position.set(old.x + dx, old.y, old.z + dz);
     } else state.position.set(old.x + dx, old.y, old.z + dz);
 
+    if (horizontal && state.grounded && !nearStair &&
+        groundHeight(world, state.position.x, state.position.z, old.y + .25, .5) === null) {
+      state.position.copy(old);
+    }
     state.velocityY = Math.max(-12, state.velocityY - 18 * slice);
     const beforeVertical = state.position.y;
     state.position.y += state.velocityY * slice;
@@ -178,6 +187,7 @@ function simulate(world: WalkWorld, state: WalkerState, velocity: Vector3, dt: n
       state.grounded = contact;
       if (contact || state.position.y > beforeVertical + SKIN) state.velocityY = 0;
     }
+    if (state.grounded && capsuleClear(world, state)) state.safePosition.copy(state.position);
   }
   if (state.position.y < Math.min(-5, world.bounds.min.y - 5)) {
     state.position.copy(state.safePosition); state.velocityY = 0; state.grounded = true;
