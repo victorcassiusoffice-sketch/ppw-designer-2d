@@ -99,6 +99,7 @@ export const messageRows = {
   New: ['New', 'Nouveau', '新建', 'Nuevo'],
   'New plan': ['New plan', 'Nouveau plan', '新平面图', 'Nuevo plano'],
   Help: ['Help', 'Aide', '帮助', 'Ayuda'],
+  Settings: ['Settings', 'Réglages', '设置', 'Ajustes'],
   More: ['More', 'Plus', '更多', 'Más'],
   Menu: ['Menu', 'Menu', '菜单', 'Menú'],
   'Open menu': ['Open menu', 'Ouvrir le menu', '打开菜单', 'Abrir menú'],
