@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useEffect, useMemo, useRef, useState } from 'react';
 import type { Property } from '../../store/propertyStore';
 import { useLinkStore } from '../../store/linkStore';
 import { projectFingerprint } from '../../designer/projectHub';
@@ -60,7 +60,7 @@ export default function BuildDashboard({
     [site, setSite] = useState(''),
     [phase, setPhase] = useState('Phase 1'),
     [currency, setCurrency] = useState('MUR');
-  useEffect(() => {
+  useLayoutEffect(() => {
     const d = root.current;
     d?.showModal();
     void useLinkStore.getState().hydrate();

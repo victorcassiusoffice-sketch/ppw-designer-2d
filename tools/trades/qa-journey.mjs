@@ -49,7 +49,7 @@ async function openDashboard(p,row){
 async function jobEditor(p,row,{name,who,note,status,view,image}){
   const sheet=dlg(p,'Add a pinned job');await expect(sheet).toBeVisible();
   await sheet.getByLabel('Job name',{exact:true}).fill(name);await sheet.getByLabel('Short note',{exact:true}).fill(note);
-  await sheet.getByLabel('Recorded by',{exact:true}).fill(who);await sheet.getByLabel('Status',{exact:true}).selectOption(status);
+  await sheet.getByLabel('Recorded by',{exact:true}).fill(who);await sheet.getByRole('combobox',{name:/^Status\b/i}).selectOption(status);
   await sheet.getByLabel('Start date',{exact:true}).fill(day());await sheet.getByLabel('Due date',{exact:true}).fill(new Date(Date.now()+14*86400000).toISOString().slice(0,10));
   if(image){await sheet.getByLabel('Job photo',{exact:true}).setInputFiles(image);await expect(sheet.getByAltText('Attached job photo')).toBeVisible();}
   await layout(sheet,row,name+' editor');
@@ -61,17 +61,26 @@ async function jobEditor(p,row,{name,who,note,status,view,image}){
   // The existing authored coordinates helper reads the live viewport transform /
   // rendered camera, not a dev hook or persisted job. Choose a REAL screen
   // position in the bathroom wall or kitchen, away from a dock/legend.
-  let point=null,world=null;
-  const candidates=view==='plan'?[[0,1.60,0],[0,1.00,0],[0,2.38,0]]:[[4.2,1.55,0],[4.8,2.25,0],[4.1,0,1.25],[3.55,1.05,0],[5.3,2,0]];
+  let point=null,world=null,actual=null;
+  const attempts=[];
+  const candidates=view==='plan'?[[0,1.60,0],[0,1.00,0],[0,2.38,0]]:[[5.4,3,1.25],[6,1.5,1.6],[5.3,2,0],[4.5,1.4,.4],[4.2,1.55,0],[4.1,0,1.25],[3.55,1.05,0]];
   for(const candidate of candidates){const pt=view==='plan'?await planPoint(p,candidate[0],candidate[1]):await housePoint(p,...candidate);
     if(!bounds||pt.x<=bounds.x+2||pt.y<=bounds.y+2||pt.x>=bounds.x+bounds.width-2||pt.y>=bounds.y+bounds.height-2)continue;
     const hit=await target.evaluate((el,pt)=>el.contains(document.elementFromPoint(pt.x,pt.y)),pt);
-    if(hit){point=pt;world=candidate;break;}
+    if(!hit)continue;
+    await physical(p,row.width,pt.x,pt.y);
+    await expect(sheet).toBeVisible();await expect(sheet).toContainText('Pinned to olb:');
+    const ref=(await sheet.innerText()).match(/Pinned to (olb:[^\s]+)/)?.[1];attempts.push({candidate,ref});
+    if(view==='plan'||/^olb:(?:room:kitchen|wall:wall-kitchen-|item:board)/.test(ref??'')){point=pt;world=candidate;actual=ref;break;}
+    // A foreground wall can legitimately occlude the intended room. Reposition the pin through the same UI.
+    await b(sheet,'Pin in 3D').click();await expect(pick).toBeVisible();
+    await p.locator('[data-testid="wallpaint-3d-gl"][data-first-picture-ms]').waitFor();
+    await p.getByTestId('loading-3d').waitFor({state:'hidden'});
   }
-  assert.ok(point,'No unobstructed map target at measured '+name+' positions. Target bounds '+JSON.stringify(bounds));
-  await physical(p,row.width,point.x,point.y);await expect(sheet).toBeVisible();await expect(sheet).toContainText('Pinned to olb:');
+  assert.ok(point,'No unobstructed map target at measured '+name+' positions. Hits '+JSON.stringify(attempts)+'; bounds '+JSON.stringify(bounds));
+
   assert.equal((await events(p)).length,before,'Picking a position must not save the job');
-  const actual=(await sheet.innerText()).match(/Pinned to (olb:[^\s]+)/)?.[1];assert.ok(actual);
+  assert.ok(actual);
   if(view==='plan')assert.equal(actual,'olb:wall:wall-bath-3');
   else assert.ok(/^olb:(?:room:kitchen|wall:wall-kitchen-|item:board)/.test(actual),'Actual House hit was not kitchen work: '+actual);
   await b(sheet,'Save job').click();await expect(sheet).toHaveCount(0);
@@ -137,14 +146,14 @@ async function campaign(width){
   const browser=await launch(),{context,log}=await localContext(browser,width,{seed:true}),page=await context.newPage();page.setDefaultTimeout(18000);
   const row={width,textScale:width===313?1.15:1,started:instant(),steps:[],picks:[],views:[],layout:[],log};let phase='open dashboard';
   try{
-    if(width===313) await context.addInitScript(()=>localStorage.setItem('olb.ui-preferences.v1',JSON.stringify({locale:'en',theme:'ocean'})));
+    if(width===313) await context.addInitScript(()=>location.origin==='http://127.0.0.1:5311' && localStorage.setItem('olb.ui-preferences.v1',JSON.stringify({locale:'en',theme:'ocean'})));
     const photo=await openDashboard(page,row);phase='take plumbing package';
     await workRow(page,/Plumbing, Ground floor/i).click();const take=lastSheet(page);
     await take.getByLabel('Recorded by',{exact:true}).fill(plumber);await b(take,'Take package').click();await expect(take).toContainText('Taken by '+plumber);
     await b(take,'Add pinned job').click();phase='plumbing pin';
     const plumbing=await jobEditor(page,row,{name:shower,who:plumber,note:'Check the shower connection against the wall.',status:'planned',view:'plan',image:photo});
     assert.ok(plumbing.parentId);await b(dlg(page,shower),'Edit job').click();const edit=dlg(page,'Edit job');
-    await edit.getByLabel('Status',{exact:true}).selectOption('started');await edit.getByLabel('Recorded by',{exact:true}).fill(plumber);await b(edit,'Save job').click();
+    await edit.getByRole('combobox',{name:/^Status\b/i}).selectOption('started');await edit.getByLabel('Recorded by',{exact:true}).fill(plumber);await b(edit,'Save job').click();
     await expect(dlg(page,shower)).toContainText('Started');await closeSheet(page);row.steps.push('Plumber took measured package, pinned a photographed job on the shower wall, recorded work started.');
     phase='electrical pin';await role(page,'electrical');assert.equal(await workRow(page,shower).count(),0);await b(dashboard(page),'Add a job').click();
     const electrical=await jobEditor(page,row,{name:kitchen,who:electrician,note:'Locate the kitchen conduit route.',status:'waiting',view:'house'});await closeSheet(page);

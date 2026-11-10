@@ -539,10 +539,10 @@
   }
   .city-tools {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(8, minmax(0, 1fr));
     grid-template-areas:
-      'view view select select fit undo'
-      'road road network network asset asset';
+      'view view select select select fit undo undo'
+      'road road network network asset asset library library';
     padding: 7px 10px;
     gap: 5px;
   }
@@ -579,6 +579,7 @@
   .city-tool-asset {
     grid-area: asset;
   }
+  .city-tool-library { grid-area: library; }
   .city-tool-fit {
     grid-area: fit;
     flex-direction: column;

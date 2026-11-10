@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useLinkStore } from '../../store/linkStore';
 import { JOB_STATUSES, TRADE_ROLES, workGeometry, workItems, type WorkItem } from '../../designer/link/tradeWork';
@@ -53,6 +53,26 @@ export default function TradeProgressOverlay(frame:OverlayFrame) {
     d.showModal();
     return()=>{d.close();if(lastFocus.current?.isConnected)lastFocus.current.focus({preventScroll:true})};
   },[modal]);
+  const markers = drawing.flatMap(({item,anchors}) => {
+    const anchor = anchors.find(({point}) => point && point.x >= 0 && point.y >= 0 && point.x <= frame.size.width && point.y <= frame.size.height);
+    return anchor?.point ? [{item, pin:anchor.pin, point:anchor.point}] : [];
+  });
+  function selectMarker(event: MouseEvent<HTMLButtonElement>, marker: typeof markers[number]) {
+    let target = marker;
+    const rect = event.currentTarget.parentElement?.getBoundingClientRect();
+    if (rect && event.detail !== 0) {
+      // Keep full touch targets while resolving overlaps by their visible centres.
+      const x = event.clientX - rect.left, y = event.clientY - rect.top;
+      let best = Infinity;
+      for (const other of markers) {
+        const dx = x - other.point.x, dy = y - other.point.y;
+        if (Math.abs(dx)>24 || Math.abs(dy)>24) continue;
+        const distance = dx*dx + dy*dy;
+        if (distance < best || (distance===best && other.item.kind==='job')) { best=distance; target=other; }
+      }
+    }
+    setSelection({id:target.item.id, ref:target.pin.planRef});setKey(false);
+  }
   function dismiss(){setKey(false);setSelection(null)}
   useEffect(()=>{
     const esc=(e:KeyboardEvent)=>{if(e.key!=='Escape')return;e.preventDefault();e.stopImmediatePropagation();
@@ -80,12 +100,11 @@ export default function TradeProgressOverlay(frame:OverlayFrame) {
         {fileInks[item.exchange]&&<path d={s.d} fill="none" stroke={fileInks[item.exchange]} strokeWidth={s.line?2.5:1.6} strokeDasharray="5 3" pointerEvents="none"/>}
       </g>)))}
     </svg>
-    {!look&&!picking&&drawing.map(({item,anchors})=>{
-      const a=anchors.find(({point})=>point&&point.x>=0&&point.y>=0&&point.x<=frame.size.width&&point.y<=frame.size.height);
-      if(!a?.point)return null;
-      return <button key={item.id} className="trade-map-pin" data-testid="trade-work-pin" data-work-id={item.id} data-plan-ref={a.pin.planRef} data-status={item.status}
+    {!look&&!picking&&markers.map(marker => {
+      const {item, pin, point}=marker;
+      return <button key={item.id} className="trade-map-pin" data-testid="trade-work-pin" data-work-id={item.id} data-plan-ref={pin.planRef} data-status={item.status}
         aria-label={`${item.title}, ${trade(item)}, ${item.status}`} title={item.title}
-        style={{left:a.point.x,top:a.point.y,color:tradeAppearance[item.status].ink}} onClick={()=>{setSelection({id:item.id,ref:a.pin.planRef});setKey(false)}}>
+        style={{left:point.x,top:point.y,color:tradeAppearance[item.status].ink}} onClick={event => selectMarker(event, marker)}>
           <span style={{borderColor:fileInks[item.exchange]??'white'}}>{tradeAppearance[item.status].symbol}</span></button>;
     })}
     {picking&&!look&&<svg data-testid="trade-pin-target" className="trade-pin-target" aria-label="Tap a spot on the model" width="100%" height="100%"

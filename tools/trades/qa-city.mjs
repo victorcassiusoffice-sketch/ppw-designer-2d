@@ -5,7 +5,7 @@ try {
   for (const width of (process.argv[2] || '1280,390').split(',').map(Number)) {
     const {context, log} = await localContext(browser,width,{seed:true});
     try {
-      await context.addInitScript(dark => localStorage.setItem('olb.ui-preferences.v1',JSON.stringify({locale:'en',theme:dark?'ocean':'ivory'})),width===390);
+      await context.addInitScript(dark => location.origin==='http://127.0.0.1:5311' && localStorage.setItem('olb.ui-preferences.v1',JSON.stringify({locale:'en',theme:dark?'ocean':'ivory'})),width===390);
       const p = await context.newPage();
       await p.goto(olb+'/designer?panel=city');
       const city = p.locator('.city-workspace');
@@ -25,6 +25,7 @@ try {
       assert.equal(await city.locator('.city-map g[data-city-id] polygon').count(),6);
       await city.getByText('District connections',{exact:true}).click();
       await expect(city.locator('.city-access')).toContainText('Unmapped');
+      await b(city,'Frame selected').click();
       await capture(p,'city-plan-'+width);
       await b(city,'3D').click();
       await expect(city.locator('canvas')).toBeVisible();

@@ -18,6 +18,7 @@ export function CityPlanView({
   draft,
   onPoint,
   onSelect,
+  focusId,
   fitNonce,
   showUtilities,
 }: {
@@ -27,10 +28,16 @@ export function CityPlanView({
   draft: CityPoint[];
   onPoint: (p: CityPoint) => void;
   onSelect: (id: string | null) => void;
+  focusId?: string | null;
   fitNonce: number;
   showUtilities: boolean;
 }) {
   const fit = (): View => {
+    const asset = model.assets.find(a => a.id === focusId);
+    if (asset) {
+      const span = Math.max(4, Math.hypot(asset.widthM,asset.lengthM)*1.6);
+      return {x:asset.x-span/2,y:asset.y-span/2,w:span,h:span};
+    }
     const b = cityBounds(model);
     return { x: b.minX - 10, y: b.minY - 10, w: b.maxX - b.minX + 20, h: b.maxY - b.minY + 20 };
   };

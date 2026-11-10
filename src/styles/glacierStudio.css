@@ -60,6 +60,7 @@
 :root[data-ui-theme] body .ts-banner {background:var(--studio-rail);color:#f2faff;box-shadow:inset 0 1px #c9dfeb77,2px 5px 8px var(--skin-shadow)}
 :root[data-ui-theme] body .ts-banner :is(.bd-kicker,p){color:#d6e8f2}
 :root[data-ui-theme] body .ts-location {background:var(--ui-surface);color:var(--ui-ink)}
+:root[data-ui-theme] body .bd-mast :is(p,label,.bd-kicker),:root[data-ui-theme] body .city-brand span {color:#d7e8f2!important}
 .city-access summary {cursor:pointer;font-weight:650;min-height:48px;padding-block:12px}
 .city-access dl div {display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--ui-line)}
 .city-access dd {font-variant-numeric:tabular-nums}

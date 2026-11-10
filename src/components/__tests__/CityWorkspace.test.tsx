@@ -39,7 +39,7 @@ function type(label: string, value: string) {
   act(() => input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
   return input;
 }
-beforeEach(() => {
+beforeEach(async () => {
   localStorage.clear();
   sessionStorage.clear();
   window.history.replaceState({}, '', '/designer');
@@ -68,7 +68,10 @@ beforeEach(() => {
   document.body.append(host);
   root = createRoot(host);
   act(() => root.render(<CityWorkspace onBeforeOpen={() => undefined} />));
-  act(() => window.dispatchEvent(new Event('ppw:open-city')));
+  await act(async () => {
+    window.dispatchEvent(new Event('ppw:open-city'));
+    await import('../CityWorkbench');
+  });
 });
 afterEach(() => {
   act(() => root.unmount());
