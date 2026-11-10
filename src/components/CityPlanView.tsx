@@ -1,3 +1,4 @@
+import { buildingPolygons } from '../designer/cityBuildingForm';
 import { useEffect, useRef, useState } from 'react';
 import {
   cityAssetPolygon,
@@ -17,6 +18,7 @@ export function CityPlanView({
   draft,
   onPoint,
   onSelect,
+  focusId,
   fitNonce,
   showUtilities,
 }: {
@@ -26,10 +28,16 @@ export function CityPlanView({
   draft: CityPoint[];
   onPoint: (p: CityPoint) => void;
   onSelect: (id: string | null) => void;
+  focusId?: string | null;
   fitNonce: number;
   showUtilities: boolean;
 }) {
   const fit = (): View => {
+    const asset = model.assets.find(a => a.id === focusId);
+    if (asset) {
+      const span = Math.max(4, Math.hypot(asset.widthM,asset.lengthM)*1.6);
+      return {x:asset.x-span/2,y:asset.y-span/2,w:span,h:span};
+    }
     const b = cityBounds(model);
     return { x: b.minX - 10, y: b.minY - 10, w: b.maxX - b.minX + 20, h: b.maxY - b.minY + 20 };
   };
@@ -221,12 +229,12 @@ export function CityPlanView({
       {model.enabled &&
         model.assets.map((a) => (
           <g key={a.id} data-city-id={a.id}>
-            <polygon
-              points={points(cityAssetPolygon(a))}
+            {(a.buildingForm ? buildingPolygons(a) : [cityAssetPolygon(a)]).map((polygon, i) => <polygon key={i}
+              points={points(polygon)}
               fill={CITY_ASSET_KINDS.find((k) => k.id === a.kind)?.colour ?? '#c3c8bb'}
               stroke={selectedId === a.id ? '#fcfff0' : '#567567'}
               strokeWidth={scale * (selectedId === a.id ? 3 : 1)}
-            />
+            />)}
             {a.kind === 'solar-light' && (
               <circle
                 cx={a.x}

@@ -146,9 +146,30 @@ export function InlineFieldError({ error }: { error?: string | null }): JSX.Elem
 }
 
 // ─── W3.5 CoachMark ─────────────────────────────────────────────────
+// Superseded by the lessons layer (src/designer/lessons/, 8 Nov 2026): tool
+// cards, the Lessons list and the first-build quest. Kept only for its one
+// use in App.tsx, which is switched off. Made safe in case it is switched
+// back on: storage never throws, and the dimmed backdrop lets every press
+// through (a coach mark that swallowed clicks broke the tests in May, PR #22).
 interface CoachStep {
   title: string;
   body: string;
+}
+
+function readCoachFlag(flagKey: string): boolean {
+  try {
+    return window.localStorage.getItem(flagKey) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeCoachFlag(flagKey: string): void {
+  try {
+    window.localStorage.setItem(flagKey, '1');
+  } catch {
+    // Blocked storage: the card closes for this visit.
+  }
 }
 
 export function CoachMark({
@@ -160,7 +181,7 @@ export function CoachMark({
 }): JSX.Element | null {
   const [stepIdx, setStepIdx] = useState<number>(() => {
     if (typeof window === 'undefined') return -1;
-    return window.localStorage.getItem(flagKey) === '1' ? -1 : 0;
+    return readCoachFlag(flagKey) ? -1 : 0;
   });
 
   if (stepIdx < 0 || stepIdx >= steps.length) return null;
@@ -178,6 +199,7 @@ export function CoachMark({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
+        pointerEvents: 'none',
       }}
     >
       <div
@@ -187,6 +209,7 @@ export function CoachMark({
           background: 'white',
           borderRadius: 12,
           boxShadow: '0 10px 40px rgba(0,0,0,0.25)',
+          pointerEvents: 'auto',
         }}
       >
         <p style={{ margin: 0, fontSize: 11, color: '#6b7280', textTransform: 'uppercase' }}>
@@ -200,7 +223,7 @@ export function CoachMark({
           <button
             type="button"
             onClick={() => {
-              window.localStorage.setItem(flagKey, '1');
+              writeCoachFlag(flagKey);
               setStepIdx(-1);
             }}
             style={{ fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}
@@ -211,7 +234,7 @@ export function CoachMark({
             type="button"
             onClick={() => {
               if (stepIdx + 1 >= steps.length) {
-                window.localStorage.setItem(flagKey, '1');
+                writeCoachFlag(flagKey);
                 setStepIdx(-1);
               } else {
                 setStepIdx(stepIdx + 1);

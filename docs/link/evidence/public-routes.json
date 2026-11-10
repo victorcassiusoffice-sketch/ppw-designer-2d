@@ -1,0 +1,170 @@
+{
+  "rows": [
+    {
+      "width": 1280,
+      "path": "/demo",
+      "view": "2d",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [
+          "/api/products"
+        ],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 1280,
+      "path": "/demo",
+      "view": "3d",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [
+          "/api/products"
+        ],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 1280,
+      "path": "/embed/designer",
+      "view": "2d",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [
+          "/api/products"
+        ],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 1280,
+      "path": "/embed/designer",
+      "view": "3d",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [
+          "/api/products"
+        ],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 1280,
+      "path": "/pitch/plumbing",
+      "view": "pitch",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 390,
+      "path": "/demo",
+      "view": "2d",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [
+          "/api/products"
+        ],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 390,
+      "path": "/demo",
+      "view": "3d",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [
+          "/api/products"
+        ],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 390,
+      "path": "/embed/designer",
+      "view": "2d",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [
+          "/api/products"
+        ],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 390,
+      "path": "/embed/designer",
+      "view": "3d",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [
+          "/api/products"
+        ],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    },
+    {
+      "width": 390,
+      "path": "/pitch/plumbing",
+      "view": "pitch",
+      "network": {
+        "errors": [],
+        "pageErrors": [],
+        "attemptedWrites": [],
+        "apiRequests": [],
+        "externalRequests": [],
+        "httpErrors": []
+      },
+      "privateRequests": [],
+      "pass": true
+    }
+  ]
+}

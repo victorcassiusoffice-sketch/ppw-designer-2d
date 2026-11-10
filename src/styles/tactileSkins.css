@@ -57,6 +57,11 @@
 .theme-skin-card--ocean .theme-skin-card__sample i { background: #7bbcc8; }
 .theme-skin-card--slate .theme-skin-card__sample i { background: #d6a16e; }
 :root[data-ui-theme] .locale-theme-controls__panel { width: min(310px,calc(100vw - 24px)); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
+/* Keep pressed-state motion on the compositor. The plan skin changes many
+ * surfaces in one frame, so colour and shadow changes should be immediate. */
+.designer-app :is(button, a, [data-testid='plan-drawing-viewport']) {
+  transition-property: transform, opacity !important;
+}
 @media (prefers-reduced-motion: reduce) { :root[data-ui-theme] body .designer-app button { transition: none !important; } }
 
 :root[data-ui-theme] body .designer-app .plan-topbar :is(.plan-build-tools,.studio-view-switch) {

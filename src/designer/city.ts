@@ -1,6 +1,8 @@
 /** City-scale coordination and measured takeoff. No infrastructure design approval.
  * All geometry uses the same metre x-right/y-down frame as the house editor.
  * Depths/elevations are metres; diameters alone are millimetres. */
+import { buildingPolygons, validBuildingForm, type CityRoomForm } from './cityBuildingForm.js';
+
 export interface CityPoint {
   x: number;
   y: number;
@@ -54,6 +56,7 @@ export interface CityAsset {
   rotation: number;
   supplierRef?: string;
   buildingLink?: 'current';
+  buildingForm?: CityRoomForm[];
   powerW?: number;
   solarKWp?: number;
   batteryKWh?: number;
@@ -220,7 +223,8 @@ export function normaliseCity(value: unknown): CityModel | undefined {
   let roadSegments = 0,
     networkSegments = 0,
     linkedBuildings = 0,
-    buildingAssets = 0;
+    buildingAssets = 0,
+    buildingPoints = 0;
   for (const raw of r.roads) {
     const e = record(raw);
     if (
@@ -333,6 +337,12 @@ export function normaliseCity(value: unknown): CityModel | undefined {
       rotation: ((e.rotation % 360) + 360) % 360,
     };
     if (e.supplierRef) a.supplierRef = e.supplierRef as string;
+    if (e.buildingForm !== undefined) {
+      if (a.kind !== 'building' || !validBuildingForm(e.buildingForm)) return undefined;
+      buildingPoints += e.buildingForm.reduce((sum, room) => sum + room.polygon.length, 0);
+      if (buildingPoints > 2048) return undefined;
+      a.buildingForm = e.buildingForm.map(({base, top, polygon}) => ({base, top, polygon: polygon.map(({x,y}) => ({x,y}))}));
+    }
     if (e.buildingLink) a.buildingLink = 'current';
     for (const k of ['powerW', 'solarKWp', 'batteryKWh', 'tankCapacityL', 'hoursPerDay'] as const)
       if (e[k] !== undefined) a[k] = e[k] as number;
@@ -701,7 +711,7 @@ export function estimateCity(input: CityModel) {
     trenchUniqueVolumeM3,
     counts,
     assetCount: activeAssets.length,
-    footprintM2: cityPolygonUnionArea(buildings.map(cityAssetPolygon)),
+    footprintM2: cityPolygonUnionArea(buildings.flatMap(a => a.buildingForm ? buildingPolygons(a) : [cityAssetPolygon(a)])),
     solarKWp: activeAssets.reduce((n, a) => n + (a.solarKWp ?? 0), 0),
     batteryKWh: activeAssets.reduce((n, a) => n + (a.batteryKWh ?? 0), 0),
     tankCapacityL: activeAssets.reduce((n, a) => n + (a.tankCapacityL ?? 0), 0),

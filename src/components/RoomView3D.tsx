@@ -1,3 +1,4 @@
+import { TradeOverlayHost } from './build/TradeOverlayHost'; // @studio-hook
 import { serviceRunPoints3D } from '../designer/buildingServices';
 import { loadThreeStage } from './threeStageLoader';
 /**
@@ -2059,6 +2060,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         }}
         onContextMenu={(e) => e.preventDefault()}
       />
+      {variant === 'overlay' && viewportCamera && (stageReady || backend === 'painter') && <TradeOverlayHost view="house" stageRef={stageRef} camera={backend === 'gl' ? renderedCamera ?? viewportCamera : viewportCamera} size={size} levelId={level} solids={solids} wallView={wallView} backend={backend} />} {/* @studio-hook */}
       {rotationPoint && rotationPoint.x >= 0 && rotationPoint.x <= size.width && rotationPoint.y >= 0 && rotationPoint.y <= size.height && <ItemRotationRing
         x={Math.max(67, Math.min(size.width - 67, rotationPoint.x + (rotationPoint.x > size.width - 165 ? -96 : 96)))}
         y={Math.max(140, Math.min(size.height - 110, rotationPoint.y - 85))}

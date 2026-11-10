@@ -1,0 +1,140 @@
+{
+  "startedAt": "2026-11-09T16:34:27.683Z",
+  "base": "http://127.0.0.1:5293",
+  "width": 390,
+  "textScale": 1,
+  "steps": [
+    "Fixture plan measured → reviewed package → real file downloaded; geometry and privacy reconciled",
+    "Actual #w= only prefills: checking a sender/file does not save it",
+    "Approve quote by named engineer",
+    "Accept invoice by named engineer",
+    "Record paid by named engineer",
+    "Pinned protocol → idempotent quote → named approval → status → invoice accepted → payment recorded → changed routing → new revision; original retained"
+  ],
+  "layout": [
+    {
+      "note": "empty dashboard",
+      "docWidth": 390,
+      "viewport": 390,
+      "surfaceWidth": 390,
+      "scrollWidth": 390,
+      "controlCount": 10,
+      "minTargetWidth": 61.609375,
+      "minTargetHeight": 48,
+      "bad": []
+    },
+    {
+      "note": "package inspector",
+      "docWidth": 390,
+      "viewport": 390,
+      "surfaceWidth": 390,
+      "scrollWidth": 390,
+      "controlCount": 32,
+      "minTargetWidth": 48,
+      "minTargetHeight": 48,
+      "bad": []
+    },
+    {
+      "note": "populated dashboard",
+      "docWidth": 390,
+      "viewport": 390,
+      "surfaceWidth": 390,
+      "scrollWidth": 390,
+      "controlCount": 13,
+      "minTargetWidth": 61.609375,
+      "minTargetHeight": 48,
+      "bad": []
+    }
+  ],
+  "network": {
+    "errors": [],
+    "pageErrors": [],
+    "attemptedWrites": [],
+    "apiRequests": [
+      "/api/products",
+      "/api/products",
+      "/api/products",
+      "/api/products",
+      "/api/products"
+    ],
+    "externalRequests": [
+      "https://api.exchangerate.host/latest"
+    ],
+    "httpErrors": []
+  },
+  "sharing": {
+    "requestLinkChars": 731,
+    "qrOffered": true,
+    "photoBytes": 0
+  },
+  "contrast": [
+    {
+      "selector": "#build-title",
+      "ratio": 11.35
+    },
+    {
+      "selector": ".bd-needs h2",
+      "ratio": 11.39
+    },
+    {
+      "selector": ".bd-needs p",
+      "ratio": 8.41
+    },
+    {
+      "selector": ".bd-needs .bd-kicker",
+      "ratio": 8.41
+    },
+    {
+      "selector": ".bd-need-actions button",
+      "ratio": 9.24
+    },
+    {
+      "selector": ".bd-money span",
+      "ratio": 12.1
+    },
+    {
+      "selector": ".bd-row small",
+      "ratio": 6.01
+    },
+    {
+      "selector": ".bd-chip[data-kind=\"quote\"]",
+      "ratio": 7.92
+    }
+  ],
+  "sendCount": 2,
+  "privateAssets": [
+    "/assets/studio/App-B5TQ62NV.css",
+    "/assets/studio/App-DehZZ0Mm.js",
+    "/assets/studio/BuildDashboard-DTVka1lI.css",
+    "/assets/studio/BuildDashboard-qMsuvQ5K.js",
+    "/assets/studio/CurrencySwitcher-Br5ubusH.js",
+    "/assets/studio/LessonsLayer-Cj6SlGlJ.js",
+    "/assets/studio/LocaleThemeControls-C_DwPGLV.js",
+    "/assets/studio/RequireMerchant-BvJGo3r3.js",
+    "/assets/studio/buildSkinStore-CNRW5cRW.js",
+    "/assets/studio/buildingServices-CkAkYeKa.js",
+    "/assets/studio/buildingServicesCatalog-gFhvLWEg.js",
+    "/assets/studio/cartStore-DT0r3fiX.js",
+    "/assets/studio/commission-BSjTNLTx.js",
+    "/assets/studio/currency-w2WQgh7W.js",
+    "/assets/studio/designsApi-Cze1KGGk.js",
+    "/assets/studio/downloadJson-DhXa1J4E.js",
+    "/assets/studio/merchantFurniture-ZuMdbwJD.js",
+    "/assets/studio/middleware-BoNmX9tp.js",
+    "/assets/studio/productImageSafety-CDXX3Z8N.js",
+    "/assets/studio/propertyStore-CWbJ2Voj.js",
+    "/assets/studio/quotedProducts-2NCXztC6.js",
+    "/assets/studio/renderQualityStore-Zaw4iznu.js",
+    "/assets/studio/showcaseSafety-vfpeCbFJ.js",
+    "/assets/studio/sound-BNqaZpTI.js",
+    "/assets/studio/sound-CNjs6-hh.css",
+    "/assets/studio/studio-CB3fRIv-.css",
+    "/assets/studio/studio-DRjzGKZy.js",
+    "/assets/studio/types-BR-OoGj9.js",
+    "/assets/studio/vendor-konva-Bc1v_MBG.js",
+    "/assets/studio/vendor-react-CS4MHxMm.js",
+    "/assets/studio/vendor-router-YSxUxVSZ.js"
+  ],
+  "passed": true,
+  "finishedAt": "2026-11-09T16:34:41.195Z"
+}

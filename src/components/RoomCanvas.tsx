@@ -1,3 +1,4 @@
+import { TradeOverlayHost } from './build/TradeOverlayHost'; // @studio-hook
 import { quoteAwareAmount } from '../lib/quotedProducts';
 import { constructionHex, paintSide } from '../designer/wallConstruction';
 /**
@@ -5558,6 +5559,7 @@ export function RoomCanvas({
           stroke="#c66441" strokeWidth={4/viewport.scale} dash={[8/viewport.scale,5/viewport.scale]} /></Layer>}
         {visible.landscape && siteProjection?.annotation({ pxPerMetre, viewport, size: stageSize, container: containerRef.current, Layer, Rect, Line, Text, palette: buildPalette })}
       </Stage>}
+      {viewMode === 'plan' && demoPageReady && <TradeOverlayHost view="plan" viewport={viewport} pxPerMetre={pxPerMetre} size={stageSize} levelId={activeLevelId} />} {/* @studio-hook */}
       {viewMode !== '3d' && <OpeningSelectionEditor />}
 
       {/* Measure popover (units brief D10). Says out loud what it does:

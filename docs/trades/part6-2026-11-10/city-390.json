@@ -1,0 +1,21 @@
+{
+  "width": 390,
+  "placements": 2,
+  "outlines": 6,
+  "threeCanvas": true,
+  "reload": true,
+  "log": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "httpErrors": [],
+    "failedRequests": [],
+    "attemptedWrites": [],
+    "localApi": [
+      "/api/products",
+      "/api/products"
+    ],
+    "externalReads": [
+      "api.exchangerate.host/latest"
+    ]
+  }
+}

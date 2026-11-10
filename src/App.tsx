@@ -118,6 +118,25 @@ import './styles/designerStudio.css';
 // device most of them use. (Previous implementation in git history.)
 
 export default function App() {
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.designerSkin = 'glacier';
+    const apply = () => void import('./styles/glacierStudio.css');
+    const house = /^\/(demo|embed\/designer)\/?$/.test(location.pathname)
+      && new URLSearchParams(location.search).get('view') !== '2d';
+    // The canvas publishes this mark on its first frame. Avoid observing every DOM insertion.
+    let observer: MutationObserver | undefined;
+    let timeout: number | undefined;
+    function ready() { observer?.disconnect(); window.clearTimeout(timeout); apply(); }
+    if (house && !document.querySelector('[data-first-picture-ms]')) {
+      observer = new MutationObserver(records => {
+        if (records.some(r => (r.target as Element).hasAttribute('data-first-picture-ms'))) ready();
+      });
+      observer.observe(root,{subtree:true,attributes:true,attributeFilter:['data-first-picture-ms']});
+      timeout = window.setTimeout(ready,3500);
+    } else ready();
+    return () => { observer?.disconnect(); window.clearTimeout(timeout); delete root.dataset.designerSkin; };
+  }, []);
   // FIRST: a merchant demo must be active before any child computes its
   // catalog (the hook activates synchronously in this render).
   useDemoMode();

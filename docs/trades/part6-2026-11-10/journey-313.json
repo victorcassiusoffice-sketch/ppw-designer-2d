@@ -1,0 +1,314 @@
+{
+  "width": 313,
+  "textScale": 1.15,
+  "started": "2026-11-10T14:23:04.198Z",
+  "steps": [
+    "Plumber took measured package, pinned a photographed job on the shower wall, recorded work started.",
+    "Electrician created separate kitchen job from actual House surface; owner timeline includes both named trades.",
+    "Unchanged v1 work file carried job/same photo to real Trade Folder; returned quote and done report imported; invoice fixture changed the exchange display without moving money.",
+    "Timeline survived reload."
+  ],
+  "picks": [
+    {
+      "name": "Shower wall connection",
+      "view": "plan",
+      "world": [
+        0,
+        1.6,
+        0
+      ],
+      "point": {
+        "x": 54.194078947368425,
+        "y": 368.86784539473683
+      },
+      "actual": "olb:wall:wall-bath-3",
+      "effectivePin": {
+        "levelId": "ground",
+        "x": 0,
+        "y": 1.6000003956363946,
+        "z": 0,
+        "planRef": "olb:wall:wall-bath-3"
+      },
+      "actor": "Ari · QA",
+      "status": "planned",
+      "photoBytes": 5210
+    },
+    {
+      "name": "Kitchen conduit check",
+      "view": "house",
+      "world": [
+        5.4,
+        3,
+        1.25
+      ],
+      "point": {
+        "x": 224.0172062134703,
+        "y": 251.8929130376906
+      },
+      "actual": "olb:wall:wall-kitchen-1",
+      "effectivePin": {
+        "levelId": "ground",
+        "x": 6,
+        "y": 2.366682614198762,
+        "z": 0.7174140930175782,
+        "planRef": "olb:wall:wall-kitchen-1"
+      },
+      "actor": "Sofia · QA",
+      "status": "waiting",
+      "photoBytes": 0
+    }
+  ],
+  "views": [
+    {
+      "view": "plan",
+      "phase": "field",
+      "rendered": [
+        {
+          "ref": "olb:wall:wall-bath-3",
+          "work": "d6a814ed-90b1-4fb4-9e5d-ff5e16228745",
+          "status": "started",
+          "exchange": "draft",
+          "fileOutline": null,
+          "tag": "path",
+          "fill": "none",
+          "stroke": "rgb(8, 102, 85)",
+          "opacity": "1",
+          "width": 0,
+          "height": 102.31002807617188
+        },
+        {
+          "ref": "olb:wall:wall-kitchen-1",
+          "work": "ba7d347a-d2c7-4082-9500-63f8fd698a76",
+          "status": "waiting",
+          "exchange": "draft",
+          "fileOutline": null,
+          "tag": "path",
+          "fill": "none",
+          "stroke": "rgb(121, 80, 5)",
+          "opacity": "1",
+          "width": 0,
+          "height": 102.31002807617188
+        }
+      ],
+      "detail": true,
+      "physicalHit": "surface pin",
+      "target": [
+        48,
+        48
+      ]
+    },
+    {
+      "view": "house",
+      "phase": "field",
+      "rendered": [
+        {
+          "ref": "olb:wall:wall-bath-3",
+          "work": "d6a814ed-90b1-4fb4-9e5d-ff5e16228745",
+          "status": "started",
+          "exchange": "draft",
+          "fileOutline": null,
+          "tag": "path",
+          "fill": "rgb(8, 102, 85)",
+          "stroke": "rgb(8, 102, 85)",
+          "opacity": "1",
+          "width": 34.7599983215332,
+          "height": 56.5999755859375
+        },
+        {
+          "ref": "olb:wall:wall-kitchen-1",
+          "work": "ba7d347a-d2c7-4082-9500-63f8fd698a76",
+          "status": "waiting",
+          "exchange": "draft",
+          "fileOutline": null,
+          "tag": "path",
+          "fill": "rgb(121, 80, 5)",
+          "stroke": "rgb(121, 80, 5)",
+          "opacity": "1",
+          "width": 55.589996337890625,
+          "height": 94.44003295898438
+        }
+      ],
+      "detail": true,
+      "physicalHit": "painted surface",
+      "target": [
+        48,
+        48
+      ]
+    },
+    {
+      "view": "plan",
+      "phase": "return",
+      "rendered": [
+        {
+          "ref": "olb:wall:wall-bath-3",
+          "work": "d6a814ed-90b1-4fb4-9e5d-ff5e16228745",
+          "status": "done",
+          "exchange": "invoiced",
+          "fileOutline": "rgb(146, 73, 114)",
+          "tag": "path",
+          "fill": "none",
+          "stroke": "rgb(55, 96, 40)",
+          "opacity": "1",
+          "width": 0,
+          "height": 102.31002807617188
+        },
+        {
+          "ref": "olb:wall:wall-kitchen-1",
+          "work": "ba7d347a-d2c7-4082-9500-63f8fd698a76",
+          "status": "waiting",
+          "exchange": "draft",
+          "fileOutline": null,
+          "tag": "path",
+          "fill": "none",
+          "stroke": "rgb(121, 80, 5)",
+          "opacity": "1",
+          "width": 0,
+          "height": 102.31002807617188
+        }
+      ],
+      "detail": true,
+      "physicalHit": "surface pin",
+      "target": [
+        48,
+        48
+      ]
+    },
+    {
+      "view": "house",
+      "phase": "return",
+      "rendered": [
+        {
+          "ref": "olb:wall:wall-bath-3",
+          "work": "d6a814ed-90b1-4fb4-9e5d-ff5e16228745",
+          "status": "done",
+          "exchange": "invoiced",
+          "fileOutline": "rgb(146, 73, 114)",
+          "tag": "path",
+          "fill": "rgb(55, 96, 40)",
+          "stroke": "rgb(55, 96, 40)",
+          "opacity": "1",
+          "width": 34.7599983215332,
+          "height": 56.5999755859375
+        },
+        {
+          "ref": "olb:wall:wall-kitchen-1",
+          "work": "ba7d347a-d2c7-4082-9500-63f8fd698a76",
+          "status": "waiting",
+          "exchange": "draft",
+          "fileOutline": null,
+          "tag": "path",
+          "fill": "rgb(121, 80, 5)",
+          "stroke": "rgb(121, 80, 5)",
+          "opacity": "1",
+          "width": 55.589996337890625,
+          "height": 94.44003295898438
+        }
+      ],
+      "detail": true,
+      "physicalHit": "painted surface",
+      "target": [
+        48,
+        48
+      ]
+    }
+  ],
+  "layout": [
+    {
+      "note": "plumber packages",
+      "viewport": [
+        313,
+        567
+      ],
+      "documentWidth": 313,
+      "panelWidth": 313,
+      "panelScroll": 313,
+      "controls": 12,
+      "minWidth": 71.6875,
+      "minHeight": 48,
+      "short": [],
+      "spill": []
+    },
+    {
+      "note": "Shower wall connection editor",
+      "viewport": [
+        313,
+        567
+      ],
+      "documentWidth": 313,
+      "panelWidth": 313,
+      "panelScroll": 313,
+      "controls": 13,
+      "minWidth": 71.12501525878906,
+      "minHeight": 48,
+      "short": [],
+      "spill": []
+    },
+    {
+      "note": "Kitchen conduit check editor",
+      "viewport": [
+        313,
+        567
+      ],
+      "documentWidth": 313,
+      "panelWidth": 313,
+      "panelScroll": 313,
+      "controls": 12,
+      "minWidth": 71.12501525878906,
+      "minHeight": 48,
+      "short": [],
+      "spill": []
+    },
+    {
+      "note": "trade with returned work",
+      "viewport": [
+        313,
+        567
+      ],
+      "documentWidth": 313,
+      "panelWidth": 313,
+      "panelScroll": 313,
+      "controls": 13,
+      "minWidth": 71.6875,
+      "minHeight": 48,
+      "short": [],
+      "spill": []
+    }
+  ],
+  "log": {
+    "consoleErrors": [],
+    "pageErrors": [],
+    "httpErrors": [],
+    "failedRequests": [],
+    "attemptedWrites": [],
+    "localApi": [
+      "/api/products",
+      "/api/products",
+      "/api/products"
+    ],
+    "externalReads": [
+      "api.exchangerate.host/latest"
+    ]
+  },
+  "contrast": {
+    "theme": "ocean",
+    "body": 11.068349957296876,
+    "secondary": 6.790740532365972
+  },
+  "file": {
+    "bytes": 10725,
+    "requestHash": "fe03fe317cbd9edc35bfeb4f05bb9c9f2c3f60951cf8385eb24c7e500926f902",
+    "planViewHash": "e489bf2d148f27c6f5047640a619cf906891465da2ff42c942f6a98125e70f25",
+    "planRef": "olb:wall:wall-bath-3",
+    "photoBytes": 5210
+  },
+  "exchange": {
+    "realReceiver": true,
+    "requestId": "c5b04f38-dc3d-423f-8c3a-0cbc9d9d60dd",
+    "quoteId": "82fe53c4-caa7-418f-8c04-356aeeb4f494",
+    "quoteHash": "9eb7f774482ae087bb665c3e80d7f9fe6dc8ad3af6da006e5b0cba02a647ba37",
+    "realProgress": "done",
+    "invoice": "signed fixture"
+  },
+  "pass": true,
+  "ended": "2026-11-10T14:23:19.779Z"
+}
