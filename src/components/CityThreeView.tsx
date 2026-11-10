@@ -76,7 +76,19 @@ function assetMesh(asset: CityAsset) {
   group.userData.kind = 'asset';
   group.name = asset.name;
 
-  if (asset.kind === 'water-tank') {
+  if (asset.kind === 'building' && asset.buildingForm) {
+    for (const room of asset.buildingForm) {
+      const shape = polygonShape(room.polygon.map(p => ({x: p.x * w, y: p.y * l})));
+      const geometry = new THREE.ExtrudeGeometry(shape, {depth: (room.top - room.base) * h, bevelEnabled: false});
+      geometry.rotateX(-Math.PI / 2);
+      const solid = new THREE.Mesh(geometry, [material('#a2b3bc'), material('#dfdacc')]);
+      solid.position.y = room.base * h;
+      solid.castShadow = solid.receiveShadow = true;
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ color: '#576e75' }));
+      solid.add(edges);
+      group.add(solid);
+    }
+  } else if (asset.kind === 'water-tank') {
     // Elliptical tank envelope, never its nominal stored water volume.
     const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 28), material('#728f8e'));
     tank.scale.set(w, h, l);

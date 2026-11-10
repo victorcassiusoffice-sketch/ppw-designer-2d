@@ -17,6 +17,7 @@ import { Sheet } from './BuildControls';
 import { statusLabels } from './statusLabels';
 import './tradeStation.css';
 
+import { tradeAppearance } from './tradeAppearance';
 const human = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const who = (id: TradeRole | 'owner') =>
   id === 'owner' ? 'Project owner' : (TRADE_ROLES.find((r) => r.id === id)?.label ?? human(id));
@@ -231,7 +232,7 @@ export function TradeStation({ property, rows, onModel, onPackage, onMake, onAns
                 setDetail(i.id);
               }}
             >
-              <span className="ts-mark" data-progress={i.status} aria-hidden="true" />
+              <span className="ts-mark" data-progress={i.status} style={{background:tradeAppearance[i.status].ink}} aria-hidden="true" />
               <span>
                 <strong>{i.title}</strong>
                 <small>
@@ -239,7 +240,7 @@ export function TradeStation({ property, rows, onModel, onPackage, onMake, onAns
                 </small>
               </span>
               <span className="ts-status">
-                {human(i.status)}
+                {tradeAppearance[i.status].symbol} {human(i.status)}
                 {i.exchange !== 'draft' && <small>{statusLabels[i.exchange]}</small>}
               </span>
             </button>
@@ -261,7 +262,7 @@ export function TradeStation({ property, rows, onModel, onPackage, onMake, onAns
       {item && row && !flow.form && (
         <Sheet title={item.title} onClose={() => setDetail('')} wide>
           <p className="bd-meta">
-            {who(item.trade)} · {property.name} · {human(item.status)}
+            {who(item.trade)} · {property.name} · {tradeAppearance[item.status].symbol} {human(item.status)}
           </p>
           <p>{row.draft.scope || 'No note recorded.'}</p>
           {row.job && (
@@ -465,7 +466,7 @@ function JobEditor({
             >
               {JOB_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {human(s)}
+                  {tradeAppearance[s].symbol} {human(s)}
                 </option>
               ))}
             </select>

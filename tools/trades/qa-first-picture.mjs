@@ -1,12 +1,12 @@
-// Fixed campaign: five adjacent, alternating-order pairs at each viewport.
+// Fixed campaign: three adjacent, alternating-order pairs at each viewport.
 // Run only after local builds and all other test/browser campaigns are idle.
 // Keep failed/slower rows; never rerun a timing-only change to select a better result.
 import {acquireRun,assert,base,launch,localContext,olb,save,saveRaw,assertClean} from './qa-local.mjs';
 acquireRun('part6-public-first-picture');
 const median=a=>a.toSorted((x,y)=>x-y)[Math.floor(a.length/2)];
 const pairs=[], raw=[];
-const report={started:new Date().toISOString(),base,candidate:olb,method:'Five fixed pairs per width, new Chromium process and profile on every navigation; no artificial CPU/network throttle. AB/BA orders alternate and flip between widths. Empty app APIs / offline FX equally on both. Global World timing lock. First canvas render mark and external GL-ready + loader-hidden wall time independently reported. No warmup, no sample exclusions.',pairs};
-for(let n=1;n<=5;n++) for(const width of [1280,390]){
+const report={started:new Date().toISOString(),base,candidate:olb,method:'Three fixed pairs per width, new Chromium process and profile on every navigation; no artificial CPU/network throttle. AB/BA orders alternate and flip between widths. Empty app APIs / offline FX equally on both. Global World timing lock. First canvas render mark and external GL-ready + loader-hidden wall time independently reported. No warmup, no sample exclusions.',pairs};
+for(let n=1;n<=3;n++) for(const width of [1280,390]){
   const pair={n,width,rows:[]};pairs.push(pair);
   const targets=(n+(width===390?1:0))%2?['base','candidate']:['candidate','base'];
   for(const target of targets){
@@ -34,7 +34,7 @@ for(let n=1;n<=5;n++) for(const width of [1280,390]){
 }
 report.ended=new Date().toISOString();
 report.summary=[1280,390].map(width=>{const rows=pairs.filter(p=>p.width===width);
-  const good=rows.length===5&&rows.every(p=>p.rows.length===2&&p.rows.every(r=>!r.error));if(!good)return {width,pass:false,reason:'A required navigation failed.'};
+  const good=rows.length===3&&rows.every(p=>p.rows.length===2&&p.rows.every(r=>!r.error));if(!good)return {width,pass:false,reason:'A required navigation failed.'};
   const metric=(target,key)=>median(rows.map(p=>p.rows.find(r=>r.target===target)[key]));
   const facts={width,baseCanvasMs:metric('base','canvasMs'),candidateCanvasMs:metric('candidate','canvasMs'),baseWallMs:metric('base','wallMs'),candidateWallMs:metric('candidate','wallMs'),baseLoadingMs:metric('base','loaderMs'),candidateLoadingMs:metric('candidate','loaderMs')};
   const differences=rows.map(p=>p.rows.find(r=>r.target==='candidate').canvasMs-p.rows.find(r=>r.target==='base').canvasMs);

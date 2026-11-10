@@ -1,3 +1,4 @@
+import { buildingPolygons } from '../designer/cityBuildingForm';
 import { useEffect, useRef, useState } from 'react';
 import {
   cityAssetPolygon,
@@ -221,12 +222,12 @@ export function CityPlanView({
       {model.enabled &&
         model.assets.map((a) => (
           <g key={a.id} data-city-id={a.id}>
-            <polygon
-              points={points(cityAssetPolygon(a))}
+            {(a.buildingForm ? buildingPolygons(a) : [cityAssetPolygon(a)]).map((polygon, i) => <polygon key={i}
+              points={points(polygon)}
               fill={CITY_ASSET_KINDS.find((k) => k.id === a.kind)?.colour ?? '#c3c8bb'}
               stroke={selectedId === a.id ? '#fcfff0' : '#567567'}
               strokeWidth={scale * (selectedId === a.id ? 3 : 1)}
-            />
+            />)}
             {a.kind === 'solar-light' && (
               <circle
                 cx={a.x}

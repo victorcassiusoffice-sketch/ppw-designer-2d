@@ -13,6 +13,8 @@ import {
   cancelWorkspaceNavigation,
   finishWorkspaceNavigation,
 } from '../designer/workspaceNavigation';
+import { districtDistances } from '../designer/cityAccess';
+import { captureBuilding, placeBuilding, readLibrary, LIBRARY_KEY, type LibraryBuilding } from '../designer/cityLibrary';
 import { buildingLevels } from '../designer/building';
 import {
   CITY_ASSET_KINDS,
@@ -238,6 +240,28 @@ function CityWorkbench({ onClose, initialTab = 'plan' }: { onClose: () => void; 
     [system, setSystem] = useState<CityNetworkSystem>('water');
   const [assetKind, setAssetKind] = useState<CityAssetKind>('solar-light'),
     [filter, setFilter] = useState('all');
+  const [library, setLibrary] = useState(readLibrary);
+  const [buildingName, setBuildingName] = useState(property.name);
+  const [stamp, setStamp] = useState<LibraryBuilding | null>(null);
+  function saveBuilding() {
+    try {
+      const saved = readLibrary();
+      if (saved.length >= 24) throw new Error('Your library holds 24 buildings. Remove one to save another.');
+      const entry = captureBuilding(property, buildingName, nanoid(10));
+      const next = [...saved, entry];
+      localStorage.setItem(LIBRARY_KEY, JSON.stringify(next));
+      setLibrary(next);
+      setMessage('Building saved. Choose Place, then tap a position on the city plan.');
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not save this building on this device.'); }
+  }
+  function forgetBuilding(id: string) {
+    try {
+      const next = readLibrary().filter(b => b.id !== id);
+      localStorage.setItem(LIBRARY_KEY, JSON.stringify(next));
+      setLibrary(next);
+      if (stamp?.id === id) changeTool('select');
+    } catch { setMessage('Could not update this device library.'); }
+  }
   const [ordersDirty, setOrdersDirty] = useState(false);
   useEffect(() => {
     if (!ordersDirty) setMessage((current) => (current === UNSAVED_ORDER_MESSAGE ? '' : current));
@@ -300,6 +324,7 @@ function CityWorkbench({ onClose, initialTab = 'plan' }: { onClose: () => void; 
     setSelectedId(null);
   }
   function changeTool(next: string) {
+    setStamp(null);
     setTool(next);
     setDraft([]);
     setSelectedId(null);
@@ -313,6 +338,14 @@ function CityWorkbench({ onClose, initialTab = 'plan' }: { onClose: () => void; 
       )
         return;
       setDraft([...draft, p]);
+      return;
+    }
+    if (tool === 'buildings' && stamp) {
+      const instance = placeBuilding(stamp, nanoid(10), p.x, p.y);
+      if (save({ ...model, enabled: true, assets: [...model.assets, instance] })) {
+        changeTool('select');
+        setSelectedId(instance.id);
+      }
       return;
     }
     if (tool !== 'asset') return;
@@ -588,6 +621,7 @@ function CityWorkbench({ onClose, initialTab = 'plan' }: { onClose: () => void; 
             onClick={() => changeTool('asset')}
           >
             {t("Place equipment")}</button>
+          <button aria-pressed={tool === 'buildings'} onClick={() => changeTool('buildings')}>My buildings</button>
           <button
             className="city-tool-fit"
             aria-label={t("Fit city")}
@@ -633,6 +667,7 @@ function CityWorkbench({ onClose, initialTab = 'plan' }: { onClose: () => void; 
               <div className="city-map-caption">
                 {tool === 'road' || tool === 'network'
                   ? 'Tap corners, then Finish route. Snap 0.5 m.'
+                  : tool === 'buildings' ? stamp ? `Tap to place ${stamp.name}.` : 'Choose a saved building.'
                   : tool === 'asset'
                     ? 'Tap the site to place a measured planning envelope.'
                     : 'Drag to pan · pinch / wheel to zoom · select for details'}
@@ -640,6 +675,17 @@ function CityWorkbench({ onClose, initialTab = 'plan' }: { onClose: () => void; 
             )}
           </div>
           <aside className="city-inspector" aria-label={t("City design details")}>
+            {tool === 'buildings' && <section className="city-card city-library">
+              <h2>My buildings</h2>
+              <label>Building name<input value={buildingName} maxLength={80} onChange={e => setBuildingName(e.target.value)} /></label>
+              <button onClick={saveBuilding}>Save current house</button>
+              <p className="city-note">Save measured room outlines and storeys on this device. Each placement is an independent copy.</p>
+              {library.map(b => <article key={b.id}><strong>{b.name}</strong>
+                <small>{fmt(b.widthM)} × {fmt(b.lengthM)} m · {fmt(b.heightM)} m high</small>
+                <div><button aria-pressed={stamp?.id === b.id} onClick={() => setStamp(b)}>Place</button>
+                <button aria-label={`Remove ${b.name} from library`} onClick={() => forgetBuilding(b.id)}>Remove</button></div>
+              </article>)}
+            </section>}
             {tool === 'road' && (
               <section className="city-card">
                 <h2>{t("Road section")}</h2>
@@ -717,6 +763,13 @@ function CityWorkbench({ onClose, initialTab = 'plan' }: { onClose: () => void; 
                     ×
                   </button>
                 </div>
+                {asset?.kind === 'building' && <details className="city-access">
+                  <summary>District connections</summary>
+                  <p>Plan distance from building centre to the nearest mapped centreline.</p>
+                  <dl>{districtDistances(model, asset).map(({label,distance}) => <div key={label}>
+                    <dt>{label}</dt><dd>{distance === null ? 'Unmapped' : fmt(distance,1) + ' m'}</dd>
+                  </div>)}</dl>
+                </details>}
                 {asset?.buildingLink === 'current' && (
                   <p className="city-note">
                     Building envelope snapshot. Changes here affect only the city envelope. Refresh

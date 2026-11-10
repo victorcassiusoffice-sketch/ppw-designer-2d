@@ -35,6 +35,15 @@ async function openDashboard(p,row){
   await expect(flow).toHaveCount(0);await role(p,'plumbing');await expect(workRow(p,/Plumbing, Ground floor/i)).toBeVisible();
   assert.equal(await workRow(p,/Electrical, Ground floor/i).count(),0);
   await layout(dashboard(p),row,'plumber packages');
+  row.contrast=await dashboard(p).evaluate(el=>{
+    const lum=rgb=>{const c=rgb.match(/[\d.]+/g).slice(0,3).map(Number).map(n=>n/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+    const style=getComputedStyle(el);
+    const colour=value=>{const span=document.createElement('span');el.append(span);span.style.color=value;const v=getComputedStyle(span).color;span.remove();return lum(v)};
+    const paper=colour(style.getPropertyValue('--bd-paper')),panel=colour(style.getPropertyValue('--bd-panel'));
+    const ratio=(a,b)=>(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+    return {theme:document.documentElement.dataset.uiTheme,body:ratio(lum(style.color),paper),secondary:ratio(colour(style.getPropertyValue('--bd-muted')),panel)};
+  });
+  assert.ok(row.contrast.body>=4.5 && row.contrast.secondary>=4.5,JSON.stringify(row.contrast));
   return image;
 }
 async function jobEditor(p,row,{name,who,note,status,view,image}){
@@ -128,6 +137,7 @@ async function campaign(width){
   const browser=await launch(),{context,log}=await localContext(browser,width,{seed:true}),page=await context.newPage();page.setDefaultTimeout(18000);
   const row={width,textScale:width===313?1.15:1,started:instant(),steps:[],picks:[],views:[],layout:[],log};let phase='open dashboard';
   try{
+    if(width===313) await context.addInitScript(()=>localStorage.setItem('olb.ui-preferences.v1',JSON.stringify({locale:'en',theme:'ocean'})));
     const photo=await openDashboard(page,row);phase='take plumbing package';
     await workRow(page,/Plumbing, Ground floor/i).click();const take=lastSheet(page);
     await take.getByLabel('Recorded by',{exact:true}).fill(plumber);await b(take,'Take package').click();await expect(take).toContainText('Taken by '+plumber);
