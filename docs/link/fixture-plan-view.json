@@ -1,0 +1,186 @@
+{
+  "type": "ppw-plan-view",
+  "v": 1,
+  "id": "olbpv-test-7f3k9q2m-r7",
+  "requestId": "olbrq-test-7f3k9q2m",
+  "createdAt": "2026-10-27T12:00:00.000Z",
+  "from": {
+    "app": "onelivebuild",
+    "label": "Sample Developments Ltd (test data)"
+  },
+  "project": {
+    "id": "prj-test-district",
+    "label": "Sample district (test data)"
+  },
+  "site": {
+    "id": "site-plot-12",
+    "label": "Plot 12",
+    "kind": "build-site"
+  },
+  "phase": "Phase 1",
+  "package": {
+    "id": "pkg-test-plot12-plumbing",
+    "trade": "plumbing",
+    "title": "Plumbing, ground floor - Plot 12"
+  },
+  "plan": {
+    "revision": 7,
+    "fingerprint": "747b5e39196fc8673103e5a6f7eace30efe11fbc212940b5a331f249ac6ed9ab"
+  },
+  "units": "m",
+  "levels": [
+    {
+      "id": "L1",
+      "label": "Ground floor",
+      "elevationM": 0,
+      "heightM": 2.7
+    }
+  ],
+  "rooms": [
+    {
+      "id": "room-bath",
+      "levelId": "L1",
+      "label": "Bathroom",
+      "polygon": [
+        [0, 0],
+        [2.4, 0],
+        [2.4, 3],
+        [0, 3]
+      ],
+      "areaM2": 7.2
+    },
+    {
+      "id": "room-kitchen",
+      "levelId": "L1",
+      "label": "Kitchen",
+      "polygon": [
+        [2.4, 0],
+        [6, 0],
+        [6, 3],
+        [2.4, 3]
+      ],
+      "areaM2": 10.8
+    }
+  ],
+  "walls": [
+    {
+      "id": "w1",
+      "levelId": "L1",
+      "a": [0, 0],
+      "b": [6, 0],
+      "thicknessM": 0.2,
+      "heightM": 2.7
+    },
+    {
+      "id": "w2",
+      "levelId": "L1",
+      "a": [6, 0],
+      "b": [6, 3],
+      "thicknessM": 0.2,
+      "heightM": 2.7
+    },
+    {
+      "id": "w3",
+      "levelId": "L1",
+      "a": [6, 3],
+      "b": [0, 3],
+      "thicknessM": 0.2,
+      "heightM": 2.7
+    },
+    {
+      "id": "w4",
+      "levelId": "L1",
+      "a": [0, 3],
+      "b": [0, 0],
+      "thicknessM": 0.2,
+      "heightM": 2.7
+    },
+    {
+      "id": "w5",
+      "levelId": "L1",
+      "a": [2.4, 0],
+      "b": [2.4, 3],
+      "thicknessM": 0.1,
+      "heightM": 2.7
+    }
+  ],
+  "openings": [
+    {
+      "id": "d1",
+      "wallId": "w5",
+      "kind": "door",
+      "offsetM": 1,
+      "widthM": 0.8,
+      "heightM": 2
+    }
+  ],
+  "runs": [
+    {
+      "id": "cw-1",
+      "levelId": "L1",
+      "system": "cold-water",
+      "label": "Cold water",
+      "points": [
+        [6, 0.3, 0.3],
+        [2.6, 0.3, 0.3],
+        [2.6, 2.5, 0.3],
+        [0.4, 2.5, 0.3]
+      ],
+      "lengthM": 7.8
+    },
+    {
+      "id": "ws-1",
+      "levelId": "L1",
+      "system": "waste",
+      "label": "Waste",
+      "points": [
+        [0.4, 2.6, 0],
+        [0.4, 0.2, 0],
+        [3, 0.2, 0]
+      ],
+      "lengthM": 5
+    }
+  ],
+  "items": [
+    {
+      "id": "basin-1",
+      "levelId": "L1",
+      "roomId": "room-bath",
+      "label": "Basin",
+      "center": [0.6, 2.7],
+      "sizeM": [0.5, 0.4],
+      "rotationDeg": 0
+    }
+  ],
+  "highlights": [
+    "olb:run:cw-1",
+    "olb:run:ws-1",
+    "olb:item:basin-1",
+    "olb:room:room-bath"
+  ],
+  "quantities": [
+    {
+      "item": "Cold-water run, ground floor",
+      "qty": 7.8,
+      "unit": "m",
+      "planRef": "olb:run:cw-1"
+    },
+    {
+      "item": "Waste run, ground floor",
+      "qty": 5,
+      "unit": "m",
+      "planRef": "olb:run:ws-1"
+    },
+    {
+      "item": "Basin",
+      "qty": 1,
+      "unit": "each",
+      "planRef": "olb:item:basin-1"
+    }
+  ],
+  "notes": [
+    "Estimates from the plan. Check on site before you price or order.",
+    "Coordination only: your plumber designs the system."
+  ],
+  "sha256": "7492ca24d66bbd93baad6818a73a263ab7b9b2eee381780fb2fcf5fe849a4b1d"
+}

@@ -1,0 +1,919 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PPW Job Pack v1 and RateCard v1",
+  "description": "Keep identical in all three repositories and the contract inbox. Runtime also verifies canonical SHA-256, expiry, real dates, line arithmetic and totals.",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "ppw-job-pack"
+        },
+        "v": {
+          "const": 1
+        },
+        "kind": {
+          "const": "request"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "from": {
+          "type": "object",
+          "properties": {
+            "app": {
+              "enum": [
+                "tenantfolder-uk",
+                "tenantfolder-mu",
+                "onelivebuild",
+                "tradefolder"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "required": [
+            "app",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "site": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "kind": {
+              "enum": [
+                "lot",
+                "common-part",
+                "house",
+                "build-site"
+              ]
+            },
+            "note": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "label",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "requester": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "landlord",
+                "agent",
+                "syndic",
+                "committee",
+                "developer",
+                "company"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "required": [
+            "type",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "trade": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 2000
+        },
+        "urgency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3,
+          "pattern": "^[A-Z]{3}$"
+        },
+        "preferredDates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "minItems": 0,
+          "maxItems": 20
+        },
+        "quantities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "item": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "qty": {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 1000000
+              },
+              "unit": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              },
+              "planRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "item",
+              "qty",
+              "unit"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 50
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80000,
+                "pattern": "^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$"
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60000
+              }
+            },
+            "required": [
+              "ref",
+              "sizeBytes"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 4
+        }
+      },
+      "required": [
+        "type",
+        "v",
+        "kind",
+        "id",
+        "requestId",
+        "createdAt",
+        "expiresAt",
+        "from",
+        "sha256",
+        "site",
+        "requester",
+        "trade",
+        "title",
+        "description",
+        "urgency",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "ppw-job-pack"
+        },
+        "v": {
+          "const": 1
+        },
+        "kind": {
+          "const": "quote"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "from": {
+          "type": "object",
+          "properties": {
+            "app": {
+              "enum": [
+                "tenantfolder-uk",
+                "tenantfolder-mu",
+                "onelivebuild",
+                "tradefolder"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "required": [
+            "app",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "labour",
+                  "material",
+                  "callout",
+                  "other"
+                ]
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "qty": {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 1000000
+              },
+              "unit": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              },
+              "rate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000000
+              },
+              "amount": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000000
+              }
+            },
+            "required": [
+              "kind",
+              "text",
+              "qty",
+              "unit",
+              "rate",
+              "amount"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 50
+        },
+        "hours": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "daysEstimate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "subtotal": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "vat": {
+          "type": "object",
+          "properties": {
+            "rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "included": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "rate",
+            "included"
+          ],
+          "additionalProperties": false
+        },
+        "total": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3,
+          "pattern": "^[A-Z]{3}$"
+        },
+        "validUntil": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "minItems": 0,
+          "maxItems": 20
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "minItems": 0,
+          "maxItems": 20
+        },
+        "pricing": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "enum": [
+                "manual",
+                "rules",
+                "ai-suggested"
+              ]
+            },
+            "rateCardId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "v",
+        "kind",
+        "id",
+        "requestId",
+        "createdAt",
+        "expiresAt",
+        "from",
+        "sha256",
+        "lines",
+        "subtotal",
+        "vat",
+        "total",
+        "currency",
+        "validUntil",
+        "assumptions",
+        "exclusions",
+        "pricing"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "ppw-job-pack"
+        },
+        "v": {
+          "const": 1
+        },
+        "kind": {
+          "const": "status"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "from": {
+          "type": "object",
+          "properties": {
+            "app": {
+              "enum": [
+                "tenantfolder-uk",
+                "tenantfolder-mu",
+                "onelivebuild",
+                "tradefolder"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "required": [
+            "app",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "quoteId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "state": {
+          "enum": [
+            "accepted",
+            "scheduled",
+            "started",
+            "done",
+            "declined"
+          ]
+        },
+        "on": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "hoursWorked": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "note": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 2000
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80000,
+                "pattern": "^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$"
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60000
+              }
+            },
+            "required": [
+              "ref",
+              "sizeBytes"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 4
+        }
+      },
+      "required": [
+        "type",
+        "v",
+        "kind",
+        "id",
+        "requestId",
+        "createdAt",
+        "expiresAt",
+        "from",
+        "sha256",
+        "quoteId",
+        "state",
+        "note"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "ppw-job-pack"
+        },
+        "v": {
+          "const": 1
+        },
+        "kind": {
+          "const": "invoice"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "from": {
+          "type": "object",
+          "properties": {
+            "app": {
+              "enum": [
+                "tenantfolder-uk",
+                "tenantfolder-mu",
+                "onelivebuild",
+                "tradefolder"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "required": [
+            "app",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "quoteId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "number": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "labour",
+                  "material",
+                  "callout",
+                  "other"
+                ]
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "qty": {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 1000000
+              },
+              "unit": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30
+              },
+              "rate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000000
+              },
+              "amount": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000000
+              }
+            },
+            "required": [
+              "kind",
+              "text",
+              "qty",
+              "unit",
+              "rate",
+              "amount"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 50
+        },
+        "subtotal": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "vat": {
+          "type": "object",
+          "properties": {
+            "rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "included": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "rate",
+            "included"
+          ],
+          "additionalProperties": false
+        },
+        "total": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3,
+          "pattern": "^[A-Z]{3}$"
+        },
+        "dueDate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "paymentDetails": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "type",
+        "v",
+        "kind",
+        "id",
+        "requestId",
+        "createdAt",
+        "expiresAt",
+        "from",
+        "sha256",
+        "quoteId",
+        "number",
+        "lines",
+        "subtotal",
+        "vat",
+        "total",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "ppw-rate-card"
+        },
+        "v": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "trade": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3,
+          "pattern": "^[A-Z]{3}$"
+        },
+        "hoursPerDay": {
+          "type": "number",
+          "minimum": 0.25,
+          "maximum": 24
+        },
+        "workersPerCrew": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "hourlyRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "dayRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "callOut": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "markupPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "vat": {
+          "type": "object",
+          "properties": {
+            "rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "included": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "rate",
+            "included"
+          ],
+          "additionalProperties": false
+        },
+        "roundingMinutes": {
+          "const": 15
+        },
+        "overrides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "taskTemplateId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "hoursPerUnit": {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 10000
+              }
+            },
+            "required": [
+              "taskTemplateId",
+              "hoursPerUnit"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "type",
+        "v",
+        "id",
+        "trade",
+        "currency",
+        "hoursPerDay",
+        "vat",
+        "roundingMinutes",
+        "overrides"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

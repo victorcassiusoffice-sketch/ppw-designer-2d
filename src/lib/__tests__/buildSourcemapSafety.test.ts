@@ -9,12 +9,19 @@ interface BuildConfig {
   plugins?: unknown[];
 }
 
-async function loadConfig(): Promise<BuildConfig> {
+async function loadConfig(mode: string): Promise<BuildConfig> {
   // vite.config belongs to the separate tsconfig.node composite project.
   // Vitest loads its source at runtime without requiring emitted .d.ts files.
   const configPath = '../../../vite.config';
-  return (await import(configPath)).default as BuildConfig;
+  const factory = (await import(configPath)).default as (env: { mode: string; command: 'build' }) => BuildConfig;
+  return factory({mode, command:'build'});
 }
+
+const modes = [
+  ['production', './dist/'],
+  ['olb-plumbing', './dist/assets/plumbing/'],
+  ['olb-studio', './dist/assets/studio/'],
+] as const;
 
 function isMapGuard(plugin: unknown): plugin is { name: string; closeBundle: () => Promise<void> } {
   return !!plugin && typeof plugin === 'object' && 'name' in plugin && plugin.name === 'no-public-source-maps';
@@ -30,25 +37,25 @@ describe('public build source map policy', () => {
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  it('generates no source maps without private Sentry upload configuration', async () => {
-    const config = await loadConfig();
+  it.each(modes)('generates no source maps without private Sentry upload configuration (%s)', async (mode) => {
+    const config = await loadConfig(mode);
     expect(config.build?.sourcemap).toBe(false);
     expect(mocked.sentry).not.toHaveBeenCalled();
   });
 
-  it('uses hidden maps for Sentry and removes the public copies after upload', async () => {
+  it.each(modes)('uses hidden maps for Sentry and removes the public copies after upload (%s)', async (mode, prefix) => {
     vi.stubEnv('SENTRY_AUTH_TOKEN', 'test-token');
     vi.stubEnv('SENTRY_ORG', 'test-org');
     vi.stubEnv('SENTRY_PROJECT', 'test-project');
-    const config = await loadConfig();
+    const config = await loadConfig(mode);
     expect(config.build?.sourcemap).toBe('hidden');
     expect(mocked.sentry).toHaveBeenCalledWith(expect.objectContaining({
-      sourcemaps: { assets: ['./dist/**/*.{js,map}'], filesToDeleteAfterUpload: ['./dist/**/*.map'] },
+      sourcemaps: { assets: [prefix + '**/*.{js,map}'], filesToDeleteAfterUpload: [prefix + '**/*.map'] },
     }));
   });
 
-  it('refuses publication if upload cleanup leaves a map in the build', async () => {
-    const config = await loadConfig();
+  it.each(modes)('refuses publication if upload cleanup leaves a map in any part of the build (%s)', async (mode) => {
+    const config = await loadConfig(mode);
     const guard = config.plugins?.find(isMapGuard);
     expect(guard).toBeDefined();
     mocked.read.mockResolvedValue(['assets/main.js', 'assets/main.js.map']);

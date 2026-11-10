@@ -1,0 +1,51 @@
+{
+  "type": "ppw-job-pack",
+  "v": 1,
+  "kind": "request",
+  "id": "olbrq-test-7f3k9q2m",
+  "requestId": "olbrq-test-7f3k9q2m",
+  "createdAt": "2026-10-27T12:00:00.000Z",
+  "expiresAt": "2026-11-26T12:00:00.000Z",
+  "from": {
+    "app": "onelivebuild",
+    "label": "Sample Developments Ltd (test data)"
+  },
+  "site": {
+    "label": "Sample district - Plot 12",
+    "kind": "build-site",
+    "note": "Phase 1 - plan revision 7"
+  },
+  "requester": {
+    "type": "developer",
+    "label": "Sample Developments Ltd (test data)"
+  },
+  "trade": "plumbing",
+  "title": "Plumbing, ground floor - Plot 12",
+  "description": "Estimates from the One Live Build plan, revision 7. Check on site before you price.",
+  "urgency": 3,
+  "currency": "MUR",
+  "preferredDates": [
+    "2026-11-16"
+  ],
+  "quantities": [
+    {
+      "item": "Cold-water run, ground floor",
+      "qty": 7.8,
+      "unit": "m",
+      "planRef": "olb:run:cw-1"
+    },
+    {
+      "item": "Waste run, ground floor",
+      "qty": 5,
+      "unit": "m",
+      "planRef": "olb:run:ws-1"
+    },
+    {
+      "item": "Basin",
+      "qty": 1,
+      "unit": "each",
+      "planRef": "olb:item:basin-1"
+    }
+  ],
+  "sha256": "cd8e33d1a57b689c2ed8436bafae7d598e8541b91e7df85ff2f3d16718d92c24"
+}

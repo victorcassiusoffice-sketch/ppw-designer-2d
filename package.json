@@ -6,6 +6,7 @@
   "description": "Peak Performance Wellness - Konva 2D Wellness Room Designer (MVP)",
   "license": "MIT",
   "scripts": {
+    "postinstall": "npm ci --prefix src/designer/link --workspaces=false --ignore-scripts --no-audit --no-fund",
     "dev": "vite",
     "build": "tsc --noEmit && tsc --noEmit -p tsconfig.middleware.json && vite build && node tools/build-plumbing-entry.mjs",
     "preview": "vite preview --port 5173",

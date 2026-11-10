@@ -1,3 +1,11 @@
 # The One Live Build decks are copies of approved pages: keep their bytes exactly
 # (CRLF included), so the sha256 in server/olbDecks.ts holds on every checkout.
 public/decks/** -text
+# Shared versioned contracts use byte hashes; never rewrite their line endings.
+/docs/link/*.json -text
+/docs/link/PLAN-VIEW-CONTRACT.md -text
+/docs/link/JOB-PACK-CONTRACT.md -text
+/docs/link/build-tokens.css -text
+/src/designer/link/contract/** -text
+/src/designer/link/vendor/tradefolder/** -text
+/tools/link/extract-link-contract.mjs -text

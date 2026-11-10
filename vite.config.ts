@@ -4,6 +4,7 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 import { readdir } from 'node:fs/promises';
 import { firstPicturePreload } from './tools/firstPicturePreload';
+import { studioEntry } from './tools/link/studioEntry';
 
 // Sentry source-map upload runs only when an auth token is present
 // (so local builds don't try to publish). SENTRY_AUTH_TOKEN +
@@ -14,8 +15,10 @@ const sentryEnabled =
   !!process.env.SENTRY_PROJECT;
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  publicDir: mode === 'olb-studio' ? false : 'public',
   plugins: [
+    studioEntry(mode === 'olb-studio'),
     firstPicturePreload(),
     {
       name: 'defer-walk-collision-math',
@@ -65,8 +68,8 @@ export default defineConfig({
             project: process.env.SENTRY_PROJECT,
             authToken: process.env.SENTRY_AUTH_TOKEN,
             sourcemaps: {
-              assets: ['./dist/**/*.{js,map}'],
-              filesToDeleteAfterUpload: ['./dist/**/*.map'],
+              assets: [mode === 'olb-studio' ? './dist/assets/studio/**/*.{js,map}' : mode === 'olb-plumbing' ? './dist/assets/plumbing/**/*.{js,map}' : './dist/**/*.{js,map}'],
+              filesToDeleteAfterUpload: [mode === 'olb-studio' ? './dist/assets/studio/**/*.map' : mode === 'olb-plumbing' ? './dist/assets/plumbing/**/*.map' : './dist/**/*.map'],
             },
             telemetry: false,
             // OMS Wave 1.10 â€” tag deploys with the Vercel commit SHA so
@@ -125,12 +128,13 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    emptyOutDir: mode !== 'olb-studio',
     sourcemap: sentryEnabled ? 'hidden' : false,
     rollupOptions: {
       // Two HTML shells, one app: index.html (designer.ppwellness.co) and
       // olb.html (onelivebuild.com: One Live Build icons, card and
       // data-brand="olb"). middleware.ts picks the shell by host.
-      input: {
+      input: mode === 'olb-studio' ? { studio: path.resolve(__dirname, 'src/main.tsx') } : {
         main: path.resolve(__dirname, 'index.html'),
         olb: path.resolve(__dirname, 'olb.html'),
       },
@@ -153,6 +157,11 @@ export default defineConfig({
       // them cached across our own releases (the app chunk changes every
       // deploy; react/konva do not).
       output: {
+        ...(mode === 'olb-studio' ? {
+          entryFileNames: 'assets/studio/[name]-[hash].js',
+          chunkFileNames: 'assets/studio/[name]-[hash].js',
+          assetFileNames: 'assets/studio/[name]-[hash][extname]',
+        } : {}),
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
           const path = id.replace(/\\/g, '/');
@@ -172,4 +181,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

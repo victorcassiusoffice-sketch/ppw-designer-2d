@@ -1,0 +1,202 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PPW Plan View v1 and Work Package v1",
+  "description": "Keep identical in ppw-designer-2d docs/, tradefolder docs/ and the vault inbox olb-tradefolder-link-2026-10-27. Runtime also checks the canonical SHA-256, real dates, unique ids, references, the request match and the size limits in PLAN-VIEW-CONTRACT.md.",
+  "definitions": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[A-Za-z0-9_-]+$" },
+    "elementId": { "type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[A-Za-z0-9_.:-]+$" },
+    "planRef": { "type": "string", "minLength": 5, "maxLength": 120, "pattern": "^olb:(level|room|wall|opening|run|item|mat|fnd|city-road|city-net|city-asset):[A-Za-z0-9_.:-]+$" },
+    "label": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "instant": { "type": "string", "minLength": 24, "maxLength": 24, "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$" },
+    "coord": { "type": "number", "minimum": -10000, "maximum": 10000 },
+    "point2": { "type": "array", "items": { "$ref": "#/definitions/coord" }, "minItems": 2, "maxItems": 2 },
+    "point3": { "type": "array", "items": { "$ref": "#/definitions/coord" }, "minItems": 3, "maxItems": 3 },
+    "quantity": {
+      "type": "object",
+      "properties": {
+        "item": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "qty": { "type": "number", "minimum": 0.001, "maximum": 1000000 },
+        "unit": { "type": "string", "minLength": 1, "maxLength": 30 },
+        "planRef": { "type": "string", "minLength": 1, "maxLength": 120 }
+      },
+      "required": ["item", "qty", "unit"],
+      "additionalProperties": false
+    },
+    "planView": {
+      "type": "object",
+      "properties": {
+        "type": { "const": "ppw-plan-view" },
+        "v": { "const": 1 },
+        "id": { "$ref": "#/definitions/id" },
+        "requestId": { "$ref": "#/definitions/id" },
+        "createdAt": { "$ref": "#/definitions/instant" },
+        "from": {
+          "type": "object",
+          "properties": {
+            "app": { "const": "onelivebuild" },
+            "label": { "type": "string", "minLength": 1, "maxLength": 120 }
+          },
+          "required": ["app", "label"],
+          "additionalProperties": false
+        },
+        "project": {
+          "type": "object",
+          "properties": { "id": { "$ref": "#/definitions/id" }, "label": { "$ref": "#/definitions/label" } },
+          "required": ["id", "label"],
+          "additionalProperties": false
+        },
+        "site": {
+          "type": "object",
+          "properties": {
+            "id": { "$ref": "#/definitions/id" },
+            "label": { "$ref": "#/definitions/label" },
+            "kind": { "enum": ["lot", "house", "build-site"] }
+          },
+          "required": ["id", "label", "kind"],
+          "additionalProperties": false
+        },
+        "phase": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "package": {
+          "type": "object",
+          "properties": {
+            "id": { "$ref": "#/definitions/id" },
+            "trade": { "type": "string", "minLength": 1, "maxLength": 60 },
+            "title": { "$ref": "#/definitions/label" }
+          },
+          "required": ["id", "trade", "title"],
+          "additionalProperties": false
+        },
+        "plan": {
+          "type": "object",
+          "properties": {
+            "revision": { "type": "integer", "minimum": 0, "maximum": 2147483646 },
+            "fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          },
+          "required": ["revision", "fingerprint"],
+          "additionalProperties": false
+        },
+        "units": { "const": "m" },
+        "levels": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/definitions/elementId" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 80 },
+              "elevationM": { "type": "number", "minimum": -1000, "maximum": 10000 },
+              "heightM": { "type": "number", "exclusiveMinimum": 0, "maximum": 100 }
+            },
+            "required": ["id", "label", "elevationM", "heightM"],
+            "additionalProperties": false
+          }
+        },
+        "rooms": {
+          "type": "array",
+          "maxItems": 300,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/definitions/elementId" },
+              "levelId": { "$ref": "#/definitions/elementId" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+              "polygon": { "type": "array", "minItems": 3, "maxItems": 128, "items": { "$ref": "#/definitions/point2" } },
+              "areaM2": { "type": "number", "minimum": 0, "maximum": 1000000 }
+            },
+            "required": ["id", "levelId", "label", "polygon", "areaM2"],
+            "additionalProperties": false
+          }
+        },
+        "walls": {
+          "type": "array",
+          "maxItems": 3000,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/definitions/elementId" },
+              "levelId": { "$ref": "#/definitions/elementId" },
+              "a": { "$ref": "#/definitions/point2" },
+              "b": { "$ref": "#/definitions/point2" },
+              "thicknessM": { "type": "number", "exclusiveMinimum": 0, "maximum": 5 },
+              "heightM": { "type": "number", "exclusiveMinimum": 0, "maximum": 100 }
+            },
+            "required": ["id", "levelId", "a", "b", "thicknessM", "heightM"],
+            "additionalProperties": false
+          }
+        },
+        "openings": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/definitions/elementId" },
+              "wallId": { "$ref": "#/definitions/elementId" },
+              "kind": { "enum": ["door", "window", "opening"] },
+              "offsetM": { "type": "number", "minimum": 0, "maximum": 10000 },
+              "widthM": { "type": "number", "exclusiveMinimum": 0, "maximum": 50 },
+              "heightM": { "type": "number", "exclusiveMinimum": 0, "maximum": 50 },
+              "sillM": { "type": "number", "minimum": 0, "maximum": 50 }
+            },
+            "required": ["id", "wallId", "kind", "offsetM", "widthM", "heightM"],
+            "additionalProperties": false
+          }
+        },
+        "runs": {
+          "type": "array",
+          "maxItems": 300,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/definitions/elementId" },
+              "levelId": { "$ref": "#/definitions/elementId" },
+              "system": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+              "points": { "type": "array", "minItems": 2, "maxItems": 65, "items": { "$ref": "#/definitions/point3" } },
+              "lengthM": { "type": "number", "minimum": 0, "maximum": 1000000 }
+            },
+            "required": ["id", "levelId", "system", "label", "points", "lengthM"],
+            "additionalProperties": false
+          }
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 600,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/definitions/elementId" },
+              "levelId": { "$ref": "#/definitions/elementId" },
+              "roomId": { "$ref": "#/definitions/elementId" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+              "center": { "$ref": "#/definitions/point2" },
+              "sizeM": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "exclusiveMinimum": 0, "maximum": 1000 } },
+              "rotationDeg": { "type": "number", "minimum": 0, "exclusiveMaximum": 360 }
+            },
+            "required": ["id", "levelId", "label", "center", "sizeM", "rotationDeg"],
+            "additionalProperties": false
+          }
+        },
+        "highlights": { "type": "array", "maxItems": 400, "uniqueItems": true, "items": { "$ref": "#/definitions/planRef" } },
+        "quantities": { "type": "array", "maxItems": 50, "items": { "$ref": "#/definitions/quantity" } },
+        "notes": { "type": "array", "maxItems": 10, "items": { "type": "string", "minLength": 1, "maxLength": 300 } },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "required": ["type", "v", "id", "requestId", "createdAt", "from", "project", "site", "package", "plan", "units", "levels", "rooms", "walls", "openings", "runs", "items", "highlights", "quantities", "notes", "sha256"],
+      "additionalProperties": false
+    },
+    "workPackage": {
+      "type": "object",
+      "properties": {
+        "type": { "const": "ppw-work-package" },
+        "v": { "const": 1 },
+        "request": { "type": "object" },
+        "planView": { "oneOf": [{ "$ref": "#/definitions/planView" }, { "type": "null" }] }
+      },
+      "required": ["type", "v", "request", "planView"],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [{ "$ref": "#/definitions/planView" }, { "$ref": "#/definitions/workPackage" }]
+}

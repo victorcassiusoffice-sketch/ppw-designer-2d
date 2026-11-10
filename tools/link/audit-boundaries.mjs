@@ -1,0 +1,25 @@
+// Re-run from the repo root. Includes untracked additions during local review.
+import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+const base = process.argv[2] || 'origin/main';
+const git = (...args) => execFileSync('git', ['-c', 'safe.directory=' + process.cwd().replaceAll('\\','/'), ...args], {encoding:'utf8'}).trimEnd();
+const paths = text => text.split(/\r?\n/).filter(Boolean);
+const changed = [...new Set([...paths(git('diff','--name-only',base)), ...paths(git('ls-files','--others','--exclude-standard'))])];
+const functions = paths(git('ls-files','api')).filter(p => !p.startsWith('api/_') && /\.ts$/.test(p));
+const forbidden = changed.filter(p => /^(api\/|src\/(?:components\/(?:RoomCanvas\.tsx|three\/ThreeStage\.tsx|mobile\/|desktop\/)|data\/|walk\/|designer\/lessons\/)|public\/(?:models|lessons|products)\/)|(^|\/)(?:\.env(?:\.|$)|migrations\/)/.test(p));
+const baselineTests = paths(git('ls-tree','-r','--name-only',base)).filter(p => /(?:\.test|\.spec)\.[cm]?[jt]sx?$/.test(p));
+const changedBaselineTests = baselineTests.filter(p=>changed.includes(p));
+const lock = p => JSON.parse(readFileSync(p,'utf8'));
+const prevLock = JSON.parse(git('show',base+':package-lock.json'));
+const currentLock = lock('package-lock.json');
+const changedOldDependencies = Object.entries(prevLock.packages).filter(([k,v])=>k && JSON.stringify(currentLock.packages[k])!==JSON.stringify(v)).map(([k])=>k);
+const envKeys = s => [...s.matchAll(/process\.env\.([A-Z0-9_]+)/g)].map(m=>m[1]);
+const oldKeys = new Set(envKeys(git('show',base+':vite.config.ts')));
+const addedEnv = [...new Set(envKeys(readFileSync('vite.config.ts','utf8')).filter(k=>!oldKeys.has(k)))];
+const packageDiff = git('diff','--numstat',base,'--','package.json','package-lock.json');
+const failures = [];
+if (functions.length !== 12 || forbidden.length || changedOldDependencies.length || addedEnv.length || changedBaselineTests.some(p=>p!=='src/lib/__tests__/buildSourcemapSafety.test.ts') || packageDiff.split('\n').some(s=>s && s.split('\t')[1]!=='0')) failures.push('Boundary mismatch; inspect paths and package diff.');
+const report={base:git('rev-parse',base), functionCount:functions.length, functions, forbiddenChanges:forbidden, baselineTestFiles:baselineTests.length, changedBaselineTests, rootPackageDiff:packageDiff, changedOldDependencies, addedViteEnvironmentKeys:addedEnv, failures};
+writeFileSync('docs/link/evidence/boundaries.json',JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));
+if(failures.length)process.exitCode=1;

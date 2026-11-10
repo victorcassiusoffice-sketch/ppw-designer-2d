@@ -1,0 +1,27 @@
+{
+  "base": "228ac97e9b696e64cf5006487ad4f1763bb18d60",
+  "functionCount": 12,
+  "functions": [
+    "api/admin-router.ts",
+    "api/agent-chat.ts",
+    "api/cart-quote.ts",
+    "api/create-checkout-session.ts",
+    "api/cron-router.ts",
+    "api/healthcheck.ts",
+    "api/merchants-router.ts",
+    "api/orders.ts",
+    "api/paypal-router.ts",
+    "api/products.ts",
+    "api/stripe-connect/webhook.ts",
+    "api/stripe-webhook.ts"
+  ],
+  "forbiddenChanges": [],
+  "baselineTestFiles": 519,
+  "changedBaselineTests": [
+    "src/lib/__tests__/buildSourcemapSafety.test.ts"
+  ],
+  "rootPackageDiff": "1\t0\tpackage-lock.json\n1\t0\tpackage.json",
+  "changedOldDependencies": [],
+  "addedViteEnvironmentKeys": [],
+  "failures": []
+}

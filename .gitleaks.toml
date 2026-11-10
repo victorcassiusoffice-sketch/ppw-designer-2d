@@ -19,6 +19,9 @@ paths = [
   '''api/db/migrations/.*\.sql''',
 ]
 regexes = [
+  # Public v1 contract digest of docs/link/build-tokens.css (sha256sum).
+  # Its filename contains "tokens"; keep scanning the file and every other value.
+  '''^cb98b4a25bdd785e99f3262d34bdff1a62b8b1b0ba0e7555abcd536f8e615db0$''',
   # Test stripe placeholder keys (sk_test_***)
   '''sk_test_[A-Za-z0-9]+''',
   # PayPal sandbox client id pattern
