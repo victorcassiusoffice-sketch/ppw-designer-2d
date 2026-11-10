@@ -1,0 +1,508 @@
+[
+  {
+    "change": "Initial font subset",
+    "pairs": [
+      {
+        "n": 1,
+        "width": 1280,
+        "rows": [
+          {
+            "target": "base",
+            "at": "2026-11-10T15:16:27.604Z",
+            "status": 200,
+            "wallMs": 3861,
+            "canvasMs": 3338,
+            "loaderMs": 226,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:16:32.483Z",
+            "status": 200,
+            "wallMs": 3394,
+            "canvasMs": 3305,
+            "loaderMs": 181,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 1,
+        "width": 390,
+        "rows": [
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:16:36.732Z",
+            "status": 200,
+            "wallMs": 2450,
+            "canvasMs": 2400,
+            "loaderMs": 71,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "base",
+            "at": "2026-11-10T15:16:39.848Z",
+            "status": 200,
+            "wallMs": 2361,
+            "canvasMs": 2323,
+            "loaderMs": 63,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "width": 1280,
+        "rows": [
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:16:42.872Z",
+            "status": 200,
+            "wallMs": 2740,
+            "canvasMs": 2655,
+            "loaderMs": 68,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "base",
+            "at": "2026-11-10T15:16:46.577Z",
+            "status": 200,
+            "wallMs": 3009,
+            "canvasMs": 2972,
+            "loaderMs": 66,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "width": 390,
+        "rows": [
+          {
+            "target": "base",
+            "at": "2026-11-10T15:16:50.338Z",
+            "status": 200,
+            "wallMs": 2239,
+            "canvasMs": 2142,
+            "loaderMs": 62,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:16:53.165Z",
+            "status": 200,
+            "wallMs": 2297,
+            "canvasMs": 2224,
+            "loaderMs": 68,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "width": 1280,
+        "rows": [
+          {
+            "target": "base",
+            "at": "2026-11-10T15:16:56.132Z",
+            "status": 200,
+            "wallMs": 2383,
+            "canvasMs": 2305,
+            "loaderMs": 62,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:16:59.130Z",
+            "status": 200,
+            "wallMs": 2918,
+            "canvasMs": 2836,
+            "loaderMs": 70,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "width": 390,
+        "rows": [
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:17:02.674Z",
+            "status": 200,
+            "wallMs": 2469,
+            "canvasMs": 2406,
+            "loaderMs": 65,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "base",
+            "at": "2026-11-10T15:17:06.256Z",
+            "status": 200,
+            "wallMs": 2443,
+            "canvasMs": 2407,
+            "loaderMs": 64,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      }
+    ],
+    "summary": [
+      {
+        "width": 1280,
+        "baseCanvasMs": 2972,
+        "candidateCanvasMs": 2836,
+        "baseWallMs": 3009,
+        "candidateWallMs": 2918,
+        "baseLoadingMs": 66,
+        "candidateLoadingMs": 70,
+        "pairedCanvasDeltaMs": [
+          -33,
+          -317,
+          531
+        ],
+        "medianPairedCanvasDeltaMs": -33,
+        "canvasNoSlower": true,
+        "wallNoSlower": true,
+        "pass": true
+      },
+      {
+        "width": 390,
+        "baseCanvasMs": 2323,
+        "candidateCanvasMs": 2400,
+        "baseWallMs": 2361,
+        "candidateWallMs": 2450,
+        "baseLoadingMs": 63,
+        "candidateLoadingMs": 68,
+        "pairedCanvasDeltaMs": [
+          77,
+          82,
+          -1
+        ],
+        "medianPairedCanvasDeltaMs": 77,
+        "canvasNoSlower": false,
+        "wallNoSlower": false,
+        "pass": false
+      }
+    ]
+  },
+  {
+    "change": "Geometric and weather symbols",
+    "pairs": [
+      {
+        "n": 1,
+        "width": 1280,
+        "rows": [
+          {
+            "target": "base",
+            "at": "2026-11-10T15:19:53.666Z",
+            "status": 200,
+            "wallMs": 2881,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-latin.woff2",
+                "bytes": 216980
+              }
+            ],
+            "firstPictureTransferBytes": 1171384,
+            "canvasMs": 2832,
+            "loaderMs": 81,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:19:57.371Z",
+            "status": 200,
+            "wallMs": 3030,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-core.woff2",
+                "bytes": 123632
+              },
+              {
+                "path": "/fonts/inter-variable.woff2",
+                "bytes": 352540
+              }
+            ],
+            "firstPictureTransferBytes": 1406722,
+            "canvasMs": 2947,
+            "loaderMs": 64,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 1,
+        "width": 390,
+        "rows": [
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:20:01.141Z",
+            "status": 200,
+            "wallMs": 2545,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-core.woff2",
+                "bytes": 123632
+              },
+              {
+                "path": "/fonts/inter-variable.woff2",
+                "bytes": 352540
+              }
+            ],
+            "firstPictureTransferBytes": 1407422,
+            "canvasMs": 2486,
+            "loaderMs": 63,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "base",
+            "at": "2026-11-10T15:20:04.623Z",
+            "status": 200,
+            "wallMs": 2215,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-latin.woff2",
+                "bytes": 216980
+              }
+            ],
+            "firstPictureTransferBytes": 1171384,
+            "canvasMs": 2111,
+            "loaderMs": 62,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "width": 1280,
+        "rows": [
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:20:07.407Z",
+            "status": 200,
+            "wallMs": 2396,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-core.woff2",
+                "bytes": 123632
+              },
+              {
+                "path": "/fonts/inter-variable.woff2",
+                "bytes": 352540
+              }
+            ],
+            "firstPictureTransferBytes": 1407422,
+            "canvasMs": 2300,
+            "loaderMs": 61,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "base",
+            "at": "2026-11-10T15:20:10.403Z",
+            "status": 200,
+            "wallMs": 2613,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-latin.woff2",
+                "bytes": 216980
+              }
+            ],
+            "firstPictureTransferBytes": 1170683,
+            "canvasMs": 2568,
+            "loaderMs": 61,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "width": 390,
+        "rows": [
+          {
+            "target": "base",
+            "at": "2026-11-10T15:20:13.891Z",
+            "status": 200,
+            "wallMs": 2226,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-latin.woff2",
+                "bytes": 216980
+              }
+            ],
+            "firstPictureTransferBytes": 1171384,
+            "canvasMs": 2190,
+            "loaderMs": 60,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:20:16.661Z",
+            "status": 200,
+            "wallMs": 2194,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-core.woff2",
+                "bytes": 123632
+              },
+              {
+                "path": "/fonts/inter-variable.woff2",
+                "bytes": 352540
+              }
+            ],
+            "firstPictureTransferBytes": 1407422,
+            "canvasMs": 2094,
+            "loaderMs": 64,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "width": 1280,
+        "rows": [
+          {
+            "target": "base",
+            "at": "2026-11-10T15:20:19.445Z",
+            "status": 200,
+            "wallMs": 2482,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-latin.woff2",
+                "bytes": 216980
+              }
+            ],
+            "firstPictureTransferBytes": 1171384,
+            "canvasMs": 2433,
+            "loaderMs": 61,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:20:22.602Z",
+            "status": 200,
+            "wallMs": 2654,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-core.woff2",
+                "bytes": 123632
+              },
+              {
+                "path": "/fonts/inter-variable.woff2",
+                "bytes": 352540
+              }
+            ],
+            "firstPictureTransferBytes": 1407422,
+            "canvasMs": 2573,
+            "loaderMs": 65,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "width": 390,
+        "rows": [
+          {
+            "target": "candidate",
+            "at": "2026-11-10T15:20:26.336Z",
+            "status": 200,
+            "wallMs": 2341,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-core.woff2",
+                "bytes": 123632
+              },
+              {
+                "path": "/fonts/inter-variable.woff2",
+                "bytes": 352540
+              }
+            ],
+            "firstPictureTransferBytes": 1407422,
+            "canvasMs": 2275,
+            "loaderMs": 63,
+            "privateAssets": 0,
+            "errors": []
+          },
+          {
+            "target": "base",
+            "at": "2026-11-10T15:20:29.321Z",
+            "status": 200,
+            "wallMs": 2283,
+            "fonts": [
+              {
+                "path": "/fonts/inter-ui-latin.woff2",
+                "bytes": 216980
+              }
+            ],
+            "firstPictureTransferBytes": 1171384,
+            "canvasMs": 2243,
+            "loaderMs": 66,
+            "privateAssets": 0,
+            "errors": []
+          }
+        ]
+      }
+    ],
+    "summary": [
+      {
+        "width": 1280,
+        "baseCanvasMs": 2568,
+        "candidateCanvasMs": 2573,
+        "baseWallMs": 2613,
+        "candidateWallMs": 2654,
+        "baseLoadingMs": 61,
+        "candidateLoadingMs": 64,
+        "pairedCanvasDeltaMs": [
+          115,
+          -268,
+          140
+        ],
+        "medianPairedCanvasDeltaMs": 115,
+        "canvasNoSlower": false,
+        "wallNoSlower": false,
+        "pass": false
+      },
+      {
+        "width": 390,
+        "baseCanvasMs": 2190,
+        "candidateCanvasMs": 2275,
+        "baseWallMs": 2226,
+        "candidateWallMs": 2341,
+        "baseLoadingMs": 62,
+        "candidateLoadingMs": 63,
+        "pairedCanvasDeltaMs": [
+          375,
+          -96,
+          32
+        ],
+        "medianPairedCanvasDeltaMs": 32,
+        "canvasNoSlower": false,
+        "wallNoSlower": false,
+        "pass": false
+      }
+    ]
+  }
+]

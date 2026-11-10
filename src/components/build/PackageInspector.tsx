@@ -6,7 +6,13 @@ import { useLinkStore } from '../../store/linkStore';
 import { packagesFromProperty } from '../../designer/link/packages';
 import { projectFingerprint } from '../../designer/projectHub';
 import { nextRevision, needsDecision, type LinkPackage } from '../../designer/link/exchange';
-import { buildWorkPackage, type PlanView, type WorkPackageInput } from '../../designer/link/planView';
+import {
+  buildWorkPackage,
+  type PlanView,
+  type WorkPackageInput,
+} from '../../designer/link/planView';
+import { pinExists } from '../../designer/link/tradeWork';
+import { useTradeFlow } from './tradeFlow';
 import { packLink } from '../../designer/link/vendor/tradefolder/lib/jobPack/protocol';
 import { DraftFields, Sheet } from './BuildControls';
 import { PackageDecisions } from './PackageDecisions';
@@ -146,8 +152,11 @@ export function PackageInspector({
   hide: boolean;
   onClose: () => void;
 }) {
+  const tradeMode = useTradeFlow((s) => s.role !== 'owner');
+  const named = !!(row.job || row.claim || tradeMode);
   const [draft, setDraft] = useState(() => structuredClone(row.draft)),
     [includePhoto, setPhoto] = useState(true),
+    [operator, setOperator] = useState(''),
     [error, setError] = useState(''),
     [message, setMessage] = useState(''),
     [busy, setBusy] = useState(false),
@@ -180,6 +189,19 @@ export function PackageInspector({
     };
   }, [latest?.request.sha256]); // eslint-disable-line react-hooks/exhaustive-deps
   function refresh() {
+    if (row.job) {
+      if (!pinExists(property, row.job.pin)) {
+        setError(
+          'The pinned part is no longer in this plan. Edit the job and choose a new location.',
+        );
+        return;
+      }
+      setReviewed(fingerprint ?? '');
+      setMessage(
+        'Location checked against this plan. Review the job scope and quantities before sharing.',
+      );
+      return;
+    }
     let source;
     try {
       source = packagesFromProperty(property).find((p) => p.key === draft.sourceKey);
@@ -203,6 +225,7 @@ export function PackageInspector({
     setMessage('');
     setError('');
     try {
+      if (named && !operator.trim()) throw new Error('Enter your name to record this change.');
       if (draft.preferredDates[1] && draft.preferredDates[1] < draft.preferredDates[0])
         throw new Error('Preferred finish must be on or after the start.');
       if (
@@ -213,7 +236,7 @@ export function PackageInspector({
       )
         throw new Error('Enter quantities with up to three decimal places.');
       if (!send) {
-        await useLinkStore.getState().saveDraft(draft);
+        await useLinkStore.getState().saveDraft(draft, undefined, operator.trim() || undefined);
         setMessage('Draft saved.');
         return;
       }
@@ -223,43 +246,51 @@ export function PackageInspector({
       const fp = await projectFingerprint(property);
       if (changed && reviewedFp !== fp)
         throw new Error('Review the latest measured lines before sending an update.');
-      const photo = includePhoto ? await roomPhoto(property, draft.levelIds) : undefined;
+      if (row.job && !pinExists(property, row.job.pin))
+        throw new Error(
+          'The pinned part is no longer in this plan. Edit the job and pin it again.',
+        );
+      const photo = includePhoto
+        ? (row.job?.photo ?? (await roomPhoto(property, draft.levelIds)))
+        : undefined;
       const ledger = useLinkStore.getState();
       const input: WorkPackageInput = {
-          property,
-          requestId: opaqueId(),
-          viewId: opaqueId(),
-          now: new Date().toISOString(),
-          project: { id: draft.projectId, label: draft.projectLabel },
-          site: { id: draft.siteId, label: draft.siteLabel, kind: draft.siteKind },
-          package: { id: draft.id, title: draft.title, trade: draft.trade },
-          phase: draft.phase,
-          companyName: draft.company,
-          requesterType: draft.requester,
-          description: draft.scope,
-          currency: draft.currency,
-          preferredDates: draft.preferredDates,
-          quantities: draft.quantities,
-          revision: nextRevision(ledger.packages, draft.projectId, fp),
-          levelIds: draft.levelIds,
-          resolveItem,
-          photo,
-        };
+        property,
+        requestId: opaqueId(),
+        viewId: opaqueId(),
+        now: new Date().toISOString(),
+        project: { id: draft.projectId, label: draft.projectLabel },
+        site: { id: draft.siteId, label: draft.siteLabel, kind: draft.siteKind },
+        package: { id: draft.id, title: draft.title, trade: draft.trade },
+        phase: draft.phase,
+        companyName: draft.company,
+        requesterType: draft.requester,
+        description: draft.scope,
+        currency: draft.currency,
+        preferredDates: draft.preferredDates,
+        quantities: draft.quantities,
+        revision: nextRevision(ledger.packages, draft.projectId, fp),
+        levelIds: draft.levelIds,
+        resolveItem,
+        photo,
+        jobPin: row.job?.pin,
+      };
       // The optional thumbnail must also fit alongside the request's lines.
       // Keep the complete plan extract if only the combined file is too large.
       let work;
-      try { work = await buildWorkPackage(input); }
-      catch (cause) {
+      try {
+        work = await buildWorkPackage(input);
+      } catch (cause) {
         if (!photo || !(cause instanceof Error) || !/too large/i.test(cause.message)) throw cause;
-        work = await buildWorkPackage({...input, photo: undefined});
+        work = await buildWorkPackage({ ...input, photo: undefined });
       }
       if (property !== usePropertyStore.getState().property)
         throw new Error('The plan changed while preparing this file. Review it again.');
-      await ledger.saveDraft(draft);
-      await ledger.send(work);
+      await ledger.saveDraft(draft, undefined, operator.trim() || undefined);
+      await ledger.send(work, undefined, operator.trim() || undefined);
       setMessage(
         'Work file ready. Download it and share it with your trade.' +
-          (includePhoto && !work.request.photos?.length ? ' No room sketch fit the file.' : ''),
+          (includePhoto && !work.request.photos?.length ? ' No picture fit the file.' : ''),
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not save this package.');
@@ -283,13 +314,26 @@ export function PackageInspector({
         <summary>Review scope and quantities ({draft.quantities.length})</summary>
         <DraftFields draft={draft} onChange={setDraft} hide={hide} />
       </details>
+      {named && (
+        <label>
+          Recorded by
+          <input
+            maxLength={120}
+            autoComplete="off"
+            value={operator}
+            onChange={(e) => setOperator(e.target.value)}
+          />
+        </label>
+      )}
       <label className="bd-check">
         <input
           type="checkbox"
           checked={includePhoto}
           onChange={(e) => setPhoto(e.target.checked)}
         />
-        Include a room sketch if it fits the file
+        {row.job?.photo
+          ? 'Include the job photo in this work file'
+          : 'Include a room sketch if it fits the file'}
       </label>
       <div className="bd-actions">
         <button onClick={() => void submit(false)} disabled={busy}>

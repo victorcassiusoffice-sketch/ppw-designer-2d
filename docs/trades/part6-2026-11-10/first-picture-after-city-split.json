@@ -1,0 +1,203 @@
+{
+  "started": "2026-11-10T14:20:32.061Z",
+  "base": "http://127.0.0.1:5312",
+  "candidate": "http://127.0.0.1:5311",
+  "method": "Three fixed pairs per width, new Chromium process and profile on every navigation; no artificial CPU/network throttle. AB/BA orders alternate and flip between widths. Empty app APIs / offline FX equally on both. Global World timing lock. First canvas render mark and external GL-ready + loader-hidden wall time independently reported. No warmup, no sample exclusions.",
+  "pairs": [
+    {
+      "n": 1,
+      "width": 1280,
+      "rows": [
+        {
+          "target": "base",
+          "at": "2026-11-10T14:20:32.150Z",
+          "status": 200,
+          "wallMs": 1795,
+          "canvasMs": 1613,
+          "loaderMs": 45,
+          "privateAssets": 0,
+          "errors": []
+        },
+        {
+          "target": "candidate",
+          "at": "2026-11-10T14:20:34.291Z",
+          "status": 200,
+          "wallMs": 1510,
+          "canvasMs": 1488,
+          "loaderMs": 52,
+          "privateAssets": 0,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "n": 1,
+      "width": 390,
+      "rows": [
+        {
+          "target": "candidate",
+          "at": "2026-11-10T14:20:36.187Z",
+          "status": 200,
+          "wallMs": 2120,
+          "canvasMs": 1812,
+          "loaderMs": 55,
+          "privateAssets": 0,
+          "errors": []
+        },
+        {
+          "target": "base",
+          "at": "2026-11-10T14:20:38.653Z",
+          "status": 200,
+          "wallMs": 2266,
+          "canvasMs": 2255,
+          "loaderMs": 50,
+          "privateAssets": 0,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "width": 1280,
+      "rows": [
+        {
+          "target": "candidate",
+          "at": "2026-11-10T14:20:41.268Z",
+          "status": 200,
+          "wallMs": 2032,
+          "canvasMs": 2010,
+          "loaderMs": 62,
+          "privateAssets": 0,
+          "errors": []
+        },
+        {
+          "target": "base",
+          "at": "2026-11-10T14:20:43.693Z",
+          "status": 200,
+          "wallMs": 2363,
+          "canvasMs": 2031,
+          "loaderMs": 67,
+          "privateAssets": 0,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "width": 390,
+      "rows": [
+        {
+          "target": "base",
+          "at": "2026-11-10T14:20:46.743Z",
+          "status": 200,
+          "wallMs": 1719,
+          "canvasMs": 1583,
+          "loaderMs": 60,
+          "privateAssets": 0,
+          "errors": []
+        },
+        {
+          "target": "candidate",
+          "at": "2026-11-10T14:20:48.808Z",
+          "status": 200,
+          "wallMs": 2057,
+          "canvasMs": 2033,
+          "loaderMs": 47,
+          "privateAssets": 0,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "width": 1280,
+      "rows": [
+        {
+          "target": "base",
+          "at": "2026-11-10T14:20:51.201Z",
+          "status": 200,
+          "wallMs": 1791,
+          "canvasMs": 1438,
+          "loaderMs": 46,
+          "privateAssets": 0,
+          "errors": []
+        },
+        {
+          "target": "candidate",
+          "at": "2026-11-10T14:20:53.655Z",
+          "status": 200,
+          "wallMs": 2346,
+          "canvasMs": 2215,
+          "loaderMs": 53,
+          "privateAssets": 0,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "width": 390,
+      "rows": [
+        {
+          "target": "candidate",
+          "at": "2026-11-10T14:20:56.409Z",
+          "status": 200,
+          "wallMs": 2380,
+          "canvasMs": 1862,
+          "loaderMs": 52,
+          "privateAssets": 0,
+          "errors": []
+        },
+        {
+          "target": "base",
+          "at": "2026-11-10T14:20:59.229Z",
+          "status": 200,
+          "wallMs": 1774,
+          "canvasMs": 1754,
+          "loaderMs": 53,
+          "privateAssets": 0,
+          "errors": []
+        }
+      ]
+    }
+  ],
+  "ended": "2026-11-10T14:21:01.265Z",
+  "summary": [
+    {
+      "width": 1280,
+      "baseCanvasMs": 1613,
+      "candidateCanvasMs": 2010,
+      "baseWallMs": 1795,
+      "candidateWallMs": 2032,
+      "baseLoadingMs": 46,
+      "candidateLoadingMs": 53,
+      "pairedCanvasDeltaMs": [
+        -125,
+        -21,
+        777
+      ],
+      "medianPairedCanvasDeltaMs": -21,
+      "canvasNoSlower": false,
+      "wallNoSlower": false,
+      "pass": false
+    },
+    {
+      "width": 390,
+      "baseCanvasMs": 1754,
+      "candidateCanvasMs": 1862,
+      "baseWallMs": 1774,
+      "candidateWallMs": 2120,
+      "baseLoadingMs": 53,
+      "candidateLoadingMs": 52,
+      "pairedCanvasDeltaMs": [
+        -443,
+        450,
+        108
+      ],
+      "medianPairedCanvasDeltaMs": 108,
+      "canvasNoSlower": false,
+      "wallNoSlower": false,
+      "pass": false
+    }
+  ]
+}

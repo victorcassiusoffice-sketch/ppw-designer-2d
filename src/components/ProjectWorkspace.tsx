@@ -52,7 +52,7 @@ export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void })
     const show = (event?: Event) => {
       setInitialSection((event as CustomEvent<{section?: string}> | undefined)?.detail?.section === 'engineeringReview' ? 'engineeringReview' : 'overview');
       // @studio-only
-      if (privateDesigner() && (location.hash.startsWith('#w=') || new URLSearchParams(location.search).get('panel') === 'build')) setInitialSection('buildDashboard');
+      if (privateDesigner() && ((event as CustomEvent<{section?:string}> | undefined)?.detail?.section === 'buildDashboard' || location.hash.startsWith('#w=') || new URLSearchParams(location.search).get('panel') === 'build')) setInitialSection('buildDashboard');
       // @end-studio-only
       pending = false;
       beginWorkspaceNavigation('project');

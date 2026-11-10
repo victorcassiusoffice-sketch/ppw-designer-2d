@@ -58,6 +58,10 @@ export const CityAssetSchema = z
     rotation: finite(-36000, 36000),
     supplierRef: key.optional(),
     buildingLink: z.literal('current').optional(),
+    buildingForm: z.array(z.object({
+      base: finite(0, 1), top: finite(0, 1),
+      polygon: z.array(z.object({ x: finite(-0.500001, 0.500001), y: finite(-0.500001, 0.500001) }).strict()).min(3).max(128),
+    }).strict()).min(1).max(64).optional(),
     powerW: finite(0, 1e9).optional(),
     solarKWp: finite(0, 1e9).optional(),
     batteryKWh: finite(0, 1e9).optional(),

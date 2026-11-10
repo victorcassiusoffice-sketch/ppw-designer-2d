@@ -16,6 +16,7 @@ export interface CityThreeViewProps {
   model: CityModel;
   selectedId?: string | null;
   onSelect: (id: string | null) => void;
+  focusId?: string | null;
   fitNonce: number;
   showUtilities: boolean;
 }
@@ -76,7 +77,19 @@ function assetMesh(asset: CityAsset) {
   group.userData.kind = 'asset';
   group.name = asset.name;
 
-  if (asset.kind === 'water-tank') {
+  if (asset.kind === 'building' && asset.buildingForm) {
+    for (const room of asset.buildingForm) {
+      const shape = polygonShape(room.polygon.map(p => ({x: p.x * w, y: p.y * l})));
+      const geometry = new THREE.ExtrudeGeometry(shape, {depth: (room.top - room.base) * h, bevelEnabled: false});
+      geometry.rotateX(-Math.PI / 2);
+      const solid = new THREE.Mesh(geometry, [material('#a2b3bc'), material('#dfdacc')]);
+      solid.position.y = room.base * h;
+      solid.castShadow = solid.receiveShadow = true;
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ color: '#576e75' }));
+      solid.add(edges);
+      group.add(solid);
+    }
+  } else if (asset.kind === 'water-tank') {
     // Elliptical tank envelope, never its nominal stored water volume.
     const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 28), material('#728f8e'));
     tank.scale.set(w, h, l);
@@ -295,8 +308,10 @@ function highlight(runtime: CityScene, model: CityModel, selectedId: string | nu
   } else lineMaterial.dispose();
 }
 
-function fitScene(runtime: CityScene, model: CityModel) {
-  const bounds = cityBounds(model);
+function fitScene(runtime: CityScene, model: CityModel, focusId?: string | null) {
+  const asset = model.assets.find(a => a.id === focusId);
+  const half = asset ? Math.hypot(asset.widthM,asset.lengthM)/2 : 0;
+  const bounds = asset ? {minX:asset.x-half,maxX:asset.x+half,minY:asset.y-half,maxY:asset.y+half,maxHeightM:asset.heightM} : cityBounds(model);
   const radius = Math.max(2, Math.hypot(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY, bounds.maxHeightM) / 2);
   const vertical = THREE.MathUtils.degToRad(runtime.camera.fov);
   const horizontal = 2 * Math.atan(Math.tan(vertical / 2) * runtime.camera.aspect);
@@ -313,12 +328,14 @@ function fitScene(runtime: CityScene, model: CityModel) {
   runtime.dirty = true;
 }
 
-export default function CityThreeView({ model, selectedId = null, onSelect, fitNonce, showUtilities }: CityThreeViewProps) {
+export default function CityThreeView({ model, selectedId = null, onSelect, fitNonce, focusId, showUtilities }: CityThreeViewProps) {
   const { t } = useAppPreferences();
   const hostRef = useRef<HTMLDivElement>(null);
   const runtimeRef = useRef<CityScene | null>(null);
   const modelRef = useRef(model);
   const onSelectRef = useRef(onSelect);
+  const focusRef = useRef(focusId);
+  focusRef.current = focusId;
   const initialFitRef = useRef(fitNonce);
   const [unavailable, setUnavailable] = useState(false);
   useEffect(() => { modelRef.current = model; }, [model]);
@@ -379,7 +396,7 @@ export default function CityThreeView({ model, selectedId = null, onSelect, fitN
       // Layout changes deliberately never call fitScene: preserve the user's view.
     };
     resize();
-    fitScene(runtime, modelRef.current);
+    fitScene(runtime, modelRef.current, focusRef.current);
     const observer = new ResizeObserver(resize);
     observer.observe(host);
     const ray = new THREE.Raycaster();
@@ -480,7 +497,7 @@ export default function CityThreeView({ model, selectedId = null, onSelect, fitN
     const runtime = runtimeRef.current;
     if (runtime && runtime.lastFitNonce !== fitNonce) {
       runtime.lastFitNonce = fitNonce;
-      fitScene(runtime, modelRef.current);
+      fitScene(runtime, modelRef.current, focusRef.current);
     }
   }, [fitNonce]);
 
