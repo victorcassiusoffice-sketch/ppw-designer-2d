@@ -15,6 +15,7 @@ import './objectPlacement.css';
 /** Flush context row. Hidden until an object is selected or carried. */
 export function ObjectPlacementControls({ showPlacementHint = false }: { showPlacementHint?: boolean } = {}): JSX.Element | null {
   const phone = useBelowMd();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { tx } = useAppPreferences();
   const armed = usePlacementIntentStore(s => s.armedProductId);
   const rotation = usePlacementIntentStore(s => s.armedRotation);
@@ -36,17 +37,21 @@ export function ObjectPlacementControls({ showPlacementHint = false }: { showPla
         <button type="button" key={value} aria-pressed={mode === value} onClick={() => useObjectPlacementStore.getState().setMode(value)}>{label}</button>)}
     </div>
     {mode === 'free' && <span className="object-placement-note">Object overlap on · walls stay solid</span>}
-    {armed && <>{product.placement === 'wall' ? <span>Follows wall</span> : <><button type="button" aria-label="Turn carried object left" onClick={() => usePlacementIntentStore.getState().rotateArmed(-45)}>↶</button><span data-testid="carried-angle" aria-live="polite">{Math.round(rotation)}°</span><button type="button" aria-label="Turn carried object right" onClick={() => usePlacementIntentStore.getState().rotateArmed(45)}>↷</button></>}</>}
+    {armed && (product.placement === 'wall' ? <span>Follows wall</span> : <><button type="button" aria-label="Turn carried object left" onClick={() => usePlacementIntentStore.getState().rotateArmed(-45)}>↶</button><span data-testid="carried-angle" aria-live="polite">{Math.round(rotation)}°</span><button type="button" aria-label="Turn carried object right" onClick={() => usePlacementIntentStore.getState().rotateArmed(45)}>↷</button></>)}
   </>;
   return <div className="object-placement-controls" data-testid="object-placement-controls" aria-label="Object placement" data-compact={compact}>
     {armed && showPlacementHint && <span role="status" className="object-placement-hint">
       {product.placement === 'wall' ? 'Tap a wall' : 'Tap the plan'} to place {product.name}
     </span>}
-    {compact ? <details className="object-placement-settings">
-      <summary>{tx('Settings')}</summary>
-      <div>{settings}</div>
-    </details> : settings}
-    {armed && <button type="button" onClick={() => usePlacementIntentStore.getState().setArmed(null)}>{tx('Cancel')}</button>}
+    {compact && <button type="button" className="object-placement-toggle" aria-expanded={settingsOpen}
+      onClick={() => setSettingsOpen(open => !open)}>{tx('Settings')}</button>}
+    {compact
+      ? settingsOpen && <div className="object-placement-settings">{settings}</div>
+      : settings}
+    {armed && <button type="button" className="object-placement-cancel" onClick={() => {
+      setSettingsOpen(false);
+      usePlacementIntentStore.getState().setArmed(null);
+    }}>{tx('Cancel')}</button>}
     {!armed && item && <button type="button" onClick={() => usePlacementIntentStore.getState().setArmed(item.productId)} title="Carry another of this exact product and variant">Copy type</button>}
     {!armed && item && room && objectAccessWarnings(room, item, product).map(warning => <span className="object-placement-warning" role="status" key={warning}>{warning}</span>)}
     {!armed && item && room?.placedItems.some(child => child.parentInstanceId === item.instanceId) && <span className="object-placement-warning" role="status">Move the objects on this surface before turning it.</span>}
