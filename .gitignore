@@ -95,3 +95,13 @@ models-raw/
 
 # Local Lighthouse reports are summarized in docs, not committed as cache.
 .lighthouseci/
+
+# Original review images are archived on the product-engine source branch.
+/docs/product-engine/runs/2026-11-08-audit/**/*.png
+/docs/product-engine/runs/2026-11-08-audit/**/*.webp
+/docs/product-engine/runs/2026-11-08-gate/**/*.png
+/docs/product-engine/runs/2026-11-08-gate/**/*.webp
+/docs/product-engine/runs/refine-2026-11-08/**/*.png
+/docs/product-engine/runs/refine-2026-11-08/**/*.webp
+/docs/product-engine/runs/test-2026-11-08/**/*.png
+/docs/product-engine/runs/test-2026-11-08/**/*.webp
