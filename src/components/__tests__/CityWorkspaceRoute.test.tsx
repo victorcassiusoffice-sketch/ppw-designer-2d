@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { act, StrictMode } from 'react';
+import { act, StrictMode, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CityWorkspace } from '../CityWorkspace';
@@ -13,6 +13,12 @@ vi.mock('../CityOrdersPanel', () => ({ CityOrdersPanel: () => null }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let root: Root, host: HTMLDivElement;
+async function mount(view: ReactNode) {
+  await act(async () => {
+    root.render(view);
+    await import('../CityWorkbench');
+  });
+}
 function DemoApp({
   onBeforeOpen,
   showCity = true,
@@ -42,14 +48,12 @@ afterEach(() => {
 });
 
 describe('City route entry after demo startup', () => {
-  it('opens on the demo project, then closes on later project changes without reopening', () => {
+  it('opens on the demo project, then closes on later project changes without reopening', async () => {
     window.history.replaceState({}, '', '/demo?panel=city&view=2d');
     const initialId = usePropertyStore.getState().property.id;
     const openIds: string[] = [];
-    act(() =>
-      root.render(
+    await mount(
         <DemoApp onBeforeOpen={() => openIds.push(usePropertyStore.getState().property.id)} />,
-      ),
     );
     const demoProperty = usePropertyStore.getState().property;
     expect(demoProperty.id).not.toBe(initialId);
@@ -63,24 +67,22 @@ describe('City route entry after demo startup', () => {
     expect(openIds).toHaveLength(1);
   });
 
-  it('opens when a lazy workspace mounts after the demo is already ready', () => {
+  it('opens when a lazy workspace mounts after the demo is already ready', async () => {
     window.history.replaceState({}, '', '/demo?panel=city&view=2d');
     const before = vi.fn();
-    act(() => root.render(<DemoApp onBeforeOpen={before} showCity={false} />));
+    await mount(<DemoApp onBeforeOpen={before} showCity={false} />);
     expect(document.querySelector('[data-testid="city-workspace"]')).toBeNull();
-    act(() => root.render(<DemoApp onBeforeOpen={before} />));
+    await mount(<DemoApp onBeforeOpen={before} />);
     expect(document.querySelector('[data-testid="city-workspace"]')).not.toBeNull();
     expect(before).toHaveBeenCalledOnce();
   });
 
-  it('survives strict effect replay and does not reopen after the visitor closes City', () => {
+  it('survives strict effect replay and does not reopen after the visitor closes City', async () => {
     window.history.replaceState({}, '', '/demo?panel=city&view=2d');
-    act(() =>
-      root.render(
+    await mount(
         <StrictMode>
           <DemoApp onBeforeOpen={() => undefined} />
         </StrictMode>,
-      ),
     );
     const workspace = document.querySelector('[data-testid="city-workspace"]');
     expect(workspace).not.toBeNull();
@@ -92,15 +94,15 @@ describe('City route entry after demo startup', () => {
     expect(document.querySelector('[data-testid="city-workspace"]')).toBeNull();
   });
 
-  it('keeps ordinary designer route entry immediate and a demo without panel closed', () => {
+  it('keeps ordinary designer route entry immediate and a demo without panel closed', async () => {
     window.history.replaceState({}, '', '/designer?demo=off&panel=city');
     const before = vi.fn();
-    act(() => root.render(<DemoApp onBeforeOpen={before} />));
+    await mount(<DemoApp onBeforeOpen={before} />);
     expect(document.querySelector('[data-testid="city-workspace"]')).not.toBeNull();
     expect(before).toHaveBeenCalledOnce();
     act(() => root.render(null));
     window.history.replaceState({}, '', '/demo?view=2d');
-    act(() => root.render(<DemoApp onBeforeOpen={before} />));
+    await mount(<DemoApp onBeforeOpen={before} />);
     expect(document.querySelector('[data-testid="city-workspace"]')).toBeNull();
     expect(before).toHaveBeenCalledOnce();
   });
