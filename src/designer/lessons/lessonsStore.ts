@@ -28,9 +28,9 @@ export interface QuestState {
 
 export interface ActiveCard {
   id: LessonId;
-  /** Folded to a chip after a press on the canvas. */
+  /** A first-use tip starts as a button. Open lessons fold back on a canvas press. */
   tucked: boolean;
-  /** Opened from the Lessons list or the quest: shown even if seen before. */
+  /** The person asked to see this lesson from its button, the list or the quest. */
   forced: boolean;
   /** Bumps on every open so a re-open of the same lesson re-measures. */
   nonce: number;
@@ -157,7 +157,7 @@ export const useLessonsStore = create<LessonsState>((set, get) => {
     ...stored.value,
     storageOk: stored.ok,
     active: null,
-    offerTucked: false,
+    offerTucked: true,
     setOfferTucked: (tucked) => set({ offerTucked: tucked }),
     announcement: null,
     announce: (text) => {
@@ -173,7 +173,7 @@ export const useLessonsStore = create<LessonsState>((set, get) => {
         if (lesson.keyboardOnly && options.touch) return false;
       }
       nonce += 1;
-      set({ active: { id, tucked: false, forced: !!options.force, nonce } });
+      set({ active: { id, tucked: !options.force, forced: !!options.force, nonce } });
       if (!s.seen.includes(id)) save({ seen: [...s.seen, id] });
       return true;
     },
@@ -199,7 +199,7 @@ export const useLessonsStore = create<LessonsState>((set, get) => {
     },
     untuck: () => {
       const s = get();
-      if (s.active?.tucked) set({ active: { ...s.active, tucked: false } });
+      if (s.active?.tucked) set({ active: { ...s.active, tucked: false, forced: true } });
     },
     close: () => set({ active: null }),
     markDone: (id) => {

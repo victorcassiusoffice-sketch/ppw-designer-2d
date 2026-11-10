@@ -5,7 +5,7 @@
   min-height: 250px;
   overflow: hidden;
   isolation: isolate;
-  background: #e5e8de;
+  background: var(--designer-canvas, #94aab5);
 }
 .city-three-view__stage {
   position: absolute;
@@ -19,40 +19,8 @@
   outline: none;
 }
 .city-three-view__stage canvas:focus-visible {
-  outline: 3px solid #5a8a79;
+  outline: 3px solid var(--ui-focus, #13515a);
   outline-offset: -4px;
-}
-.city-three-view__label,
-.city-three-view__help {
-  position: absolute;
-  pointer-events: none;
-  z-index: 1;
-  color: #3b5148;
-  font-family: inherit;
-  font-size: 11px;
-  line-height: 1.45;
-  background: rgb(244 246 235 / 90%);
-  border: 1px solid rgb(255 255 255 / 72%);
-  border-radius: 12px;
-  padding: 7px 10px;
-}
-.city-three-view__label {
-  top: 12px;
-  left: 12px;
-  max-width: calc(100% - 24px);
-}
-.city-three-view__label span {
-  display: block;
-  font-size: 10px;
-  opacity: 0.8;
-}
-.city-three-view__help {
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  max-width: calc(100% - 20px);
-  text-align: center;
 }
 .city-three-view__fallback {
   position: absolute;
@@ -64,12 +32,8 @@
   justify-content: center;
   gap: 12px;
   padding: 24px;
-  color: #334e43;
+  color: var(--designer-canvas-ink, #142d40);
   text-align: center;
-  background: #e5e8de;
+  background: var(--designer-canvas, #94aab5);
 }
 .city-three-view__fallback span { max-width: 30em; }
-@media (max-width: 480px) {
-  .city-three-view__label { top: 8px; left: 8px; font-size: 10px; }
-  .city-three-view__help { font-size: 10px; padding: 5px 8px; white-space: normal; width: max-content; }
-}

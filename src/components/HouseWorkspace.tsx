@@ -137,7 +137,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
       <div className="house-view-switch" aria-label="Design view"><button onClick={onPlan} aria-label="2D Plan"><StudioIcon name="box" size={18} /><span>2D <span className="studio-view-word">Plan</span></span></button><button aria-label="3D House" aria-pressed="true"><StudioIcon name="cube" size={18} /><span>3D <span className="studio-view-word">House</span></span></button></div>
       <div className="house-project-actions">
         <button type="button" className="house-project-hub" aria-label={t('projectHub')} title={t('projectHub')} onClick={() => window.dispatchEvent(new Event('olb:open-project'))}><StudioIcon name="room" size={18} /><span className="studio-view-word">{t('projectHub')}</span></button>
-        <LocaleThemeControls compact />
+        <LocaleThemeControls designer compact />
         <AiDesignButton onBeforeOpen={onSelect} />
         <PlanImportButton onBeforeOpen={onSelect} />
         <ClearControls inline />

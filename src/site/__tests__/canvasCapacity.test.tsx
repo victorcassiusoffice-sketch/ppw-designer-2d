@@ -3,6 +3,11 @@ import { act, Children, isValidElement, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AppPreferencesProvider, PREFERENCES_KEY, UI_THEMES } from '../../i18n/AppPreferences';
+import { canvasThemeFor } from '../../designer/canvasTheme';
+import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../../store/buildSkinStore';
+import { usePlacementIntentStore } from '../../store/placementIntentStore';
+import { getAllProducts } from '../../data/products';
 import { RoomCanvas } from '../../components/RoomCanvas';
 import { installCanvasSiteAdapter } from '../../components/canvasSiteBridge';
 import { usePropertyStore } from '../../store/propertyStore';
@@ -26,7 +31,7 @@ const withRoom = { ...original, activeRoomId: 'under-label', rooms: [{
   polygon: [{ x: 1, y: 1 }, { x: 3, y: 1 }, { x: 3, y: 3 }, { x: 1, y: 3 }],
 }] };
 const legacy = { widthM: 10, depthM: 10, originM: { x: 0, y: 0 } };
-type DrawingProps = { children?: ReactNode; name?: string; points?: number[]; text?: string; listening?: boolean };
+type DrawingProps = { children?: ReactNode; name?: string; points?: number[]; text?: string; fill?: string; stroke?: string; listening?: boolean };
 function drawingNode(children: ReactNode, accepts: (props: DrawingProps) => boolean): DrawingProps | undefined {
   for (const child of Children.toArray(children)) {
     if (!isValidElement<DrawingProps>(child)) continue;
@@ -54,6 +59,9 @@ afterEach(async () => {
   host.remove();
   installCanvasSiteAdapter(undefined);
   usePropertyStore.setState({ property: original });
+  useBuildSkinStore.getState().setSkin('natural');
+  usePlacementIntentStore.getState().setArmed(null);
+  localStorage.removeItem(PREFERENCES_KEY);
   vi.unstubAllGlobals();
 });
 describe('actual RoomCanvas capacity readout', () => {
@@ -93,5 +101,60 @@ describe('actual RoomCanvas capacity readout', () => {
     expect(layers[annotationLayer].props.listening).toBe(false);
     expect(drawingNode(siteDrawing()!.children, props => Boolean(props.text))).toBeUndefined();
     expect(usePropertyStore.getState().property.rooms).toEqual(withRoom.rooms);
+  });
+});
+
+describe('plan presentation', () => {
+  const view = () => host.querySelector<HTMLElement>('[data-testid="plan-drawing-viewport"]')!;
+
+  it('applies a live theme change to the surround, plot, dimensions and grid while preserving geometry', async () => {
+    await act(async () => {
+      usePropertyStore.setState({ property: { ...withRoom, site: legacy } });
+      root.render(<MemoryRouter><AppPreferencesProvider><RoomCanvas /></AppPreferencesProvider></MemoryRouter>);
+    });
+    const initialTransform = view().dataset.viewTransform;
+    const floor = () => drawingNode(drawingNode(canvas.children, p => p.name === 'room-poly')?.children, p => !!p.fill)?.fill;
+    const initialFloor = floor();
+    expect(initialFloor).toBeDefined();
+    for (const theme of UI_THEMES) {
+      const palette = canvasThemeFor(theme);
+      await act(async () => window.dispatchEvent(new StorageEvent('storage', {
+        key: PREFERENCES_KEY, newValue: JSON.stringify({ locale: 'en', theme }),
+      })));
+      expect(view().style.getPropertyValue('--build-ground')).toBe(palette.background);
+      expect(drawingNode(siteDrawing()?.children, p => !!p.points)?.fill).toBe(palette.site);
+      const dimensions = drawingNode(canvas.children, p => p.name === 'plan-dimensions');
+      expect(drawingNode(dimensions?.children, p => !!p.text)?.fill).toBe(palette.ink);
+      const grid = drawingNode(canvas.children, p => p.name === 'room-grid');
+      expect(drawingNode(grid?.children, p => p.stroke === palette.majorGrid)).toBeDefined();
+      expect(floor()).toBe(initialFloor);
+      expect(view().dataset.viewTransform).toBe(initialTransform);
+    }
+    for (const skin of ['gallery', 'blueprint'] as const) {
+      await act(async () => useBuildSkinStore.getState().setSkin(skin));
+      expect(view().style.getPropertyValue('--build-ground')).toBe(BUILD_SKIN_PALETTES[skin].ground);
+    }
+  });
+
+  it('keeps the drawing area clear on blank, empty and placement-ready plans', async () => {
+    await act(async () => {
+      usePropertyStore.setState({ property: original });
+      root.render(<MemoryRouter><RoomCanvas /></MemoryRouter>);
+    });
+    expect(host.textContent).not.toContain('Draw your walls');
+    await act(async () => usePropertyStore.setState({ property: withRoom }));
+    expect(host.textContent).not.toContain('Your room is empty');
+    const product = getAllProducts()[0];
+    await act(async () => {
+      usePlacementIntentStore.getState().setArmed(product.id);
+      root.render(<MemoryRouter><RoomCanvas pendingProductId={product.id} /></MemoryRouter>);
+    });
+    const controls = host.querySelector('[data-testid="object-placement-controls"]')!;
+    expect(controls.textContent).toContain(product.name);
+    expect(view().contains(controls)).toBe(false);
+    expect(view().textContent).not.toContain('Cancel');
+    const cancel = Array.from(controls.querySelectorAll('button')).find(button => button.textContent === 'Cancel')!;
+    await act(async () => cancel.click());
+    expect(usePlacementIntentStore.getState().armedProductId).toBeNull();
   });
 });

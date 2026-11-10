@@ -425,8 +425,8 @@ export function WallDrawHUD({ enabled }: WallDrawHUDProps): JSX.Element | null {
 
   return (
     <div
-      className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg bg-white p-3 text-xs shadow-xl"
-      style={{ border: `1px solid ${DOCK_BORDER}`, boxShadow: '0 4px 14px rgba(14,14,16,0.18)' }}
+      className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 bg-white px-3 py-1 text-xs"
+      style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}
       data-testid="wall-draw-hud"
     >
       <div className="flex items-center justify-between gap-2">

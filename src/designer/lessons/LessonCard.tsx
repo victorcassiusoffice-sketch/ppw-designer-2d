@@ -1,5 +1,5 @@
 /**
- * The card a tool shows the first time it is picked: its name, one line on
+ * The lesson opened from a tool's first-use tip button: its name, one line on
  * what it does, two or three steps (mouse or touch), its keys, a short silent
  * clip of the tool in our own app, "Got it" and "No more tips".
  *
@@ -109,7 +109,13 @@ export function LessonCard({ card }: { card: ActiveCard }): JSX.Element {
         data-lesson-chip={lesson.id}
         style={style}
         aria-label={t('lesson.ui.showTip', { tool: name })}
-        onClick={untuck}
+        aria-expanded={false}
+        onClick={(event) => {
+          untuck();
+          if (event.detail === 0) {
+            requestAnimationFrame(() => ref.current?.focus({ preventScroll: true }));
+          }
+        }}
       >
         <BulbIcon />
         <span>{name}</span>
@@ -125,6 +131,7 @@ export function LessonCard({ card }: { card: ActiveCard }): JSX.Element {
         className="lessons-card is-compact is-tight is-mini"
         data-lesson-card={lesson.id}
         role="region"
+        tabIndex={-1}
         aria-labelledby={titleId}
         style={style}
       >
@@ -154,6 +161,7 @@ export function LessonCard({ card }: { card: ActiveCard }): JSX.Element {
       className={`lessons-card${compact ? ' is-compact' : ''}${size >= 2 ? ' is-tight' : ''}`}
       data-lesson-card={lesson.id}
       role="region"
+      tabIndex={-1}
       aria-labelledby={titleId}
       style={style}
     >

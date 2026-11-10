@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, presentationProfile } from '../renderPresentation';
-import { disposeDressingTextures, groundPlane, skyDome, updateGroundPresentation, updateSkyDome } from '../dressing';
+import { disposeDressingTextures, groundPlane, setBackdropVisibility, skyDome, updateGroundPresentation, updateSkyDome } from '../dressing';
 import { GROUND_HEX } from '../../../designer/roomView3d';
 import { floorMesh } from '../dressing';
 import { NATURAL_BARE_FLOOR_HEX } from '../../../designer/architecturalSurface';
+import { CANVAS_THEMES } from '../../../designer/canvasTheme';
+import { BUILD_SKIN_PALETTES } from '../../../store/buildSkinStore';
 
 describe('architectural presentation without changing the saved finishes', () => {
   it('visualises only unfinished slabs as mineral concrete, then restores the exact colour-check finish', () => {
@@ -128,6 +130,40 @@ describe('architectural presentation without changing the saved finishes', () =>
     expect((ground.material as THREE.MeshStandardMaterial).color.getHexString()).toBe('a9bbb4');
     disposeDressingTextures(natural);
     disposeDressingTextures(architectural);
+    disposeDressingTextures(ground);
+  });
+
+  it('uses the exact UI clear outside the physical site and restores the sky and distant ground for custom looks', () => {
+    const scene = new THREE.Scene();
+    const sky = skyDome(1, 'natural');
+    const ground = groundPlane();
+    const turf = new THREE.Mesh();
+    turf.receiveShadow = true;
+    scene.add(sky, ground, turf);
+    for (const theme of Object.values(CANVAS_THEMES)) {
+      const canvasColor = new THREE.Color(theme.background);
+      setBackdropVisibility(scene, sky, ground, canvasColor, true);
+      expect(scene.background).toBe(canvasColor);
+      expect([sky.visible, ground.visible, turf.visible, turf.receiveShadow]).toEqual([false, false, true, true]);
+    }
+    setBackdropVisibility(scene, sky, ground, null, false);
+    expect([scene.background, sky.visible, ground.visible]).toEqual([null, true, false]);
+    setBackdropVisibility(scene, sky, ground, null, true);
+    expect(ground.visible).toBe(true);
+    const geometry = ground.geometry;
+    const material = ground.material as THREE.MeshStandardMaterial;
+    const skyMaterial = sky.material as THREE.MeshBasicMaterial;
+    for (const backdrop of [BUILD_SKIN_PALETTES.gallery, BUILD_SKIN_PALETTES.blueprint]) {
+      updateGroundPresentation(ground, 'natural', backdrop);
+      expect(ground.geometry).toBe(geometry);
+      expect(material.color.getHexString()).toBe(backdrop.sky.slice(1));
+      updateSkyDome(sky, 1, 'natural', backdrop);
+      const top = (skyMaterial.map as THREE.DataTexture).image.data!.slice(0, 3);
+      expect(Array.from(top).map(c => c.toString(16).padStart(2, '0')).join('')).toBe(backdrop.sky.slice(1));
+      expect(architecturalBackdrop(0, backdrop).top.every((channel, i) => channel < top[i])).toBe(true);
+    }
+    expect(architecturalBackdrop(1, BUILD_SKIN_PALETTES.blueprint).horizon).toEqual([0x52, 0x6c, 0x70]);
+    disposeDressingTextures(sky);
     disposeDressingTextures(ground);
   });
 

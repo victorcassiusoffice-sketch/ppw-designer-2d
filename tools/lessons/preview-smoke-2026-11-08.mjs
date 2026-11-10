@@ -57,6 +57,7 @@ for (const device of ['desktop', 'phone']) {
     run.checks.lessonsLoaded = true;
     await tap(page.getByRole('button', { name: 'Finish', exact: true }).first());
     await tap(page.getByTestId('floor-paint-toggle').first());
+    await tap(page.locator('[data-lesson-chip="floor"]'));
     await page.locator('[data-lesson-card="floor"]').waitFor({ timeout: 15000 });
     run.checks.floorCard = true;
     await page.waitForTimeout(800);

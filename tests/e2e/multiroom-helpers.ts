@@ -135,12 +135,7 @@ export function dockCard(page: Page, id: string, name: string): Locator {
 export async function enterWallPen(page: Page): Promise<void> {
   const hud = page.locator('[data-testid="room-draw-hud"]');
   if (await hud.isVisible().catch(() => false)) return;
-  const start = page.locator('[data-testid="start-draw-room"]');
-  if (await start.isVisible().catch(() => false)) {
-    await start.click();
-  } else {
-    await page.locator('[data-testid="room-draw-toggle"]').click();
-  }
+  await page.locator('[data-testid="room-draw-toggle"]').click();
   await hud.waitFor({ state: 'visible', timeout: 10_000 });
 }
 

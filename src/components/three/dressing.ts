@@ -20,8 +20,7 @@ export { lampsOnFactor } from '../../designer/lighting';
 import { GROUND_HEX } from '../../designer/roomView3d';
 import { bareMineralSurface, cornerShadeTexture, floorSurface, groundTexture, skyTexture, softShadowTexture, type FloorKind } from './surfaces';
 import { doorRuns } from './joinery';
-import { ARCHITECTURAL_GROUND_HEX, type ScenePresentation } from './renderPresentation';
-import { BUILD_SKIN_PALETTES, type BuildSkin } from '../../store/buildSkinStore';
+import { ARCHITECTURAL_GROUND_HEX, type BackdropColors, type ScenePresentation } from './renderPresentation';
 
 export const SKY_RADIUS_M = 220;
 /** How dark the corner shading gets right at the junction (alpha). */
@@ -36,41 +35,28 @@ export const CONTACT_SHADOW_MARGIN_M = 0.1;
 // Sky + ground.
 // ---------------------------------------------------------------------------
 /** An inside-out sphere carrying the sky gradient; unlit, drawn first, never writes depth. */
-export function skyDome(day: number, presentation: ScenePresentation = 'studio'): THREE.Mesh {
+export function skyDome(day: number, presentation: ScenePresentation = 'studio', colors?: BackdropColors): THREE.Mesh {
   const geo = new THREE.SphereGeometry(SKY_RADIUS_M, 32, 20);
-  const mat = new THREE.MeshBasicMaterial({ map: skyTexture(day, presentation === 'natural' ? 'architectural' : presentation), side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false });
+  const mat = new THREE.MeshBasicMaterial({ map: skyTexture(day, presentation === 'natural' ? 'architectural' : presentation, colors), side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false });
   mat.userData.dressingTextures = [mat.map];
   const dome = new THREE.Mesh(geo, mat);
   dome.renderOrder = -10;
   dome.name = 'sky';
   dome.frustumCulled = false;
-  dome.userData = { sky: true, day, presentation };
+  dome.userData = { sky: true, day, presentation, colors };
   return dome;
 }
 
 /** Re-tint the dome for another hour (day 0..1). */
-export function updateSkyDome(dome: THREE.Mesh, day: number, presentation: ScenePresentation = 'studio', skin: BuildSkin = 'natural'): void {
+export function updateSkyDome(dome: THREE.Mesh, day: number, presentation: ScenePresentation = 'studio', colors?: BackdropColors): void {
   const mat = dome.material as THREE.MeshBasicMaterial;
   mat.map?.dispose();
-  mat.map = skyTexture(day, presentation === 'natural' ? 'architectural' : presentation);
-  if (skin !== 'natural') {
-    mat.map.dispose();
-    const canvas = document.createElement('canvas'); canvas.width = 8; canvas.height = 128;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const palette = BUILD_SKIN_PALETTES[skin];
-      const gradient = ctx.createLinearGradient(0, 0, 0, 128);
-      const shade = (hex: string) => `#${new THREE.Color(hex).multiplyScalar(.3 + .7 * day).getHexString()}`;
-      gradient.addColorStop(0, shade(palette.sky)); gradient.addColorStop(1, shade(palette.horizon));
-      ctx.fillStyle = gradient; ctx.fillRect(0, 0, 8, 128);
-    }
-    mat.map = new THREE.CanvasTexture(canvas); mat.map.colorSpace = THREE.SRGBColorSpace;
-  }
+  mat.map = skyTexture(day, presentation === 'natural' ? 'architectural' : presentation, colors);
   mat.userData.dressingTextures = [mat.map];
   mat.needsUpdate = true;
   dome.userData.day = day;
   dome.userData.presentation = presentation;
-  dome.userData.buildSkin = skin;
+  dome.userData.colors = colors;
 }
 
 /** The ground plane: the plot's neutral ground with a soft radial fall-off so distance reads. */
@@ -94,10 +80,18 @@ export function groundPlane(): THREE.Mesh {
 }
 
 /** Tint only the presentation ground. The plot, garden and floor finishes retain their materials. */
-export function updateGroundPresentation(ground: THREE.Mesh, presentation: ScenePresentation, skin: BuildSkin = 'natural'): void {
+export function updateGroundPresentation(ground: THREE.Mesh, presentation: ScenePresentation, colors?: BackdropColors): void {
   const material = ground.material as THREE.MeshStandardMaterial;
-  material.color.set(skin !== 'natural' ? BUILD_SKIN_PALETTES[skin].sky : presentation !== 'studio' ? ARCHITECTURAL_GROUND_HEX : GROUND_HEX);
+  material.color.set(colors?.sky ?? (presentation !== 'studio' ? ARCHITECTURAL_GROUND_HEX : GROUND_HEX));
   material.roughness = presentation !== 'studio' ? 0.92 : 1;
+}
+
+/** Use the UI's exact sRGB clear outside the site. Custom skins and daylight previews
+ * draw the sky and shadow-receiving backdrop instead. The lawn is a separate mesh. */
+export function setBackdropVisibility(scene: THREE.Scene, sky: THREE.Mesh, ground: THREE.Mesh, canvasColor: THREE.Color | null, showGround: boolean): void {
+  scene.background = canvasColor;
+  sky.visible = canvasColor === null;
+  ground.visible = canvasColor === null && showGround;
 }
 
 /** Private sky/ground and cloned occlusion maps are owned by this stage; cached surface maps are not. */

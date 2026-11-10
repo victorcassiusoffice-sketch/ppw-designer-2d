@@ -93,8 +93,13 @@ async function expectTick(page: Page, step: string): Promise<void> {
 
 async function runQuest(page: Page, touch: boolean): Promise<void> {
   await openBlank(page);
-  // Offered on an empty plan, after the first picture.
+  // The offer only expands when the user opens First build.
+  const invitation = page.locator('[data-lessons-quest="offer-chip"]');
+  await expect(invitation).toBeVisible({ timeout: 20_000 });
   const offer = page.locator('[data-lessons-quest="offer"]');
+  await expect(offer).toHaveCount(0);
+  if (touch) await invitation.tap();
+  else await invitation.click();
   await expect(offer).toBeVisible({ timeout: 20_000 });
   const start = offer.getByRole('button', { name: 'Start', exact: true });
   if (touch) await start.tap();
@@ -226,14 +231,22 @@ test.describe('lessons: the first-build quest', () => {
 test.describe('lessons: never in the way', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  /** A room, the pen put away, then the Walls button: the first pick shows its card. */
-  async function wallsCardOpen(page: Page): Promise<void> {
+  /** Pick Walls, then explicitly open the lesson. */
+  async function wallsCardOpen(page: Page, keyboard = false): Promise<void> {
     await openBlank(page);
-    await page.locator('[data-lessons-quest="offer"]').waitFor({ timeout: 20_000 });
+    await page.locator('[data-lessons-quest="offer-chip"]').waitFor({ timeout: 20_000 });
     await page.getByTestId('start-quick-rectangle').first().click();
     await expect.poll(() => drawnRoom(page)).not.toBeNull();
     await page.getByRole('button', { name: 'Build', exact: true }).first().click();
     await page.getByTestId('wall-tool-toggle').first().click();
+    const tip = page.locator('[data-lesson-chip="walls"]');
+    await expect(tip).toBeVisible();
+    await expect(page.locator('[data-lesson-card="walls"]')).toHaveCount(0);
+    if (keyboard) {
+      await tip.focus();
+      await expect(tip).toBeFocused();
+      await page.keyboard.press('Enter');
+    } else await tip.click();
     await expect(page.locator('[data-lesson-card="walls"]')).toBeVisible();
   }
 
@@ -278,7 +291,8 @@ test.describe('lessons: never in the way', () => {
   });
 
   test('Tab reaches the card buttons; the card text is read politely', async ({ page }) => {
-    await wallsCardOpen(page);
+    await wallsCardOpen(page, true);
+    await expect(page.locator('[data-lesson-card="walls"]')).toBeFocused();
     await expect(page.locator('[data-lessons-live]')).toContainText('Walls');
     const gotIt = page.locator('[data-lesson-card="walls"]').getByRole('button', { name: 'Got it' });
     let reached = false;
@@ -294,10 +308,11 @@ test.describe('lessons: reduced motion', () => {
   test.use({ viewport: { width: 1280, height: 800 }, contextOptions: { reducedMotion: 'reduce' } });
   test('the card shows the poster and plays no clip', async ({ page }) => {
     await openBlank(page);
-    await page.locator('[data-lessons-quest="offer"]').waitFor({ timeout: 20_000 });
+    await page.locator('[data-lessons-quest="offer-chip"]').waitFor({ timeout: 20_000 });
     await page.getByTestId('start-quick-rectangle').first().click();
     await page.getByRole('button', { name: 'Finish', exact: true }).first().click();
     await page.getByTestId('floor-paint-toggle').first().click();
+    await page.locator('[data-lesson-chip="floor"]').click();
     const card = page.locator('[data-lesson-card="floor"]');
     await expect(card).toBeVisible();
     await expect(card.locator('video')).toHaveCount(0);
@@ -314,10 +329,11 @@ test.describe('lessons: a 360 phone at 115 % text', () => {
   ] as const) {
     test(`${testid}: the card fits on screen and covers neither the tool row nor ${hud}`, async ({ page }) => {
       await openBlank(page);
-      await page.locator('[data-lessons-quest="offer"]').waitFor({ timeout: 20_000 });
+      await page.locator('[data-lessons-quest="offer-chip"]').waitFor({ timeout: 20_000 });
       await page.getByTestId('start-quick-rectangle').first().tap();
       await page.getByRole('button', { name: category, exact: true }).first().tap();
       await page.getByTestId(testid).first().tap();
+      await page.locator('[data-lesson-chip]').tap();
       const card = page.locator('[data-lesson-card]');
       await expect(card).toBeVisible();
       await page.waitForTimeout(900);
@@ -329,7 +345,9 @@ test.describe('lessons: a 360 phone at 115 % text', () => {
         if (!r) continue;
         const overlapW = Math.min(c.x + c.width, r.x + r.width) - Math.max(c.x, r.x);
         const overlapH = Math.min(c.y + c.height, r.y + r.height) - Math.max(c.y, r.y);
-        expect(overlapW > 0 && overlapH > 0, `card over ${sel}`).toBe(false);
+        // Placement uses whole CSS pixels. Responsive HUD borders can land
+        // on fractional pixels (e.g. 269.875 beside a card ending at 270).
+        expect(overlapW >= 1 && overlapH >= 1, `card over ${sel} by ${overlapW} × ${overlapH}px`).toBe(false);
       }
     });
   }

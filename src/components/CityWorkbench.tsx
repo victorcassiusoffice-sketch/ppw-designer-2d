@@ -389,7 +389,7 @@ export default function CityWorkbench({ onClose, initialTab = 'plan' }: { onClos
             <span>{t("Measured planning · Mauritius")}</span>
           </div>
         </div>
-        <LocaleThemeControls />
+        <LocaleThemeControls designer />
         <button type="button" onClick={requestClose} className="city-action">
           <StudioIcon name="room" size={18} />
           {t("Back to building")}</button>
@@ -514,14 +514,12 @@ export default function CityWorkbench({ onClose, initialTab = 'plan' }: { onClos
                 />
               </Suspense>
             )}
-            {view === '2d' && (
-              <div className="city-map-caption">
+            {view === '2d' && tool !== 'select' && (
+              <div className="city-map-caption" role="status">
                 {tool === 'road' || tool === 'network'
                   ? 'Tap corners, then Finish route. Snap 0.5 m.'
                   : tool === 'buildings' ? stamp ? `Tap to place ${stamp.name}.` : 'Choose a saved building.'
-                  : tool === 'asset'
-                    ? 'Tap the site to place a measured planning envelope.'
-                    : 'Drag to pan · pinch / wheel to zoom · select for details'}
+                  : 'Tap the site to place a measured planning envelope.'}
               </div>
             )}
           </div>
@@ -843,6 +841,10 @@ export default function CityWorkbench({ onClose, initialTab = 'plan' }: { onClos
             {!selected && tool === 'select' && (
               <section className="city-card">
                 <h2>{t("Your site")}</h2>
+                <details className="city-access">
+                  <summary>{t("View controls")}</summary>
+                  <p>{view === '2d' ? t('Drag to pan · pinch / wheel to zoom · select for details') : t('Drag to orbit · Two fingers to pan · Pinch to zoom')}</p>
+                </details>
                 <div className="city-fields">
                   <CityNumber
                     label={t("Site width (m)")}
