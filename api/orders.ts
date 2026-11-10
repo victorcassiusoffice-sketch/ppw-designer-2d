@@ -28,6 +28,7 @@
 
 import { eq, desc, inArray } from 'drizzle-orm';
 import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
+import { crossSiteWrite, studioAccess } from './_lib/studioAccess.js';
 import { handlePitchEnquiry } from './_lib/pitchEnquiry.js';
 import { handleCityProcurement } from './_lib/cityProcurement.js';
 import { handleSharedSpecs } from './_lib/sharedSpecs.js';
@@ -1560,6 +1561,22 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
   }
 
   if (resource === 'designs') {
+    // Saved designs hold customers' emails and plans: the studio only (code or sign-in).
+    if (crossSiteWrite(req.method, req.headers)) {
+      res.setHeader('Cache-Control', 'no-store');
+      res.status(403);
+      res.json({ error: 'Save designs from the studio page itself.', code: 'CROSS_SITE_WRITE' });
+      return;
+    }
+    const access = await studioAccess(req.headers);
+    if (access !== 'open') {
+      res.setHeader('Cache-Control', 'no-store');
+      res.status(access === 'unavailable' ? 503 : 401);
+      res.json(access === 'unavailable'
+        ? { error: 'Saved designs are unavailable. Please try again shortly.', code: 'STUDIO_ACCESS_UNAVAILABLE' }
+        : { error: 'Open the studio with your code or sign-in to use saved designs.', code: 'STUDIO_ACCESS_REQUIRED' });
+      return;
+    }
     try {
       await handleDesigns(segments, req, res);
     } catch (err) {

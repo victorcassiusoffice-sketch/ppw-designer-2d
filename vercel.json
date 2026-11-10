@@ -131,6 +131,6 @@
     { "source": "/api/leads", "destination": "/api/orders" },
     { "source": "/api/gumroad/(.*)", "destination": "/api/orders" },
     { "source": "/api/cron/(.*)", "destination": "/api/cron-router" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!assets/|models/|draco/|showcase/|lessons/|brand/|fonts/).*)", "destination": "/index.html" }
   ]
 }
