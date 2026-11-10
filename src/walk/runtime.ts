@@ -13,7 +13,8 @@ import { createWalkWorld } from './scene';
 import { capsuleClear, createWalker, doorTransform, followCamera, groundHeight, interactionDoor, pullInCamera, stepWalker, toggleDoor } from './collision';
 import { GROUND_LEVEL_ID } from '../designer/levels';
 import { cutawayState } from '../designer/roomSolids';
-import { pickSpawn, spawnAt, spawnOnLevel, type PlacementHint } from './placement';
+import { pointInPolygon } from '../lib/geometry';
+import { authoredSupport, roofFootOffset, pickSpawn, spawnAt, spawnOnLevel, type PlacementHint } from './placement';
 import { findWalkSpawn } from './spawn';
 import { WalkFrameMeasurement, type FrameMeasurementResult } from './frameMeasurement';
 import { hideStaticDoorLeaves, renderWalkSurface } from './stageSurface';
@@ -226,8 +227,10 @@ export class WalkRuntime {
   teleport(position: THREE.Vector3, yaw: number): boolean {
     if (!this.ready || this.disposed || !Number.isFinite(yaw) || !position.toArray().every(Number.isFinite)) return false;
     const support = groundHeight(this.world, position.x, position.z, position.y + .025, .28);
-    const allowance = this.world.roofActive ? .24 : .015;
-    if (support === null || Math.abs(position.y - support) > allowance || !capsuleClear(this.world, createWalker(this.world, position))) return false;
+    const point = { x: position.x, y: position.z };
+    if (support === null || !authoredSupport(this.world, point, support)) return false;
+    const expected = support + roofFootOffset(this.world, point, support, this.walker.radius);
+    if (Math.abs(position.y - expected) > .015 || !capsuleClear(this.world, createWalker(this.world, position))) return false;
     this.clearInput();
     this.walker = createWalker(this.world, position);
     this.look.rotation.set(0, yaw, 0, 'YXZ');
@@ -538,8 +541,14 @@ export class WalkRuntime {
         const door = interactionDoor(this.world, this.eye, this.direction, this.retainedDoor, 2);
         if (!door || (door.id === this.retainedDoor && Math.abs(door.angle) < .01 && Math.abs(door.targetAngle) < .01)) this.retainedDoor = null;
         const feet = this.walker.position;
-        const floor = this.world.floors.find(f => Math.abs((f.elevationM ?? 0) - feet.y) < .025);
-        if (floor?.levelId && !this.world.roofActive) this.levelId = floor.levelId;
+        if (!this.world.roofActive) {
+          const point = { x: feet.x, y: feet.z };
+          const floor = this.world.floors.find(f => Math.abs((f.elevationM ?? 0) - feet.y) < .025 &&
+            pointInPolygon(point, f.polygon) && !f.holes?.some(h => pointInPolygon(point, h)));
+          const patch = !floor && this.world.outdoor?.find(f => Math.abs(f.elevationM - feet.y) < .025 && pointInPolygon(point, f.polygon));
+          if (floor?.levelId) this.levelId = floor.levelId;
+          else if (patch) this.levelId = patch.levelId;
+        }
         this.onStatus({ mode: this.mode, levelId: this.levelId, grounded: this.walker.grounded,
           overview: this.overview, cutaway: this.cutaway, notice: this.notice, door: door ? (door.targetAngle ? 'Close door' : 'Open door') : null,
           blocked: now < this.blockedUntil, locked: this.controls.isLocked, animation: this.animation,

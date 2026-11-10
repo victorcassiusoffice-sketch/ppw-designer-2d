@@ -1,5 +1,6 @@
 import { buildingSolids } from '../designer/buildingScene';
-import { isRoofLevel, levelsOf, roofLevel } from '../designer/levels';
+import { buildingLevels } from '../designer/building';
+import { isOutdoorRoom, isRoofLevel, isRoofRoom, levelsOf, roofLevel, roomLevelId } from '../designer/levels';
 import { roofSourceRooms, syncRoofRooms } from '../designer/roof';
 import { stairPlacementFits } from '../designer/stairPlacement';
 import type { SceneInput } from '../designer/roomView3d';
@@ -16,6 +17,20 @@ export function prepareWalkVisit(property: Property, sceneForLevel: (p: Property
   const snapshot = syncRoofRooms({ ...copy, levels: visitLevels(copy) });
   const roof = snapshot.levels?.find(isRoofLevel);
   const solids = buildingSolids(roof ? { ...snapshot, activeLevelId: roof.id } : snapshot, sceneForLevel, 'building', true);
+  // Elevated outdoor rooms have an authored floor even though the house
+  // renderer usually uses outdoor rooms only as item containers.
+  for (const { level, elevationM } of buildingLevels(snapshot).slice(1)) {
+    if (isRoofLevel(level)) continue;
+    const outside = snapshot.rooms.filter(room => roomLevelId(room) === level.id && isOutdoorRoom(room) && !isRoofRoom(room) && room.polygon.length >= 3);
+    if (!outside.length) continue;
+    const inputs = sceneForLevel({ ...snapshot, activeLevelId: level.id }).rooms;
+    for (const room of outside) {
+      if (solids.floors.some(f => f.roomId === room.id && f.levelId === level.id)) continue;
+      const input = inputs.find(r => r.id === room.id);
+      solids.floors.push({ roomId: room.id, key: 'floor-' + room.id, polygon: room.polygon,
+        levelId: level.id, elevationM, hex: input?.floorHex ?? '#a9aba6', kind: input?.floorKind, tileM: input?.floorTileM });
+    }
+  }
   const stairs = solids.stairs ?? [];
   const valid = stairs.filter(stair => stairPlacementFits(snapshot, stair.stair));
   return { property: snapshot, solids: { ...solids, stairs: valid }, invalidStairs: stairs.length - valid.length };

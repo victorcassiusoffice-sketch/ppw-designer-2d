@@ -97,7 +97,7 @@ export default function WalkLauncher({
       >
         Walk
       </button>
-      <WalkerPlacement property={property} levels={levels} stageRef={stageRef} viewportRef={viewportRef} prepare={prepare} onPlace={launch} />
+      {!open && <WalkerPlacement property={property} levels={levels} stageRef={stageRef} viewportRef={viewportRef} prepare={prepare} onPlace={launch} />}
       </div>
       {open && (
         <WalkMode

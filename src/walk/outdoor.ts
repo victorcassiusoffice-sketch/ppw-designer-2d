@@ -22,9 +22,9 @@ export function outdoorPatches(solids: SceneSolids, property: Property): WalkPat
   };
   const garden = solids.garden ?? property.garden;
   const rooms = property.rooms.filter(room => room.polygon.length >= 3 && roomLevelId(room) === ground.level.id);
-  const lawn = lawnFootprint(rooms.map(room => room.polygon), garden, solids.gardenSite ?? property.site ?? undefined);
+  const lawn = lawnFootprint(rooms.filter(r => !isOutdoorRoom(r)).map(room => room.polygon), garden, solids.gardenSite ?? property.site ?? undefined);
   for (const piece of lawn?.pieces ?? []) add(piece, ground.elevationM - .0005);
-  for (const room of rooms.filter(isOutdoorRoom)) add(room.polygon, ground.elevationM);
+  if (!lawn) for (const room of rooms.filter(isOutdoorRoom)) add(room.polygon, ground.elevationM);
   for (const surface of garden?.surfaces ?? []) {
     if (surface.kind !== 'pool') add(gardenSurfacePolygon(surface), surface.elevationM);
   }

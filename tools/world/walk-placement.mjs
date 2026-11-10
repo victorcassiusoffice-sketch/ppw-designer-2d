@@ -20,9 +20,17 @@ const cases = [
 const browser = await chromium.launch({args:['--use-angle=d3d11','--ignore-gpu-blocklist']});
 const report=[];
 try {
- for(const [width,height] of [[1280,800],[313,567]]) {
+ for(const brand of ['ppw','olb']) for(const [width,height] of [[1280,800],[390,844],[313,567]]) {
   const context=await browser.newContext({viewport:{width,height},hasTouch:width<600});
-  await context.route('**/*',r=>['GET','HEAD'].includes(r.request().method())?r.continue():r.abort());
+  await context.route('**/*',async route=>{
+    const req=route.request();
+    if(!['GET','HEAD'].includes(req.method()))return route.abort();
+    if(brand==='olb' && req.resourceType()==='document' && new URL(req.url()).pathname==='/demo'){
+      const shell=await route.fetch({url:base+'/olb.html'});
+      return route.fulfill({response:shell});
+    }
+    return route.continue();
+  });
   const page=await context.newPage();
   const errors=[];
   const touch=width<600 ? await context.newCDPSession(page) : null;
@@ -31,15 +39,17 @@ try {
   page.setDefaultTimeout(15000);
   await page.goto(base+'/demo?view=3d&pitch=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__designer?.readProperty && document.querySelector('[data-testid="place-walker"]'),undefined,{timeout:60000});
+  assert.equal(await page.evaluate(()=>document.documentElement.dataset.brand || 'ppw'),brand);
   await page.evaluate(p=>window.__designer.loadPropertyFixture(p),property);
   for(const [name,level,x,y,elevation] of cases){
-   const row={width,name,level};report.push(row);
+   const row={brand,width,name,level};report.push(row);
    try {
     if(name==='bare-land')await page.evaluate(p=>window.__designer.loadPropertyFixture({...p,rooms:[],activeRoomId:''}),property);
     const token=page.getByTestId('place-walker');
     await token.waitFor();await token.click();
     await page.locator('.world-placement-options select').selectOption(level);
     const before=await page.evaluate(()=>JSON.stringify(window.__designer.readProperty()));
+    if(name==='bare-land')assert.equal(JSON.parse(before).rooms.filter(room=>room.polygon?.length>=3).length,0);
     const target=await token.evaluate((el,pt)=>{let result;el.dispatchEvent(new CustomEvent('world-walk-project',{detail:{...pt,reply:p=>{result=p}}}));return result}, {x,y,height:elevation});
     const b=await token.boundingBox();
     assert.ok(b && target,'Projection available');
@@ -69,7 +79,7 @@ try {
       await page.waitForFunction(()=>{const s=JSON.parse(document.querySelector('[data-world-walk]').dataset.status);return Math.hypot(s.position[0]-2.4,s.position[2]-1)<.22},undefined,{timeout:12000});
       row.tapToWalk=true;
     }
-    await page.screenshot({path:path.join(out,width+'-'+name+'.jpg'),type:'jpeg',quality:68});
+    await page.screenshot({path:path.join(out,brand+'-'+width+'-'+name+'.jpg'),type:'jpeg',quality:68});
     await page.locator('.world-walk-exit').click();
     assert.equal(await page.evaluate(()=>JSON.stringify(window.__designer.readProperty())),before);
     if(name==='bare-land'){
@@ -81,7 +91,7 @@ try {
       row.bareLandLauncher=true;
     }
     row.designUnchanged=true;
-   }catch(e){row.error=e.message.split('\n')[0];if(touch)await touch.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]}).catch(()=>{});else await page.mouse.up().catch(()=>{});await page.screenshot({path:path.join(out,width+'-'+name+'-failure.jpg'),type:'jpeg'}).catch(()=>{});
+   }catch(e){row.error=e.message.split('\n')[0];if(touch)await touch.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]}).catch(()=>{});else await page.mouse.up().catch(()=>{});await page.screenshot({path:path.join(out,brand+'-'+width+'-'+name+'-failure.jpg'),type:'jpeg'}).catch(()=>{});
     const exit=page.locator('.world-walk-exit');if(await exit.isVisible())await exit.click();else await page.keyboard.press('Escape');
    }
    row.errors=[...errors];await fs.writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(row));

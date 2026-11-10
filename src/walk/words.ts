@@ -2,6 +2,7 @@ import type { AppLocale } from '../i18n/messages';
 
 // Loaded with Walk, after the first 3D picture.
 const translations: Record<string, readonly [string, string, string]> = {
+  "Generated character": ["Personnage généré", "生成角色", "Personaje generado"],
   "Place a person": ["Placer une personne", "放置人物", "Colocar una persona"],
   "Drag a person onto the land or a floor": ["Faites glisser une personne sur le terrain ou un étage", "将人物拖到地面或楼层上", "Arrastra una persona al terreno o a un piso"],
   "Placement level": ["Niveau de placement", "放置楼层", "Nivel de colocación"],

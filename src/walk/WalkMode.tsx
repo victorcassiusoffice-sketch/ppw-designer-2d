@@ -50,6 +50,10 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
   const stage = useRef<ThreeStageHandle>(null);
   const runtime = useRef<WalkRuntime | null>(null);
   const [choice, setChoice] = useState(savedCharacter);
+  const character = WALK_CHARACTERS.find(c => c.id === choice) ?? WALK_CHARACTERS[0];
+  const characterCredit = character.licence === 'CC0-1.0'
+    ? <a href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Kenney · CC0</a>
+    : <span title={character.licence}>{character.label} · {tx('Generated character')}</span>;
   const [started, setStarted] = useState(!!initial);
   const [ready, setReady] = useState(false);
   const [help, setHelp] = useState(false);
@@ -65,6 +69,8 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
   const lookPointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; dragged: boolean } | null>(null);
   const aimStick = useRef<number | null>(null);
   const initialPose = useRef<{ levelId: string; point?: PlacementHint['point'] } | undefined>(initial);
+  const closeVisit = useRef(onClose);
+  closeVisit.current = onClose;
   const prepare = useRef(prepareVisit);
   prepare.current = prepareVisit;
   const lookSurface = useOwnedTouchSurface(), stickSurface = useOwnedTouchSurface();
@@ -103,7 +109,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
     setLoading('Loading walk controls…');
     void import('./runtime').then(async ({ WalkRuntime: Runtime }) => {
       if (!active) return;
-      viewer = new Runtime(surface, visit.solids, visit.property, value => { if (active) setStatus(value); }, onClose, initialPose.current);
+      viewer = new Runtime(surface, visit.solids, visit.property, value => { if (active) setStatus(value); }, () => closeVisit.current(), initialPose.current);
       release = () => viewer?.dispose();
       runtime.current = viewer;
       await viewer.load(WALK_CHARACTERS.find(c => c.id === choice)!, startedAt.current,
@@ -179,7 +185,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
         <button type="button" className="world-walk-primary" onClick={begin}>Start walk</button>
         <p className="world-walk-small">Doors and movement stay in this visit. Your saved design stays as it is.</p>
         <p className="world-walk-small">{tx('Choose a level to start there, even without stairs.')}</p>
-        <a href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Characters by Kenney · CC0</a>
+        {characterCredit}
       </div> : error ? <div className="world-walk-card" role="alert"><h1>Walk is unavailable</h1><p>{tx(error)}</p><button type="button" onClick={() => { retry(); if (topFloor) chooseLevel(topFloor.id); }}>{tx(topFloor ? 'Go to top floor' : 'Choose another starting point')}</button><button type="button" onClick={onClose}>Return to design</button></div>
       : !status ? <div className="world-walk-loading" role="status" aria-live="polite"><span className="world-walk-spinner" aria-hidden="true" />{loading}</div> : <>
         <div className="world-walk-look" ref={lookSurface} aria-label="Drag to look"
@@ -224,7 +230,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
           <span className="world-walk-stick-knob"/><span className="world-walk-stick-label">{tx('Look')}</span>
         </div>}
         <p className="world-walk-hint">{touchControls ? 'Pad: move + turn · Drag: look · Tap doors · Exit walk: return' : status.locked ? 'Esc frees the mouse · E doors · V view' : tx('Click or drag · Click to walk · Drag to look · E doors · V view · B whole build · Esc exits')}</p>
-        <a className="world-walk-credit" href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Kenney · CC0</a>
+        <span className="world-walk-credit">{characterCredit}</span>
       </>}
     </section>, document.body,
   );
