@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { canvasThemeFor } from '../designer/canvasTheme';
 import { useAppPreferences } from '../i18n/AppPreferences';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -329,7 +330,7 @@ function fitScene(runtime: CityScene, model: CityModel, focusId?: string | null)
 }
 
 export default function CityThreeView({ model, selectedId = null, onSelect, fitNonce, focusId, showUtilities }: CityThreeViewProps) {
-  const { t } = useAppPreferences();
+  const { t, theme } = useAppPreferences();
   const hostRef = useRef<HTMLDivElement>(null);
   const runtimeRef = useRef<CityScene | null>(null);
   const modelRef = useRef(model);
@@ -352,7 +353,6 @@ export default function CityThreeView({ model, selectedId = null, onSelect, fitN
       return;
     }
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#e5e8de');
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -462,7 +462,7 @@ export default function CityThreeView({ model, selectedId = null, onSelect, fitN
       }
       frame = requestAnimationFrame(render);
     };
-    render();
+    frame = requestAnimationFrame(render);
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
@@ -490,6 +490,14 @@ export default function CityThreeView({ model, selectedId = null, onSelect, fitN
 
   useEffect(() => {
     const runtime = runtimeRef.current;
+    if (runtime) {
+      runtime.scene.background = new THREE.Color(canvasThemeFor(theme).background);
+      runtime.dirty = true;
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    const runtime = runtimeRef.current;
     if (runtime) highlight(runtime, model, selectedId, showUtilities);
   }, [model, selectedId, showUtilities]);
 
@@ -503,12 +511,9 @@ export default function CityThreeView({ model, selectedId = null, onSelect, fitN
 
   return <div className="city-three-view" data-testid="city-three-view">
     <div className="city-three-view__stage" ref={hostRef} />
-    {unavailable ? <div className="city-three-view__fallback" role="status">
+    {unavailable && <div className="city-three-view__fallback" role="status">
       <strong>{t('3D is unavailable on this device')}</strong>
       <span>{t('Switch to 2D to continue editing the same city plan and measurements.')}</span>
-    </div> : <>
-      <div className="city-three-view__label">{t('Measured 3D planning envelopes')}{showUtilities && <span>{t('Underground routes revealed')}</span>}</div>
-      <div className="city-three-view__help">{t('Drag to orbit · Two fingers to pan · Pinch to zoom')}</div>
-    </>}
+    </div>}
   </div>;
 }

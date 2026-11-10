@@ -75,7 +75,7 @@ import {
   screenToRoom,
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
-import { fitPlanViewport } from '../lib/fitPlanViewport';
+import { fitPlanViewport, PLAN_DIMENSION_OFFSET_M, PLAN_DIMENSION_TICK_M } from '../lib/fitPlanViewport';
 import { computeZoomScale, pinchPlanViewport, zoomViewportAt, type PlanPinch, ZOOM_MIN_SCALE, ZOOM_MAX_SCALE } from '../lib/zoom';
 import { RoomDrawLayer, RoomDrawHUD, type HoverVertex } from './RoomDrawMode';
 import { ClearControls } from './ClearControls';
@@ -115,6 +115,8 @@ import { useDragPointerStore } from '../store/dragPointerStore';
 import { useOpeningSelectionStore } from '../store/openingSelectionStore';
 import { OpeningSelectionEditor } from './OpeningSelectionEditor';
 import { OpeningDimensions } from './OpeningDimensions';
+import { useAppPreferences } from '../i18n/AppPreferences';
+import { canvasThemeFor } from '../designer/canvasTheme';
 import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../store/buildSkinStore';
 import { useMeasuredPathToolStore, measuredToolPreview, type MeasuredPathTarget } from '../store/measuredPathToolStore';
 import { MeasuredPathOptions } from './MeasuredPathOptions';
@@ -207,7 +209,6 @@ import {
   ROOM_LABEL_ACTIVE_OPACITY,
   ROOM_LABEL_INACTIVE_OPACITY,
   WALL_INK,
-  WALL_INK_GHOST,
   WALL_SHADOW,
   WALL_SHADOW_BLUR_PX,
   WALL_SHADOW_OFFSET,
@@ -216,7 +217,6 @@ import {
   WALL_STROKE_PX,
   SELECT_STROKE,
   HANDLE_FILL,
-  DIM_LINE,
   GREENERY_FILL,
   GREENERY_STROKE,
   ITEM_SHADOW,
@@ -423,12 +423,6 @@ export interface RoomCanvasProps {
   onDrawComplete?: () => void;
   pendingProductId?: string | null;
   setPendingProductId?: (id: string | null) => void;
-  /**
-   * Blank-canvas-on-open (2026-06-09) — the empty-state prompt's "Draw
-   * room" button asks App to flip into draw mode (App owns `setDrawMode`
-   * because it carries the history-transaction side-effects).
-   */
-  onRequestDraw?: () => void;
 }
 
 /**
@@ -454,7 +448,6 @@ export function RoomCanvas({
   onDrawComplete,
   pendingProductId,
   setPendingProductId,
-  onRequestDraw,
 }: RoomCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -478,7 +471,11 @@ export function RoomCanvas({
   const selectedInstanceId = useDesignStore((s) => s.selectedInstanceId);
   const selectedOpeningId = useOpeningSelectionStore(s => s.selectedId);
   const buildSkin = useBuildSkinStore(s => s.skin);
-  const buildPalette = BUILD_SKIN_PALETTES[buildSkin];
+  const { theme } = useAppPreferences();
+  const backdrop = BUILD_SKIN_PALETTES[buildSkin];
+  const palette = buildSkin === 'natural'
+    ? canvasThemeFor(theme)
+    : { ...backdrop, background: backdrop.ground, majorGrid: backdrop.grid };
   const measuredTool = useMeasuredPathToolStore();
   const measuredPreview = measuredToolPreview(measuredTool);
   const measuredPress = useRef<{ x: number; y: number; id: number } | null>(null);
@@ -650,16 +647,9 @@ export function RoomCanvas({
     setEnergyPanelOpen(!energyPanelOpen);
   }, [energyPanelOpen, setEnergyPanelOpen]);
 
-  // "No room drawn yet" is now a PROPERTY-wide question, not an active-room
-  // one: with a blank room active and two rooms drawn beside it, the old
-  // active-room-only test put the start prompt on top of a full plan.
   const hasRoom = drawnRooms.length > 0;
 
-  // Quick-rectangle escape hatch from the start-state prompt: gives the
-  // active (empty) room a default 5×4 m rectangle so the customer can
-  // place products immediately without drawing, and so the TopBar L/W
-  // inputs (which only edit rectangle rooms) light up. Draw mode stays
-  // the primary path per Vic's Sims-style brief.
+  // The wall pen offers a quick rectangle until the first room exists.
   const handleQuickRectangle = useCallback(() => {
     // Straight to draw (2026-09-08): this now fires from INSIDE the armed
     // pen's HUD, so it has to stand the pen down as well — otherwise the
@@ -993,13 +983,14 @@ export function RoomCanvas({
   void allItems;
 
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
+  const buildingBounds = useMemo(() => unionBounds(drawnRooms), [drawnRooms]);
   /**
    * AABB the viewport centres and fits on: the land plot when one is locked
    * (the plot IS the world), else every drawn room + free wall on this level.
    */
   const union = useMemo(() => {
     if (sitePolygon) return polygonBounds(sitePolygon);
-    let u = unionBounds(drawnRooms);
+    let u = buildingBounds;
     for (const w of freeWalls) {
       const b = {
         minX: Math.min(w.a.x, w.b.x),
@@ -1035,7 +1026,7 @@ export function RoomCanvas({
     if (u && u.maxX - u.minX < 1) u = { ...u, maxX: u.minX + 1 };
     if (u && u.maxY - u.minY < 1) u = { ...u, maxY: u.minY + 1 };
     return u;
-  }, [sitePolygon, drawnRooms, freeWalls, garden, ecoTrees, propertyShade, activeLevelId]);
+  }, [sitePolygon, buildingBounds, freeWalls, garden, ecoTrees, propertyShade, activeLevelId]);
   const unionWpx = union ? (union.maxX - union.minX) * pxPerMetre : 0;
   const unionHpx = union ? (union.maxY - union.minY) * pxPerMetre : 0;
   // Area readout stays the ACTIVE room's — it pairs with the TopBar L/W
@@ -1117,11 +1108,18 @@ export function RoomCanvas({
     // Attached multi-room: centre + FIT the whole plan, not the active room.
     // This used to hardcode scale 1 with a 40 px minimum clamp, which pinned
     // a union wider than the stage off-screen with no way back except Reset.
+    const dimensionMarginM = PLAN_DIMENSION_OFFSET_M + PLAN_DIMENSION_TICK_M;
+    const dimensionMin = buildingBounds && !drawMode ? {
+      x: (buildingBounds.minX - dimensionMarginM) * pxPerMetre,
+      y: (buildingBounds.minY - dimensionMarginM) * pxPerMetre,
+    } : undefined;
     return fitPlanViewport({
       minX: union.minX * pxPerMetre, minY: union.minY * pxPerMetre,
       maxX: union.maxX * pxPerMetre, maxY: union.maxY * pxPerMetre,
-    }, availW, availH);
+    }, availW, availH, dimensionMin);
   }, [
+    buildingBounds,
+    drawMode,
     union,
     unionWpx,
     unionHpx,
@@ -1138,15 +1136,14 @@ export function RoomCanvas({
   ]);
 
   useEffect(() => {
-    // Nothing to centre on until a room exists — leave the viewport alone
-    // so the blank-canvas prompt is not fighting a pointless transform.
+    // A blank plan keeps its initial transform until there is geometry to fit.
     const fitted = fitViewportToUnion();
     fittedMinimumScaleRef.current = Math.min(MIN_SCALE, fitted?.scale ?? MIN_SCALE);
     if (userMovedViewportRef.current) return;
     if (!fitted) return;
     setViewport(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, floorTool, floorHudH, doorTool, doorHudH, wallPaintTool, claddingTool, wallPaintHudH]);
+  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, buildingBounds?.minX, buildingBounds?.minY, pxPerMetre, drawMode, floorTool, floorHudH, doorTool, doorHudH, wallPaintTool, claddingTool, wallPaintHudH]);
 
   /**
    * Door tool stale-transform race (2026-08-31, defect 3): arming the tool
@@ -1853,7 +1850,7 @@ export function RoomCanvas({
       const cy = (bounds.minY + bounds.maxY) / 2;
       // Verify pass (2026-09-07, phone journey P1): "+ Add to room" on a
       // solar panel switched the view to the Roof and placed NOTHING — the
-      // customer saw an empty roof and a "your room is empty" hint. The
+      // customer saw an empty roof. The
       // click path can ask the customer to tap a slab; the popup cannot, so
       // pop the roof first and place on the slab that mirrors this storey.
       // The slab shares this room's outline, so the same centre lands on it
@@ -3366,7 +3363,7 @@ export function RoomCanvas({
     measuredTool.startTool(target, propertyForPaint.id, activeLevelId);
   }
   return (
-    <div className="flex h-full min-h-0 w-full min-w-0 flex-col" data-testid="plan-workspace">
+    <div className="relative flex h-full min-h-0 w-full min-w-0 flex-col" data-testid="plan-workspace">
       {viewMode !== '3d' && !measuredTool.target && (drawMode || wallDrawEnabled || isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) || gardenPlacement) && <div className="measured-drawing-launchers">
         {(drawMode || wallDrawEnabled) && <><button type="button" onClick={() => beginMeasured('wall')}>Curved wall</button><button type="button" onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-wall-materials'))}>Wall material</button></>}
         {isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) && <button type="button" onClick={() => beginMeasured('roof')}>Draw roof outline</button>}
@@ -3390,6 +3387,7 @@ export function RoomCanvas({
         onCancel={handleDrawCancel}
         onQuickRectangle={hasRoom ? undefined : handleQuickRectangle}
       />
+      <WallDrawHUD enabled={viewMode === 'plan' && visible.structure && parts.walls && wallDrawEnabled && !drawMode} />
       {doorTool && viewMode !== '3d' && <OpeningDimensions />}
       {/* M6 (Customer-UI fix 2026-05-31) — top-right floating button column.
           Both top AND right offsets fold in env(safe-area-inset-*) so the
@@ -3614,6 +3612,27 @@ export function RoomCanvas({
         </div>}
       </div>
 
+      {viewMode === 'plan' && eraseActive && (
+        <div
+          className="flex shrink-0 items-center justify-between gap-2 px-3 py-1 text-xs"
+          data-testid="remove-hud"
+          style={{ background: CHROME_BG, borderBottom: `1px solid ${CHROME_RIM}`, color: CHROME_TEXT }}
+        >
+          <span className="min-w-0 flex-1 font-semibold" style={{ color: CHROME_DANGER }} data-target-kind={removeHover?.kind??'none'}>
+            {removeFeedback??removeTargetMessage(removeHover)}
+          </span>
+          <button
+            type="button"
+            data-testid="remove-done"
+            onClick={() => setTool('hand')}
+            className={`${OVL_CTRL} ${OVL_ACTIVE} h-9 shrink-0 px-3`}
+            title="Stop removing (Esc)"
+          >
+            Done
+          </button>
+        </div>
+      )}
+
     <div
       ref={containerRef}
       data-testid="plan-drawing-viewport"
@@ -3621,11 +3640,10 @@ export function RoomCanvas({
       className={`relative min-h-0 w-full min-w-0 flex-1 overflow-hidden transition-colors ${
         pendingProductId && !drawMode ? 'ring-2 ring-inset' : ''
       } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
-      // Paper ground (2026-08-29): warm cream, the land outside the plot.
       style={{
-        background: buildPalette.ground,
+        background: palette.background,
         ...(eraseActive ? { cursor:removeCursor(removeHover) } : {}),
-        ...({ '--build-ground': buildPalette.ground } as React.CSSProperties),
+        ...({ '--build-ground': palette.background } as React.CSSProperties),
         ...(pendingProductId && !drawMode
           ? { '--tw-ring-color': `${SELECT_STROKE}66` } as React.CSSProperties
           : {}),
@@ -3654,7 +3672,6 @@ export function RoomCanvas({
       onPointerLeave={()=>{if(!removePress.current)setRemoveHover(null);}}
       onClickCapture={e=>{if(eraseActive&&(e.target as HTMLElement).tagName==='CANVAS')e.stopPropagation();}}
     >
-      {viewMode === 'plan' && <div className="object-placement-dock"><ObjectPlacementControls /></div>}
       {/* Floor tool HUD card (PHONE, 2026-08-30). Replaces the old
           "Paint on · Done" chip. md:hidden — from md up the docked Floor
           panel (TopBar) is the tool's indicator. Bottom-anchored exactly
@@ -4133,57 +4150,6 @@ export function RoomCanvas({
         </div>
       )}
 
-      {tool === 'sledgehammer' && !drawMode && !pendingProductId && (
-        <div
-          className="pointer-events-auto absolute left-1/2 top-3 z-20 flex w-[min(92vw,420px)] -translate-x-1/2 items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs"
-          data-testid="remove-hud"
-          style={{ background: CHROME_BG, border: `1px solid ${CHROME_DANGER}`, boxShadow: '0 12px 32px rgba(42,41,38,0.18)', color: CHROME_TEXT }}
-        >
-          <span className="min-w-0 flex-1 font-semibold" style={{ color: CHROME_DANGER }} data-target-kind={removeHover?.kind??'none'}>
-            {removeFeedback??removeTargetMessage(removeHover)}
-          </span>
-          <button
-            type="button"
-            data-testid="remove-done"
-            onClick={() => setTool('hand')}
-            className={`${OVL_CTRL} ${OVL_ACTIVE} h-9 shrink-0 px-3`}
-            title="Stop removing (Esc)"
-          >
-            Done
-          </button>
-        </div>
-      )}
-
-      {pendingProductId && !drawMode && (() => {
-        const pendingProduct = getProductById(pendingProductId);
-        if (!pendingProduct) return null;
-        return (
-          <div
-            className="pointer-events-auto absolute left-1/2 top-3 z-20 flex w-[min(92vw,420px)] -translate-x-1/2 items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs"
-            style={{
-              background: CHROME_BG,
-              border: `1px solid ${CHROME_RIM}`,
-              boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
-              color: CHROME_TEXT,
-            }}
-          >
-            <div className="min-w-0">
-              <p className="truncate text-[12px] font-semibold">
-                Tap the floor to place &ldquo;{pendingProduct.name}&rdquo;
-              </p>
-              <p className="text-[11px] font-medium" style={{ color: CHROME_TEXT_2 }}>Or hit Cancel.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPendingProductId && setPendingProductId(null)}
-              className={`${OVL_CTRL} ${OVL_REST} h-11 shrink-0 px-3 md:h-10`}
-            >
-              Cancel
-            </button>
-          </div>
-        );
-      })()}
-
       {/* M14 / M13 — mobile-only top control strip: undo · redo · precision.
           Desktop uses the keyboard (Ctrl+Z / Ctrl+Y / Ctrl+F) + has no
           finger, so this is lg:hidden. ≥44px targets, inside the top safe
@@ -4542,8 +4508,8 @@ export function RoomCanvas({
               <Line
                 points={sitePolygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
                 closed
-                fill={buildPalette.site}
-                stroke={buildPalette.boundary}
+                fill={palette.site}
+                stroke={palette.boundary}
                 strokeWidth={1.5}
                 dash={[10, 6]}
               />
@@ -4555,12 +4521,12 @@ export function RoomCanvas({
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
                 letterSpacing={1.5 / viewport.scale}
-                fill={DIM_LINE}
+                fill={palette.ink}
               />}
             </Group>
           )}
 
-          {visible.landscape && <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />}
+          {visible.landscape && <GardenLayer ink={palette.ink} garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />}
           {visible.landscape && activeLevelId === GROUND_LEVEL_ID && <EcoTreesLayer trees={ecoTrees} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
           <Group visible={visible.structure} listening={visible.structure}>
 
@@ -4573,7 +4539,7 @@ export function RoomCanvas({
               name="room-below"
               points={room.polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
               closed
-              stroke={WALL_INK_GHOST}
+              stroke={palette.ink} opacity={0.28}
               strokeWidth={WALL_THICKNESS_M * pxPerMetre}
               dash={[6, 6]}
               listening={false}
@@ -4957,7 +4923,7 @@ export function RoomCanvas({
                   <Line
                     key={l.key}
                     points={l.points}
-                    stroke={buildPalette.grid}
+                    stroke={l.major ? palette.majorGrid : palette.grid}
                     strokeWidth={l.major ? GRID_MAJOR_WIDTH_PX : GRID_MINOR_WIDTH_PX}
                     opacity={(l.major ? GRID_MAJOR_OPACITY : GRID_MINOR_OPACITY) * 0.65}
                   />
@@ -5091,10 +5057,8 @@ export function RoomCanvas({
 
           {/* Room names, set the way the reference plans set their callouts:
               small caps, letter-spaced, quiet grey on the paper floor.
-              Anchored just inside each room's top-left wall so they never
-              fight the centred hints or a placed item's own label. The active
-              room's label is darker — that plus the lifted floor is the whole
-              active-room affordance. */}
+              Each label looks for a clear patch of floor within the room.
+              The active room has a darker label. */}
           {drawnRooms.map((room) => {
             if (!room.name) return null;
             const b = polygonBounds(room.polygon);
@@ -5157,11 +5121,11 @@ export function RoomCanvas({
               size of what they have drawn. Text sits inside the offset band
               so it can never fall off the top of the stage. */}
           {drawnRooms.length > 0 && !drawMode && (() => {
-            const bu = unionBounds(drawnRooms);
+            const bu = buildingBounds;
             if (!bu) return null;
             const s = viewport.scale;
-            const off = 0.5 * pxPerMetre;
-            const tick = 0.1 * pxPerMetre;
+            const off = PLAN_DIMENSION_OFFSET_M * pxPerMetre;
+            const tick = PLAN_DIMENSION_TICK_M * pxPerMetre;
             const x0 = bu.minX * pxPerMetre;
             const x1 = bu.maxX * pxPerMetre;
             const y0 = bu.minY * pxPerMetre;
@@ -5172,9 +5136,9 @@ export function RoomCanvas({
             const labelW = 140 / s;
             return (
               <Group name="plan-dimensions" listening={false}>
-                <Line points={[x0, y0 - off, x1, y0 - off]} stroke={DIM_LINE} strokeWidth={1 / s} />
-                <Line points={[x0, y0 - off - tick, x0, y0 - off + tick]} stroke={DIM_LINE} strokeWidth={1 / s} />
-                <Line points={[x1, y0 - off - tick, x1, y0 - off + tick]} stroke={DIM_LINE} strokeWidth={1 / s} />
+                <Line points={[x0, y0 - off, x1, y0 - off]} stroke={palette.boundary} strokeWidth={1 / s} />
+                <Line points={[x0, y0 - off - tick, x0, y0 - off + tick]} stroke={palette.boundary} strokeWidth={1 / s} />
+                <Line points={[x1, y0 - off - tick, x1, y0 - off + tick]} stroke={palette.boundary} strokeWidth={1 / s} />
                 <Text
                   x={(x0 + x1) / 2 - labelW / 2}
                   y={y0 - off + 3 / s}
@@ -5183,11 +5147,11 @@ export function RoomCanvas({
                   text={formatLengthForUnit(wM, snapStep)}
                   fontSize={font}
                   fontFamily="Inter, sans-serif"
-                  fill={DIM_LINE}
+                  fill={palette.ink}
                 />
-                <Line points={[x0 - off, y0, x0 - off, y1]} stroke={DIM_LINE} strokeWidth={1 / s} />
-                <Line points={[x0 - off - tick, y0, x0 - off + tick, y0]} stroke={DIM_LINE} strokeWidth={1 / s} />
-                <Line points={[x0 - off - tick, y1, x0 - off + tick, y1]} stroke={DIM_LINE} strokeWidth={1 / s} />
+                <Line points={[x0 - off, y0, x0 - off, y1]} stroke={palette.boundary} strokeWidth={1 / s} />
+                <Line points={[x0 - off - tick, y0, x0 - off + tick, y0]} stroke={palette.boundary} strokeWidth={1 / s} />
+                <Line points={[x0 - off - tick, y1, x0 - off + tick, y1]} stroke={palette.boundary} strokeWidth={1 / s} />
                 <Text
                   x={x0 - off + 3 / s}
                   y={(y0 + y1) / 2 + labelW / 2}
@@ -5197,7 +5161,7 @@ export function RoomCanvas({
                   text={formatLengthForUnit(hM, snapStep)}
                   fontSize={font}
                   fontFamily="Inter, sans-serif"
-                  fill={DIM_LINE}
+                  fill={palette.ink}
                 />
               </Group>
             );
@@ -5557,7 +5521,7 @@ export function RoomCanvas({
           closed={removeHover.kind==='item'||removeHover.kind==='floor'}
           fill={removeHover.kind==='item'||removeHover.kind==='floor'?'rgba(208,100,65,0.22)':undefined}
           stroke="#c66441" strokeWidth={4/viewport.scale} dash={[8/viewport.scale,5/viewport.scale]} /></Layer>}
-        {visible.landscape && siteProjection?.annotation({ pxPerMetre, viewport, size: stageSize, container: containerRef.current, Layer, Rect, Line, Text, palette: buildPalette })}
+        {visible.landscape && siteProjection?.annotation({ pxPerMetre, viewport, size: stageSize, container: containerRef.current, Layer, Rect, Line, Text, palette: { ground: palette.background, ink: palette.ink } })}
       </Stage>}
       {viewMode === 'plan' && demoPageReady && <TradeOverlayHost view="plan" viewport={viewport} pxPerMetre={pxPerMetre} size={stageSize} levelId={activeLevelId} />} {/* @studio-hook */}
       {viewMode !== '3d' && <OpeningSelectionEditor />}
@@ -5625,8 +5589,6 @@ export function RoomCanvas({
         </div>
       )}
 
-      <WallDrawHUD enabled={visible.structure && parts.walls && wallDrawEnabled && !drawMode} />
-
       {/* Sims feature-finish (flagship F1/M6) — on-canvas floating cluster
           for the selected object. Replaces the old mobile slide-up
           DetailsPanel modal as the manipulation surface so rotation (and
@@ -5657,91 +5619,10 @@ export function RoomCanvas({
         );
       })()}
 
-      {/* Blank canvas (Vic 2026-09-08: "don't give the option at the
-          beginning to select draw or the sample room, just straight to
-          draw"). The centred card that asked "Draw walls" or "Quick 5 x 4 m
-          room" is GONE: App arms the wall pen itself on a blank plan, so the
-          customer's first click lands a wall point instead of choosing from a
-          modal. The pen's own HUD carries the instruction, and the 5 x 4 m
-          shortcut lives there while the run is empty. What stays here is a
-          quiet, non-blocking prompt for the case the pen is NOT armed (the
-          customer stood it down on an empty plan) so the canvas is never
-          mute. */}
-      {!measuredTool.target && !drawMode && !wallDrawEnabled && !pendingProductId && !hasRoom && !garden && (
-        <div
-          className="pointer-events-none absolute inset-0 flex items-center justify-center px-4"
-          data-testid="start-room-prompt"
-        >
-          <button
-            type="button"
-            data-testid="start-draw-room"
-            onClick={() => onRequestDraw?.()}
-            className="pointer-events-auto flex flex-col items-center gap-1 rounded-2xl px-6 py-4 text-center shadow-sm"
-            style={{
-              background: 'rgba(253,251,246,0.9)',
-              border: '1px solid rgba(42,41,38,0.16)',
-              color: '#2A2926',
-            }}
-          >
-            <span aria-hidden style={{ fontSize: 22, lineHeight: 1, color: '#3D8F79' }}>
-              ▱
-            </span>
-            <span className="text-sm font-semibold">Draw your walls</span>
-            <span className="text-[11px] leading-snug" style={{ color: '#5B5852' }}>
-              Click here, then click each corner of your room.
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* Designer polish (2026-05-29) — empty-room placement tip. Shows once a
-          room EXISTS but holds no products yet (and no draw/wall tool is
-          active). Auto-hides the moment the first item lands. Brand register:
-          navy ink + gold accent + cream card. Pointer-events off so it never
-          blocks a tap-to-place on the floor beneath it. */}
-      {/* Floor tool (2026-08-30): hidden while the tool is on — the card
-          used to sit centred over the very tile the customer had just laid. */}
-      {/* …and hidden once ANY floor is laid: a floored room is not empty
-          (check R3 — the card re-centred over freshly laid tiles). */}
-      {!measuredTool.target && !selectedOpeningId && !isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) && !drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 && !garden && !propertyForPaint.services?.runs.length && !propertyForPaint.services?.fixtures.length && !propertyForPaint.foundation?.enabled &&
-        !drawnRooms.some((r) => (r.floorTiles && r.floorTiles.length > 0) || r.floorFinish || r.wallPaint?.length || r.wallCladding?.length) && (
-        <div
-          className="pointer-events-none absolute inset-0 flex items-center justify-center"
-          data-testid="empty-room-hint"
-        >
-          <div
-            className="flex max-w-xs flex-col items-center gap-1 rounded-xl px-5 py-4 text-center shadow-sm"
-            style={{
-              background: 'rgba(253,251,246,0.82)',
-              border: '1px solid rgba(42,41,38,0.16)',
-              color: '#2A2926',
-            }}
-          >
-            <span
-              aria-hidden
-              style={{ fontSize: 22, lineHeight: 1, color: '#3D8F79' }}
-            >
-              ✦
-            </span>
-            <p className="text-sm font-semibold" style={{ color: '#2A2926' }}>
-              Your room is empty
-            </p>
-            <p className="text-[11px] leading-snug" style={{ color: '#5B5852' }}>
-              Drag a product onto the floor — or tap a catalog item, then tap
-              the room — to place your first piece. Items sit flush to walls,
-              tuck into corners and snap to the {SNAP_UNIT_LABEL[precision]} grid.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* M4 (Customer-UI fix 2026-05-31) — the persistent "Tip:" banner that
-          sat over the bottom-left of the play area was removed from normal
-          use; the centred empty-room hint already coaches first placement.
-          Toolbar pass (2026-08-29): the draw-mode tip card that replaced it
-          bottom-left is gone too — it duplicated the ONE instruction line
-          the wall-pen HUD carries (and the CoachMark's first step). */}
     </div>
+    {viewMode === 'plan' && !drawMode && !wallDrawEnabled && !measuredTool.target && (pendingProductId || tool === 'hand') && (
+      <div className="object-placement-dock"><ObjectPlacementControls showPlacementHint /></div>
+    )}
     </div>
   );
 }

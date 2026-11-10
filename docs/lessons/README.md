@@ -6,10 +6,10 @@ Part 2 of the One Live Build game programme (8 Nov 2026, plan `06-Roadmap/_hando
 
 | Surface | When | Where |
 |---|---|---|
-| Tool card | The first time each tool or mode is picked (16 lessons) | Next to the tool, in the free part of the plan; it never covers the tool row, the tool's own bar or card, a docked panel or the bottom bar, and keeps its buttons off the room |
+| Tool card | Open the tip button on first use, or select "Show me" in Lessons | Opens beside the tool. Starting work without opening the tip clears its button. |
 | Folded card | A press on the plan (the press goes to the plan) | A small chip where the card was; one tap opens it again |
 | Lessons list | The `?` button, Lessons tab (Keys is the second tab) | Every lesson ticked when done, "Show me" on each, the first-build quest, the house build guide, tips and sounds switches |
-| First-build quest | Offered on an empty plan; any time from the Lessons list | Seven steps ticked from the real design: a room, a door and a window, a painted wall, a floor, three products, the 3D view, a walk; a small celebration per step |
+| First-build quest | Select “First build” on an empty plan or start it from the Lessons list | Tracks a room, a door and a window, a painted wall, a floor, three products, the 3D view and a walk. |
 | Tooltip | Hover or keyboard focus on a tool button; a long press on a phone | Name, key, one line |
 | Build feedback | Sounds on: place, snap, remove, paint, undo (off until the speaker button switches them on, remembered on the device); a landing ring and a snap pulse | Where the object lands or the corner drops |
 | Loading tip | Each loading screen after the first picture (3D, Walk, City) | Beside the loading panel |

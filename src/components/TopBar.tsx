@@ -2209,7 +2209,7 @@ export function TopBar({
         <CityLaunchButton compact />
           <SiteLaunchButton />
         <button type="button" className="project-hub-launch" title={t('projectHub')} aria-label={t('projectHub')} onClick={() => { setDrawMode(false); setTool('hand'); window.dispatchEvent(new Event('olb:open-project')); }}><Icon name="list" size={17} /><span>{t('projectHub')}</span></button>
-        <LocaleThemeControls />
+        <LocaleThemeControls designer />
         <button type="button" aria-label={t("Open Materials")} aria-pressed={materialsPanelOpen} onClick={() => { setDrawMode(false); setTool('hand'); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }}><Icon name="materials" size={17} /><span>{t("Materials")}</span></button>
         <button type="button" aria-label={t("Undo last action")} disabled={!pastLength && !drawInFlight} onClick={handleUndoClick}><Icon name="undo" size={17} /><span>{t("Undo")}</span></button>
       </div>

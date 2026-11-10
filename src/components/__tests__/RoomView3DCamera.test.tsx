@@ -12,11 +12,15 @@ import type { ThreeStageHandle, ThreeStageProps } from '../three/ThreeStage';
 import { ROOM_LIGHTING_STORAGE_KEY } from '../../hooks/useRoomLighting';
 import { useDisciplineVisibilityStore } from '../../store/disciplineVisibilityStore';
 import { defaultFoundationRebar } from '../../designer/foundation';
+import { AppPreferencesProvider, PREFERENCES_KEY } from '../../i18n/AppPreferences';
+import { CANVAS_THEMES } from '../../designer/canvasTheme';
+import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../../store/buildSkinStore';
+import * as scenePainter from '../../designer/roomView3d';
 
 const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null, solids: undefined as ThreeStageProps['solids'] | undefined, projection: undefined as ThreeStageProps['projection'], presentation: undefined as ThreeStageProps['presentation'], hour: undefined as ThreeStageProps['hour'], mounts: 0, ready: undefined as ThreeStageProps['onReady'] }));
 vi.mock('../three/ThreeStage', async () => {
   const React = await import('react');
-  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, solids, projection, presentation, hour, onReady }, ref) {
+  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, solids, projection, presentation, hour, onReady, onFailed, canvasBackground }, ref) {
     renderer.ready = onReady;
     renderer.camera = camera;
     renderer.solids = solids;
@@ -28,7 +32,7 @@ vi.mock('../three/ThreeStage', async () => {
       floorPoint: (x, y) => ({ x: x / 100, y: y / 100 }), hitItem: () => null, hitTest: () => null,
       projectPoint: (x, y) => ({ x: x * 100, y: y * 100 }),
     }));
-    return <div data-testid="camera-stage" />;
+    return <button data-testid="camera-stage" data-canvas-background={canvasBackground} onClick={onFailed} />;
   }) };
 });
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -72,6 +76,37 @@ function expectSameFraming(camera: OrbitCamera, initialHeight = 640) {
 }
 
 describe('3D camera stays where the customer leaves it', () => {
+  it('applies a theme change to both renderers without refitting and keeps an explicit painter backdrop', async () => {
+    localStorage.removeItem(PREFERENCES_KEY);
+    await act(async () => root.render(<AppPreferencesProvider><RoomView3D variant="overlay" /></AppPreferencesProvider>));
+    const before = zoomIn();
+    const mounts = renderer.mounts;
+    click('.theme-skin-card--ocean');
+    expect(host.querySelector('[data-testid="camera-stage"]')?.getAttribute('data-canvas-background')).toBe(CANVAS_THEMES.ocean.background);
+    expect(renderer.camera).toEqual(before);
+    expect(renderer.mounts).toBe(mounts);
+
+    const paint = vi.spyOn(scenePainter, 'drawScene').mockImplementation(() => {});
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ setTransform: vi.fn() } as unknown as CanvasRenderingContext2D);
+    click('[data-testid="camera-stage"]');
+    expect(paint.mock.lastCall?.[3]).toBe(CANVAS_THEMES.ocean.background);
+    click('.theme-skin-card--slate');
+    expect(paint.mock.lastCall?.[3]).toBe(CANVAS_THEMES.slate.background);
+    act(() => useBuildSkinStore.getState().setSkin('gallery'));
+    expect(paint.mock.lastCall?.[3]).toBe(BUILD_SKIN_PALETTES.gallery.sky);
+    click('.theme-skin-card--ivory');
+    expect(paint.mock.lastCall?.[3]).toBe(BUILD_SKIN_PALETTES.gallery.sky);
+    act(() => useBuildSkinStore.getState().setSkin('natural'));
+    expect(paint.mock.lastCall?.[3]).toBe(CANVAS_THEMES.ivory.background);
+    localStorage.removeItem(PREFERENCES_KEY);
+  });
+
+  it('leaves an empty build canvas clear while Draw room remains available in Build', () => {
+    act(() => usePropertyStore.getState().resetToDefault());
+    expect(host.querySelector('.house-empty')).toBeNull();
+    click('[data-testid="house-draw-room"]');
+    expect(host.querySelector('[data-testid="house-draw-room"]')?.getAttribute('aria-pressed')).toBe('true');
+  });
   it('all role and part filters preserve the camera without remounting or editing the project', () => {
     const before = zoomIn(), mounts = renderer.mounts, property = structuredClone(usePropertyStore.getState().property);
     for (const preset of ['pipes', 'plumbing-electrical-walls', 'architect', 'engineer', 'client'] as const) {

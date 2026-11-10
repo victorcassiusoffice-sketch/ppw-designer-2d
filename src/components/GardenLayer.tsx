@@ -7,7 +7,6 @@ import { gardenGroundCutout } from '../designer/outdoorTakeoff';
 import { findOutdoorPavingProduct } from '../data/outdoorPaving';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
 import { usePropertyStore } from '../store/propertyStore';
-import { BUILD_SKIN_PALETTES, useBuildSkinStore } from '../store/buildSkinStore';
 
 function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
   surface: GardenSurface; pxPerMetre: number; scale: number; interactive: boolean; selected: boolean;
@@ -72,9 +71,8 @@ function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
 }
 
 /** Select-mode editing leaves the existing wall, floor and product hit paths alone. */
-export function GardenLayer({ garden, pxPerMetre, scale, interactive = false }: { garden?: Garden; pxPerMetre: number; scale: number; interactive?: boolean }) {
+export function GardenLayer({ garden, pxPerMetre, scale, ink, interactive = false }: { garden?: Garden; pxPerMetre: number; scale: number; ink: string; interactive?: boolean }) {
   const selectedId = useGardenEditorStore((s) => s.selectedId);
-  const skin = useBuildSkinStore(s => s.skin);
   if (!garden) return null;
   return <Group name="garden" listening={interactive}>
     {garden.surfaces.map((surface) => <SurfaceShape key={surface.id} surface={surface} pxPerMetre={pxPerMetre} scale={scale} interactive={interactive} selected={surface.id === selectedId} />)}
@@ -94,7 +92,7 @@ export function GardenLayer({ garden, pxPerMetre, scale, interactive = false }: 
         hitStrokeWidth={20 / scale} dash={fence.material === 'hedge' ? undefined : [7 / scale, 3 / scale]} lineCap="square" />
       {fenceLengthM(fence) * pxPerMetre * scale > 100 && <Text listening={false}
         x={(fence.a.x + fence.b.x) / 2 * pxPerMetre} y={(fence.a.y + fence.b.y) / 2 * pxPerMetre - 15 / scale}
-        text={`${fenceLengthM(fence).toFixed(1)} m`} fontFamily="Inter, sans-serif" fontSize={11 / scale} fill={BUILD_SKIN_PALETTES[skin].ink} />}
+        text={`${fenceLengthM(fence).toFixed(1)} m`} fontFamily="Inter, sans-serif" fontSize={11 / scale} fill={ink} />}
     </Group>)}
   </Group>;
 }

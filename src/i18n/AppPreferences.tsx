@@ -19,6 +19,7 @@ import {
 } from './messages';
 import './preferences.css';
 import '../styles/tactileSkins.css';
+import { canvasThemeFor } from '../designer/canvasTheme';
 
 
 export const UI_THEMES = ['ivory', 'ocean', 'slate'] as const;
@@ -104,6 +105,9 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = preferences.locale;
     document.documentElement.dataset.uiTheme = preferences.theme;
+    const canvas = canvasThemeFor(preferences.theme);
+    document.documentElement.style.setProperty('--designer-canvas', canvas.background);
+    document.documentElement.style.setProperty('--designer-canvas-ink', canvas.ink);
   }, [preferences]);
   useEffect(() => {
     const sync = (event: StorageEvent) => {

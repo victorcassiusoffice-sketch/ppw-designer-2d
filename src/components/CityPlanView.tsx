@@ -96,6 +96,7 @@ export function CityPlanView({
       data-testid="city-plan"
       role="img"
       aria-label="Measured city site plan"
+      aria-description="Drag to pan, pinch or scroll to zoom. Select a site item for details."
       viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
       onPointerDown={(e) => {
         svg.current?.setPointerCapture(e.pointerId);
@@ -186,7 +187,7 @@ export function CityPlanView({
           />
         </pattern>
       </defs>
-      <rect x={view.x} y={view.y} width={view.w} height={view.h} fill="#d4ded0" />
+      <rect x={view.x} y={view.y} width={view.w} height={view.h} fill="var(--designer-canvas, #94aab5)" />
       <rect
         x={model.site.originM.x}
         y={model.site.originM.y}

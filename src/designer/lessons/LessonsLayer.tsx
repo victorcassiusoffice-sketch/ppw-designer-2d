@@ -160,7 +160,8 @@ function usePressThrough(): void {
       if (!isStageTarget(event.target)) return;
       root.setAttribute('data-lessons-pressing', '');
       const s = useLessonsStore.getState();
-      if (s.active && !s.active.tucked) s.tuck();
+      if (s.active?.tucked && !s.active.forced) s.gotIt();
+      else if (s.active && !s.active.tucked) s.tuck();
       if (s.quest.status === 'active' && !s.quest.minimized) s.setQuestMinimized(true);
       if (s.quest.status === 'idle' && !s.offerTucked) s.setOfferTucked(true);
     };
@@ -225,9 +226,9 @@ function useAnnounceCards(): void {
     ];
     if (lesson.keys) parts.push(`${lessonText(locale, 'lesson.ui.key')}: ${lessonText(locale, lesson.keys)}`);
     useLessonsStore.getState().announce(parts.join('. '));
-    // Re-announce only when a different card opens.
+    // Read the instructions when the user opens the card.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active?.id, active?.nonce, locale]);
+  }, [active?.id, active?.nonce, active?.tucked, locale]);
 }
 
 function LiveRegion(): JSX.Element {

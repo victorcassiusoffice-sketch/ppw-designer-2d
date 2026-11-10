@@ -153,8 +153,17 @@ export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene:
       const autoClear = renderer.autoClear;
       const clear = renderer.getClearColor(new THREE.Color());
       const alpha = renderer.getClearAlpha();
-      try { composer.render(); }
-      finally {
+      const background = scene.background;
+      try {
+        // OutputPass tone-maps the entire beauty image. Leave the solid
+        // workspace clear transparent so its CSS sRGB colour shows through.
+        if (background instanceof THREE.Color) {
+          scene.background = null;
+          renderer.setClearColor(0x000000, 0);
+        }
+        composer.render();
+      } finally {
+        scene.background = background;
         scene.overrideMaterial = override;
         renderer.autoClear = autoClear;
         renderer.setClearColor(clear, alpha);

@@ -82,6 +82,7 @@ for (const device of ['desktop', 'phone']) {
       await tapOrClick(page.getByRole('button', { name: '3D House', exact: true }).first(), phone);
       await page.locator('[data-first-picture-ms]').first().waitFor({ timeout: 90000 });
     }
+    await tapOrClick(page.locator(`[data-lesson-chip="${card.id}"]`), phone);
     await page.locator(`[data-lesson-card="${card.id}"]`).waitFor({ timeout: 20000 });
     await sleep(card.view3d ? 1500 : 900);
     await shot(page, `${device}-card-${card.id}`, device);
@@ -91,6 +92,7 @@ for (const device of ['desktop', 'phone']) {
   {
     const { ctx, page, phone } = await context(device);
     await open(page);
+    await tapOrClick(page.locator('[data-lessons-quest="offer-chip"]'), phone);
     await shot(page, `${device}-quest-offer`, device);
     await tapOrClick(page.locator('[data-lessons-quest="offer"]').getByRole('button', { name: 'Start', exact: true }), phone);
     await shot(page, `${device}-quest-list`, device);
@@ -139,6 +141,7 @@ for (const [cat, testid, id] of [
   await page.getByTestId('start-quick-rectangle').first().tap();
   await page.getByRole('button', { name: cat, exact: true }).first().tap();
   await page.getByTestId(testid).first().tap();
+  await page.locator(`[data-lesson-chip="${id}"]`).tap();
   await page.locator(`[data-lesson-card="${id}"]`).waitFor({ timeout: 20000 });
   await shot(page, `small-card-${id}`, 'small');
   await ctx.close();

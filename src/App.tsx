@@ -442,7 +442,6 @@ export default function App() {
                   onDrawComplete={() => setDrawMode(false)}
                   pendingProductId={pendingProductId}
                   setPendingProductId={setPendingProductId}
-                  onRequestDraw={() => setDrawMode(true)}
                 />
               </div>
             </div>

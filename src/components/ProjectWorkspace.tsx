@@ -287,7 +287,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
           </div>
         </div>
         <button type="button" onClick={() => window.dispatchEvent(new Event('olb:open-shared-project'))}>Shared project ↗</button>
-        <LocaleThemeControls compact />
+        <LocaleThemeControls designer compact />
         <button ref={closeRef} type="button" onClick={onClose}>
           <StudioIcon name="room" size={17} />
           {c('back')}

@@ -1,13 +1,16 @@
 import { useEffect, useId, useRef } from 'react';
 import { useAppPreferences, UI_THEMES, type UiTheme } from '../i18n/AppPreferences';
 import { LOCALES, LOCALE_NAMES, type AppLocale } from '../i18n/messages';
+import { canvasThemeFor } from '../designer/canvasTheme';
 import { BUILD_SKINS, useBuildSkinStore, type BuildSkin } from '../store/buildSkinStore';
 
 export function LocaleThemeControls({
   compact = true,
+  designer = false,
   className = '',
 }: {
   compact?: boolean;
+  designer?: boolean;
   className?: string;
 }) {
   const { locale, setLocale, theme, setTheme, t } = useAppPreferences();
@@ -34,9 +37,9 @@ export function LocaleThemeControls({
     };
   }, []);
   const themeNames = {
-    ivory: t('Ivory & sage'),
-    ocean: t('Midnight & ocean'),
-    slate: t('Slate & sand'),
+    ivory: t(designer ? 'Glacier blue' : 'Ivory & sage'),
+    ocean: t(designer ? 'Deep ocean' : 'Midnight & ocean'),
+    slate: t(designer ? 'Slate' : 'Slate & sand'),
   };
   return (
     <details ref={host} className={'locale-theme-controls ' + className}>
@@ -101,13 +104,13 @@ export function LocaleThemeControls({
         </select>
         <div className="theme-skin-grid" role="group" aria-label={t('Tool skin')}>
           {UI_THEMES.map(value => <button type="button" key={value} className={`theme-skin-card theme-skin-card--${value}`} aria-pressed={theme === value} onClick={() => setTheme(value)}>
-            <span className="theme-skin-card__sample" aria-hidden="true"><i /><i /><i /></span>
+            <span className="theme-skin-card__sample" aria-hidden="true" style={designer ? { background: canvasThemeFor(value).background } : undefined}><i /><i /><i /></span>
             <span>{themeNames[value]}</span>
           </button>)}
         </div>
         <label htmlFor={id + '-build-skin'}>{t('Build backdrop')}</label>
         <select id={id + '-build-skin'} value={buildSkin} onChange={event => setBuildSkin(event.target.value as BuildSkin)}>
-          {BUILD_SKINS.map(value => <option key={value} value={value}>{t(value === 'natural' ? 'Warm studio' : value === 'gallery' ? 'Sculpted gallery' : 'Midnight blueprint')}</option>)}
+          {BUILD_SKINS.map(value => <option key={value} value={value}>{t(value === 'natural' ? (designer ? 'Match colour theme' : 'Warm studio') : value === 'gallery' ? 'Sculpted gallery' : 'Midnight blueprint')}</option>)}
         </select>
         <small>{t('Changes the workspace only. Product finishes and measurements stay true.')}</small>
         <small>{t('Saved on this device')}</small>

@@ -11,7 +11,7 @@ import { objectAccessWarnings } from '../designer/objectAccessWarnings';
 import './objectPlacement.css';
 
 /** Flush context row. Hidden until an object is selected or carried. */
-export function ObjectPlacementControls(): JSX.Element | null {
+export function ObjectPlacementControls({ showPlacementHint = false }: { showPlacementHint?: boolean } = {}): JSX.Element | null {
   const armed = usePlacementIntentStore(s => s.armedProductId);
   const rotation = usePlacementIntentStore(s => s.armedRotation);
   const selectedId = useDesignStore(s => s.selectedInstanceId);
@@ -26,6 +26,9 @@ export function ObjectPlacementControls(): JSX.Element | null {
   const height = item && room ? placedItemElevationCm(item, product, room.placedItems, getProductById, heightM) : 0;
   const maxHeight = Math.max(0, heightM * 100 - product.dimensions_cm.height);
   return <div className="object-placement-controls" data-testid="object-placement-controls" aria-label="Object placement">
+    {armed && showPlacementHint && <span role="status" className="object-placement-hint">
+      {product.placement === 'wall' ? 'Tap a wall' : 'Tap the plan'} to place {product.name}
+    </span>}
     <div role="group" aria-label="Object grid">
       {([['grid', '50 cm'], ['half', '25 cm'], ['free', 'Free']] as [ObjectPlacementMode, string][]).map(([value, label]) =>
         <button type="button" key={value} aria-pressed={mode === value} onClick={() => useObjectPlacementStore.getState().setMode(value)}>{label}</button>)}

@@ -154,9 +154,6 @@
 .designer-app .house-scene-caption { background: var(--studio-paper); color: #65715d !important; }
 .designer-app :is(.house-wall-build-strip,.house-drawing-help) { color: #31583e; background: #e1eddb; border-color: #9dbb97; }
 .designer-app [data-testid="wallpaint-3d-canvas"] { background: transparent !important; }
-.designer-app .house-empty { color: #365642; }
-.designer-app .house-empty p { color: #60735e; }
-.designer-app .house-empty button { background: #c4ddc6; color: #244535; border-color: #9ebc9d; border-radius: 16px; }
 .designer-app .house-workspace [data-layout="sidebar"] :is(button,input,select),
 .designer-app :is(.house-tool-panel,.house-tool-panel-host)[data-presentation="3d"] :is(button:not([style*="background"]),select,input:not([type="color"]):not([type="checkbox"])) {
   color: #304c39 !important; background: #ebece3 !important; border-color: #c4cfbc !important; border-radius: 12px;
