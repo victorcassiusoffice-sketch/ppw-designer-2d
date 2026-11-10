@@ -51,7 +51,12 @@ export async function selectedAssets(html, route) {
   return {scripts,preloads,styles,stylePreloads, location,history,navigations,listeners};
 }
 
-async function audit(baseDir, nextDir, out) {
+async function audit(baseDir, nextDir, out, gameTakeover = false) {
+  // With public UI changes, content hashes change. Keep the same entry points
+  // and private-route isolation and enforce the game-world early download cap.
+  const routeAssets = files => gameTakeover
+    ? files.map(file => file.replace(/-[A-Za-z0-9_-]{8}(?=\.(?:js|css)$)/, ''))
+    : files;
   await init;
   const failures=[];
   const check=(ok,msg)=>{if(!ok)failures.push(msg);};
@@ -85,7 +90,11 @@ async function audit(baseDir, nextDir, out) {
     return { roots,perEntry,early,total:group(early),leaks };
   };
   const baseline=await analyze(baseDir),candidate=await analyze(nextDir);
-  check(JSON.stringify(baseline.early)===JSON.stringify(candidate.early),'Public early JS/CSS bytes or names differ');
+  if (gameTakeover) {
+    check(candidate.total.gzip <= baseline.total.gzip + 1024, 'Public early JS/CSS exceeds the 1,024-byte growth limit');
+  } else {
+    check(JSON.stringify(baseline.early)===JSON.stringify(candidate.early),'Public early JS/CSS bytes or names differ');
+  }
   check(!candidate.leaks.length,'The public application graph reaches studio code');
   const routeRows=[], htmlBytes={};
   for(const shell of ['index.html','olb.html']){
@@ -111,8 +120,8 @@ async function audit(baseDir, nextDir, out) {
       if(mode==='studio'||mode==='plumbing')check(startup.every(f=>f.startsWith('assets/'+mode+'/')),shell+' wrong isolated startup on '+route);
       else {
         const prior=await selectedAssets(before,route);
-        check(JSON.stringify(prior.scripts)===JSON.stringify(boot.scripts),shell+' different public startup JS on '+route);
-        check(JSON.stringify(prior.styles)===JSON.stringify(boot.styles),shell+' different public CSS on '+route);
+        check(JSON.stringify(routeAssets(prior.scripts))===JSON.stringify(routeAssets(boot.scripts)),shell+' different public startup JS on '+route);
+        check(JSON.stringify(routeAssets(prior.styles))===JSON.stringify(routeAssets(boot.styles)),shell+' different public CSS on '+route);
         check(startup.every(f=>!f.startsWith('assets/studio/')&&!f.startsWith('assets/plumbing/')),shell+' wrong public graph on '+route);
       }
       routeRows.push({shell,route,mode,scripts:boot.scripts,...group(manifest(nextDir,[...new Set(startup)]))});
@@ -135,5 +144,5 @@ async function audit(baseDir, nextDir, out) {
 if (process.argv[1] && import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href) {
   const [base,next='dist',out='docs/link/evidence/entry.json']=process.argv.slice(2);
   if(!base)throw new Error('Pass the clean comparison build directory explicitly (use the same commit stamp and build settings).');
-  await audit(path.resolve(base),path.resolve(next),out);
+  await audit(path.resolve(base),path.resolve(next),out,process.argv.includes('--game-world-s0'));
 }
