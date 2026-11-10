@@ -4,6 +4,7 @@ import { AppPreferencesProvider } from './i18n/AppPreferences';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { bootstrapFx } from './store/currencyStore';
 import RouteFallback from './components/RouteFallback';
+import StudioPageGuard from './components/StudioPageGuard';
 import { loadThreeStage } from './components/threeStageLoader';
 import { demoRoute } from './demo/demoRoute';
 import { currentBrand, isShopHost } from './brand/brand';
@@ -134,6 +135,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <AppPreferencesProvider>
     <BrowserRouter>
       <Suspense fallback={<RouteFallback />}>
+        {/* Studio pages open only in a tab the server let through the code door. */}
+        <StudioPageGuard>
         <Routes>
         {/* WD rework 2026-07-26 (Vic directive 5): the SHOP is the front door.
             "Browse and buy" is the primary journey; the Sims-style room
@@ -283,6 +286,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
         <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </StudioPageGuard>
       </Suspense>
     </BrowserRouter>
     </AppPreferencesProvider>

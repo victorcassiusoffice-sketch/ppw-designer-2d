@@ -1,10 +1,11 @@
 import { accessPage } from './accessPage';
 import { brandFor, type Brand } from './brand';
+import { opensWithoutStudioCode } from './studioPaths';
+import { ACCESS_COOKIE, readStudioToken, sha256Hex, studioNamespace, studioSessionKey } from './studioSession';
 
+export { ACCESS_COOKIE, opensWithoutStudioCode };
 const CODE_HASH = '35a99a53ff1b46f86a14a375742dfd7fefff96a8a2e9c4bcf0fe3546c36c9520';
-export const ACCESS_COOKIE = '__Host-ppw-studio';
 const SESSION_SECONDS = 12 * 60 * 60;
-const encoder = new TextEncoder();
 type Command = (args: (string | number)[]) => Promise<unknown>;
 class AccessStorageError extends Error {
   constructor(readonly reason: 'configuration' | 'connection' | 'credentials' | 'command' | 'session', readonly upstreamStatus?: number, readonly detail?: string) { super(reason); }
@@ -24,9 +25,7 @@ export type AccessDependencies = {
   signedIn?: () => Promise<boolean>;
 };
 
-export async function digest(value: string): Promise<string> {
-  return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(value))), (v) => v.toString(16).padStart(2, '0')).join('');
-}
+export const digest = sha256Hex;
 function randomHex(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)), (v) => v.toString(16).padStart(2, '0')).join('');
 }
@@ -80,27 +79,6 @@ function page(destination: string, message = '', status = 200, extra: Record<str
  * No localStorage unlock flag, public signing key or client-side code verifier.
  * A new session is deliberately scoped to one hostname, not every preview.
  */
-/** Public pitches, the demo and the embed. /studio and the designer shell stay gated. */
-export function opensWithoutStudioCode(pathname: string): boolean {
-  if (pathname === '/favicon.ico' || pathname === '/ppw-favicon.svg' || pathname === '/robots.txt') return true;
-  // Logos, icons, the social card and the self-hosted fonts: the passcode page and
-  // the open pages (/demo, /embed) draw them before anyone has entered the code.
-  if (pathname.startsWith('/brand/')) return true;
-  if (pathname.startsWith('/fonts/')) return true;
-  if (pathname === '/demo' || pathname.startsWith('/demo/')) return true;
-  if (pathname === '/embed' || pathname.startsWith('/embed/')) return true;
-  if (pathname.startsWith('/pitch/')) return true;
-  if (pathname.startsWith('/assets/')) return true;
-  if (pathname.startsWith('/models/')) return true;
-  if (pathname.startsWith('/products/')) return true;
-  if (pathname.startsWith('/draco/')) return true;
-  if (pathname.startsWith('/showcase/')) return true;
-  // The lesson clips and posters (silent, recorded from the app): the tool
-  // cards show them on /demo and /embed too.
-  if (pathname.startsWith('/lessons/')) return true;
-  return false;
-}
-
 export async function handleAccess(request: Request, deps: AccessDependencies): Promise<Response | null> {
   const url = new URL(request.url);
   const isAccess = url.pathname === '/access';
@@ -112,11 +90,11 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
     if (isAccess) return new Response(null, { status: 303, headers: { Location: destination, 'Cache-Control': 'no-store' } });
     return null;
   }
-  const namespace = `ppw:studio-access:v1:${deps.namespace}:${url.host}`;
-  const cookie = (request.headers.get('cookie') ?? '').split(';').map((v) => v.trim()).find((v) => v.startsWith(`${ACCESS_COOKIE}=`))?.slice(ACCESS_COOKIE.length + 1);
-  if (cookie && /^[a-f0-9]{64}$/.test(cookie)) {
+  const namespace = studioNamespace(deps.namespace, url.host);
+  const cookie = readStudioToken(request.headers.get('cookie'));
+  if (cookie) {
     try {
-      if (await deps.command(['GET', `${namespace}:session:${await digest(cookie)}`]) === 'unlocked') {
+      if (await deps.command(['GET', await studioSessionKey(namespace, cookie)]) === 'unlocked') {
         if (isAccess) return new Response(null, { status: 303, headers: { Location: destination, 'Cache-Control': 'no-store' } });
         return null;
       }
@@ -142,7 +120,7 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
     const expected = deps.codeHash ?? CODE_HASH;
     if (!/^[0-9]{4}$/.test(code) || !fixedEqual(await digest(code), expected)) return show('That code does not match. Please try again.', 401);
     const token = randomHex();
-    const stored = await deps.command(['SET', `${namespace}:session:${await digest(token)}`, 'unlocked', 'EX', SESSION_SECONDS, 'NX']);
+    const stored = await deps.command(['SET', await studioSessionKey(namespace, token), 'unlocked', 'EX', SESSION_SECONDS, 'NX']);
     if (stored !== 'OK') throw new AccessStorageError('session');
     return new Response(null, { status: 303, headers: {
       Location: destination,

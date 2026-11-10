@@ -3,6 +3,8 @@
  * - onelivebuild.com (+ www, shopbuild): One Live Build.
  * - Vercel previews: One Live Build by default, `?brand=ppw` for the old look.
  * - Everything else (designer.ppwellness.co, the vercel.app production alias): PPW. */
+import { isFileFolderPath } from './studioPaths';
+
 export type Brand = 'olb' | 'ppw';
 
 export const OLB_HOSTS: ReadonlySet<string> = new Set(['onelivebuild.com', 'www.onelivebuild.com', 'shopbuild.onelivebuild.com']);
@@ -13,8 +15,10 @@ export function brandFor(url: URL, environment: string): Brand {
   return 'ppw';
 }
 
-/** A page the single-page app answers (no file extension, or /index.html), not a file such as /assets/app.js. */
+/** A page the single-page app answers (no file extension, or /index.html), not a file such as /assets/app.js.
+ * Nothing inside a file-only folder is a page: a missing file there is a 404, not the app. */
 export function isAppShellPath(pathname: string): boolean {
   if (pathname === '/index.html') return true;
+  if (isFileFolderPath(pathname)) return false;
   return !pathname.slice(pathname.lastIndexOf('/') + 1).includes('.');
 }
