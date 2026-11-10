@@ -102,20 +102,6 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
     [change],
   );
   useEffect(() => {
-    const apply = () => void import('../styles/glacierStudio.css');
-    const publicModel = /^\/(demo|embed\/designer)\/?$/.test(location.pathname)
-      && new URLSearchParams(location.search).get('view') !== '2d';
-    if (!publicModel || document.querySelector('[data-first-picture-ms]')) { apply(); return; }
-    // Give the WebGL scene the critical path. Skin the perimeter as soon as its canvas is painted.
-    const observer = new MutationObserver(() => {
-      if (document.querySelector('[data-first-picture-ms]')) finish();
-    });
-    function finish() { observer.disconnect(); window.clearTimeout(timeout); apply(); }
-    const timeout = window.setTimeout(finish, 3500);
-    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-first-picture-ms']});
-    return () => { observer.disconnect(); window.clearTimeout(timeout); };
-  }, []);
-  useEffect(() => {
     document.documentElement.lang = preferences.locale;
     document.documentElement.dataset.uiTheme = preferences.theme;
   }, [preferences]);

@@ -18,6 +18,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 1280,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -38,6 +39,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 1280,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -58,6 +60,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 1280,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -78,6 +81,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 1280,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -96,6 +100,8 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 1280,
+      "designerSkin": null,
+      "contrastFailures": [],
       "pass": true
     },
     {
@@ -116,6 +122,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 390,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -136,6 +143,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 390,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -156,6 +164,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 390,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -176,6 +185,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 390,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -194,6 +204,8 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 390,
+      "designerSkin": null,
+      "contrastFailures": [],
       "pass": true
     },
     {
@@ -214,6 +226,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 313,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -234,6 +247,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 313,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -254,6 +268,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 313,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -274,6 +289,7 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 313,
+      "designerSkin": "glacier",
       "pass": true
     },
     {
@@ -292,6 +308,8 @@
       "privateAssets": [],
       "privateUi": false,
       "viewport": 313,
+      "designerSkin": null,
+      "contrastFailures": [],
       "pass": true
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "started": "2026-11-10T14:23:20.175Z",
+  "started": "2026-11-10T15:23:43.430Z",
   "base": "http://127.0.0.1:5312",
   "candidate": "http://127.0.0.1:5311",
   "method": "Three fixed pairs per width, new Chromium process and profile on every navigation; no artificial CPU/network throttle. AB/BA orders alternate and flip between widths. Empty app APIs / offline FX equally on both. Global World timing lock. First canvas render mark and external GL-ready + loader-hidden wall time independently reported. No warmup, no sample exclusions.",
@@ -10,21 +10,35 @@
       "rows": [
         {
           "target": "base",
-          "at": "2026-11-10T14:23:20.268Z",
+          "at": "2026-11-10T15:23:43.613Z",
           "status": 200,
-          "wallMs": 1852,
-          "canvasMs": 1553,
-          "loaderMs": 50,
+          "wallMs": 2520,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-latin.woff2",
+              "bytes": 216980
+            }
+          ],
+          "firstPictureTransferBytes": 1171384,
+          "canvasMs": 2437,
+          "loaderMs": 63,
           "privateAssets": 0,
           "errors": []
         },
         {
           "target": "candidate",
-          "at": "2026-11-10T14:23:22.479Z",
+          "at": "2026-11-10T15:23:46.936Z",
           "status": 200,
-          "wallMs": 2314,
-          "canvasMs": 1972,
-          "loaderMs": 48,
+          "wallMs": 2815,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-core.woff2",
+              "bytes": 126484
+            }
+          ],
+          "firstPictureTransferBytes": 1057838,
+          "canvasMs": 2717,
+          "loaderMs": 74,
           "privateAssets": 0,
           "errors": []
         }
@@ -36,21 +50,35 @@
       "rows": [
         {
           "target": "candidate",
-          "at": "2026-11-10T14:23:25.143Z",
+          "at": "2026-11-10T15:23:50.400Z",
           "status": 200,
-          "wallMs": 1866,
-          "canvasMs": 1837,
-          "loaderMs": 56,
+          "wallMs": 2261,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-core.woff2",
+              "bytes": 126484
+            }
+          ],
+          "firstPictureTransferBytes": 1057838,
+          "canvasMs": 2159,
+          "loaderMs": 65,
           "privateAssets": 0,
           "errors": []
         },
         {
           "target": "base",
-          "at": "2026-11-10T14:23:27.350Z",
+          "at": "2026-11-10T15:23:53.312Z",
           "status": 200,
-          "wallMs": 1312,
-          "canvasMs": 1287,
-          "loaderMs": 46,
+          "wallMs": 2256,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-latin.woff2",
+              "bytes": 216980
+            }
+          ],
+          "firstPictureTransferBytes": 1171384,
+          "canvasMs": 2175,
+          "loaderMs": 68,
           "privateAssets": 0,
           "errors": []
         }
@@ -62,21 +90,35 @@
       "rows": [
         {
           "target": "candidate",
-          "at": "2026-11-10T14:23:29.027Z",
+          "at": "2026-11-10T15:23:56.211Z",
           "status": 200,
-          "wallMs": 1785,
-          "canvasMs": 1447,
-          "loaderMs": 52,
+          "wallMs": 2746,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-core.woff2",
+              "bytes": 126484
+            }
+          ],
+          "firstPictureTransferBytes": 1057838,
+          "canvasMs": 2662,
+          "loaderMs": 64,
           "privateAssets": 0,
           "errors": []
         },
         {
           "target": "base",
-          "at": "2026-11-10T14:23:31.170Z",
+          "at": "2026-11-10T15:23:59.770Z",
           "status": 200,
-          "wallMs": 2045,
-          "canvasMs": 2005,
-          "loaderMs": 46,
+          "wallMs": 2513,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-latin.woff2",
+              "bytes": 216980
+            }
+          ],
+          "firstPictureTransferBytes": 1171384,
+          "canvasMs": 2436,
+          "loaderMs": 64,
           "privateAssets": 0,
           "errors": []
         }
@@ -88,21 +130,35 @@
       "rows": [
         {
           "target": "base",
-          "at": "2026-11-10T14:23:33.627Z",
+          "at": "2026-11-10T15:24:02.955Z",
           "status": 200,
-          "wallMs": 2074,
-          "canvasMs": 2045,
-          "loaderMs": 50,
+          "wallMs": 2438,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-latin.woff2",
+              "bytes": 216980
+            }
+          ],
+          "firstPictureTransferBytes": 1171384,
+          "canvasMs": 2383,
+          "loaderMs": 63,
           "privateAssets": 0,
           "errors": []
         },
         {
           "target": "candidate",
-          "at": "2026-11-10T14:23:36.077Z",
+          "at": "2026-11-10T15:24:06.422Z",
           "status": 200,
-          "wallMs": 1700,
-          "canvasMs": 1397,
-          "loaderMs": 45,
+          "wallMs": 2427,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-core.woff2",
+              "bytes": 126484
+            }
+          ],
+          "firstPictureTransferBytes": 1057838,
+          "canvasMs": 2359,
+          "loaderMs": 76,
           "privateAssets": 0,
           "errors": []
         }
@@ -114,21 +170,35 @@
       "rows": [
         {
           "target": "base",
-          "at": "2026-11-10T14:23:38.137Z",
+          "at": "2026-11-10T15:24:09.550Z",
           "status": 200,
-          "wallMs": 2006,
-          "canvasMs": 1982,
-          "loaderMs": 55,
+          "wallMs": 2644,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-latin.woff2",
+              "bytes": 216980
+            }
+          ],
+          "firstPictureTransferBytes": 1171384,
+          "canvasMs": 2554,
+          "loaderMs": 68,
           "privateAssets": 0,
           "errors": []
         },
         {
           "target": "candidate",
-          "at": "2026-11-10T14:23:40.536Z",
+          "at": "2026-11-10T15:24:13.095Z",
           "status": 200,
-          "wallMs": 1851,
-          "canvasMs": 1792,
-          "loaderMs": 52,
+          "wallMs": 2789,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-core.woff2",
+              "bytes": 126484
+            }
+          ],
+          "firstPictureTransferBytes": 1057838,
+          "canvasMs": 2700,
+          "loaderMs": 60,
           "privateAssets": 0,
           "errors": []
         }
@@ -140,64 +210,78 @@
       "rows": [
         {
           "target": "candidate",
-          "at": "2026-11-10T14:23:43.158Z",
+          "at": "2026-11-10T15:24:16.808Z",
           "status": 200,
-          "wallMs": 1726,
-          "canvasMs": 1707,
-          "loaderMs": 41,
+          "wallMs": 2354,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-core.woff2",
+              "bytes": 126484
+            }
+          ],
+          "firstPictureTransferBytes": 1057838,
+          "canvasMs": 2284,
+          "loaderMs": 71,
           "privateAssets": 0,
           "errors": []
         },
         {
           "target": "base",
-          "at": "2026-11-10T14:23:45.298Z",
+          "at": "2026-11-10T15:24:19.777Z",
           "status": 200,
-          "wallMs": 1767,
-          "canvasMs": 1457,
-          "loaderMs": 59,
+          "wallMs": 2422,
+          "fonts": [
+            {
+              "path": "/fonts/inter-ui-latin.woff2",
+              "bytes": 216980
+            }
+          ],
+          "firstPictureTransferBytes": 1171384,
+          "canvasMs": 2372,
+          "loaderMs": 60,
           "privateAssets": 0,
           "errors": []
         }
       ]
     }
   ],
-  "ended": "2026-11-10T14:23:47.656Z",
+  "ended": "2026-11-10T15:24:22.968Z",
   "summary": [
     {
       "width": 1280,
-      "baseCanvasMs": 1982,
-      "candidateCanvasMs": 1792,
-      "baseWallMs": 2006,
-      "candidateWallMs": 1851,
-      "baseLoadingMs": 50,
-      "candidateLoadingMs": 52,
+      "baseCanvasMs": 2437,
+      "candidateCanvasMs": 2700,
+      "baseWallMs": 2520,
+      "candidateWallMs": 2789,
+      "baseLoadingMs": 64,
+      "candidateLoadingMs": 64,
       "pairedCanvasDeltaMs": [
-        419,
-        -558,
-        -190
+        280,
+        226,
+        146
       ],
-      "medianPairedCanvasDeltaMs": -190,
-      "canvasNoSlower": true,
-      "wallNoSlower": true,
-      "pass": true
+      "medianPairedCanvasDeltaMs": 226,
+      "canvasNoSlower": false,
+      "wallNoSlower": false,
+      "pass": false
     },
     {
       "width": 390,
-      "baseCanvasMs": 1457,
-      "candidateCanvasMs": 1707,
-      "baseWallMs": 1767,
-      "candidateWallMs": 1726,
-      "baseLoadingMs": 50,
-      "candidateLoadingMs": 45,
+      "baseCanvasMs": 2372,
+      "candidateCanvasMs": 2284,
+      "baseWallMs": 2422,
+      "candidateWallMs": 2354,
+      "baseLoadingMs": 63,
+      "candidateLoadingMs": 71,
       "pairedCanvasDeltaMs": [
-        550,
-        -648,
-        250
+        -16,
+        -24,
+        -88
       ],
-      "medianPairedCanvasDeltaMs": 250,
-      "canvasNoSlower": false,
+      "medianPairedCanvasDeltaMs": -24,
+      "canvasNoSlower": true,
       "wallNoSlower": true,
-      "pass": false
+      "pass": true
     }
   ]
 }

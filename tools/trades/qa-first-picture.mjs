@@ -24,7 +24,10 @@ for(let n=1;n<=3;n++) for(const width of [1280,390]){
       await p.locator('[data-testid="wallpaint-3d-gl"][data-first-picture-ms]').waitFor();await p.getByTestId('loading-3d').waitFor({state:'hidden'});row.wallMs=Math.round(performance.now()-start);
       const data=await p.evaluate(()=>{const gl=document.querySelector('[data-testid="wallpaint-3d-gl"]');
         const render=Number(gl.dataset.firstPictureMs);const resources=performance.getEntriesByType('resource').filter(r=>r.startTime<render).map(r=>({path:new URL(r.name).pathname,ms:r.startTime,end:r.responseEnd,bytes:r.transferSize}));return {canvasMs:Math.round(render),loaderMs:Math.round(window.__olbLoad.seen??-1),resources,privateAssets:resources.filter(r=>r.path.includes('/assets/studio/')).length};});
-      const {resources,...metrics}=data;Object.assign(row,metrics);row.errors=[...log.consoleErrors,...log.pageErrors,...log.httpErrors,...log.failedRequests,...log.attemptedWrites];
+      const {resources,...metrics}=data;
+      row.fonts = resources.filter(r=>r.path.startsWith('/fonts/')).map(({path,bytes})=>({path,bytes}));
+      row.firstPictureTransferBytes = resources.reduce((sum,r)=>sum+r.bytes,0);
+      Object.assign(row,metrics);row.errors=[...log.consoleErrors,...log.pageErrors,...log.httpErrors,...log.failedRequests,...log.attemptedWrites];
       raw.push({n,width,target,resources,log});assertClean(log);assert.ok(row.canvasMs>0);assert.equal(row.status,200);assert.equal(row.privateAssets,0);
       await context.close();
     }catch(e){row.error=String(e).slice(0,500);}

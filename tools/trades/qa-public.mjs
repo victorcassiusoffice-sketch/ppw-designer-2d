@@ -1,3 +1,4 @@
+import axe from 'axe-core';
 import {acquireRun,assert,launch,localContext,olb,assertClean,save} from './qa-local.mjs';
 acquireRun('part6-public-functional-smoke');
 const browser=await launch(),rows=[];
@@ -14,6 +15,14 @@ try {
       const facts=await p.evaluate(()=>({privateAssets:performance.getEntriesByType('resource').map(r=>new URL(r.name).pathname).filter(r=>r.includes('/assets/studio/')||/TradeProgress|TradeJob|BuildDashboard|TradeMap/i.test(r)),privateUi:!!document.querySelector('[data-testid="trade-role"],[data-testid="trade-progress-overlay"],.build-dashboard'),width:document.documentElement.scrollWidth,viewport:innerWidth}));
       Object.assign(row,facts);assert.deepEqual(row.privateAssets,[]);assert.equal(row.privateUi,false);assert.ok(row.width<=row.viewport+1);
       if(view!=='pitch')assert.ok(!/\b(MUR|GBP|USD|EUR|courts mammouth|espace maison)\b|[$£€]/i.test(await p.locator('body').innerText()),'public money or retailer name');
+      row.designerSkin=await p.locator('html').getAttribute('data-designer-skin');
+      assert.equal(row.designerSkin,view==='pitch'?null:'glacier');
+      if(view==='pitch'){
+        await p.addScriptTag({content:axe.source});
+        const result=await p.evaluate(()=>window.axe.run(document,{runOnly:{type:'rule',values:['color-contrast']}}));
+        row.contrastFailures=result.violations.flatMap(v=>v.nodes.map(n=>n.target));
+        assert.deepEqual(row.contrastFailures,[],'plumbing pitch contrast');
+      }
       assertClean(log);row.pass=true;
     }catch(e){row.pass=false;row.error=String(e).slice(0,500);}
     finally{await context.close();save('public-routes',{rows});}
