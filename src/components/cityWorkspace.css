@@ -541,7 +541,7 @@
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
     grid-template-areas:
-      'view view select select select fit undo undo'
+      'view view select select fit fit undo redo'
       'road road network network asset asset library library';
     padding: 7px 10px;
     gap: 5px;
@@ -585,6 +585,7 @@
     flex-direction: column;
     gap: 1px !important;
   }
+  .city-tool-redo { grid-area: redo; }
   .city-tool-undo {
     grid-area: undo;
   }

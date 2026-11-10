@@ -126,6 +126,7 @@ export default function CityWorkbench({ onClose, initialTab = 'plan' }: { onClos
     asset = model.assets.find((x) => x.id === selectedId);
   const selected = road ?? network ?? asset;
   const canUndo = useHistoryStore((s) => s.past.length > 0);
+  const canRedo = useHistoryStore((s) => s.future.length > 0);
   function preserveOrderEdits() {
     if (!ordersDirty) return false;
     setMessage(UNSAVED_ORDER_MESSAGE);
@@ -487,6 +488,16 @@ export default function CityWorkbench({ onClose, initialTab = 'plan' }: { onClos
             }}
           >
             {t("Undo")}</button>
+          <button
+            className="city-tool-redo"
+            disabled={!canRedo}
+            onClick={() => {
+              useHistoryStore.getState().redo();
+              setSelectedId(null);
+            }}
+          >
+            {t("Redo")}
+          </button>
         </div>
         <div className="city-design">
           <div className="city-viewport">

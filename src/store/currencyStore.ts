@@ -61,7 +61,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
 export function bootstrapFx(): void {
   // Public pitches show no prices. They do not need a currency network request
   // (or its auth failure) just to draw a room. Shop/normal designer unchanged.
-  if (isPitchEmbed()) return;
+  if (isPitchEmbed() || (typeof window !== 'undefined' && window.location.pathname.startsWith('/pitch/'))) return;
   const { refreshFx } = useCurrencyStore.getState();
   // Fire-and-forget; promise rejections are swallowed inside refreshFx.
   void refreshFx();

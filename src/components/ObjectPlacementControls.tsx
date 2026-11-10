@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useBelowMd } from '../lib/useBelowMd';
+import { useAppPreferences } from '../i18n/AppPreferences';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
@@ -12,6 +14,8 @@ import './objectPlacement.css';
 
 /** Flush context row. Hidden until an object is selected or carried. */
 export function ObjectPlacementControls({ showPlacementHint = false }: { showPlacementHint?: boolean } = {}): JSX.Element | null {
+  const phone = useBelowMd();
+  const { tx } = useAppPreferences();
   const armed = usePlacementIntentStore(s => s.armedProductId);
   const rotation = usePlacementIntentStore(s => s.armedRotation);
   const selectedId = useDesignStore(s => s.selectedInstanceId);
@@ -25,16 +29,24 @@ export function ObjectPlacementControls({ showPlacementHint = false }: { showPla
   const heightM = levelHeightM(property, room ? roomLevelId(room) : property.activeLevelId ?? 'ground');
   const height = item && room ? placedItemElevationCm(item, product, room.placedItems, getProductById, heightM) : 0;
   const maxHeight = Math.max(0, heightM * 100 - product.dimensions_cm.height);
-  return <div className="object-placement-controls" data-testid="object-placement-controls" aria-label="Object placement">
-    {armed && showPlacementHint && <span role="status" className="object-placement-hint">
-      {product.placement === 'wall' ? 'Tap a wall' : 'Tap the plan'} to place {product.name}
-    </span>}
+  const compact = phone && showPlacementHint && !!armed;
+  const settings = <>
     <div role="group" aria-label="Object grid">
       {([['grid', '50 cm'], ['half', '25 cm'], ['free', 'Free']] as [ObjectPlacementMode, string][]).map(([value, label]) =>
         <button type="button" key={value} aria-pressed={mode === value} onClick={() => useObjectPlacementStore.getState().setMode(value)}>{label}</button>)}
     </div>
     {mode === 'free' && <span className="object-placement-note">Object overlap on · walls stay solid</span>}
-    {armed && <>{product.placement === 'wall' ? <span>Follows wall</span> : <><button type="button" aria-label="Turn carried object left" onClick={() => usePlacementIntentStore.getState().rotateArmed(-45)}>↶</button><span data-testid="carried-angle" aria-live="polite">{Math.round(rotation)}°</span><button type="button" aria-label="Turn carried object right" onClick={() => usePlacementIntentStore.getState().rotateArmed(45)}>↷</button></>}<button type="button" onClick={() => usePlacementIntentStore.getState().setArmed(null)}>Cancel</button></>}
+    {armed && <>{product.placement === 'wall' ? <span>Follows wall</span> : <><button type="button" aria-label="Turn carried object left" onClick={() => usePlacementIntentStore.getState().rotateArmed(-45)}>↶</button><span data-testid="carried-angle" aria-live="polite">{Math.round(rotation)}°</span><button type="button" aria-label="Turn carried object right" onClick={() => usePlacementIntentStore.getState().rotateArmed(45)}>↷</button></>}</>}
+  </>;
+  return <div className="object-placement-controls" data-testid="object-placement-controls" aria-label="Object placement" data-compact={compact}>
+    {armed && showPlacementHint && <span role="status" className="object-placement-hint">
+      {product.placement === 'wall' ? 'Tap a wall' : 'Tap the plan'} to place {product.name}
+    </span>}
+    {compact ? <details className="object-placement-settings">
+      <summary>{tx('Settings')}</summary>
+      <div>{settings}</div>
+    </details> : settings}
+    {armed && <button type="button" onClick={() => usePlacementIntentStore.getState().setArmed(null)}>{tx('Cancel')}</button>}
     {!armed && item && <button type="button" onClick={() => usePlacementIntentStore.getState().setArmed(item.productId)} title="Carry another of this exact product and variant">Copy type</button>}
     {!armed && item && room && objectAccessWarnings(room, item, product).map(warning => <span className="object-placement-warning" role="status" key={warning}>{warning}</span>)}
     {!armed && item && room?.placedItems.some(child => child.parentInstanceId === item.instanceId) && <span className="object-placement-warning" role="status">Move the objects on this surface before turning it.</span>}

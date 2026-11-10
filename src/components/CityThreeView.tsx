@@ -477,7 +477,6 @@ export default function CityThreeView({ model, selectedId = null, onSelect, fitN
       disposeGroup(selection);
       sun.shadow.dispose();
       renderer.dispose();
-      renderer.forceContextLoss();
       renderer.domElement.remove();
       if (runtimeRef.current === runtime) runtimeRef.current = null;
     };

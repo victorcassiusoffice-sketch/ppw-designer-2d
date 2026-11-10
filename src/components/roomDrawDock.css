@@ -58,3 +58,11 @@
 .wall-draw-dock[data-compact='true'][data-empty='true'] :is([data-testid='room-draw-close'],[data-testid='room-draw-undo']):disabled {
   display: none;
 }
+
+@media (max-width: 767px) {
+  .wall-draw-dock[data-compact='true'] { padding: 2px 5px; }
+  .wall-draw-dock[data-compact='true'] .wall-draw-dock__status { min-height: 18px; margin: 0; }
+  .wall-draw-dock[data-compact='true'] .wall-draw-dock__actions { padding: 0; }
+  .wall-draw-dock[data-compact='true'] button { min-height: 48px; }
+  [data-testid='plan-workspace']:has(.wall-draw-dock) > .plan-view-toolbar { display: none; }
+}

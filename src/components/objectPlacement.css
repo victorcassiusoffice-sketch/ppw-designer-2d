@@ -24,3 +24,40 @@
 .object-placement-hint { font-weight: 600; overflow-wrap: anywhere; }
 /* The phone Products launcher sits below the edge controls. */
 @media (max-width: 767px) { [data-testid="plan-workspace"] > .object-placement-dock { bottom: 54px; } }
+
+@media (max-width: 767px) {
+  [data-testid="plan-workspace"] > .object-placement-dock:has([data-compact="true"]) {
+    position: static;
+    flex: 0 0 auto;
+    padding: 2px 6px;
+    background: var(--ui-surface);
+  }
+  .object-placement-controls[data-compact="true"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    width: 100%;
+    padding: 2px 4px;
+  }
+  .object-placement-controls[data-compact="true"] .object-placement-hint {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .object-placement-settings { display: contents; }
+  .object-placement-settings summary,
+  .object-placement-controls[data-compact="true"] button {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  .object-placement-settings summary { align-content: center; cursor: pointer; padding: 0 6px; }
+  .object-placement-settings[open] > div {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    overflow-x: auto;
+  }
+}

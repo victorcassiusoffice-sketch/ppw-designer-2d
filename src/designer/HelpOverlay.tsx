@@ -15,6 +15,7 @@ import { useAppPreferences } from '../i18n/AppPreferences';
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { useDesignStore } from '../store/designStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
+import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { useBelowMd } from '../lib/useBelowMd';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
 import {
@@ -280,6 +281,7 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
  * pen's HUD really does own the bottom of the screen.
  */
 export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Element | null {
+  const carrying = usePlacementIntentStore(s => s.armedProductId !== null);
   const penOpen = useDrawProgressStore((s) => s.enabled);
   const itemSelected = useDesignStore((s) => s.selectedInstanceId !== null);
   // Phone pass (2026-09-16): the Floor / Door / Wall-paint HUD cards and the
@@ -292,7 +294,7 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
   const belowMd = useBelowMd();
   // House Studio exposes Help in Project tools; a floating launcher would
   // cover the scene now that the old permanent left rail is gone.
-  if (view3d || gardenOpen || (belowMd && (penOpen || itemSelected || toolHudOpen))) return null;
+  if (view3d || gardenOpen || (belowMd && (penOpen || itemSelected || toolHudOpen || carrying))) return null;
   const besidePanel = itemSelected && !belowMd;
   return (
     <button
