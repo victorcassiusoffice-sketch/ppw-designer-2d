@@ -25,6 +25,7 @@ for (const [width, height] of [[313, 567], [390, 844]]) {
 }
 
 test('City redo restores the same placed asset after undo', async ({ page }) => {
+  await page.setViewportSize({ width: 313, height: 567 });
   await page.goto('/demo?view=2d&pitch=1&panel=city');
   const city = page.getByTestId('city-workspace');
   const map = city.getByTestId('city-plan');
@@ -38,6 +39,10 @@ test('City redo restores the same placed asset after undo', async ({ page }) => 
   expect(newId).toBeTruthy();
   await city.locator('.city-tool-undo').click();
   await expect(marks).toHaveCount(before.length);
-  await city.locator('.city-tool-redo').click();
+  const redo = city.locator('.city-tool-redo');
+  const size = await redo.boundingBox();
+  expect(size!.width).toBeGreaterThanOrEqual(48);
+  expect(size!.height).toBeGreaterThanOrEqual(48);
+  await redo.click();
   await expect(map.locator(`[data-city-id="${newId}"]`)).toBeVisible();
 });
