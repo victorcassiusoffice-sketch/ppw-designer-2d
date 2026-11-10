@@ -19,6 +19,9 @@ import { statusLabels } from './statusLabels';
 import { PackageInspector } from './PackageInspector';
 import '../../designer/link/contract/build-tokens.css';
 import './dashboard.css';
+import { RolePicker, TradeStation } from './TradeStation';
+import { useTradeFlow } from './tradeFlow';
+import { packageTrade } from '../../designer/link/tradeWork';
 
 const freshFilters = { project: '', site: '', phase: '', trade: '', status: '' };
 const fmt = (amount: number, currency: string) =>
@@ -32,6 +35,10 @@ export default function BuildDashboard({
   onBack: () => void;
   onClose: () => void;
 }) {
+  const role = useTradeFlow((s) => s.role);
+  useEffect(() => {
+    useTradeFlow.getState().scope(property.id);
+  }, [property.id]);
   const ledger = useLinkStore(),
     [fingerprint, setFingerprint] = useState(''),
     [hide, setHide] = useState(false);
@@ -49,6 +56,7 @@ export default function BuildDashboard({
   const root = useRef<HTMLDialogElement>(null),
     input = useRef<HTMLInputElement>(null);
   const [company, setCompany] = useState(''),
+    [preparedBy, setPreparedBy] = useState(''),
     [site, setSite] = useState(''),
     [phase, setPhase] = useState('Phase 1'),
     [currency, setCurrency] = useState('MUR');
@@ -133,6 +141,8 @@ export default function BuildDashboard({
   }, [property, sheet]);
   const prepared = measured.drafts;
   async function make() {
+    if (role !== 'owner' && !preparedBy.trim())
+      throw new Error('Enter your name to record who prepared these packages.');
     if (!company.trim() || !site.trim() || !phase.trim())
       throw new Error('Enter a company name, site label and phase.');
     const matching = rows.find(
@@ -170,7 +180,7 @@ export default function BuildDashboard({
         currency,
         preferredDates: [],
       };
-      await ledger.saveDraft(d);
+      await ledger.saveDraft(d, undefined, preparedBy.trim() || undefined);
       count++;
     }
     setSheet('');
@@ -184,7 +194,11 @@ export default function BuildDashboard({
     setText(value);
     setPreview(null);
     const pack = await readAnswer(value, new Date().toISOString());
-    checkAnswer(useLinkStore.getState().packages, pack);
+    const target = checkAnswer(useLinkStore.getState().packages, pack);
+    if (role !== 'owner' && packageTrade(target) !== role)
+      throw new Error(
+        'This answer belongs to another trade. Open its station or the project owner view.',
+      );
     setPreview(pack);
   }
   useEffect(() => {
@@ -284,140 +298,174 @@ export default function BuildDashboard({
           <h1 id="build-title">Build dashboard</h1>
           <p>Pilot · this browser only</p>
         </div>
+        <RolePicker />
         <div className="bd-actions">
+          {role === 'owner' && (
+            <button
+              onClick={() => {
+                const field = document.getElementById('trade-field-record');
+                field?.focus();
+                field?.scrollIntoView({ block: 'start' });
+              }}
+            >
+              Project timeline
+            </button>
+          )}
           <button onClick={onBack}>Project hub</button>
           <button onClick={onClose}>Back to plan</button>
         </div>
       </header>
       <main className="bd-body">
         {offline && <p role="status">Offline · local files and decisions still work.</p>}
-        <section className="bd-needs" aria-labelledby="needs-title">
-          <div>
-            <span className="bd-kicker">DECISION DESK</span>
-            <h2 id="needs-title">Needs you</h2>
-            <p>Review the next decision for each trade.</p>
-          </div>
-          <div className="bd-need-actions">
-            {(
-              [
-                ['quotes', 'Quotes to decide'],
-                ['invoices', 'Invoices to check'],
-                ['changed', 'Plans changed'],
-              ] as const
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                aria-pressed={need === key}
-                onClick={() => {
-                  setNeed(need === key ? '' : key);
-                  setFilter(freshFilters);
-                }}
-              >
-                <strong>{needs.reduce((s, n) => s + Number(n[key]), 0)}</strong>
-                {label}
-              </button>
-            ))}
-          </div>
-        </section>
-        <div className="bd-section-head">
-          <h2>Money by currency</h2>
-          <button aria-pressed={hide} onClick={() => setHide(!hide)}>
-            {hide ? 'Show amounts' : 'Hide amounts'}
-          </button>
-        </div>
-        {totals.length === 0 ? (
-          <p>No amounts recorded for these packages.</p>
-        ) : (
-          totals.map((t) => (
-            <section className="bd-money" key={t.currency} aria-label={t.currency + ' totals'}>
-              <b>{t.currency}</b>
-              {(['quoted', 'approved', 'invoiced', 'paid', 'planned'] as const)
-                .filter((k) => k !== 'planned' || t.planned !== undefined)
-                .map((k) => (
-                  <div key={k}>
-                    <span>{k}</span>
-                    <strong className="build-num">
-                      {hide ? 'Hidden' : fmt(t[k]!, t.currency)}
-                    </strong>
-                  </div>
+        {role === 'owner' && (
+          <>
+            <section className="bd-needs" aria-labelledby="needs-title">
+              <div>
+                <span className="bd-kicker">DECISION DESK</span>
+                <h2 id="needs-title">Needs you</h2>
+                <p>Review the next decision for each trade.</p>
+              </div>
+              <div className="bd-need-actions">
+                {(
+                  [
+                    ['quotes', 'Quotes to decide'],
+                    ['invoices', 'Invoices to check'],
+                    ['changed', 'Plans changed'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    aria-pressed={need === key}
+                    onClick={() => {
+                      setNeed(need === key ? '' : key);
+                      setFilter(freshFilters);
+                    }}
+                  >
+                    <strong>{needs.reduce((s, n) => s + Number(n[key]), 0)}</strong>
+                    {label}
+                  </button>
                 ))}
+              </div>
             </section>
-          ))
-        )}
-        <div className="bd-section-head">
-          <div>
-            <span className="bd-kicker">WORK REGISTER</span>
-            <h2>Packages</h2>
-          </div>
-          <div className="bd-actions">
-            <button
-              disabled={!ledger.hydrated || !!ledger.loadError}
-              onClick={() => {
-                setError('');
-                setSheet('make');
-              }}
-            >
-              Make packages
-            </button>
-            <button
-              disabled={!ledger.hydrated}
-              onClick={() => {
-                setText('');
-                setPreview(null);
-                setError('');
-                setSheet('answer');
-              }}
-            >
-              Add an answer
-            </button>
-            <button onClick={() => setSheet('files')}>Files</button>
-          </div>
-        </div>
-        <div className="bd-desktop-filters">{filterFields}</div>
-        <button className="bd-mobile-filter" onClick={() => setSheet('filters')}>
-          Filters
-        </button>
-        {need && <button onClick={() => setNeed('')}>Clear decision filter ×</button>}
-        {!sheet && !selectedRow && feedback}
-        {!ledger.hydrated ? (
-          <p role="status">Opening local packages…</p>
-        ) : visible.length === 0 ? (
-          <div className="bd-empty">
-            <h3>{rows.length ? 'No matching packages' : 'No work packages yet'}</h3>
-            <p>
-              {rows.length
-                ? 'Reset the filters to see more work.'
-                : 'Choose Make packages to review estimates from this plan.'}
-            </p>
-          </div>
-        ) : (
-          <div className="bd-register">
-            {visible.map((row) => (
-              <button
-                className="bd-row"
-                key={row.draft.id}
-                onClick={() => {
-                  setSelected(row.draft.id);
-                  setError('');
-                  setMessage('');
-                }}
-              >
-                <StatusChip status={packageStatus(row, activeFp(row))}/>
-                <span>
-                  <strong>{row.draft.title}</strong>
-                  <small>
-                    {row.draft.projectLabel} · {row.draft.siteLabel} · {row.draft.phase}
-                  </small>
-                </span>
-                <span>
-                  {row.draft.trade}
-                  <small>{row.draft.preferredDates.join(' – ') || 'Dates open'}</small>
-                </span>
-                <span aria-hidden="true">›</span>
+            <div className="bd-section-head">
+              <h2>Money by currency</h2>
+              <button aria-pressed={hide} onClick={() => setHide(!hide)}>
+                {hide ? 'Show amounts' : 'Hide amounts'}
               </button>
-            ))}
-          </div>
+            </div>
+            {totals.length === 0 ? (
+              <p>No amounts recorded for these packages.</p>
+            ) : (
+              totals.map((t) => (
+                <section className="bd-money" key={t.currency} aria-label={t.currency + ' totals'}>
+                  <b>{t.currency}</b>
+                  {(['quoted', 'approved', 'invoiced', 'paid', 'planned'] as const)
+                    .filter((k) => k !== 'planned' || t.planned !== undefined)
+                    .map((k) => (
+                      <div key={k}>
+                        <span>{k}</span>
+                        <strong className="build-num">
+                          {hide ? 'Hidden' : fmt(t[k]!, t.currency)}
+                        </strong>
+                      </div>
+                    ))}
+                </section>
+              ))
+            )}
+            <div className="bd-section-head">
+              <div>
+                <span className="bd-kicker">WORK REGISTER</span>
+                <h2>Packages</h2>
+              </div>
+              <div className="bd-actions">
+                <button
+                  disabled={!ledger.hydrated || !!ledger.loadError}
+                  onClick={() => {
+                    setError('');
+                    setSheet('make');
+                  }}
+                >
+                  Make packages
+                </button>
+                <button
+                  disabled={!ledger.hydrated}
+                  onClick={() => {
+                    setText('');
+                    setPreview(null);
+                    setError('');
+                    setSheet('answer');
+                  }}
+                >
+                  Add an answer
+                </button>
+                <button onClick={() => setSheet('files')}>Files</button>
+              </div>
+            </div>
+            <div className="bd-desktop-filters">{filterFields}</div>
+            <button className="bd-mobile-filter" onClick={() => setSheet('filters')}>
+              Filters
+            </button>
+            {need && <button onClick={() => setNeed('')}>Clear decision filter ×</button>}
+            {!sheet && !selectedRow && feedback}
+            {!ledger.hydrated ? (
+              <p role="status">Opening local packages…</p>
+            ) : visible.length === 0 ? (
+              <div className="bd-empty">
+                <h3>{rows.length ? 'No matching packages' : 'No work packages yet'}</h3>
+                <p>
+                  {rows.length
+                    ? 'Reset the filters to see more work.'
+                    : 'Choose Make packages to review estimates from this plan.'}
+                </p>
+              </div>
+            ) : (
+              <div className="bd-register">
+                {visible.map((row) => (
+                  <button
+                    className="bd-row"
+                    key={row.draft.id}
+                    onClick={() => {
+                      setSelected(row.draft.id);
+                      setError('');
+                      setMessage('');
+                    }}
+                  >
+                    <StatusChip status={packageStatus(row, activeFp(row))} />
+                    <span>
+                      <strong>{row.draft.title}</strong>
+                      <small>
+                        {row.draft.projectLabel} · {row.draft.siteLabel} · {row.draft.phase}
+                      </small>
+                    </span>
+                    <span>
+                      {row.draft.trade}
+                      <small>{row.draft.preferredDates.join(' – ') || 'Dates open'}</small>
+                    </span>
+                    <span aria-hidden="true">›</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
+        {role !== 'owner' && !sheet && !selectedRow && feedback}
+        <TradeStation
+          key={role}
+          property={property}
+          rows={rows}
+          onModel={onClose}
+          onPackage={setSelected}
+          onMake={() => {
+            setError('');
+            setSheet('make');
+          }}
+          onAnswer={() => {
+            setError('');
+            setText('');
+            setPreview(null);
+            setSheet('answer');
+          }}
+        />
       </main>
       {sheet === 'filters' && (
         <Sheet title="Filter packages" onClose={dismiss}>
@@ -433,6 +481,16 @@ export default function BuildDashboard({
           </p>
           {measured.error && <p role="alert">{measured.error}</p>}
           <div className="bd-fields">
+            {role !== 'owner' && (
+              <label>
+                Prepared by
+                <input
+                  maxLength={120}
+                  value={preparedBy}
+                  onChange={(e) => setPreparedBy(e.target.value)}
+                />
+              </label>
+            )}
             <label>
               Company name
               <input value={company} onChange={(e) => setCompany(e.target.value)} />

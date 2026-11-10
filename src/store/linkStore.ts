@@ -13,6 +13,7 @@ import {
   type Choice,
 } from '../designer/link/exchange';
 import type { WorkPackage } from '../designer/link/planView';
+import { createJobSchema, editJobSchema, roleSchema, workerName, type CreateJobInput, type JobPatch, type TradeRole } from '../designer/link/tradeJobs';
 
 export const LINK_STORAGE_KEY = 'olb_link_packages_v1';
 const TYPE = 'olb-build-dashboard';
@@ -20,7 +21,7 @@ const MAX_BYTES = 4_000_000;
 const MAX_EVENTS = 10_000;
 type StoragePort = Pick<Storage, 'getItem' | 'setItem'>;
 const envelope = z
-  .object({ type: z.literal(TYPE), v: z.literal(1), events: z.array(z.unknown()).max(MAX_EVENTS) })
+  .object({ type: z.literal(TYPE), v: z.union([z.literal(1),z.literal(2)]), events: z.array(z.unknown()).max(MAX_EVENTS) })
   .strict();
 const at = z
   .string()
@@ -33,8 +34,11 @@ const by = z
   })
   .strict();
 const eventShape = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('draft'), at, draft: z.unknown() }).strict(),
-  z.object({ kind: z.literal('send'), at, work: z.unknown() }).strict(),
+  z.object({ kind: z.literal('draft'), at, draft: z.unknown(), byName:workerName.optional() }).strict(),
+  z.object({ kind: z.literal('send'), at, work: z.unknown(), byName:workerName.optional() }).strict(),
+  z.object({kind:z.literal('trade-job'),at,input:createJobSchema}).strict(),
+  z.object({kind:z.literal('trade-edit'),at,id:opaque,patch:editJobSchema,by:workerName}).strict(),
+  z.object({kind:z.literal('trade-take'),at,id:opaque,role:roleSchema,by:workerName}).strict(),
   z.object({ kind: z.literal('answer'), at, pack: z.unknown() }).strict(),
   z
     .object({
@@ -62,13 +66,16 @@ const eventShape = z.discriminatedUnion('kind', [
 function checkedEvent(value: unknown): LinkEvent {
   const parsed = eventShape.safeParse(value);
   if (!parsed.success)
-    throw new Error('This dashboard contains an invalid action or a newer format.');
+    throw new Error('This dashboard contains an invalid action: '+parsed.error.issues[0].path.join('.')+'. '+parsed.error.issues[0].message);
   // Raw drafts and signed-file contents are validated by applyLinkEvent before use.
   return parsed.data as LinkEvent;
 }
 const utf8 = (text: string) => new TextEncoder().encode(text).byteLength;
 function serialise(events: LinkEvent[]): string {
-  const text = JSON.stringify({ type: TYPE, v: 1, events });
+  // Readers of the old dashboard can still consume an untouched v1 ledger.
+  // Jobs and named draft sends use a new local format, never a new Job Pack.
+  const v=events.some(e=>e.kind.startsWith('trade-') || ('byName' in e && e.byName))?2:1;
+  const text = JSON.stringify({ type: TYPE, v, events });
   if (events.length > MAX_EVENTS || utf8(text) > MAX_BYTES)
     throw new Error('This dashboard is too large for the browser pilot. Export a backup.');
   return text;
@@ -92,12 +99,14 @@ export async function readDashboardBackup(
     throw new Error('This dashboard backup is not readable. Choose a dashboard JSON file.');
   }
   const parsed = envelope.safeParse(raw);
-  if (!parsed.success) throw new Error('Choose a One Live Build dashboard backup, version 1.');
+  if (!parsed.success) throw new Error('Choose a One Live Build dashboard backup, version 1 or 2.');
   let packages: LinkPackage[] = [];
   const events: LinkEvent[] = [];
   for (let idx = 0; idx < parsed.data.events.length; idx++) {
     try {
       const e = checkedEvent(parsed.data.events[idx]);
+      if(parsed.data.v===1 && (e.kind.startsWith('trade-') || ('byName' in e && e.byName)))
+        throw new Error('These trade actions require a version 2 dashboard backup.');
       if (e.at > now || (idx > 0 && e.at < events[idx - 1].at))
         throw new Error('Its action dates are out of order or in the future.');
       packages = await applyLinkEvent(packages, e);
@@ -118,8 +127,11 @@ type State = {
   hydrated: boolean;
   loadError: string | null;
   hydrate: () => Promise<void>;
-  saveDraft: (draft: PackageDraft, at?: string) => Promise<void>;
-  send: (work: WorkPackage, at?: string) => Promise<void>;
+  saveDraft: (draft: PackageDraft, at?: string, byName?:string) => Promise<void>;
+  send: (work: WorkPackage, at?: string, byName?:string) => Promise<void>;
+  createJob:(input:CreateJobInput, at?:string)=>Promise<void>;
+  editJob:(id:string,patch:JobPatch,by:string,at?:string)=>Promise<void>;
+  takePackage:(id:string,role:TradeRole,by:string,at?:string)=>Promise<void>;
   addAnswer: (pack: AnswerPack, at?: string) => Promise<void>;
   decide: (
     requestId: string,
@@ -186,7 +198,7 @@ export function createLinkStore(
       events = nextEvents;
       set({ packages, hydrated: true, loadError: null });
     }
-    function append(input: LinkEvent) {
+    async function append(input: LinkEvent) {
       // Own the value immediately; editing form fields while a hash is checked cannot mutate a recorded send.
       const e = checkedEvent(JSON.parse(JSON.stringify(input)));
       return serial(async () => {
@@ -208,8 +220,11 @@ export function createLinkStore(
       hydrated: false,
       loadError: null,
       hydrate: () => serial(hydrate),
-      saveDraft: (draft, at = clock()) => append({ kind: 'draft', draft, at }),
-      send: (work, at = clock()) => append({ kind: 'send', work, at }),
+      saveDraft: (draft, at = clock(),byName) => append({ kind: 'draft', draft, at,byName }),
+      send: (work, at = clock(),byName) => append({ kind: 'send', work, at,byName }),
+      createJob:(input,at=clock())=>append({kind:'trade-job',input,at}),
+      editJob:(id,patch,by,at=clock())=>append({kind:'trade-edit',id,patch,by,at}),
+      takePackage:(id,role,by,at=clock())=>append({kind:'trade-take',id,role,by,at}),
       addAnswer: (pack, at = clock()) => append({ kind: 'answer', pack, at }),
       decide: (requestId, answerId, choice, by, at = clock()) =>
         append({ kind: 'decide', requestId, answerId, choice, by, at }),

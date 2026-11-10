@@ -5,6 +5,8 @@ import type { InvoicePack, Photo, Quantity, QuotePack, RequestPack, StatusPack }
 import type { Property } from '../../store/propertyStore';
 import { projectFingerprint } from '../projectHub';
 import { projectGeometry } from './planGeometry';
+import { pinExists } from './workGeometry';
+import { pinSchema, type WorkPin } from './tradeJobs';
 
 type Point2 = [number, number];
 type Point3 = [number, number, number];
@@ -30,6 +32,7 @@ export interface WorkPackageInput {
   revision: number; levelIds: string[]; highlights?: string[];
   resolveItem?: (productId: string) => { label: string; widthM: number; depthM: number } | undefined;
   photo?: Photo;
+  jobPin?: WorkPin;
 }
 export type TradeAnswer = QuotePack | StatusPack | InvoicePack;
 const validate = new Ajv({ strict: false }).compile<PlanView | WorkPackage>(schema);
@@ -114,6 +117,11 @@ export async function readAnswer(text: string, now: string): Promise<TradeAnswer
 export async function buildPlanView(input: WorkPackageInput): Promise<PlanView> {
   const { property, project, site, phase, companyName, revision, quantities } = input;
   const geometry = projectGeometry(property, input.levelIds, input.resolveItem);
+  if(input.jobPin){
+    const p=pinSchema.parse(input.jobPin);
+    if(!input.levelIds.includes(p.levelId)||!pinExists(property,p))throw new Error('The pinned part is no longer on this storey. Move the pin before sharing this job.');
+    geometry.notes.push('Job pin on '+p.planRef+': x '+p.x+' m, y '+p.y+' m, height '+p.z+' m relative to '+p.levelId+'. Check on site.');
+  }
   const refs = [...new Set([...(input.highlights ?? []), ...quantities.flatMap(q => q.planRef ? [q.planRef] : [])])];
   const view = await signPlanView({
     type: 'ppw-plan-view', v: 1, id: input.viewId, requestId: input.requestId, createdAt: input.now,

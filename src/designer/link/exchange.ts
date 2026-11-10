@@ -12,6 +12,7 @@ import type {
   RequestPack,
 } from './vendor/tradefolder/lib/jobPack/types';
 import { parseWorkPackage } from './planView';
+import { applyJobEvent, workerName, type JobEvent, type JobInfo, type TradeClaim } from './tradeJobs';
 
 export type AnswerPack = QuotePack | StatusPack | InvoicePack;
 const instant = z
@@ -81,14 +82,17 @@ export interface RequestExchange {
 }
 export type LinkPackage = {
   draft: PackageDraft;
+  job?: JobInfo;
+  claim?: TradeClaim;
   sends: RequestExchange[];
   updatedAt: string;
-  history: { at: string; label: string; requestId?: string; by?: Actor }[];
+  history: { at: string; label: string; requestId?: string; by?: Actor; worker?: string; fileSender?: string; fileId?:string }[];
 };
 export type Choice = 'approved' | 'declined' | 'accepted' | 'rejected';
 export type LinkEvent =
-  | { kind: 'draft'; at: string; draft: PackageDraft }
-  | { kind: 'send'; at: string; work: WorkPackage }
+  | JobEvent
+  | { kind: 'draft'; at: string; draft: PackageDraft; byName?:string }
+  | { kind: 'send'; at: string; work: WorkPackage; byName?:string }
   | { kind: 'answer'; at: string; pack: AnswerPack }
   | { kind: 'decide'; at: string; requestId: string; answerId: string; choice: Choice; by: Actor }
   | {
@@ -208,7 +212,7 @@ function changedSend(
     updatedAt: e.at,
     history: [
       ...row.history,
-      { at: e.at, requestId: send.request.id, label: caption, ...(by ? { by } : {}) },
+      { at: e.at, requestId: send.request.id, label: caption, ...(by ? { by } : {}), ...(e.kind==='answer'?{fileSender:e.pack.from.label,fileId:e.pack.id}:{}) },
     ],
   });
 }
@@ -272,6 +276,7 @@ function withPayment(
 /** Pure async only to check hashes; same ordered transitions for live writes and restoring a backup. */
 export async function applyLinkEvent(rows: LinkPackage[], e: LinkEvent): Promise<LinkPackage[]> {
   if (!instant.safeParse(e.at).success) return fail('Use a valid date and time.');
+  if(e.kind==='trade-job'||e.kind==='trade-take'||e.kind==='trade-edit')return applyJobEvent(rows,e);
   if (e.kind === 'draft') {
     const parsed = draftSchema.safeParse(e.draft);
     if (!parsed.success)
@@ -281,11 +286,17 @@ export async function applyLinkEvent(rows: LinkPackage[], e: LinkEvent): Promise
     if (row && (row.draft.projectId !== d.projectId || row.draft.sourceKey !== d.sourceKey))
       return fail('Cannot reassign a package to another project or source.');
     if (row && canonical(row.draft) === canonical(d)) return rows;
-    const history = { at: e.at, label: row ? 'Package details edited' : 'Draft created' };
+    if ((row?.job || row?.claim) && !workerName.safeParse(e.byName).success)
+      return fail('Enter your name before changing this trade’s work.');
+    if (row?.job && (d.trade!==row.draft.trade || canonical(d.levelIds)!==canonical(row.draft.levelIds)))
+      return fail('Use the pinned job editor to change its location.');
+    const history = { at: e.at, label: row ? 'Package details edited' : 'Draft created', ...(e.byName?{worker:e.byName.trim()}:{}) };
     return row
       ? replace(rows, row, {
           ...row,
           draft: d,
+          ...(row.job && canonical(d.preferredDates)!==canonical(row.draft.preferredDates)
+            ? {job:{...row.job, startDate:d.preferredDates[0],dueDate:d.preferredDates[1]}} : {}),
           updatedAt: e.at,
           history: [...row.history, history],
         })
@@ -305,6 +316,8 @@ export async function applyLinkEvent(rows: LinkPackage[], e: LinkEvent): Promise
     }
     if (rows.some((i) => i.sends.some((s) => s.work.planView?.id === v.id)))
       return fail('This plan view ID has already been used.');
+    if ((row.job || row.claim) && !workerName.safeParse(e.byName).success)
+      return fail('Enter your name before sharing this trade’s work.');
     const d = row.draft;
     if (
       v.project.id !== d.projectId ||
@@ -339,7 +352,7 @@ export async function applyLinkEvent(rows: LinkPackage[], e: LinkEvent): Promise
       updatedAt: e.at,
       history: [
         ...row.history,
-        { at: e.at, requestId: r.id, label: 'Request sent · plan revision ' + v.plan.revision },
+        { at: e.at, requestId: r.id, label: 'Request sent · plan revision ' + v.plan.revision, ...(e.byName?{worker:e.byName.trim()}:{}) },
       ],
     });
   }
