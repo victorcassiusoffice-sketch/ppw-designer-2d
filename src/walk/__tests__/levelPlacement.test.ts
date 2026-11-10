@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { Vector3 } from 'three';
 import type { Property } from '../../store/propertyStore';
 import type { SceneInput } from '../../designer/roomView3d';
+import { FLOOR_SLAB_THICKNESS_M } from '../../designer/building';
+import { ROOF_COVERING_THICKNESS_M } from '../../designer/roofSurface';
 import { activeLevelIdOf, roomsOnLevel } from '../../designer/levels';
 import { prepareWalkVisit } from '../visit';
 import { createWalkWorld } from '../scene';
@@ -47,7 +49,7 @@ describe('visit placement', () => {
   it('finds independent upper and roof surfaces without stairs or saved roof metadata', () => {
     const p = house(), saved = JSON.stringify(p), w = world(p);
     expect(spawnAt(w, { x: 4, y: 3 }, 'first')!.position.y).toBeCloseTo(3.18, 2);
-    expect(spawnOnLevel(w, 'roof')!.position.y).toBeGreaterThan(6.36);
+    expect(spawnOnLevel(w, 'roof')!.position.y).toBeCloseTo(2 * (3 + FLOOR_SLAB_THICKNESS_M) + ROOF_COVERING_THICKNESS_M, 2);
     expect(spawnAt(w, { x: -1, y: 3 }, 'first')).toBeNull();
     expect(JSON.stringify(p)).toBe(saved);
   });

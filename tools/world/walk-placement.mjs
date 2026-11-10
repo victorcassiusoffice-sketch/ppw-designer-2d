@@ -15,7 +15,7 @@ const property = { id:'walk-qa',name:'Walk check',wallHeightM:3,activeRoomId:'lo
   site:{originM:{x:-4,y:-4},widthM:14,depthM:14} };
 const cases = [
   ['ground','ground',2.5,2.5,0], ['upper','first',3,2,3.18],
-  ['roof','roof',3,3,6.48], ['garden','ground',-1.3,2,0], ['bare-land','ground',1,1,0],
+  ['roof','roof',3,3,6.44], ['garden','ground',-1.3,2,0], ['bare-land','ground',1,1,0],
 ];
 const browser = await chromium.launch({args:['--use-angle=d3d11','--ignore-gpu-blocklist']});
 const report=[];
@@ -50,7 +50,20 @@ try {
     await page.locator('.world-placement-options select').selectOption(level);
     const before=await page.evaluate(()=>JSON.stringify(window.__designer.readProperty()));
     if(name==='bare-land')assert.equal(JSON.parse(before).rooms.filter(room=>room.polygon?.length>=3).length,0);
-    const target=await token.evaluate((el,pt)=>{let result;el.dispatchEvent(new CustomEvent('world-walk-project',{detail:{...pt,reply:p=>{result=p}}}));return result}, {x,y,height:elevation});
+    // The incoming design can refit its camera. Pick the destination from
+    // the settled, displayed projection before beginning a real gesture.
+    const target=await token.evaluate(async (el,pt)=>{
+      const project=()=>{let result;el.dispatchEvent(new CustomEvent('world-walk-project',{detail:{...pt,reply:p=>{result=p}}}));return result};
+      let last,stable=0;
+      for(let i=0;i<90;i++){
+        await new Promise(resolve=>requestAnimationFrame(resolve));
+        const next=project();
+        stable=next&&last&&Math.hypot(next.x-last.x,next.y-last.y)<.12?stable+1:0;
+        last=next;
+        if(stable>=6)return last;
+      }
+      throw Error('The design did not settle at a screen position');
+    }, {x,y,height:elevation});
     const b=await token.boundingBox();
     assert.ok(b && target,'Projection available');
     const start={x:b.x+b.width/2,y:b.y+b.height/2};
@@ -67,7 +80,7 @@ try {
     row.position=status.position;row.grounded=status.grounded;row.actualLevel=status.levelId;
     assert.equal(status.levelId,level);
     assert.ok(Math.hypot(status.position[0]-x,status.position[2]-y)<.45,'drop reached the indicated point');
-    assert.ok(Math.abs(status.position[1]-elevation)<.20,'correct standing height');
+    assert.ok(Math.abs(status.position[1]-elevation)<.01,'correct standing height');
     if(name==='upper'){await page.getByTestId('walk-overview').click();await page.waitForFunction(()=>JSON.parse(document.querySelector('[data-world-walk]').dataset.status).overview)}
     if(name==='garden'){await page.getByRole('combobox',{name:'Walk level'}).selectOption('first');await page.waitForFunction(()=>JSON.parse(document.querySelector('[data-world-walk]').dataset.status).levelId==='first')}
     if(name==='bare-land'){
@@ -91,11 +104,43 @@ try {
       row.bareLandLauncher=true;
     }
     row.designUnchanged=true;
-   }catch(e){row.error=e.message.split('\n')[0];if(touch)await touch.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]}).catch(()=>{});else await page.mouse.up().catch(()=>{});await page.screenshot({path:path.join(out,brand+'-'+width+'-'+name+'-failure.jpg'),type:'jpeg'}).catch(()=>{});
+   }catch(e){row.error=e.message.slice(0,1000);if(touch)await touch.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]}).catch(()=>{});else await page.mouse.up().catch(()=>{});await page.screenshot({path:path.join(out,brand+'-'+width+'-'+name+'-failure.jpg'),type:'jpeg'}).catch(()=>{});
     const exit=page.locator('.world-walk-exit');if(await exit.isVisible())await exit.click();else await page.keyboard.press('Escape');
    }
    row.errors=[...errors];await fs.writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(row));
   }
+  const challenge={brand,width,name:'steep-roof-and-invalid-stair',errors:[]};report.push(challenge);
+  try {
+    await page.evaluate(p=>window.__designer.loadPropertyFixture({...p,
+      levels:[...p.levels,{id:'roof',name:'Roof',index:2,kind:'roof'}],
+      roof:{style:'shed',material:'metal',pitchDeg:60,overhangM:.2},
+      stairs:[{id:'no-fit',fromLevelId:'ground',toLevelId:'first',x:30,y:30,widthM:1.2,runM:4,rotation:0}]}),property);
+    const original=await page.evaluate(()=>JSON.stringify(window.__designer.readProperty()));
+    assert.equal(JSON.parse(original).roof?.pitchDeg,60,'The saved fixture contains a steep roof');
+    await page.getByRole('button',{name:'Open Walk mode'}).click();
+    await page.getByRole('button',{name:'Start walk'}).click();
+    const notice=page.locator('.world-walk-notice');
+    await notice.filter({hasText:'stair no longer fits'}).waitFor({timeout:60000});
+    await page.getByRole('combobox',{name:'Walk level'}).selectOption('roof');
+    await notice.getByRole('button',{name:'Go to top floor'}).click();
+    await page.waitForFunction(()=>JSON.parse(document.querySelector('[data-world-walk]').dataset.status).levelId==='first');
+    await page.getByTestId('walk-cutaway').click();
+    await page.waitForFunction(()=>JSON.parse(document.querySelector('[data-world-walk]').dataset.status).cutaway===false);
+    if(touch){
+      await page.getByTestId('walk-overview').click();
+      await page.waitForFunction(()=>JSON.parse(document.querySelector('[data-world-walk]').dataset.status).overview);
+      const previous=await page.getByTestId('world-walk').evaluate(e=>JSON.parse(e.dataset.status).camera);
+      const pad=await page.locator('.world-look-stick').boundingBox();
+      await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:pad.x+pad.width*.82,y:pad.y+pad.height/2}]});
+      await page.waitForFunction(before=>{const p=JSON.parse(document.querySelector('[data-world-walk]').dataset.status).camera;return Math.hypot(p[0]-before[0],p[2]-before[2])>.35},previous,{timeout:3000});
+      await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+      challenge.lookStick=true;
+    }
+    await page.locator('.world-walk-exit').click();
+    assert.equal(await page.evaluate(()=>JSON.stringify(window.__designer.readProperty())),original);
+    challenge.designUnchanged=true;challenge.roofFallback=true;challenge.invalidStairMessage=true;
+  }catch(e){challenge.error=e.message.slice(0,1200);await page.screenshot({path:path.join(out,brand+'-'+width+'-recovery-failure.jpg'),type:'jpeg'}).catch(()=>{})}
+  challenge.errors=[...errors];await fs.writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(challenge));
   await context.close();
  }
 }finally{await browser.close()}
