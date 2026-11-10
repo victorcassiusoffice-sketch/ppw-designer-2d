@@ -40,7 +40,7 @@
  * It preserves the same source materials and measurements but does not claim
  * pixel matching with a colour card. Switching looks never moves the camera.
  */
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { createAutoAoState, sampleAutoAo } from './adaptiveAmbientOcclusion';
 import { optionalShadingReady } from './firstPicture';
 import { createFirstPictureMaterials } from './firstPictureMaterials';
@@ -65,8 +65,8 @@ import { gardenMeshes } from './gardenMeshes';
 import { disposeGardenResources } from './gardenGround';
 import { visibleOpeningProfile } from './openingMeshProfile';
 import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../../store/buildSkinStore';
-import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateGroundPresentation, updateSkyDome, type NightLight } from './dressing';
-import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, ARCHITECTURAL_HORIZON_HEX, presentationProfile, type ScenePresentation } from './renderPresentation';
+import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, groundPlane, lampsOnFactor, nightLight, setBackdropVisibility, skyDome, updateGroundPresentation, updateSkyDome, type NightLight } from './dressing';
+import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, presentationProfile, type ScenePresentation } from './renderPresentation';
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
 import { serviceProductPreview } from './serviceProductPreview';
 import { foundationMeshes } from './foundationMeshes';
@@ -303,6 +303,8 @@ export interface ThreeStageProps {
   catalogPreview?: { item: ItemSolid; valid: boolean } | null;
   /** Architectural lighting/backdrop for exploring; studio preserves the measured paint preview. */
   presentation?: ScenePresentation;
+  /** Designer canvas colour, used by the default build backdrop. */
+  canvasBackground?: string;
   solids: SceneSolids;
   /** Generic service fixtures on visible storeys, independent of catalog stock. */
   serviceFixtures?: ServiceFixturePlacement[];
@@ -381,8 +383,6 @@ const HEMI_NIGHT_GROUND = new THREE.Color(0x3b3f4a);
 
 const toThree = (p: { x: number; y: number; z: number }): THREE.Vector3 => new THREE.Vector3(p.x, p.z, p.y);
 const SELECT_HEX = '#79C7AD';
-/** Unpriced presentation horizon; never allowed to intrude into room bounds. */
-const FOG_HEX = ARCHITECTURAL_HORIZON_HEX;
 /**
  * Clear air between the farthest point of the plan and where the fade may
  * start, metres. With the 4 m minimum plan radius the fog therefore begins
@@ -659,10 +659,13 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
+  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
   ref,
 ): JSX.Element {
   const buildSkin = useBuildSkinStore(s => s.skin);
+  const backdrop = buildSkin === 'natural' ? undefined : BUILD_SKIN_PALETTES[buildSkin];
+  const canvasClear = useMemo(() => canvasBackground && !backdrop && (hour === null || !Number.isFinite(hour))
+    ? new THREE.Color(canvasBackground) : null, [backdrop, canvasBackground, hour]);
   const qualityChoice = useRenderQualityStore(s => s.choice);
   const qualityChoiceRef = useRef(qualityChoice);
   qualityChoiceRef.current = qualityChoice;
@@ -940,7 +943,6 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (contentRef.current) applyContentPresentation(contentRef.current, presentation);
     const { centre } = boundsRef.current;
     if (groundRef.current) {
-      updateGroundPresentation(groundRef.current, presentation, buildSkin);
       groundRef.current.position.x = presentation !== 'studio' ? centre.x : 0;
       groundRef.current.position.z = presentation !== 'studio' ? centre.z : 0;
     }
@@ -948,9 +950,26 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // Fog is a horizon fade on the ground plane only. Its planes are not
       // fixed: updateFog keeps the near plane beyond the plan for wherever the
       // camera is (a fixed plane tinted painted walls at 3× zoom-out).
-      sceneRef.current.fog = presentation !== 'studio' ? new THREE.Fog(buildSkin === 'natural' ? FOG_HEX : BUILD_SKIN_PALETTES[buildSkin].sky, 1, 2) : null;
+      sceneRef.current.fog = presentation !== 'studio' ? new THREE.Fog(0xffffff, 1, 2) : null;
       updateFog();
     }
+  };
+
+  const applyBackdrop = (day: number) => {
+    const scene = sceneRef.current, ground = groundRef.current, sky = skyRef.current;
+    if (!scene || !ground || !sky) return;
+    setBackdropVisibility(scene, sky, ground, canvasClear, groundVisible && !(foundationView && hasFoundationGeometry(foundation)));
+    if (canvasClear) {
+      scene.fog?.color.copy(canvasClear);
+      return;
+    }
+    updateGroundPresentation(ground, presentation, backdrop);
+    const quant = Math.round(day * 20) / 20;
+    if (sky.userData.day !== quant || sky.userData.presentation !== presentation || sky.userData.colors !== backdrop) {
+      updateSkyDome(sky, quant, presentation, backdrop);
+    }
+    const horizon = architecturalBackdrop(quant, backdrop).horizon;
+    scene.fog?.color.setRGB(horizon[0] / 255, horizon[1] / 255, horizon[2] / 255, THREE.SRGBColorSpace);
   };
 
   /**
@@ -980,8 +999,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       if (rimRef.current) rimRef.current.intensity = Math.PI * dayRig.rim;
       aimSun(new THREE.Vector3(...profile.sunDirection).normalize());
       sunStateRef.current = null;
-      sceneRef.current?.fog?.color.set(FOG_HEX);
-      if (skyRef.current && (skyRef.current.userData.day !== 1 || skyRef.current.userData.presentation !== presentation || skyRef.current.userData.buildSkin !== buildSkin)) updateSkyDome(skyRef.current, 1, presentation, buildSkin);
+      applyBackdrop(1);
       for (const l of lampsRef.current) {
         l.light.intensity = l.baseIntensity * profile.lampFactor;
         l.glow.visible = profile.lampFactor > 0;
@@ -993,8 +1011,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const day = s.daylight;
     // The far horizon follows the sky at dusk. Fog remains beyond all room
     // bounds, and this never alters the calibrated light or product colour.
-    const horizon = architecturalBackdrop(day).horizon;
-    sceneRef.current?.fog?.color.setRGB(horizon[0] / 255, horizon[1] / 255, horizon[2] / 255, THREE.SRGBColorSpace);
+    applyBackdrop(day);
     hemi.intensity = Math.PI * (dayRig.hemi * day + nightRig.hemi * (1 - day));
     hemi.color.copy(HEMI_NIGHT_SKY).lerp(daySky, day);
     hemi.groundColor.copy(HEMI_NIGHT_GROUND).lerp(dayBounce, day);
@@ -1006,10 +1023,6 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (rimRef.current) rimRef.current.intensity = Math.PI * (dayRig.rim * day + nightRig.rim * (1 - day));
     aimSun(new THREE.Vector3(s.direction.x, Math.max(0.05, s.direction.z), s.direction.y));
     sunStateRef.current = { elevationDeg: s.elevationDeg, azimuthDeg: s.azimuthDeg };
-    if (skyRef.current) {
-      const quant = Math.round(day * 20) / 20;
-      if (skyRef.current.userData.day !== quant || skyRef.current.userData.presentation !== presentation || skyRef.current.userData.buildSkin !== buildSkin) updateSkyDome(skyRef.current, quant, presentation, buildSkin);
-    }
     const lamps = lampsOnFactor(s.elevationDeg);
     for (const l of lampsRef.current) {
       l.light.intensity = l.baseIntensity * lamps;
@@ -1024,7 +1037,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (!canvas) return;
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
     } catch {
       failedRef.current = true;
       onFailed?.();
@@ -1051,7 +1064,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    const sky = skyDome(1);
+    const sky = skyDome(1, presentation, backdrop);
     scene.add(sky);
     skyRef.current = sky;
 
@@ -1444,8 +1457,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (foundation?.enabled) group.add(foundationMeshes(foundation, foundationBaseElevationM, false, foundationView));
     if (shade?.enabled && shade.sails.length) group.add(shadeMeshes(shade, foundationBaseElevationM));
     const inspect = foundationView && hasFoundationGeometry(foundation);
-    setFoundationInspection([groundRef.current, ...floorsRef.current, gardenRef.current, ...shadowsRef.current], inspect);
-    if (groundRef.current) groundRef.current.visible = groundVisible && !inspect;
+    setFoundationInspection([...floorsRef.current, gardenRef.current, ...shadowsRef.current], inspect);
     group.updateMatrixWorld(true);
     const bounds = structureBoundsRef.current.clone();
     if (foundation?.enabled || (shade?.enabled && shade.sails.length)) bounds.expandByObject(group);
@@ -1458,18 +1470,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [foundation, foundationView, foundationBaseElevationM, shade, solids, ecoTrees, groundVisible]);
 
-  // ---- the hour: sun, sky, lamps -----------------------------------------
-  useEffect(() => {
-    applyHour(hour);
-    requestRender();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hour, doy, presentation, buildSkin]);
-
+  // Install the fog before applying its hour-dependent horizon colour below.
   useEffect(() => {
     applyPresentation();
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presentation, buildSkin]);
+  }, [presentation]);
+
+  useEffect(() => {
+    applyHour(hour);
+    requestRender();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hour, doy, presentation, backdrop, canvasClear]);
 
   // View quality never rebuilds room/product solids or changes the camera.
   useEffect(() => {

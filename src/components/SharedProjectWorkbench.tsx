@@ -606,7 +606,7 @@ export default function SharedProjectWorkbench({
               ? 'Connected · version ' + cloud.revision
               : 'Shared connection needed'}
         </span>
-        <LocaleThemeControls compact />
+        <LocaleThemeControls designer compact />
         <button onClick={close}>← Build</button>
       </header>
       <div className="shared-layout">

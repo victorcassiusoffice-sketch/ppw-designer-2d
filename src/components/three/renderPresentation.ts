@@ -6,9 +6,18 @@ export type ScenePresentation = 'studio' | 'architectural' | 'natural';
 
 /** Backdrop tokens are deliberately separate from illumination / sold finishes. */
 export const ARCHITECTURAL_GROUND_HEX = '#a9bbb4';
-export const ARCHITECTURAL_HORIZON_HEX = '#c0cec8';
-export function architecturalBackdrop(day: number): { top: number[]; horizon: number[] } {
+export interface BackdropColors { sky: string; horizon: string }
+export function architecturalBackdrop(day: number, colors?: BackdropColors): { top: number[]; horizon: number[] } {
   const daylight = Number.isFinite(day) ? Math.max(0, Math.min(1, day)) : 1;
+  if (colors) {
+    const sky = new THREE.Color(colors.sky);
+    const horizon = new THREE.Color(colors.horizon);
+    const shade = (color: THREE.Color) => color
+      .multiplyScalar(0.3 + 0.7 * daylight)
+      .convertLinearToSRGB()
+      .toArray().map(value => Math.round(value * 255));
+    return { top: shade(sky), horizon: shade(horizon) };
+  }
   const mix = (night: number[], noon: number[]) => night.map((value, i) => Math.round(value + (noon[i] - value) * daylight));
   return {
     top: mix([31, 36, 36], [169, 187, 180]),

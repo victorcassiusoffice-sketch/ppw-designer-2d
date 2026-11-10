@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fitPlanViewport } from '../fitPlanViewport';
+import { fitPlanViewport, PLAN_DIMENSION_OFFSET_M, PLAN_DIMENSION_TICK_M } from '../fitPlanViewport';
 import { computeZoomScale, ZOOM_MIN_SCALE } from '../zoom';
 
 describe('whole-building plan fit', () => {
@@ -23,6 +23,16 @@ describe('whole-building plan fit', () => {
     expect(left).toBeGreaterThanOrEqual(40); expect(right).toBeLessThanOrEqual(920);
     expect(top).toBeCloseTo(40); expect(bottom).toBeCloseTo(500);
     expect(left + right).toBeCloseTo(960); expect(top + bottom).toBeCloseTo(540);
+  });
+  it('fits the 6 × 4 m plan and dimension ticks in the available desktop and phone gutters', () => {
+    const bounds = { minX: 0, minY: 0, maxX: 600, maxY: 400 };
+    const tickExtent = (PLAN_DIMENSION_OFFSET_M + PLAN_DIMENSION_TICK_M) * 100;
+    const dimensionMin = { x: -tickExtent, y: -tickExtent };
+    const desktop = fitPlanViewport(bounds, 1280, 470, dimensionMin)!;
+    expect(desktop.scale).toBe(fitPlanViewport(bounds, 1280, 470)!.scale);
+    expect(desktop.y - tickExtent * desktop.scale).toBeCloseTo(8);
+    expect(desktop.y + bounds.maxY * desktop.scale).toBeLessThanOrEqual(470 - 8);
+    expect(fitPlanViewport(bounds, 390, 560, dimensionMin)).toEqual(fitPlanViewport(bounds, 390, 560));
   });
   it('keeps ordinary rooms at 100% maximum and ignores unmeasured canvases', () => {
     const bounds = { minX: 0, minY: 0, maxX: 300, maxY: 400 };

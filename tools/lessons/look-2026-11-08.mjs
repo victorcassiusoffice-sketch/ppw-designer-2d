@@ -24,6 +24,7 @@ await page.getByTestId('start-quick-rectangle').first().click();
 await page.waitForTimeout(500);
 await page.getByRole('button', { name: cat, exact: true }).first().click();
 await page.getByTestId(tool).first().click();
+await page.locator('[data-lesson-chip]').first().click();
 await page.locator('[data-lesson-card]').first().waitFor({ timeout: 10000 }).catch(() => {});
 await page.waitForTimeout(900);
 await page.screenshot({ path: path.join(out, `${w}x${h}-2-card-${tool}.png`) });

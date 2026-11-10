@@ -67,7 +67,7 @@ try {
   await page.locator('.konvajs-content canvas').first().waitFor({ timeout: 60000 });
   await waitClean(page);
   await page.waitForFunction(() => !!window.__ppwGeom?.ready?.());
-  await page.locator('[data-lessons-quest="offer"]').waitFor({ timeout: 20000 });
+  await tap(page.locator('[data-lessons-quest="offer-chip"]'));
   await sleep(1200);
   await tap(page.locator('[data-lessons-quest="offer"]').getByRole('button', { name: 'Start', exact: true }));
   await sleep(1200);

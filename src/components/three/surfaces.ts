@@ -15,7 +15,7 @@
  * size: a 50 cm rubber tile repeats every 0.5 m, a 1 m EVA mat every metre.
  */
 import * as THREE from 'three';
-import { architecturalBackdrop } from './renderPresentation';
+import { architecturalBackdrop, type BackdropColors } from './renderPresentation';
 import { architecturalMineralVariation, ARCHITECTURAL_MINERAL_REPEAT_M } from '../../designer/architecturalSurface';
 
 // ---------------------------------------------------------------------------
@@ -359,12 +359,11 @@ export function floorSurface(kind: FloorKind, tileM = 0.5): FloorSurface {
  * A vertical sky gradient as a texture for a big inside-out sphere: zenith
  * → horizon → below. Colours are sRGB hexes; `t` blends day (1) to night (0).
  */
-export function skyTexture(day: number, presentation: 'studio' | 'architectural' = 'studio'): THREE.Texture {
-  if (presentation === 'architectural') {
-    // A soft stone / sage presentation backdrop, independent of room paint. A tiny
-    // data texture also works without canvas and has no external asset fetch.
+export function skyTexture(day: number, presentation: 'studio' | 'architectural' = 'studio', colors?: BackdropColors): THREE.Texture {
+  if (colors || presentation === 'architectural') {
+    // A small sRGB gradient independent of illumination and physical finishes.
     const pixels = new Uint8Array(256 * 4);
-    const { top, horizon } = architecturalBackdrop(day);
+    const { top, horizon } = architecturalBackdrop(day, colors);
     for (let row = 0; row < 256; row++) {
       const blend = Math.sin(row / 255 * Math.PI) ** 2;
       for (let channel = 0; channel < 3; channel++) pixels[row * 4 + channel] = top[channel] + (horizon[channel] - top[channel]) * blend;

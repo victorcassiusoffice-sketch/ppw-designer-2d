@@ -24,10 +24,12 @@ afterEach(() => {
 });
 
 describe('a first pick shows its card once', () => {
-  it('shows the card on the first pick only', () => {
+  it('offers a compact tip on the first pick and expands it on request', () => {
     const s = useLessonsStore.getState();
     expect(s.pick('door')).toBe(true);
-    expect(useLessonsStore.getState().active?.id).toBe('door');
+    expect(useLessonsStore.getState().active).toMatchObject({ id: 'door', tucked: true, forced: false });
+    s.untuck();
+    expect(useLessonsStore.getState().active).toMatchObject({ id: 'door', tucked: false, forced: true });
     useLessonsStore.getState().gotIt();
     expect(useLessonsStore.getState().active).toBeNull();
     expect(useLessonsStore.getState().pick('door')).toBe(false);
@@ -46,7 +48,7 @@ describe('a first pick shows its card once', () => {
     useLessonsStore.getState().pick('measure');
     useLessonsStore.getState().gotIt();
     expect(useLessonsStore.getState().pick('measure', { force: true })).toBe(true);
-    expect(useLessonsStore.getState().active).toMatchObject({ id: 'measure', forced: true });
+    expect(useLessonsStore.getState().active).toMatchObject({ id: 'measure', forced: true, tucked: false });
   });
 
   it('a keyboard-only tool shows no card on a touch screen', () => {
@@ -58,6 +60,7 @@ describe('a first pick shows its card once', () => {
     useLessonsStore.getState().pick('walls');
     useLessonsStore.getState().gotIt();
     useLessonsStore.getState().pick('wallpaint');
+    useLessonsStore.getState().untuck();
     useLessonsStore.getState().tuck();
     expect(useLessonsStore.getState().active).toMatchObject({ id: 'wallpaint', tucked: true });
     expect(useLessonsStore.getState().done).toEqual(['walls', 'wallpaint']);

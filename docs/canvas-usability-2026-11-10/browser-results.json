@@ -1,0 +1,220 @@
+[
+  {
+    "width": 1280,
+    "view": "unfurnished plan",
+    "tone": "ivory",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 1280,
+    "view": "unfurnished plan",
+    "tone": "ocean",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 1280,
+    "view": "unfurnished plan",
+    "tone": "slate",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 1280,
+    "view": "public WebGL",
+    "tone": "ivory",
+    "sampledRgb": [
+      [
+        148,
+        170,
+        181
+      ],
+      [
+        148,
+        170,
+        181
+      ],
+      [
+        148,
+        170,
+        181
+      ]
+    ],
+    "centre": "DIV"
+  },
+  {
+    "width": 1280,
+    "view": "public WebGL",
+    "tone": "ocean",
+    "sampledRgb": [
+      [
+        37,
+        59,
+        76
+      ],
+      [
+        37,
+        59,
+        76
+      ],
+      [
+        37,
+        59,
+        76
+      ]
+    ],
+    "centre": "DIV"
+  },
+  {
+    "width": 1280,
+    "view": "public WebGL",
+    "tone": "slate",
+    "sampledRgb": [
+      [
+        52,
+        60,
+        80
+      ],
+      [
+        52,
+        60,
+        80
+      ],
+      [
+        52,
+        60,
+        80
+      ]
+    ],
+    "centre": "DIV"
+  },
+  {
+    "width": 1280,
+    "view": "city WebGL",
+    "tone": "ocean",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 1280,
+    "view": "city WebGL",
+    "tone": "ivory",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 1280,
+    "view": "blank plan",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 1280,
+    "consoleAndPageErrors": 0,
+    "writes": 0
+  },
+  {
+    "width": 390,
+    "view": "unfurnished plan",
+    "tone": "ivory",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 390,
+    "view": "unfurnished plan",
+    "tone": "ocean",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 390,
+    "view": "unfurnished plan",
+    "tone": "slate",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 390,
+    "view": "public WebGL",
+    "tone": "ivory",
+    "sampledRgb": [
+      [
+        148,
+        170,
+        181
+      ],
+      [
+        148,
+        170,
+        181
+      ],
+      [
+        148,
+        170,
+        181
+      ]
+    ],
+    "centre": "DIV"
+  },
+  {
+    "width": 390,
+    "view": "public WebGL",
+    "tone": "ocean",
+    "sampledRgb": [
+      [
+        37,
+        59,
+        76
+      ],
+      [
+        37,
+        59,
+        76
+      ],
+      [
+        37,
+        59,
+        76
+      ]
+    ],
+    "centre": "DIV"
+  },
+  {
+    "width": 390,
+    "view": "public WebGL",
+    "tone": "slate",
+    "sampledRgb": [
+      [
+        52,
+        60,
+        80
+      ],
+      [
+        52,
+        60,
+        80
+      ],
+      [
+        52,
+        60,
+        80
+      ]
+    ],
+    "centre": "DIV"
+  },
+  {
+    "width": 390,
+    "view": "city WebGL",
+    "tone": "ocean",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 390,
+    "view": "city WebGL",
+    "tone": "ivory",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 390,
+    "view": "blank plan",
+    "centre": "CANVAS"
+  },
+  {
+    "width": 390,
+    "consoleAndPageErrors": 0,
+    "writes": 0
+  }
+]

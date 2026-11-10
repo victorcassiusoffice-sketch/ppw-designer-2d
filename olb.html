@@ -25,16 +25,25 @@
     <title>One Live Build</title>
     <style>
       #designer-startup { display:none; }
-      html[data-initial-house] #designer-startup { position:fixed; inset:0; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; margin:0; background:radial-gradient(ellipse at 50% 35%,#e8eddf,#c6d6ca); color:#304d42; font:14px system-ui,sans-serif; }
+      html[data-initial-house][data-ui-theme="ocean"] { --boot-canvas:#253b4c; --boot-ink:#e9f3f7; }
+      html[data-initial-house][data-ui-theme="slate"] { --boot-canvas:#343c50; --boot-ink:#f0f1fa; }
+      html[data-initial-house] #designer-startup { position:fixed; inset:0; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; margin:0; background:var(--designer-canvas,var(--boot-canvas,#94aab5)); color:var(--designer-canvas-ink,var(--boot-ink,#142d40)); font:14px system-ui,sans-serif; }
       #designer-startup strong { font-size:18px; }
-      #designer-startup .boot-model { width:56px; height:56px; border:1px solid #afc5b7; border-radius:12px; background:linear-gradient(135deg,#f7f5e9,#b1cdbf); box-shadow:8px 12px 20px #4d6e4930,inset 2px 2px 4px #fffc; transform:rotate(-15deg); }
-      #designer-startup .boot-track { width:116px; height:4px; border-radius:6px; overflow:hidden; background:#adc3b455; }
-      #designer-startup .boot-track span { display:block; width:40%; height:100%; background:#658e79; animation:boot-slide 1.6s ease-in-out infinite; }
+      #designer-startup .boot-model { width:56px; height:56px; border:1px solid #6e8b99; border-radius:12px; background:linear-gradient(135deg,#e3edf0,#9ebdc8); box-shadow:8px 12px 20px #25425640,inset 2px 2px 4px #fffc; transform:rotate(-15deg); }
+      #designer-startup .boot-track { width:116px; height:4px; border-radius:6px; overflow:hidden; background:#47627455; }
+      #designer-startup .boot-track span { display:block; width:40%; height:100%; background:currentColor; animation:boot-slide 1.6s ease-in-out infinite; }
       @keyframes boot-slide { from { transform:translateX(-110%); } to { transform:translateX(360%); } }
       @media(prefers-reduced-motion:reduce) { #designer-startup .boot-track span { animation:none; } }
     </style>
     <script>
-      if (/^\/(demo|embed\/designer)\/?$/.test(location.pathname) && new URLSearchParams(location.search).get('view') !== '2d') document.documentElement.setAttribute('data-initial-house','');
+      if (/^\/(demo|embed\/designer)\/?$/.test(location.pathname) && new URLSearchParams(location.search).get('view') !== '2d') {
+        const root = document.documentElement;
+        root.setAttribute('data-initial-house','');
+        try {
+          const theme = JSON.parse(localStorage.getItem('olb.ui-preferences.v1') || '{}').theme;
+          if (theme === 'ocean' || theme === 'slate') root.dataset.uiTheme = theme;
+        } catch { /* Storage can be unavailable in an embedded document. */ }
+      }
     </script>
   </head>
   <body class="bg-ppw-sand text-ppw-ink antialiased">

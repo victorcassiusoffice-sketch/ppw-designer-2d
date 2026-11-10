@@ -1,7 +1,7 @@
 /* The studio's shell and floating workspaces share the same moulded surfaces.
    The model, materials, product photographs and trade status ink keep their own colours. */
 :root[data-designer-skin="glacier"][data-ui-theme] {
-  --ui-bg: #94aab5; --ui-surface: #cfdee3; --ui-raised: #b5cad3;
+  --ui-bg: var(--designer-canvas, #94aab5); --ui-surface: #cfdee3; --ui-raised: #b5cad3;
   --ui-ink: #142d40; --ui-muted: #324e60; --ui-line: #78949f;
   --ui-accent: #1a626b; --ui-on-accent: #fff; --ui-soft: #b4dbda; --ui-focus: #13515a;
   --skin-highlight: #f4fbffbb; --skin-shadow: #344e606b; --skin-inner: #496c7770;
@@ -12,13 +12,13 @@
   --studio-inset: inset 2px 3px 6px var(--skin-shadow),inset -1px -2px 3px var(--skin-highlight);
 }
 :root[data-designer-skin="glacier"][data-ui-theme]:is([data-ui-theme=ocean],[data-ui-theme=slate]) {
-  --ui-bg: #253b4c; --ui-surface: #30495b; --ui-raised: #3f5b6d;
+  --ui-bg: var(--designer-canvas, #253b4c); --ui-surface: #30495b; --ui-raised: #3f5b6d;
   --ui-ink: #f2fbff; --ui-muted: #cbdee7; --ui-line: #778e9b;
   --ui-accent: #a1e2dd; --ui-on-accent: #132e3c; --ui-soft: #365e68; --ui-focus: #aaeae6;
   --skin-gradient: linear-gradient(145deg,#466374,#2d4658);
   --skin-highlight: #c8e8ef44; --skin-shadow: #091a298c;
 }
-:root[data-designer-skin="glacier"][data-ui-theme=slate][data-ui-theme] { --ui-bg:#343c50; --ui-surface:#434c60; --skin-gradient:linear-gradient(145deg,#58647c,#37475b); }
+:root[data-designer-skin="glacier"][data-ui-theme=slate][data-ui-theme] { --ui-bg:var(--designer-canvas, #343c50); --ui-surface:#434c60; --skin-gradient:linear-gradient(145deg,#58647c,#37475b); }
 :root[data-designer-skin="glacier"][data-ui-theme] body :is(.designer-app,.bd-sheet,.build-dashboard,.project-workspace,.city-workspace,.shared-workspace,.trade-map-sheet,.locale-theme-controls__panel) {
   --bd-paper:var(--ui-bg); --bd-panel:var(--ui-surface); --bd-ink:var(--ui-ink); --bd-muted:var(--ui-muted); --bd-accent:var(--ui-accent);
   font-family:Inter,'Segoe UI',system-ui,sans-serif;

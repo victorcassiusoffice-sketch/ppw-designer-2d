@@ -14,6 +14,17 @@ export const INTL_LOCALES: Record<AppLocale, string> = {
   es: 'es-ES',
 };
 export const messageRows = {
+  'Glacier blue': ['Glacier blue', 'Bleu glacier', '冰川蓝', 'Azul glaciar'],
+  'Deep ocean': ['Deep ocean', 'Bleu océan', '深海蓝', 'Azul océano'],
+  'Slate': ['Slate', 'Ardoise', '石板灰', 'Pizarra'],
+  'Match colour theme': ['Match colour theme', 'Suivre le thème de couleurs', '跟随配色主题', 'Usar los colores del tema'],
+  'View controls': ['View controls', 'Commandes de vue', '视图控制', 'Controles de vista'],
+  'Drag to pan · pinch / wheel to zoom · select for details': [
+    'Drag to pan · pinch / wheel to zoom · select for details',
+    'Faites glisser pour déplacer la vue. Pincez ou utilisez la molette pour zoomer. Sélectionnez un élément pour voir ses détails.',
+    '拖动可平移，双指捏合或滚动鼠标滚轮可缩放，选择项目可查看详情。',
+    'Arrastra para desplazar la vista. Usa dos dedos o la rueda para acercar. Selecciona un elemento para ver sus detalles.',
+  ],
   Preferences: ['Preferences', 'Préférences', '偏好设置', 'Preferencias'],
   Language: ['Language', 'Langue', '语言', 'Idioma'],
   'Colour theme': ['Colour theme', 'Thème de couleurs', '配色主题', 'Tema de color'],

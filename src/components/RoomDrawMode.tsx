@@ -77,12 +77,6 @@ import {
   WALL_INK,
   SELECT_STROKE,
   LABEL_HALO,
-  CHROME_BG,
-  CHROME_RIM,
-  CHROME_TEXT,
-  CHROME_TEXT_2,
-  CHROME_ACTIVE_BG,
-  CHROME_ACTIVE_TEXT,
 } from '../designer/blueprintTheme';
 
 function pushDrawToast(message: string, kind: ToastKind = 'info'): void {
@@ -642,6 +636,9 @@ export function RoomDrawLayer({
         return;
       }
       if (e.key === 'Enter') {
+        // Let focused controls activate normally, including the lesson and
+        // wall-drawing buttons. The room name field keeps its shortcut.
+        if (target?.closest?.('button, a[href], select')) return;
         // Hotfix 7: Enter MUST close the polygon even when focus is in
         // the HUD's room-name input. The pre-Hotfix-7 guard bailed out
         // here whenever the input had focus, which is the most common
@@ -969,6 +966,13 @@ export interface RoomDrawHUDProps {
  * mint focus ring, inset press, 40 % disabled. Colours come from
  * `blueprintTheme` CHROME_* via the matching Tailwind `ppw-*` entries.
  */
+const CHROME_BG = 'var(--ui-raised, #b5cad3)';
+const CHROME_RIM = 'var(--ui-line, #78949f)';
+const CHROME_TEXT = 'var(--ui-ink, #142d40)';
+const CHROME_TEXT_2 = 'var(--ui-muted, #324e60)';
+const CHROME_ACTIVE_BG = 'var(--ui-soft, #b4dbda)';
+const CHROME_ACTIVE_TEXT = 'var(--ui-ink, #142d40)';
+
 const CTRL =
   'pointer-events-auto inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-3 text-[12px] font-medium leading-none transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:cursor-not-allowed disabled:opacity-40';
 /** Rest: paper ground + hairline rim. Hover deepens both. */
@@ -1179,6 +1183,7 @@ export function RoomDrawHUD({
       className="wall-draw-dock pointer-events-auto"
       style={{ background: CHROME_BG, borderBottom: `1px solid ${CHROME_RIM}`, color: CHROME_TEXT }}
       data-testid="room-draw-hud"
+      data-empty={vertices.length === 0}
       data-compact={phone ? 'true' : 'false'}
       data-placement="top"
       role="region"
@@ -1394,13 +1399,13 @@ export function RoomDrawHUD({
             {phoneSettingsOpen ? 'Less' : 'Snap / length'}
           </button>
         )}
-      </div>
       {phone && vertices.length === 0 && onQuickRectangle && (
         <button type="button" onClick={onQuickRectangle} data-testid="start-quick-rectangle"
           className={`${CTRL} ${CTRL_OUTLINED} ${phoneBtn}`} title="Lay a 5 x 4 m room instead of drawing one">
           5 × 4 m room
         </button>
       )}
+      </div>
       </div>
     </div>
   );

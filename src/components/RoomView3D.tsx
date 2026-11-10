@@ -105,6 +105,9 @@ import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPre
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
 import { RoomViewControls, type CameraView } from './RoomViewControls';
 import { useRoomLighting } from '../hooks/useRoomLighting';
+import { canvasThemeFor } from '../designer/canvasTheme';
+import { useAppPreferences } from '../i18n/AppPreferences';
+import { BUILD_SKIN_PALETTES, useBuildSkinStore } from '../store/buildSkinStore';
 import { useBelowMd } from '../lib/useBelowMd';
 import {
   boundsOf,
@@ -439,6 +442,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const sunHour = useDesignerUIStore((s) => s.sunHour);
   const setSunHour = useDesignerUIStore((s) => s.setSunHour);
   const [roomLighting, setRoomLighting] = useRoomLighting();
+  const { theme } = useAppPreferences();
+  const buildSkin = useBuildSkinStore(s => s.skin);
+  const canvasBackground = canvasThemeFor(theme).background;
+  const backdropColor = buildSkin === 'natural' ? canvasBackground : BUILD_SKIN_PALETTES[buildSkin].sky;
   const materialsOpen = useDesignerUIStore(s => s.materialsPanelOpen);
   const energyOpen = useDesignerUIStore((s) => s.energyPanelOpen);
   const belowMd = useBelowMd();
@@ -855,8 +862,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawScene(ctx, projected, size);
-  }, [backend, projected, size]);
+    drawScene(ctx, projected, size, backdropColor);
+  }, [backend, projected, size, backdropColor]);
 
   const hitAt = useCallback(
     (x: number, y: number): WallHit | null => (backend === 'gl' ? stageRef.current?.hitTest(x, y) ?? null : hitTestWall(projected, x, y)),
@@ -1983,7 +1990,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     <div
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ background: '#c6d6ca', touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '16 / 10' } : { flex: 1, minHeight: 0 }) }}
+      style={{ background: backdropColor, touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '16 / 10' } : { flex: 1, minHeight: 0 }) }}
       data-testid="wallpaint-3d"
       data-variant={variant}
       data-backend={backend}
@@ -2010,6 +2017,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               foundationBaseElevationM={foundationBaseElevationM}
               shade={visible.landscape ? property.shade : undefined}
               presentation={presentation}
+              canvasBackground={canvasBackground}
               camera={renderedCamera ?? camera}
               projection={projection}
               width={size.width}
@@ -2087,7 +2095,6 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         ].map((point) => stageRef.current?.projectPoint(point.x, point.y, point.z)).filter((point) => !!point).map((point) => `${point.x},${point.y}`).join(' ')} />
         {(() => { const screen = stageRef.current?.projectPoint((wallPreview.a.x + wallPreview.b.x) / 2, (wallPreview.a.y + wallPreview.b.y) / 2, wallPreview.elevationM + activeHeight + 0.12); return screen ? <text x={screen.x} y={screen.y} textAnchor="middle">{wallPreview.lengthM.toFixed(2)} m{wallPreview.closesRoom ? ' · close room' : ''}</text> : null; })()}
       </svg>}
-      {empty && !measuredTool.target && constructionTool !== 'room' && constructionTool !== 'wall' && variant === 'overlay' && <div className="house-empty"><strong>Your home starts here</strong><p>Draw your first room, add another floor, then shape the spaces around it.</p><button onClick={() => chooseBuildTool('room')}>Draw a room</button></div>}
       {measuredTool.target && measuredPreview && <svg className="house-room-preview" data-testid="measured-path-preview" aria-hidden="true"><polyline points={measuredPreview.vertices.map(point => stageRef.current?.projectPoint(point.x, point.y, (solids.activeElevationM ?? 0) + .04)).filter(point => !!point).map(point => `${point.x},${point.y}`).join(' ')} fill="none" stroke="#22836b" strokeWidth="3" /></svg>}
       {empty && variant === 'card'  && <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs">Draw a room to see it in 3D</p>}
       {variant === 'card' && viewControls}

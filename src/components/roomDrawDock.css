@@ -45,3 +45,16 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+
+:root[data-designer-skin] .wall-draw-dock :is(button,input) {
+  color: var(--ui-ink); background: var(--ui-surface); border-color: var(--ui-line);
+}
+:root[data-designer-skin] .wall-draw-dock button:enabled:hover,
+:root[data-designer-skin] .wall-draw-dock button[aria-pressed='true'] { background: var(--ui-soft); }
+:root[data-designer-skin] .wall-draw-dock [data-testid='room-draw-close']:enabled {
+  background: var(--ui-accent); color: var(--ui-on-accent);
+}
+:root[data-designer-skin] .wall-draw-dock [data-testid='room-draw-cancel'] { color: var(--ui-danger); }
+.wall-draw-dock[data-compact='true'][data-empty='true'] :is([data-testid='room-draw-close'],[data-testid='room-draw-undo']):disabled {
+  display: none;
+}

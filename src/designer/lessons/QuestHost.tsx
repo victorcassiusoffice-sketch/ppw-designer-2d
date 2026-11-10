@@ -122,8 +122,14 @@ export function QuestHost(): JSX.Element | null {
         type="button"
         className="lessons-quest lessons-quest--chip"
         data-lessons-quest="offer-chip"
+        aria-expanded={false}
         style={style}
-        onClick={() => useLessonsStore.getState().setOfferTucked(false)}
+        onClick={(event) => {
+          useLessonsStore.getState().setOfferTucked(false);
+          if (event.detail === 0) {
+            requestAnimationFrame(() => host.current?.querySelector<HTMLButtonElement>('.lessons-primary')?.focus({ preventScroll: true }));
+          }
+        }}
       >
         <span>{t('lesson.quest.title')}</span>
       </button>,

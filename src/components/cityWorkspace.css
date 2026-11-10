@@ -222,9 +222,9 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  border: 1px solid #bccdb8;
+  border: 1px solid var(--ui-line, #78949f);
   border-radius: 23px;
-  background: #cbd7c4;
+  background: var(--designer-canvas, #94aab5);
 }
 .city-map {
   display: block;
@@ -245,8 +245,8 @@
   border-radius: 12px;
   padding: 6px 10px;
   font-size: 11px;
-  background: #eef3e3df;
-  color: #48634e;
+  background: var(--ui-surface, #cfdee3);
+  color: var(--ui-ink, #142d40);
   width: fit-content;
   max-width: calc(100% - 24px);
 }
