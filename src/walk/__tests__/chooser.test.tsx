@@ -144,14 +144,14 @@ async function start(
 }
 
 describe('deferred character chooser', () => {
-  it('draws four embedded PNGs without preparing a scene or starting the character loader', () => {
+  it('draws an embedded PNG for every available character without preparing a scene or starting the character loader', () => {
     const prepare = vi.fn(() => ({ property, solids }));
     act(() => root.render(<WalkMode prepareVisit={prepare} onClose={() => {}} />));
     expect(document.querySelector('[data-testid="walk-chooser"]')).not.toBeNull();
     const images = [
       ...document.querySelectorAll<HTMLImageElement>('[data-testid="walk-chooser"] img'),
     ];
-    expect(images).toHaveLength(4);
+    expect(images).toHaveLength(WALK_CHARACTERS.length);
     for (const [index, image] of images.entries()) {
       expect(image.getAttribute('src')).toBe(WALK_CHARACTERS[index].thumbnailDataUrl);
       expect(image.dataset.thumbnailSource).toBe(WALK_CHARACTERS[index].thumbnailUrl);

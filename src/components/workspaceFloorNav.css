@@ -27,3 +27,24 @@
   .plan-project-bar .workspace-floor-nav select { width:100%; font-size:11px; }
   .plan-project-bar > button { padding:6px 8px; font-size:10px; }
 }
+
+@media (max-width: 480px) {
+  .designer-app .plan-project-bar {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    max-width: 100%;
+  }
+  .designer-app .plan-project-bar .workspace-floor-nav { flex: 0 0 110px; }
+  .designer-app .plan-project-bar > * { flex-shrink: 0; }
+  .designer-app .plan-project-bar :is(select,button) { min-height: 48px; }
+  .designer-app .plan-project-bar > button { min-width: 48px; }
+  .designer-app .house-rail {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    flex-wrap: nowrap;
+  }
+  .designer-app .house-rail button { flex: 0 0 auto; min-width: 57px; width: auto; padding-inline: 5px; }
+}

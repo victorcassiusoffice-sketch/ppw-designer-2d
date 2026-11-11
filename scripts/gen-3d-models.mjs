@@ -56,6 +56,7 @@ const opt = (n, d) => {
 };
 const dryRun = flag('--dry-run');
 const yes = flag('--yes');
+// Legacy generator only. The product engine retired this default on 2026-11-10.
 const model = opt('--model', 'fal-ai/hunyuan3d-v21');
 const only = opt('--only');
 const limit = Number(opt('--limit', '0'));

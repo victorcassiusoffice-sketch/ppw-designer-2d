@@ -25,38 +25,15 @@ const CATALOG = path.join(ROOT, 'src', 'data', 'products.json');
 const MANIFEST = path.join(ROOT, 'src', 'data', 'productModels.json');
 const dryRun = process.argv.includes('--dry-run');
 
-/** Where the top-down art shows the head (console / screen / handlebars / weight tower) at rotation 0. Read off the art 2026-09-17. */
-const ART_HEAD = {
-  'k1-nordictrack-2450': 'right',
-  'k1-nordictrack-tour-de-france': 'right',
-  'k1-nordictrack-gx10': 'right',
-  'k1-schwinn-700ic': 'left',
-  'k1-proform-carbon-tl': 'right',
-  'k1-nordictrack-x16': 'right',
-  'k1-nordictrack-rw900': 'left',
-  'k1-vision-t600-03': 'right',
-  'k1-vision-t600e-02': 'left',
-  'k1-matrix-mg-glute': 'left',
-  'k1-matrix-versa-adabd': 'left',
-  'k1-vision-smith': 'top',
-  'k1-bowflex-xtreme-2se': 'top',
-};
+// The law itself (ART_HEAD, the yaw tables, the scoring) lives in
+// scripts/product-engine/lib/orient.mjs since 2026-11-08, so the product engine
+// and this script share one copy. This script keeps its behaviour.
+import { ART_HEAD, EPS, pickModelFront } from './product-engine/lib/orient.mjs';
 
 const catalog = JSON.parse(fs.readFileSync(CATALOG, 'utf8'));
 const products = Array.isArray(catalog) ? catalog : catalog.products;
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
-
-const EPS = 1e-9;
-const frontYaw = { '+z': 0, '-z': Math.PI, '+x': -Math.PI / 2, '-x': Math.PI / 2 };
-const edgeYaw = { bottom: 0, top: Math.PI, left: -Math.PI / 2, right: Math.PI / 2 };
-// Plan directions as three-frame xz vectors: right = +x, left = −x, bottom (plan +y) = +z, top = −z.
-const ART_VEC = { right: [1, 0], left: [-1, 0], bottom: [0, 1], top: [0, -1] };
-
-function rotY(v, a) {
-  const [x, z] = v;
-  return [x * Math.cos(a) + z * Math.sin(a), -x * Math.sin(a) + z * Math.cos(a)];
-}
 
 for (const [id, art] of Object.entries(ART_HEAD)) {
   const entry = manifest[id];
@@ -109,16 +86,8 @@ for (const [id, art] of Object.entries(ART_HEAD)) {
     const catalogAspect = L / W;
     swapped = Math.abs(Math.log(ez / ex / catalogAspect)) + EPS < Math.abs(Math.log(ex / ez / catalogAspect));
   }
-  const swapYaw = swapped ? Math.PI / 2 : 0;
-  const fe = edgeYaw[p.front_edge || 'bottom'];
-  const want = ART_VEC[art];
-  let best = null;
-  for (const front of Object.keys(frontYaw)) {
-    const r = rotY([hx, hz], frontYaw[front] + swapYaw + fe);
-    const score = r[0] * want[0] + r[1] * want[1];
-    if (!best || score > best.score) best = { front, score, r };
-  }
-  const weak = Math.hypot(hx, hz) < 0.15;
+  const best = pickModelFront({ head: { x: hx, z: hz }, art, swapped, frontEdge: p.front_edge || 'bottom' });
+  const weak = best.weak;
   const line = `${id.padEnd(34)} head(model) x ${hx.toFixed(2)} z ${hz.toFixed(2)}${swapped ? ' swapped' : ''} · art ${art.padEnd(6)} → modelFront ${best.front}${weak ? '  (weak signal — check the render)' : ''}`;
   console.log(line);
   if (!dryRun && !weak) {

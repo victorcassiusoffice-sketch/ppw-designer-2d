@@ -2,6 +2,7 @@ import mayaThumbnail from './thumbnails/kenney-female-a.png?inline';
 import leaThumbnail from './thumbnails/kenney-female-b.png?inline';
 import alexThumbnail from './thumbnails/kenney-male-a.png?inline';
 import samThumbnail from './thumbnails/kenney-male-b.png?inline';
+import generated from './characters.generated.json';
 
 /** Metadata and tiny PNGs arrive together in the deferred chooser, never the initial scene. */
 export interface WalkCharacter {
@@ -15,8 +16,11 @@ export interface WalkCharacter {
   /** Source bind-pose height; fit the loaded model to the controller's avatar height. */
   heightM: number;
   bytes: number;
-  licence: 'CC0-1.0';
+  /** 'CC0-1.0' for the Kenney four; the generated people carry the generator's licence note. */
+  licence: string;
   source: string;
+  /** A generated person's real height, metres (the walk still scales every body to its own height). */
+  realHeightM?: number;
 }
 
 const common = {
@@ -66,6 +70,9 @@ export const WALK_CHARACTERS: readonly WalkCharacter[] = [
     heightM: 0.6613336950540543,
     bytes: 91804,
   },
+  // Real-looking people made by the product engine (scripts/product-engine, 2026-11): made-up
+  // adults, rigged and animated through fal. The Kenney four stay as the fallback.
+  ...(generated as WalkCharacter[]),
 ];
 
 export const DEFAULT_WALK_CHARACTER_ID = WALK_CHARACTERS[0].id;

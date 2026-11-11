@@ -10,9 +10,9 @@
    "category": "fitness",
    "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
    "dimensions_cm": {
-    "length": 205,
-    "width": 95,
-    "height": 165
+    "length": 196.3,
+    "width": 94,
+    "height": 161
    },
    "weight_kg": 138,
    "price": {
@@ -30,7 +30,19 @@
    "source_url": "https://www.k1-sport.com/shop-online",
    "topdown_image_url": "/products/topdown/k1-nordictrack-2450.webp",
    "photo_image_url": "/products/photos/k1-nordictrack-2450.webp",
-   "front_edge": "bottom"
+   "front_edge": "bottom",
+   "dimensions_source": "NordicTrack spec drawing on the K1-Sport listing (77.3 in L x 37 in W x 63.4 in H = 196.3 x 94 x 161 cm), read 8 Nov 2026; was 205 x 95 x 165 (May 2026 seed, rounded)",
+   "photo_views": {
+    "front": "/products/photos/views/k1-nordictrack-2450-front.webp",
+    "left": "/products/photos/views/k1-nordictrack-2450-left.webp"
+   },
+   "photo_views_source": {
+    "page": "https://www.k1-sport.com/product/nordictrack-new-commercial-2450-treadmill",
+    "at": "2026-11-08T17:37:14.742Z",
+    "cleaned": true,
+    "front": "https://cdn-asset-stl-2.airsquare.com/k1sport/managed/image/product/BA84599F-204B-4090-A9DBF3651FF3B0F3-2000w.webp",
+    "left": "https://cdn-asset-stl-2.airsquare.com/k1sport/managed/image/product/555BD3CA-92F9-4F90-B3F54B986BDC50B1-2000w.webp"
+   }
   },
   {
    "id": "k1-nordictrack-tour-de-france",
@@ -1127,7 +1139,7 @@
    "eco_certified": true,
    "placement": "wall",
    "mount_height_cm": 120,
-   "inverter_kw": 1.0,
+   "inverter_kw": 1,
    "energy_role": "inverter"
   },
   {

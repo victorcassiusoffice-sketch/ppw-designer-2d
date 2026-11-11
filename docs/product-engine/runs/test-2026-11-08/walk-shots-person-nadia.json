@@ -1,0 +1,50 @@
+{
+  "at": "2026-11-08T13:41:37.128Z",
+  "bodies": "person-nadia",
+  "results": [
+    {
+      "id": "k1-nordictrack-2450",
+      "device": "laptop",
+      "bodies": "person-nadia",
+      "character": "nadia",
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/person-nadia-laptop-third.png",
+        "walking": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/person-nadia-laptop-walking.png",
+        "running": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/person-nadia-laptop-running.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/person-nadia-laptop-first.png"
+      }
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "device": "phone",
+      "bodies": "person-nadia",
+      "character": "nadia",
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/person-nadia-phone-third.png",
+        "walking": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/person-nadia-phone-walking.png",
+        "running": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/person-nadia-phone-running.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/person-nadia-phone-first.png"
+      }
+    }
+  ]
+}

@@ -10,6 +10,7 @@
  * output is not the glTF default, which way it faces.
  */
 import manifestJson from './productModels.json';
+import candidatesJson from './productModelCandidates.json';
 import catalogJson from './products.json';
 import type { Product } from './products.schema';
 
@@ -28,9 +29,46 @@ export interface ProductModelEntry {
   licence?: string;
   /** Reviewed supplier import takes precedence over a procedural utility preview. */
   preferMesh?: boolean;
+  /**
+   * A lighter copy for phones (about 5,000 triangles, 512 px textures), written by the product
+   * engine (2026-11). `productModelFor` serves it on a phone-class screen; absent → the one body.
+   */
+  phoneUrl?: string;
 }
 
 const manifest: Record<string, ProductModelEntry> = manifestJson as Record<string, ProductModelEntry>;
+
+/**
+ * Test candidates (product engine, 2026-11): one body per tool, keyed tool → product id, kept
+ * only while Victor compares them. `?bodies=<tool>` on any designer URL shows that tool's bodies
+ * instead of the catalogue's. Empty in normal times.
+ */
+const candidates = candidatesJson as Record<string, Record<string, ProductModelEntry>>;
+
+function candidateVariant(): string | null {
+  if (typeof window === 'undefined' || !window.location) return null;
+  try {
+    const wanted = new URLSearchParams(window.location.search).get('bodies');
+    return wanted && candidates[wanted] ? wanted : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A phone-class screen: narrow and touch-first. The phone copy exists for exactly this. */
+export function wantsPhoneBody(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  try {
+    return window.matchMedia('(max-width: 760px) and (pointer: coarse)').matches;
+  } catch {
+    return false;
+  }
+}
+
+/** The body to fetch for an entry on this device: the phone copy when there is one and the screen is a phone. */
+export function bodyUrlFor(entry: ProductModelEntry, phone: boolean = wantsPhoneBody()): string {
+  return phone && entry.phoneUrl ? entry.phoneUrl : entry.url;
+}
 
 /**
  * The manifest is keyed by SEED ids, but on the deployed designer the K1
@@ -50,10 +88,15 @@ for (const [id, entry] of Object.entries(manifest)) {
 /** The body for a product, or undefined → the shaded box. */
 export function productModelFor(p: Pick<Product, 'id' | 'mesh_url'> & { sku?: string }): ProductModelEntry | undefined {
   if (p.mesh_url) return { url: p.mesh_url, modelFront: '+z', lengthAxis: 'auto', preferMesh: true };
+  const variant = candidateVariant();
+  const table = variant ? candidates[variant] : null;
+  const seedId = p.sku ? seedIdBySku.get(p.sku) : undefined;
+  if (table) {
+    const candidate = table[p.id] ?? (seedId ? table[seedId] : undefined);
+    if (candidate) return candidate;
+  }
   const byId = manifest[p.id];
   if (byId) return byId;
-  if (!p.sku) return undefined;
-  const seedId = seedIdBySku.get(p.sku);
   return seedId ? manifest[seedId] : undefined;
 }
 

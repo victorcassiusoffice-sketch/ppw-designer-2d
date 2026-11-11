@@ -1,0 +1,126 @@
+{
+  "at": "2026-11-08T13:37:58.992Z",
+  "bodies": "hunyuan",
+  "results": [
+    {
+      "id": "k1-nordictrack-2450",
+      "device": "laptop",
+      "bodies": "hunyuan",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/hunyuan-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/hunyuan-laptop-first.png"
+      }
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "device": "phone",
+      "bodies": "hunyuan",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/hunyuan-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/hunyuan-phone-first.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "device": "laptop",
+      "bodies": "hunyuan",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/hunyuan-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/hunyuan-laptop-first.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "device": "phone",
+      "bodies": "hunyuan",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/hunyuan-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/hunyuan-phone-first.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "device": "laptop",
+      "bodies": "hunyuan",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/hunyuan-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/hunyuan-laptop-first.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "device": "phone",
+      "bodies": "hunyuan",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/hunyuan-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/hunyuan-phone-first.png"
+      }
+    }
+  ]
+}

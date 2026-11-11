@@ -1,0 +1,126 @@
+{
+  "at": "2026-11-08T12:14:42.364Z",
+  "bodies": "catalogue",
+  "results": [
+    {
+      "id": "k1-nordictrack-2450",
+      "device": "laptop",
+      "bodies": "catalogue",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/catalogue-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/catalogue-laptop-first.png"
+      }
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "device": "phone",
+      "bodies": "catalogue",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/catalogue-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-nordictrack-2450/catalogue-phone-first.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "device": "laptop",
+      "bodies": "catalogue",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/catalogue-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/catalogue-laptop-first.png"
+      }
+    },
+    {
+      "id": "emcar-jinko-475",
+      "device": "phone",
+      "bodies": "catalogue",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/catalogue-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/emcar-jinko-475/catalogue-phone-first.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "device": "laptop",
+      "bodies": "catalogue",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/catalogue-laptop-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/catalogue-laptop-first.png"
+      }
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "device": "phone",
+      "bodies": "catalogue",
+      "character": null,
+      "posed": {
+        "accepted": true,
+        "note": "no refusal from the hook"
+      },
+      "errors": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "blocked": [
+        "GET https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "shots": {
+        "third": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/catalogue-phone-third.png",
+        "first": "docs/product-engine/runs/test-2026-11-08/walk/k1-bowflex-xtreme-2se/catalogue-phone-first.png"
+      }
+    }
+  ]
+}

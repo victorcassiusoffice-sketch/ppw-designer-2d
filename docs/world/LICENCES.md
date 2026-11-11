@@ -2065,3 +2065,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## Finish round1: PPW install metadata image derivatives
 
 The192px and512px PNG icons referenced by the PPW-only manifest are resized derivatives of the existing repository-owned public/ppw-favicon.svg (SHA256387a1d72942349cc88a11affea9abaecd8ab30d2df1b920101fa045bf83bbf22). The source is covered by the repository MIT licence, Copyright(c)2026 Vic Bhatoolaul / Peak Performance Wellness, retained in LICENSE. Existing Sharp generates the opaque brand-background icons with the source mark inside the maskable safe circle. No external asset, new dependency, service worker or offline-capability claim is introduced. The One Live Build shell continues to use its own existing manifest and icons.
+
+# Product engine: fal.ai model pages read 2026-11-08
+
+Read on fal.ai on 8 November 2026 for the product engine (`scripts/product-engine/`, One Live Build as a game, part 1). Each page carried fal's **"Commercial use"** badge on that date, and its Pricing paragraph is quoted in `scripts/product-engine/lib/prices.mjs`. Everything runs on PPW's own prepaid fal account; no other account, key or subscription was made. The badge is fal's statement about its licence to the output; the makers' own terms still apply where fal's page points to them.
+
+| Endpoint (fal) | Maker's model | fal badge 2026-11-08 | Price paragraph on the page (2026-11-08) | Used for |
+| --- | --- | --- | --- | --- |
+| `tripo3d/h3.1/image-to-3d` | Tripo H3.1 (VAST / Holymolly) | Commercial use | $0.20 without textures, $0.30 standard textures, $0.40 HD; +$0.20 detailed geometry; +$0.05 quad | product bodies (test) |
+| `meshy/v7.1/image-to-3d` | Meshy 7.1 | Commercial use | $0.80 base, $1.20 textured; auto-rigging +$0.20; animation +$0.12 per call; textured + rig + animation $1.52 | product bodies (test); people (rig + walk/run + Idle) |
+| `fal-ai/hunyuan3d-v3/image-to-3d` | Tencent Hunyuan3D v3 | Commercial use | $0.225 Geometry, $0.375 Normal, $0.45 LowPoly; PBR, multi-view, custom face count +$0.15 each | product bodies (test) |
+| `fal-ai/flux/dev` | Black Forest Labs FLUX.1 [dev] | Commercial use ("Commercial usage rights included") | $0.025 per megapixel, rounded up | the made-up person's picture |
+
+Tripo's own terms (https://developers.tripo3d.ai/en/terms, read 2026-11-08), section 3.2 "Outputs & Service Restrictions": outputs may be used for lawful commercial or non-commercial purposes so long as they are not distributed or made available to third parties in a manner inconsistent with the agreement; outputs may not be used to build competing models or services; no scraping of the service. Letting merchants generate models from inside the app is a different use (third parties operating the service through us) and waits for Victor's word; recorded in `docs/product-engine/README.md`.
+
+Hi3D (was Hitem3D) was not used: its own API needs at least 100,000 faces per model (five times the laptop budget) and its terms ask for a "Created with Hitem3D" credit and license inputs and outputs for model training (https://docs.hi3d.ai/en/api/resources/terms-of-use, read 2026-11-07 by the Commander).
+
+People made by the engine are made-up adults drawn from words (FLUX.1 [dev]), never from a photo of anyone; no face is modelled on a known person; clothes carry no logos. The Kenney Mini Characters (CC0, above) stay in the chooser as the fallback.
