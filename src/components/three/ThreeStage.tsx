@@ -61,6 +61,7 @@ import type { FloorKind } from './surfaces';
 import { applyWallLook, wallTextures } from './wallSurfaces';
 import { wallJoinery } from './joinery';
 import { stairMesh, roofMesh, disposeBuildingTextures } from './buildingMeshes';
+import {cutPolygon} from '../../designer/terrainCuts';
 import { gardenMeshes } from './gardenMeshes';
 import { disposeGardenResources } from './gardenGround';
 import { visibleOpeningProfile } from './openingMeshProfile';
@@ -315,6 +316,7 @@ export interface ThreeStageProps {
   serviceRuns?: ServiceRunPlacement[];
   groundVisible?: boolean;
   ecoTrees?: readonly EcoTree[];
+  terrainCuts?:import('../../designer/terrainCuts').TerrainCut[];
   boundaryComponents?: import('../../designer/boundaryModel').BoundaryComponent[];
   foundation?: FoundationModel;
   foundationView?: boolean;
@@ -664,7 +666,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, boundaryComponents, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
+  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, terrainCuts, boundaryComponents, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
   ref,
 ): JSX.Element {
   const buildSkin = useBuildSkinStore(s => s.skin);
@@ -1242,6 +1244,19 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boundaryComponents]);
 
+  useEffect(()=>{
+    if(!terrainCuts?.length)return;
+    const scene=sceneRef.current,ground=groundRef.current;if(!scene||!ground)return;
+    let active=true,release:(()=>void)|undefined;
+    void import('./earthworkMeshes').then(({cutBackdrop,soilMeshes})=>{
+      if(!active)return;
+      const original=ground.geometry,clipped=cutBackdrop(ground,terrainCuts),soil=soilMeshes(terrainCuts);
+      ground.geometry=clipped;scene.add(soil);requestRender();
+      release=()=>{ground.geometry=original;clipped.dispose();disposeObject(soil);soil.removeFromParent()};
+    });
+    return ()=>{active=false;release?.();requestRender()};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[terrainCuts,solids]);
   // ---- geometry, on plan change ---------------------------------------------
   useEffect(() => {
     const content = contentRef.current;
@@ -1250,7 +1265,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     clearViewHover(); clearEraseHover();
 
     // Same room, new paint: repaint in place (see structureSignature).
-    const signature = structureSignature(solids);
+    const signature = structureSignature(solids)+(terrainCuts?.length?JSON.stringify(terrainCuts):'');
     if (signature === signatureRef.current && wallsRef.current.length === solids.walls.length) {
       const byKey = new Map(solids.walls.map((w) => [w.key, w]));
       for (const e of wallsRef.current) {
@@ -1400,7 +1415,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
     if (solids.gardenVisible !== false) {
       const groundRooms = solids.gardenObstacles ?? solids.floors.filter((floor) => (floor.elevationM ?? 0) < 0.01).map((floor) => floor.polygon);
-      const garden = gardenMeshes(solids.garden, groundRooms, solids.gardenSite);
+      const garden = gardenMeshes(solids.garden, groundRooms, solids.gardenSite, terrainCuts?.map(cutPolygon));
       gardenRef.current = garden;
       content.add(garden);
       // A large plot must not spread the house's finite shadow map over its
@@ -1442,7 +1457,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       requestRender();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [solids]);
+  }, [solids,terrainCuts]);
 
   // Services are presentation geometry only. Rebuilding their small dedicated
   // group never moves the camera, changes a room footprint or enters the cart.

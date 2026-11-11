@@ -1,3 +1,4 @@
+import { validCuts } from '../../src/designer/terrainCuts.js';
 import { validComponents } from '../../src/designer/boundaryModel.js';
 import { BuildingServicesSchema } from '../../src/designer/buildingServicesContract.js';
 import { FoundationSchema } from '../../src/designer/foundationContract.js';
@@ -34,6 +35,7 @@ export function validateSnapshotCity(property: object): string | null {
 }
 
 export function validateSnapshotMeasurements(property: object): string | null {
+  if ('terrainCuts' in property && !validCuts(property.terrainCuts)) return 'Invalid excavation cells.';
   if ('boundaryComponents' in property && !validComponents(property.boundaryComponents)) return 'Invalid measured component topology.';
   return (
     validateSnapshotServices(property) ??

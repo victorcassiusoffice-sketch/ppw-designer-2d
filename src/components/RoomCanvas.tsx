@@ -4933,6 +4933,7 @@ export function RoomCanvas({
 
           {parts.stairs && <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
           </Group>
+          {visible.foundation && propertyForPaint.terrainCuts?.map(cell=><Rect key={'cut-'+cell.id} x={cell.x*pxPerMetre} y={cell.y*pxPerMetre} width={pxPerMetre} height={pxPerMetre} fill="#96795c" opacity={0.8} stroke="#664a37" strokeWidth={1} strokeScaleEnabled={false} listening={false}/>)}
           {propertyForPaint.boundaryComponents?.map(part=><Group key={'component-'+part.id} listening={false}>
             {part.edges.map(([a,b],i)=><Line key={i} points={[part.vertices[a].x*pxPerMetre,part.vertices[a].y*pxPerMetre,part.vertices[b].x*pxPerMetre,part.vertices[b].y*pxPerMetre]} stroke="#40796a" strokeWidth={1.5} strokeScaleEnabled={false}/>)}
           </Group>)}

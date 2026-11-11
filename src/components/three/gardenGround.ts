@@ -33,11 +33,11 @@ export function gardenSurfaceMap(lawn: boolean): THREE.DataTexture {
 }
 
 /** Two draws maximum, regardless of plot area. Never adds persisted surfaces. */
-export function surroundingLawn(occupied: readonly Polygon[], garden?: Garden, site?: GardenSite): THREE.Group {
+export function surroundingLawn(occupied: readonly Polygon[], garden?: Garden, site?: GardenSite, cuts:readonly Polygon[]=[]): THREE.Group {
   const group = new THREE.Group();
   group.name = 'garden-surround';
   group.userData = { automaticLawn: true };
-  const footprint = lawnFootprint(occupied, garden, site);
+  const footprint = lawnFootprint(occupied, garden, site, cuts);
   if (!footprint || footprint.areaM2 < 0.001) return group;
   const triangles = lawnTriangles(footprint);
   const positions: number[] = [];

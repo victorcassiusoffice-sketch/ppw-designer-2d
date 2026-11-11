@@ -1,5 +1,5 @@
 import type {LiveWalkView} from '../components/three/HouseStageSlot';
-import { useLayoutEffect,useCallback, useEffect, useRef, useState } from 'react';
+import { lazy,Suspense,useLayoutEffect,useCallback, useEffect, useRef, useState } from 'react';
 import { SharedBuildButton } from '../sharedBuild/SharedBuildButton';
 import {parkWalker,detachWalker,clearParkedWalker} from './buildReturn';
 import { BoundaryTools } from '../components/three/BoundaryTools';
@@ -19,6 +19,7 @@ import type { WalkRuntime, WalkStatus } from './runtime';
 import { createTapActivator, ownTouchSequences } from './touchInput';
 import './walk.css';
 
+const EarthworkTool=lazy(()=>import('./EarthworkTool'));
 const camera: OrbitCamera = { target: { x: 0, y: 0, z: 1 }, distanceM: 10, azimuthRad: 0, elevationRad: .6, fovRad: Math.PI / 3 };
 const preferenceKey = 'olb-world-character-v1';
 function savedCharacter(): string {
@@ -56,6 +57,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
   const host = useRef<HTMLElement>(null);
   const walkSlot=useRef<HTMLDivElement>(null);
   const [building,setBuilding]=useState(false);
+  const [earthwork,setEarthwork]=useState(false);
   const stage = useRef<ThreeStageHandle>(null);
   const runtime = useRef<WalkRuntime | null>(null);
   const [choice, setChoice] = useState(savedCharacter);
@@ -213,7 +215,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
   return createPortal(
     <section ref={host} className="world-walk" data-world-walk="true" role="dialog" aria-modal="true" aria-label="Walk mode"
       data-testid="world-walk" data-status={status ? JSON.stringify(status) : undefined}>
-      {started && visit && <div className="world-walk-scene" ref={walkSlot}>{!live&&<ThreeStage ref={stage} solids={visit.solids} boundaryComponents={boundaryComponents} camera={camera}
+      {started && visit && <div className="world-walk-scene" ref={walkSlot}>{!live&&<ThreeStage ref={stage} solids={visit.solids} terrainCuts={liveProperty.terrainCuts} boundaryComponents={boundaryComponents} camera={camera}
         width={size.width} height={size.height} hover={null} wallView="up" presentation="architectural"
         onReady={stageReady} onFailed={() => { runtime.current?.dispose(); runtime.current = null; setError('WebGL is unavailable. Exit to return to your design.'); }} />}</div>}
       <header className="world-walk-header"><div><strong>Walk mode</strong><span>Explore your design</span></div>
@@ -251,6 +253,8 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
           }} onPointerCancel={() => { lookPointer.current = null; }} />
         <div className="world-walk-toolbar">
           {live&&<button type="button" onClick={buildFromHere}>Build from here</button>}
+          <button type="button" aria-expanded={earthwork} onClick={()=>{if(document.pointerLockElement)document.exitPointerLock?.();setEarthwork(v=>!v)}}>Dig / fill</button>
+          {earthwork&&<Suspense fallback={null}><EarthworkTool view={{element:()=>host.current,ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,project:p=>runtime.current?.drawingProjection(p)??null}} onClose={()=>setEarthwork(false)}/></Suspense>}
           <SharedBuildButton/>
           <BoundaryTools beforeOpen={()=>{if(document.pointerLockElement)document.exitPointerLock?.()}} view={{
             element:()=>host.current,

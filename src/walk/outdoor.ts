@@ -1,3 +1,5 @@
+import {cutPieces} from '../components/three/earthworkMeshes';
+import {cutPolygon} from '../designer/terrainCuts';
 import { ShapeGeometry, Shape, Vector2 } from 'three';
 import { lawnFootprint } from '../components/three/gardenSurround';
 import { gardenSurfacePolygon } from '../designer/garden';
@@ -32,7 +34,10 @@ export function outdoorPatches(solids: SceneSolids, property: Property): WalkPat
     // The empty Designer stage already draws a 600 m backdrop, centred on the origin.
     add([{ x: -300, y: -300 }, { x: 300, y: -300 }, { x: 300, y: 300 }, { x: -300, y: 300 }], -.002);
   }
-  return patches;
+  if(!property.terrainCuts?.length)return patches;
+  const clipped=patches.flatMap(p=>cutPieces(p.polygon,property.terrainCuts!).map(polygon=>({...p,polygon})));
+  for(const cell of property.terrainCuts)clipped.push({polygon:cutPolygon(cell),levelId:ground.level.id,elevationM:cell.topM-cell.depthM});
+  return clipped;
 }
 
 export function patchGeometry(patch: WalkPatch): ShapeGeometry {

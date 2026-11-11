@@ -86,7 +86,7 @@ export function sharedProperty(raw: unknown): Build {
   const copy = JSON.parse(JSON.stringify(raw)) as Build;
   for (const k of privateFields) delete copy[k];
   // An initially empty collection still has stable, independently editable children.
-  for (const name of ['boundaryComponents', 'walls', 'stairs'])
+  for (const name of ['boundaryComponents', 'walls', 'stairs', 'terrainCuts'])
     if (copy[name] === undefined) copy[name] = [];
   if (
     !safeJson(copy) ||
