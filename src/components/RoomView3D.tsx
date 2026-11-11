@@ -2077,7 +2077,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
       </Suspense>}
       {removeActive && <div className="remove-build-status" role="status" data-testid="remove-3d-hud" data-target-kind={removeHover?.kind??'none'}><span>{removeTargetMessage(removeHover)}</span><button type="button" onClick={finishRemoving}>Done</button></div>}
-      {variant==='overlay' && <SurfaceActions host={containerRef} erase={removeActive}
+      {variant==='overlay' && <SurfaceActions host={containerRef} erase={removeActive} materials={kind=>changeHouseMode(kind==='wall'?'paint':'floor')}
         point={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.floorPoint(x-rect.left,y-rect.top)??null:null}}
         direct={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.hitBuildPart?.(x-rect.left,y-rect.top)??null:null}}
         hit={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.hitErase(x-rect.left,y-rect.top)??null:null}}

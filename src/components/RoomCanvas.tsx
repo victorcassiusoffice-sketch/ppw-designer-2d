@@ -3676,7 +3676,7 @@ export function RoomCanvas({
       onPointerLeave={()=>{if(!removePress.current)setRemoveHover(null);}}
       onClickCapture={e=>{if(eraseActive&&(e.target as HTMLElement).tagName==='CANVAS')e.stopPropagation();}}
     >
-      <SurfaceActions host={containerRef} erase={eraseActive}
+      <SurfaceActions host={containerRef} erase={eraseActive} materials={kind=>useDesignerUIStore.getState().setTool(kind==='wall'?'wallpaint':'floor')}
         point={(x,y)=>{const p=floorWorldPoint(x,y);return p?{x:p.xM,y:p.yM}:null}}
         project={p=>({x:viewport.x+p.x*pxPerMetre*viewport.scale,y:viewport.y+p.y*pxPerMetre*viewport.scale})}/>
       {/* Floor tool HUD card (PHONE, 2026-08-30). Replaces the old

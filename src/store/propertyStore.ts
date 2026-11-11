@@ -676,7 +676,7 @@ export interface PropertyState {
    * free wall — deleting work must be an explicit act on that work. Otherwise
    * its (blank) rooms and walls go with it and focus returns to ground.
    */
-  removeLevel: (id: string) => boolean;
+  removeLevel: (id: string, includeRoofContents?:boolean) => boolean;
   /**
    * Focus a storey. The active room becomes the first non-outdoor room on it,
    * created blank if there is none. Unknown ids are ignored.
@@ -1635,7 +1635,7 @@ export const usePropertyStore = create<PropertyState>()(
           return { property };
         }),
 
-      removeLevel: (id) => {
+      removeLevel: (id, includeRoofContents=false) => {
         const s = get();
         if (id === GROUND_LEVEL_ID) return false;
         const levels = levelsOf(s.property);
@@ -1650,7 +1650,7 @@ export const usePropertyStore = create<PropertyState>()(
           || wallsOnLevel(s.property.walls ?? [], id).length > 0
           || (s.property.services?.runs.some(r => r.levelId === id) ?? false)
           || (s.property.services?.fixtures.some(f => f.levelId === id) ?? false);
-        if (hasWork) return false;
+        if (hasWork && !(id===ROOF_LEVEL_ID && includeRoofContents)) return false;
 
         set((st) => {
           const remainingRooms = st.property.rooms.filter((r) => roomLevelId(r) !== id);
@@ -1667,7 +1667,13 @@ export const usePropertyStore = create<PropertyState>()(
           const remainingStairs = (st.property.stairs ?? []).filter((stair) => stair.fromLevelId !== id && stair.toLevelId !== id);
           if (remainingStairs.length > 0) next.stairs = remainingStairs;
           else delete next.stairs;
-          if (id === ROOF_LEVEL_ID) delete next.roof;
+          if (id === ROOF_LEVEL_ID) {
+            delete next.roof;
+            if(includeRoofContents && next.services){
+              const services=next.services;
+              next.services={...services,fixtures:services.fixtures.filter(f=>f.levelId!==id),runs:services.runs.filter(r=>r.levelId!==id),junctions:services.junctions?.filter(j=>j.levelId!==id)};
+            }
+          }
           return { property: focusFirstRoomOnLevel(next, GROUND_LEVEL_ID), selectedInstanceId: null };
         });
         return true;

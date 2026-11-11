@@ -53,6 +53,7 @@ interface Props {
   hit?: (x: number, y: number) => RemoveBuildTarget | null;
   direct?: (x: number, y: number) => { target: SurfaceTarget; point: Vertex } | null;
   erase?: boolean;
+  materials: (kind: 'floor' | 'wall') => void;
 }
 type Gesture =
   | { kind: 'stair'; stair: BuildingStair; existing: boolean }
@@ -83,12 +84,15 @@ export function SurfaceActions(props: Props) {
     setPreview(null);
     setMenu(null);
   }, []);
-  const start=useCallback((g: Gesture)=> {
-    close();
-    pending.current = g;
-    setGesture(g);
-    setMessage('');
-  },[close]);
+  const start = useCallback(
+    (g: Gesture) => {
+      close();
+      pending.current = g;
+      setGesture(g);
+      setMessage('');
+    },
+    [close],
+  );
   useEffect(() => {
     const element = current.current.host.current;
     if (!element) return;
@@ -143,6 +147,18 @@ export function SurfaceActions(props: Props) {
       }
       let path: Vertex[], valid: boolean, label: string;
       if (g.kind === 'stair') {
+        const wall = selected?.kind === 'wall' ? selected.hit : null;
+        const roomWall =
+          wall?.kind === 'edge' ? property.rooms.find((r) => r.id === wall.roomId) : null;
+        const freeWall =
+          wall?.kind === 'free' ? property.walls?.find((w) => w.id === wall.wallId) : null;
+        const hasPaint =
+          roomWall?.wallPaint?.some((p) => p.edgeIndex === wall?.edgeIndex) ||
+          freeWall?.paintId ||
+          freeWall?.exteriorPaint;
+        const hasCladding =
+          roomWall?.wallCladding?.some((p) => p.edgeIndex === wall?.edgeIndex) ||
+          freeWall?.claddingId;
         const stair = { ...g.stair, x: at.x, y: at.y },
           result = validateStairPlacement(usePropertyStore.getState().property, stair);
         path = stairFootprint(stair);
@@ -192,8 +208,8 @@ export function SurfaceActions(props: Props) {
       if (!(target instanceof Element)) return;
       const source = target.closest('[data-stair-source]:not(:disabled)');
       if (source && e.button === 0) {
-        const activeHouse=document.querySelector('[data-testid="wallpaint-3d-overlay"]');
-        if(activeHouse?.getClientRects().length&&!activeHouse.contains(host))return;
+        const activeHouse = document.querySelector('[data-testid="wallpaint-3d-overlay"]');
+        if (activeHouse?.getClientRects().length && !activeHouse.contains(host)) return;
         // Only the visible viewport receiving this palette gesture owns it.
         if (
           !host.offsetWidth ||
@@ -356,7 +372,7 @@ export function SurfaceActions(props: Props) {
       window.removeEventListener('click', click, true);
       window.removeEventListener('blur', cancel);
     };
-  }, [close,start]);
+  }, [close, start]);
   useEffect(() => {
     if (!menu) return;
     const dismiss = (e: KeyboardEvent) => {
@@ -462,10 +478,57 @@ export function SurfaceActions(props: Props) {
               {selected.kind === 'item' && (
                 <button
                   onClick={() =>
-                    edit(() => usePropertyStore.getState().selectItem(selected.instanceId))
+                    edit(() =>
+                      usePropertyStore.getState().selectItemAcrossRooms(selected.instanceId),
+                    )
                   }
                 >
                   Select product to move or rotate
+                </button>
+              )}
+              {(selected.kind === 'floor' || selected.kind === 'wall') && (
+                <button
+                  onClick={() =>
+                    edit(() => props.materials(selected.kind === 'floor' ? 'floor' : 'wall'))
+                  }
+                >
+                  {selected.kind === 'floor' ? 'Floor materials' : 'Wall finishes'}
+                </button>
+              )}
+              {wall && (
+                <button
+                  onClick={() =>
+                    edit(() => window.dispatchEvent(new Event('ppw:open-wall-materials')))
+                  }
+                >
+                  Wall construction
+                </button>
+              )}
+              {wall && hasPaint && (
+                <button
+                  onClick={() =>
+                    edit(() => {
+                      const s = usePropertyStore.getState();
+                      if (roomWall)
+                        s.paintWallEdge(roomWall.id, wall.edgeIndex!, null, null, wall.side);
+                      else if (freeWall) s.paintFreeWall(freeWall.id, null, null, wall.side);
+                    })
+                  }
+                >
+                  Remove paint from this face
+                </button>
+              )}
+              {wall && hasCladding && (
+                <button
+                  onClick={() =>
+                    edit(() => {
+                      const s = usePropertyStore.getState();
+                      if (roomWall) s.setWallCladding(roomWall.id, wall.edgeIndex!, null);
+                      else if (freeWall) s.setFreeWallCladding(freeWall.id, null);
+                    })
+                  }
+                >
+                  Remove cladding from this wall
                 </button>
               )}
               {stair && (
@@ -538,12 +601,10 @@ export function SurfaceActions(props: Props) {
                       aria-label="Roof surface"
                       value={roof.material}
                       onChange={(e) =>
-                        usePropertyStore
-                          .getState()
-                          .setRoofConfig({
-                            ...roof,
-                            material: e.target.value as typeof roof.material,
-                          })
+                        usePropertyStore.getState().setRoofConfig({
+                          ...roof,
+                          material: e.target.value as typeof roof.material,
+                        })
                       }
                     >
                       {['felt', 'tile', 'metal', 'iron-sheet', 'concrete'].map((m) => (
@@ -580,6 +641,19 @@ export function SurfaceActions(props: Props) {
               </button>
               {selected.kind === 'floor' && (
                 <button onClick={() => remove(true)}>Remove all flooring in this room</button>
+              )}
+              {selected.kind === 'roof' && (
+                <button
+                  onClick={() =>
+                    edit(() =>
+                      editHistory('Remove roof and its contents', () => {
+                        usePropertyStore.getState().removeLevel('roof', true);
+                      }),
+                    )
+                  }
+                >
+                  Remove roof and all roof contents
+                </button>
               )}
               {group && group.targets.length > 1 && (
                 <button
