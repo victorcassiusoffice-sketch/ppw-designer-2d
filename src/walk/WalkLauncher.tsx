@@ -1,26 +1,31 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { ThreeStageHandle } from '../components/three/ThreeStage';
-import { buildingSolids } from '../designer/buildingScene';
-import { isRoofLevel } from '../designer/levels';
+import { prepareWalkVisit, visitLevels } from './visit';
+import { WalkerPlacement } from './WalkerPlacement';
+import type { PlacementHint } from './placement';
 import type { SceneInput } from '../designer/roomView3d';
 import type { Property } from '../store/propertyStore';
 import WalkMode from './WalkMode';
 
-type BackgroundStage = Pick<ThreeStageHandle, 'beginWalk' | 'debug'>;
+type BackgroundStage = Pick<ThreeStageHandle, 'beginWalk' | 'debug'> & Partial<Pick<ThreeStageHandle, 'walkRay' | 'projectPoint'>>;
 
 /** Loaded after the first picture: the enabled launch button and chooser arrive together. */
 export default function WalkLauncher({
   property,
   sceneForLevel,
   onOpen,
-  stageRef,
+  stageRef, viewportRef,
 }: {
   property: Property;
   sceneForLevel: (property: Property) => SceneInput;
   onOpen: () => void;
   stageRef: RefObject<BackgroundStage | null>;
+  viewportRef?: RefObject<HTMLDivElement | null>;
 }): JSX.Element {
   const [open, setOpen] = useState(false);
+  const [hint, setHint] = useState<PlacementHint>();
+  const levels = visitLevels(property);
+  const prepare = () => prepareWalkVisit(property, sceneForLevel);
   const launchButton = useRef<HTMLButtonElement>(null);
   const background = useRef<{
     release: () => void;
@@ -58,47 +63,46 @@ export default function WalkLauncher({
     button.addEventListener('world-walk-measure-background', snapshot);
     return () => button.removeEventListener('world-walk-measure-background', snapshot);
   }, [stageRef]);
+  const launch = (placement?: PlacementHint) => {
+    if (document.pointerLockElement) document.exitPointerLock?.();
+    setHint(placement); onOpen();
+
+    if (!background.current?.paused) {
+      const original = stageRef.current;
+      const surface = original?.beginWalk();
+      background.current =
+        original && surface
+          ? {
+              release: () => surface.release(),
+              readFrames: () => original.debug().frames,
+              paused: true,
+            }
+          : null;
+    }
+    setOpen(true);
+  };
   const close = () => {
     setOpen(false);
   };
   return (
     <>
+      <div className="world-walk-dock">
       <button
         ref={launchButton}
         type="button"
         className="world-walk-launch"
         aria-label="Open Walk mode"
         data-walk-ui-ready="true"
-        onClick={() => {
-          onOpen();
-          if (!background.current?.paused) {
-            const original = stageRef.current;
-            const surface = original?.beginWalk();
-            background.current =
-              original && surface
-                ? {
-                    release: () => surface.release(),
-                    readFrames: () => original.debug().frames,
-                    paused: true,
-                  }
-                : null;
-          }
-          setOpen(true);
-        }}
+        onClick={() => launch()}
       >
         Walk
       </button>
+      {!open && <WalkerPlacement property={property} levels={levels} stageRef={stageRef} viewportRef={viewportRef} prepare={prepare} onPlace={launch} />}
+      </div>
       {open && (
         <WalkMode
           onClose={close}
-          prepareVisit={() => {
-            // Construct all storeys only after Start, never on the chooser's open action.
-            const snapshot = structuredClone(property);
-            const roof = snapshot.levels?.find((level) => isRoofLevel(level));
-            const source = roof ? { ...snapshot, activeLevelId: roof.id } : snapshot;
-            const all = buildingSolids(source, sceneForLevel, 'building', true);
-            return { property: snapshot, solids: { ...all, roofs: [] } };
-          }}
+          initial={hint} levels={levels} prepareVisit={prepare}
         />
       )}
     </>

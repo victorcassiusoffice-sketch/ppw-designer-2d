@@ -15,6 +15,7 @@
  * `placed-hit` Rect is present + listening on the placed item, then fires its
  * Konva click to attempt re-selection.
  */
+import { usePropertyStore, type Property } from '../store/propertyStore';
 import Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 
@@ -36,6 +37,8 @@ interface HitReselectResult {
 
 export interface DesignerTestApi {
   getState: () => DesignerTestState;
+  readProperty: () => Property;
+  loadPropertyFixture: (property: Property) => void;
   selectItem: (id: string | null) => void;
   hitReselect: () => HitReselectResult;
 }
@@ -43,6 +46,8 @@ export interface DesignerTestApi {
 export function installTestHooks(): void {
   if (typeof window === 'undefined') return;
   const api: DesignerTestApi = {
+    readProperty: () => structuredClone(usePropertyStore.getState().property),
+    loadPropertyFixture: property => usePropertyStore.getState().loadProperty(structuredClone(property)),
     getState() {
       const s = useDesignStore.getState();
       return {

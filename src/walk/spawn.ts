@@ -1,4 +1,6 @@
 import { Vector3 } from 'three';
+import { GROUND_LEVEL_ID } from '../designer/levels';
+export { spawnAt } from './placement';
 import type { Property } from '../store/propertyStore';
 import type { Vertex } from '../lib/geometry';
 import { capsuleClear, createWalker, groundHeight } from './collision';
@@ -15,7 +17,7 @@ function inside(point: { x: number; y: number }, polygon: Vertex[]): boolean {
 
 /** Stable ground entry first, then a measured free patch of an actual ground slab. */
 export function findWalkSpawn(world: WalkWorld, property: Property): WalkSpawn | null {
-  const floors = world.floors.filter(f => !f.levelId || f.levelId === 'ground');
+  const floors = world.floors.filter(f => !f.levelId || f.levelId === (world.groundLevelId ?? GROUND_LEVEL_ID));
   if (!floors.length) return null;
   const lowest = Math.min(...floors.map(f => f.elevationM ?? 0));
   const ground = floors.filter(f => Math.abs((f.elevationM ?? 0) - lowest) < .01);

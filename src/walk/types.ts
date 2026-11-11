@@ -1,6 +1,8 @@
 import type { Box3, BufferGeometry, Vector3 } from 'three';
 import type { MeshBVH } from 'three-mesh-bvh';
 import type { BuildingStair } from '../designer/building';
+import type { RoofSurface } from '../designer/roofSurface';
+import type { WalkPatch } from './outdoor';
 import type { FloorSolid } from '../designer/roomSolids';
 
 /** Runtime-only state. No reference here is ever written back to a property. */
@@ -39,6 +41,11 @@ export interface WalkWorld {
   doors: WalkDoor[];
   stairs: WalkStair[];
   floors: FloorSolid[];
+  outdoor?: WalkPatch[];
+  groundLevelId?: string;
+  roofSurfaces?: { levelId: string; surface: RoofSurface }[];
+  roofBVH?: MeshBVH | null;
+  roofActive?: boolean;
   /** Furniture volumes also reject a spawn wholly inside a closed mesh. */
   obstacleBounds: Box3[];
   bounds: Box3;

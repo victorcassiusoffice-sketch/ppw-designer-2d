@@ -8,6 +8,11 @@ import type { Property } from '../store/propertyStore';
 import type { SceneSolids, WallSolid } from '../designer/roomSolids';
 import type { Vertex } from '../lib/geometry';
 import { FLOOR_SLAB_THICKNESS_M } from '../designer/building';
+import { roofTopVertices } from '../components/three/buildingMeshes';
+import { createRoofSurface, type RoofSurface } from '../designer/roofSurface';
+import { buildingLevels } from '../designer/building';
+import { isRoofLevel } from '../designer/levels';
+import { outdoorPatches, patchGeometry } from './outdoor';
 import { stairPlacementFits } from '../designer/stairPlacement';
 import { doorSymbol } from '../designer/openings';
 import { roomEdges } from '../designer/wallEdges';
@@ -153,13 +158,28 @@ export function createWalkWorld(solids: SceneSolids, property: Property): WalkWo
       (item.x0 + item.x1) / 2, (item.z0 + item.z1) / 2, (item.y0 + item.y1) / 2);
     obstacleBounds.push(new Box3(new Vector3(item.x0, item.z0, item.y0), new Vector3(item.x1, item.z1, item.y1)));
   }
+  const outdoor = outdoorPatches(solids, property);
+  for (const patch of outdoor) append(patchGeometry(patch));
+  const roofSurfaces: { levelId: string; surface: RoofSurface }[] = [];
+  const roofPositions: number[] = [];
+  for (const roof of solids.roofs ?? []) {
+    const surface = createRoofSurface(roof.polygon, roof.elevationM, roof.config);
+    if (!surface || !roof.levelId) continue;
+    roofSurfaces.push({ levelId: roof.levelId, surface });
+    const vertices = roofTopVertices(surface);
+    for (let i = 0; i < vertices.length; i += 3) roofPositions.push(vertices[i], vertices[i + 1] + roof.elevationM, vertices[i + 2]);
+  }
+  const roofGeometry = new BufferGeometry();
+  roofGeometry.setAttribute('position', new Float32BufferAttribute(roofPositions, 3));
+  const roofBVH = roofPositions.length ? new MeshBVH(roofGeometry) : null;
+  const groundLevelId = buildingLevels(property).find(entry => !isRoofLevel(entry.level))?.level.id;
   const staticGeometry = new BufferGeometry();
   staticGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
   staticGeometry.computeBoundingBox();
   const bounds = staticGeometry.boundingBox?.clone() ?? new Box3();
   const bvh = positions.length ? new MeshBVH(staticGeometry) : null;
   return {
-    staticGeometry, bvh, doors, stairs, obstacleBounds, floors: solids.floors.map(f => ({ ...f, polygon: f.polygon.map(p => ({ ...p })), holes: f.holes?.map(h => h.map(p => ({ ...p }))) })), bounds,
-    dispose() { staticGeometry.dispose(); for (const door of doors) door.geometry.dispose(); },
+    staticGeometry, bvh, doors, stairs, obstacleBounds, groundLevelId, outdoor, roofSurfaces, roofBVH, roofActive: false, floors: solids.floors.map(f => ({ ...f, polygon: f.polygon.map(p => ({ ...p })), holes: f.holes?.map(h => h.map(p => ({ ...p }))) })), bounds,
+    dispose() { roofGeometry.dispose(); staticGeometry.dispose(); for (const door of doors) door.geometry.dispose(); },
   };
 }

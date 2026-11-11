@@ -46,6 +46,14 @@ export function lessonActive(id: LessonId): boolean {
       return useGardenEditorStore.getState().panelOpen;
     case 'view3d':
       return ui.viewMode === '3d';
+    case 'place-person':
+      return q('[data-testid="place-walker"][aria-pressed="true"]');
+    case 'walk-cutaway':
+      return q('[data-testid="walk-cutaway"][aria-pressed="true"]');
+    case 'walk-overview':
+      return q('[data-testid="walk-overview"][aria-pressed="true"]');
+    case 'walk-level':
+    case 'walk-to':
     case 'walk':
       return q('[data-testid="world-walk"]');
   }
