@@ -4933,6 +4933,9 @@ export function RoomCanvas({
 
           {parts.stairs && <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
           </Group>
+          {propertyForPaint.boundaryComponents?.map(part=><Group key={'component-'+part.id} listening={false}>
+            {part.edges.map(([a,b],i)=><Line key={i} points={[part.vertices[a].x*pxPerMetre,part.vertices[a].y*pxPerMetre,part.vertices[b].x*pxPerMetre,part.vertices[b].y*pxPerMetre]} stroke="#40796a" strokeWidth={1.5} strokeScaleEnabled={false}/>)}
+          </Group>)}
           {visible.foundation && activeLevelId === 'ground' && propertyForPaint.foundation?.enabled && <FoundationPlanLayer model={propertyForPaint.foundation} pxPerMetre={pxPerMetre} />}
           <ServiceRoutesPlanLayer runs={serviceRuns} pxPerMetre={pxPerMetre} scale={viewport.scale} onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
           <ServiceFixturesPlanLayer fixtures={serviceFixtures} pxPerMetre={pxPerMetre}

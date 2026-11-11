@@ -314,6 +314,7 @@ export interface ThreeStageProps {
   serviceRuns?: ServiceRunPlacement[];
   groundVisible?: boolean;
   ecoTrees?: readonly EcoTree[];
+  boundaryComponents?: import('../../designer/boundaryModel').BoundaryComponent[];
   foundation?: FoundationModel;
   foundationView?: boolean;
   foundationBaseElevationM?: number;
@@ -662,7 +663,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
+  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, boundaryComponents, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
   ref,
 ): JSX.Element {
   const buildSkin = useBuildSkinStore(s => s.skin);
@@ -1223,6 +1224,21 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene || !boundaryComponents?.length) return;
+    let active = true;
+    let release: (() => void) | undefined;
+    void import('./boundaryMeshes').then(({ addBoundaryMeshes }) => {
+      if (!active) return;
+      release = addBoundaryMeshes(scene, boundaryComponents);
+      requestRender();
+    });
+    return () => { active = false; release?.(); requestRender(); };
+  // The render callback reads the active camera and renderer through refs.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boundaryComponents]);
 
   // ---- geometry, on plan change ---------------------------------------------
   useEffect(() => {

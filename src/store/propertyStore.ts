@@ -3,6 +3,7 @@ import { normaliseEco, normaliseEngineeringInputs, type EcoModel, type Engineeri
 import { normaliseBuildingServices, serviceRunLengthM, type BuildingServices } from '../designer/buildingServices';
 import { resolveServiceConnections } from '../designer/serviceConnections';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
+import { validComponents, type BoundaryComponent } from '../designer/boundaryModel';
 import { normaliseFoundation, type FoundationModel } from '../designer/foundation';
 import { normaliseShade, SHADE_MAX_ANCHORS, SHADE_MIN_ANCHORS, type ShadeAnchor, type ShadeModel, type ShadeSail } from '../designer/shade';
 import { normaliseMaterialsSettings, type MaterialsSettings } from '../designer/materials';
@@ -334,6 +335,7 @@ export interface Property {
   engineering?: EngineeringInputs;
   city?: CityModel;
   foundation?: FoundationModel;
+  boundaryComponents?: BoundaryComponent[];
   /** Tensioned shade sails between posts and wall brackets; absent = none. */
   shade?: ShadeModel;
   services?: BuildingServices;
@@ -683,6 +685,7 @@ export interface PropertyState {
   syncRoof: () => boolean;
   /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
   setServices: (services: BuildingServices) => boolean;
+  setBoundaryComponents: (components: BoundaryComponent[]) => boolean;
   setFoundation: (foundation: FoundationModel) => boolean;
   /** Replace the whole shade model; an invalid model is rejected, never clamped. */
   setShade: (shade: ShadeModel) => boolean;
@@ -1696,6 +1699,11 @@ export const usePropertyStore = create<PropertyState>()(
         return true;
       },
 
+      setBoundaryComponents: (components) => {
+        if (!validComponents(components)) return false;
+        set(s => ({property: {...s.property, boundaryComponents: components}}));
+        return true;
+      },
       setFoundation: (foundation) => {
         const normalised = normaliseFoundation(foundation);
         if (!normalised) return false;
@@ -2172,6 +2180,7 @@ export const usePropertyStore = create<PropertyState>()(
         if (merged.property?.city !== undefined) merged.property = { ...merged.property, city: normaliseCity(merged.property.city) };
         if (merged.property?.eco !== undefined) merged.property = { ...merged.property, eco: normaliseEco(merged.property.eco) };
         if (merged.property?.engineering !== undefined) merged.property = { ...merged.property, engineering: normaliseEngineeringInputs(merged.property.engineering) };
+        if (merged.property?.boundaryComponents !== undefined && !validComponents(merged.property.boundaryComponents)) merged.property = { ...merged.property, boundaryComponents: undefined };
         if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
         if (merged.property?.shade !== undefined) merged.property = { ...merged.property, shade: normaliseShade(merged.property.shade) };
         if (merged.property?.services !== undefined) {
@@ -2222,6 +2231,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
     const services = normaliseBuildingServices(property.services, levelIds);
     out.services = services ? resolveServiceConnections(services) : undefined;
   }
+  if (validComponents(property.boundaryComponents)) out.boundaryComponents = property.boundaryComponents;
   if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
   if (property.shade !== undefined) out.shade = normaliseShade(property.shade);
   if (property.city !== undefined) out.city = normaliseCity(property.city);
@@ -2389,6 +2399,7 @@ interface RawProperty {
   engineering?: unknown;
   services?: unknown;
   foundation?: unknown;
+  boundaryComponents?: unknown;
   shade?: unknown;
   city?: unknown;
   wallHeightM?: unknown;

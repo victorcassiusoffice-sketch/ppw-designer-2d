@@ -1,6 +1,7 @@
 /** Versioned, metre-based proposal contract shared by the browser, API and MCP.
  * Proposals are data only: validation never orders products or changes a saved plan. */
 import { z } from 'zod';
+import { validComponents, type BoundaryComponent } from './boundaryModel.js';
 import { FoundationSchema, FOUNDATION_SCHEMA_DESCRIPTION } from './foundationContract.js';
 import { foundationElementBounds, foundationExcavationBounds, foundationBoreBounds } from './foundation.js';
 
@@ -102,6 +103,7 @@ export const DesignDraftSchema = z
       .strict(),
     garden: z.object({ lawn: z.boolean(), entrancePath: z.boolean() }).strict(),
     foundation: FoundationSchema.optional(),
+    boundaryComponents: z.custom<BoundaryComponent[]>(validComponents, { message: 'Invalid measured component topology.' }).optional(),
     warnings: z.array(z.string().max(500)).max(16).default([]),
   })
   .strict();
@@ -472,6 +474,7 @@ export const DESIGN_SCHEMA_DESCRIPTION = {
     'verified catalogue productId only; placement must be floor (absent means floor); roof/wall/surface/ceiling hosts are not supported in version 1 room proposals; centres in world metres; rotation 0/90/180/270; known dimensions must fit without overlapping',
   connectivity:
     'all rooms require a door/stair path to an exterior ground-floor entrance; stairs fit in rooms on both adjacent storeys',
+  boundaryComponents: { optional: true, description: 'Measured XYZ vertices, indexed edges and closed, oriented planar faces.' },
   foundation: { optional: true, ...FOUNDATION_SCHEMA_DESCRIPTION },
   optionalArrayExamples: {
     products: [{ productId: 'verified-catalog-id', xM: 5, yM: 5, rotation: 0 }],
