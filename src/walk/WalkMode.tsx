@@ -1,4 +1,4 @@
-import type {LiveWalkView} from '../components/three/HouseStageSlot';
+import {WALK_BUILD_TOOLS,type WalkBuildTool,type LiveWalkView} from '../components/three/HouseStageSlot';
 import { lazy,Suspense,useLayoutEffect,useCallback, useEffect, useRef, useState } from 'react';
 import { SharedBuildButton } from '../sharedBuild/SharedBuildButton';
 import {parkWalker,detachWalker,clearParkedWalker} from './buildReturn';
@@ -209,7 +209,9 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
     e.currentTarget.style.setProperty('--stick-x','0px'); e.currentTarget.style.setProperty('--stick-y','0px');
   };
   if(building&&live)return createPortal(<div className="walk-build-return" data-testid="walk-build-return" data-world-walk="true" data-status={status?JSON.stringify(status):undefined}>
-    <strong>Building in Walk</strong><button onClick={()=>{clearParkedWalker();setBuilding(false)}}>Resume walking</button>
+    <strong>Building in Walk</strong>
+    <select aria-label="Walk build tool" defaultValue="" onChange={e=>{const value=e.target.value as WalkBuildTool;live.tool?.(value);e.target.value=''}}><option value="">Build tools</option>{WALK_BUILD_TOOLS.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select>
+    <button onClick={()=>{clearParkedWalker();setBuilding(false)}}>Resume walking</button>
     <button onClick={()=>runtime.current?.toggleOverview()}>Whole build</button><button onClick={onClose}>Exit walk</button>
   </div>,document.body);
   return createPortal(

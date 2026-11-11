@@ -2045,7 +2045,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       </div>
       {backend === 'gl' && !stageReady && <Loading3D />}
       {backend === 'gl' && stageReady && <Suspense fallback={null}>
-        <WalkLauncher sharedMount={sharedStageMount} setWalkView={setWalkView} viewportRef={containerRef} property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
+        <WalkLauncher onWalkTool={action=>{
+            if(action==='foundation'){window.dispatchEvent(new Event('ppw:open-foundation'));return}
+            if(action==='electrical'||action==='plumbing'){window.dispatchEvent(new CustomEvent('ppw:open-services',{detail:{system:action==='plumbing'?'cold-water':'electrical'}}));return}
+            if(action==='remove'){if(!removeActive)toggleRemoving();return}
+            if(action==='select'||action==='wall'||action==='room'||action==='door'||action==='window'||action==='stair'){chooseBuildTool(action);return}
+            changeHouseMode(action);
+          }} sharedMount={sharedStageMount} setWalkView={setWalkView} viewportRef={containerRef} property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
           sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
       </Suspense>}
       {removeActive && <div className="remove-build-status" role="status" data-testid="remove-3d-hud" data-target-kind={removeHover?.kind??'none'}><span>{removeTargetMessage(removeHover)}</span><button type="button" onClick={finishRemoving}>Done</button></div>}

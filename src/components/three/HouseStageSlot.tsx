@@ -4,7 +4,14 @@ import type { ThreeStageSurface } from './ThreeStage';
 import type { SceneSolids } from '../../designer/roomSolids';
 import type { PerspectiveCamera } from 'three';
 
+export const WALK_BUILD_TOOLS = [
+ ['select','Move objects'],['wall','Wall'],['room','Room'],['door','Door'],['window','Window'],['stair','Stairs'],
+ ['furnish','Products and lights'],['paint','Paint'],['floor','Flooring'],['garden','Garden'],['materials','Materials'],
+ ['energy','Solar'],['foundation','Foundation'],['electrical','Electrical services'],['plumbing','Plumbing'],['remove','Remove'],
+] as const;
+export type WalkBuildTool=typeof WALK_BUILD_TOOLS[number][0];
 export interface LiveWalkView {
+  tool?(value:WalkBuildTool):void;
   mount: StageMount;
   surface(): ThreeStageSurface | null;
   setView(value: { solids: SceneSolids; width: number; height: number } | null): void;

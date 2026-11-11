@@ -18,14 +18,14 @@ export default function WalkLauncher({
   property,
   sceneForLevel,
   onOpen,
-  stageRef, viewportRef, sharedMount,setWalkView,
+  stageRef, viewportRef, sharedMount,setWalkView,onWalkTool,
 }: {
   property: Property;
   sceneForLevel: (property: Property) => SceneInput;
   onOpen: () => void;
   stageRef: RefObject<BackgroundStage | null>;
   viewportRef?: RefObject<HTMLDivElement | null>;
-  sharedMount?:StageMount;setWalkView?:LiveWalkView['setView'];
+  sharedMount?:StageMount;setWalkView?:LiveWalkView['setView'];onWalkTool?:LiveWalkView['tool'];
 }): JSX.Element {
   const [open, setOpen] = useState(false);
   const [hint, setHint] = useState<PlacementHint>();
@@ -38,8 +38,9 @@ export default function WalkLauncher({
     paused: boolean;
     surface?:ReturnType<ThreeStageHandle['beginWalk']>;
   } | null>(null);
+  const toolRef=useRef(onWalkTool);toolRef.current=onWalkTool;
   const live=useMemo<LiveWalkView|undefined>(()=>sharedMount&&setWalkView?{
-    mount:sharedMount,setView:setWalkView,surface:()=>{
+    tool:action=>toolRef.current?.(action),mount:sharedMount,setView:setWalkView,surface:()=>{
       const s=background.current?.surface;return s?{...s,release:()=>{}}:null;
     },pickWith:camera=>stageRef.current?.setWalkPickCamera?.(camera),
   }:undefined,[sharedMount,setWalkView,stageRef]);

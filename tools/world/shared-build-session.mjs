@@ -71,6 +71,22 @@ try {
  await host.keyboard.down('w');await host.waitForTimeout(600);await host.keyboard.up('w');
  await host.getByRole('button',{name:'Build from here',exact:true}).click();await host.getByTestId('walk-build-return').waitFor();
  assert.equal(await host.locator('canvas[data-testid="wallpaint-3d-gl"]').count(),1);
+ const tools=host.getByLabel('Walk build tool',{exact:true});
+ const options=await tools.locator('option').allTextContents();
+ assert.ok(['Move objects','Door','Products and lights','Foundation','Electrical services','Plumbing'].every(s=>options.includes(s)));
+ await tools.selectOption('wall');
+ const count=()=>host.evaluate(()=>JSON.parse(localStorage.getItem('ppw_property_v2')).state.property.walls?.length??0);
+ const old=await count(),viewport=await host.getByTestId('wallpaint-3d').boundingBox();assert.ok(viewport);
+ for(const y of [.7,.57,.81]){
+   const line=viewport.y+viewport.height*y;
+   await host.mouse.move(viewport.x+viewport.width*.35,line);await host.mouse.down();
+   await host.mouse.move(viewport.x+viewport.width*.62,line,{steps:12});await host.mouse.up();
+   if(await count()>old)break;
+ }
+ assert.ok(await count()>old,'a wall was committed from the walking camera');
+ await guest.waitForFunction(n=>(JSON.parse(localStorage.getItem('ppw_property_v2')).state.property.walls?.length??0)>n,old,{timeout:20000});
+ checks.nativeWallShared=true;
+ await tools.selectOption('select');
  await host.getByRole('button',{name:'Resume walking',exact:true}).click();await host.getByRole('button',{name:'Build from here',exact:true}).waitFor();checks.sameRendererDuringBuild=true;
  await guest.reload({waitUntil:'domcontentloaded'});await both(guest);
  await guest.locator('.world-walk-dock').getByRole('button',{name:'Shared build',exact:true}).click();await panel(guest).getByRole('button',{name:'Leave shared build',exact:true}).waitFor({timeout:30000});checks.reloadReconnect=true;
