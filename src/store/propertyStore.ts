@@ -143,6 +143,11 @@ function paintedEdge(edgeIndex: number, paintId: string, colour?: PaintColourCho
  * on the same world wall. Before this, a reshape or a CCW seed could leave
  * paint on the wrong wall.
  */
+function remapRemovedEdges(raw:unknown,edgeMap:readonly number[]):number[]|undefined{
+  if(!Array.isArray(raw)||!raw.length)return undefined;
+  const result=[...new Set(raw.filter(i=>Number.isInteger(i)&&i>=0&&i<edgeMap.length).map(i=>edgeMap[i]).filter(i=>i>=0))];
+  return result.length?result:undefined;
+}
 function remapPaintedEdges(
   wallPaint: PaintedEdge[] | undefined,
   edgeMap: number[],
@@ -241,6 +246,7 @@ export const SITE_MIN_M = 1;
 export const SITE_MAX_M = 500;
 
 export interface Room {
+  removedWallEdges?:number[];
   id: string;
   name: string;
   /** Closed polygon in metres (no repeated end vertex). */
@@ -927,6 +933,7 @@ export const usePropertyStore = create<PropertyState>()(
               return inheritMasonryRoom({
                 ...r,
                 polygon: canon.polygon,
+                removedWallEdges:remapRemovedEdges(r.removedWallEdges,canon.edgeMap),
                 openings: pruneOpenings(canon.openings, canon.polygon),
                 floorTiles: decodeFloorZones(r.floorTiles, canon.polygon),
                 ...(wallPaint ? { wallPaint } : { wallPaint: undefined }),
@@ -2386,6 +2393,7 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
  * end up with a Polygon.
  */
 interface RawRoom {
+  removedWallEdges?:unknown;
   id?: string;
   name?: string;
   polygon?: Polygon;
@@ -2463,6 +2471,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
   const levelId = canonicalLevelId(r.levelId);
   const kind = r.kind === 'outdoor' || r.kind === 'room' || r.kind === 'roof' ? r.kind : undefined;
   return {
+    ...(r.removedWallEdges?{removedWallEdges:remapRemovedEdges(r.removedWallEdges,canon.edgeMap)}:{}),
     id: r.id ?? nanoid(8),
     name: r.name ?? 'Room',
     polygon: clean,
@@ -2688,7 +2697,7 @@ export function canonicalisePropertyWinding(property: Property): Property {
     const canon = canonicaliseRoomGeometry(room.polygon, roomOpenings(room));
     if (!canon.changed) return room;
     touched = true;
-    const next: Room = { ...room, polygon: canon.polygon };
+    const next: Room = { ...room, polygon: canon.polygon, removedWallEdges:remapRemovedEdges(room.removedWallEdges,canon.edgeMap) };
     if (room.openings) next.openings = pruneOpenings(canon.openings, canon.polygon);
     // Paint follows the same remap as the openings (2026-09-14).
     next.wallConstruction = remapConstruction(room.wallConstruction, canon.edgeMap, canon.polygon);

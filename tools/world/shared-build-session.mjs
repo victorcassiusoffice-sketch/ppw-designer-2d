@@ -8,7 +8,7 @@ if(!origin||!['127.0.0.1','localhost'].includes(new URL(origin).hostname)||!out)
 const browser=await chromium.launch({args:['--use-angle=d3d11','--ignore-gpu-blocklist']});
 const errors=[],checks={};
 try {
- async function open(width){
+ const open=async(width)=>{
   const context=await browser.newContext({viewport:{width,height:width<600?844:800},hasTouch:width<600});
   const page=await context.newPage();page.setDefaultTimeout(20000);
   await page.addInitScript(()=>localStorage.setItem('ppw_designer_coach_v1','1'));
@@ -28,7 +28,7 @@ try {
  // A page switch can remount the dock; verify membership from the host too.
  await panel(host).getByText(/Electrical.*Nadia/i).waitFor({timeout:30000});checks.invitedTwoClients=true;
  for(const p of [host,guest]){const close=p.getByRole('button',{name:'Close shared build panel'});if(await close.isVisible())await close.click()}
- async function draw(p,name,x){
+ const draw=async(p,name,x)=>{
   await p.locator('.world-walk-dock').getByTestId('open-component-tools').click();
   const ui=p.getByTestId('boundary-editor');await ui.getByRole('button',{name:'XYZ coordinates'}).click();
   await ui.getByLabel('Name',{exact:true}).fill(name);
@@ -42,6 +42,13 @@ try {
  await Promise.all([draw(host,'West measured face',1),draw(guest,'East measured face',4)]);
  const both=p=>p.waitForFunction(()=>{const cs=JSON.parse(localStorage.getItem('ppw_property_v2')).state.property.boundaryComponents||[];return ['West measured face','East measured face'].every(n=>cs.some(c=>c.name===n))},undefined,{timeout:25000});
  await Promise.all([both(host),both(guest)]);checks.concurrentIndependentGeometry=true;
+ await host.keyboard.press('Control+z');
+ for(const p of [host,guest])await p.waitForFunction(()=>{
+   const parts=JSON.parse(localStorage.getItem('ppw_property_v2')).state.property.boundaryComponents??[];
+   return !parts.some(c=>c.name==='West measured face')&&parts.some(c=>c.name==='East measured face');
+ },undefined,{timeout:20000});
+ await host.keyboard.press('Control+Shift+z');
+ await Promise.all([both(host),both(guest)]);checks.undoPreservesTeamEdit=true;
  for(const page of [host,guest]){
   await page.getByRole('button',{name:'Open Walk mode',exact:true}).click();
   await page.getByRole('button',{name:'Start walk',exact:true}).click();

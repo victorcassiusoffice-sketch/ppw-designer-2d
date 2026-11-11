@@ -251,6 +251,7 @@ export interface ThreeStageHandle {
   setWalkPickCamera?(camera: THREE.PerspectiveCamera | null): void;
   walkRay?(x: number, y: number): THREE.Ray | null;
   viewHover(x:number|null,y?:number):void;
+  hitBuildPart?:(x:number,y:number)=>{target:import('../../designer/surfaceActions').SurfaceTarget;point:{x:number;y:number}}|null;
   hitErase(x:number,y:number):ThreeEraseTarget|null;
   setEraseHover(target:ThreeEraseTarget|null,floorOutline?:readonly {x:number;y:number}[]):void;
   /** Wall under a canvas-local point, or null. */
@@ -1443,6 +1444,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     for (const roof of solids.roofs ?? []) {
       const mesh = roofMesh(roof.polygon, roof.elevationM, roof.config);
       mesh.userData.levelId = roof.levelId;
+      mesh.userData.roofRoomId = roof.roomId;
       content.add(mesh);
       mesh.updateMatrixWorld(true);
       roofsRef.current.push(mesh);
@@ -1820,6 +1822,23 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if(next)applyWallHoverVisibility(next,true);
         if(rendererRef.current)rendererRef.current.domElement.dataset.hoverCutaway=next?.solid.key??'';
         requestRender();
+      },
+      hitBuildPart(x,y) {
+        const camera=walkPickCamera.current??cameraRef.current,scene=sceneRef.current;
+        if(!camera||!scene||width<8||height<8)return null;
+        const ray=new THREE.Raycaster(),meshes:THREE.Object3D[]=[];
+        ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),camera);
+        scene.traverseVisible(node=>{if((node as THREE.Mesh).isMesh)meshes.push(node)});
+        for(const hit of ray.intersectObjects(meshes,false)){
+          const point={x:hit.point.x,y:hit.point.z};
+          for(let node:THREE.Object3D|null=hit.object;node;node=node.parent){
+            const data=node.userData;
+            if(data.instanceId||data.wall||floorsRef.current.includes(node as THREE.Mesh))return null;
+            for(const [tag,kind] of [['stairId','stair'],['serviceRunId','run'],['serviceFixtureId','fixture'],['gardenId','garden'],['foundationId','foundation'],['boundaryComponentId','component'],['roofRoomId','roof'],['shadeSailId','shade']] as const)
+              if(typeof data[tag]==='string')return {target:{kind,id:data[tag]},point};
+          }
+        }
+        return null;
       },
       hitErase(x,y) {
         // The existing picking methods already apply active-level and front

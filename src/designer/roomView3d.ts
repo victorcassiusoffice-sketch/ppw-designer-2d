@@ -121,6 +121,7 @@ export interface ProjectedFace {
 }
 
 export interface SceneRoomInput {
+  removedWallEdges?:number[];
   id: string;
   name: string;
   polygon: Polygon;

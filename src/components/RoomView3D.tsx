@@ -1,3 +1,5 @@
+import {SurfaceActions} from './SurfaceActions';
+import {beginFloorBrush,type FloorBrushStroke} from '../designer/floorPaintBrush';
 import { TradeOverlayHost } from './build/TradeOverlayHost'; // @studio-hook
 import { serviceRunPoints3D } from '../designer/buildingServices';
 import { loadThreeStage } from './threeStageLoader';
@@ -266,7 +268,7 @@ function bridgeRegistry(): RoomView3DBridgeRegistry {
  */
 function openingsIncludingNeighbours(rooms: Room[]): Map<string, NonNullable<SceneRoomInput['openings']>> {
   const drawn = rooms.filter((r) => !isOutdoorRoom(r) && !isRoofRoom(r) && isDrawnPolygon(r.polygon));
-  const shared = sharedEdgeMap(drawn.map((r) => ({ id: r.id, polygon: r.polygon })));
+  const shared = sharedEdgeMap(drawn.map((r) => ({ id: r.id, polygon: r.polygon,removedWallEdges:r.removedWallEdges })));
   const edgesByRoom = new Map(drawn.map((r) => [r.id, roomEdges(r)]));
   const byId = new Map(drawn.map((r) => [r.id, r]));
   const out = new Map<string, NonNullable<SceneRoomInput['openings']>>();
@@ -358,6 +360,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       id: room.id,
       name: room.name,
       polygon: room.polygon,
+      removedWallEdges:room.removedWallEdges,
       openings: openingsByRoom.get(room.id) ?? room.openings,
       ...wallSurfaces,
       floorHex,
@@ -699,6 +702,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
    * Floor tool stroke (Sims tile paint): press anchors, drag grows a rect,
    * release commits once (one undo). Room/Shift fill still fire immediately.
    */
+  const liveFloorStroke=useRef<FloorBrushStroke|null>(null);
+  const floorPainting=!!onPaintFloor;
+  useEffect(()=>()=>{liveFloorStroke.current?.finish();liveFloorStroke.current=null},[floorPainting]);
   const floorStroke = useRef<{
     from: { x: number; y: number };
     mods: BrushModifiers;
@@ -925,7 +931,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   // e2e bridge (DEV builds only, like the plan's geometry bridge).
   useEffect(() => {
-    if (!import.meta.env.DEV) return;
+    if (!import.meta.env.DEV && !(typeof __TEST_HOOKS__ !== 'undefined' && __TEST_HOOKS__)) return;
     const reg = bridgeRegistry();
     const clientOf = (p: { x: number; y: number } | null) => {
       const box = containerRef.current?.getBoundingClientRect();
@@ -1201,6 +1207,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             stroke.current = { painted: new Set(['floor']), mods };
             return;
           }
+          if(!e.altKey){
+            liveFloorStroke.current=beginFloorBrush(floor,mods);
+            if(liveFloorStroke.current){setFloorPreview({count:1,erase:draft.erase||!!mods.ctrl});return}
+          }
           floorStroke.current = { from: floor, mods, fillNow: false };
           setFloorPreview({ count: 1, erase: draft.erase || !!mods.ctrl });
           return;
@@ -1245,6 +1255,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       cancelWallSegment();
       // A second finger ends any carry or stroke and starts a pinch.
       stroke.current = null;
+      liveFloorStroke.current?.finish();liveFloorStroke.current=null;
       floorStroke.current = null;
       setFloorPreview(null);
       if (itemDrag.current) {
@@ -1325,6 +1336,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         roomDrag.current = preview;
         setRoomPreview(preview);
       }
+      return;
+    }
+    if(liveFloorStroke.current&&pointers.current.size===1&&stageRef.current){
+      const p=localPoint(e),floor=stageRef.current.floorPoint(p.x,p.y);
+      if(floor)setFloorPreview({count:liveFloorStroke.current.extend(floor),erase:useDesignerUIStore.getState().floorDraft.erase||e.ctrlKey||e.metaKey});
       return;
     }
     const floorRun = floorStroke.current;
@@ -1518,6 +1534,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       stroke.current = null;
       if (pointers.current.size === 0) drag.current = null;
       return;
+    }
+    if(liveFloorStroke.current&&had){
+      if(!cancelled&&stageRef.current){const p=localPoint(e),floor=stageRef.current.floorPoint(p.x,p.y);if(floor)liveFloorStroke.current.extend(floor)}
+      liveFloorStroke.current.finish();liveFloorStroke.current=null;floorStroke.current=null;setFloorPreview(null);drag.current=null;return;
     }
     if (floorStroke.current && had) {
       const run = floorStroke.current;
@@ -1786,7 +1806,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           return;
         }
         if (wallDrag.current && (e.key === 'Escape' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'))) {
-          e.preventDefault(); e.stopImmediatePropagation(); cancelWallSegment();
+          e.preventDefault(); e.stopImmediatePropagation();
+          if(e.key==='Escape'){const preview=wallDrag.current;if(preview?.ok)commitWallBuild(preview,wallChainRef.current);finishWallRun();setConstructionTool('select')}
+          else cancelWallSegment();
           return;
         }
       }
@@ -1858,7 +1880,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     : onPaintWall
     ? 'Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase'
     : onPaintFloor
-      ? 'Click a tile · drag a rectangle · Shift = whole room · Ctrl = erase'
+      ? 'Drag to paint · Alt-drag for a rectangle · Shift fills room · Ctrl erases'
       : armedProduct
         ? `Tap the ${onRoofLevel ? 'roof' : 'floor'} to place ${armedProduct.name}`
         : itemsInteractive
@@ -2055,6 +2077,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
       </Suspense>}
       {removeActive && <div className="remove-build-status" role="status" data-testid="remove-3d-hud" data-target-kind={removeHover?.kind??'none'}><span>{removeTargetMessage(removeHover)}</span><button type="button" onClick={finishRemoving}>Done</button></div>}
+      {variant==='overlay' && <SurfaceActions host={containerRef} erase={removeActive}
+        point={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.floorPoint(x-rect.left,y-rect.top)??null:null}}
+        direct={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.hitBuildPart?.(x-rect.left,y-rect.top)??null:null}}
+        hit={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.hitErase(x-rect.left,y-rect.top)??null:null}}
+        project={p=>stageRef.current?.projectPoint(p.x,p.y,(solids.activeElevationM??0)+.04)??null}/>}
       {/* The gesture surface. */}
       <div
         data-testid="wallpaint-3d-canvas"

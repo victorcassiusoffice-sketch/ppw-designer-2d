@@ -177,7 +177,7 @@ export function buildSolids(input: SceneInput): SceneSolids {
   const items: ItemSolid[] = [];
 
   const indoorRooms = input.rooms.filter((r) => r.kind !== 'outdoor' && r.polygon.length >= 3);
-  const shared = sharedEdgeMap(indoorRooms.map((r) => ({ id: r.id, polygon: r.polygon })));
+  const shared = sharedEdgeMap(indoorRooms.map((r) => ({ id: r.id, polygon: r.polygon,removedWallEdges:r.removedWallEdges })));
   const glassPairs = sharedGlassEdges(indoorRooms);
 
   for (const room of input.rooms) {

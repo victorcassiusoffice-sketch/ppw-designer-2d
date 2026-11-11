@@ -103,7 +103,7 @@ export function resizeRoomEdge(input: ResizeInput): ResizeResult {
   if (!room) return { ok: false, reason: 'not-found' };
 
   const edges = roomEdges(room as EdgeRoom);
-  const edge = edges[edgeIndex];
+  const edge = edges.find(e=>e.index===edgeIndex);
   if (!edge) return { ok: false, reason: 'not-found' };
 
   const poly = room.polygon;

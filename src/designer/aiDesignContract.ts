@@ -97,7 +97,8 @@ export const DesignDraftSchema = z
     roof: z
       .object({
         style: z.enum(['flat', 'gable', 'shed']),
-        material: z.enum(['felt', 'tile', 'metal']),
+        material: z.enum(['felt','tile','metal','iron-sheet','concrete']),
+        thicknessM:metre.min(.0003).max(2).optional(),
         pitchDeg: metre.min(5).max(60),
         overhangM: metre.min(0).max(1.5),
       })

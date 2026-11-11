@@ -31,6 +31,7 @@ import type { Polygon, Vertex } from '../lib/geometry';
 
 /** A room, as much of it as this module needs. */
 export interface EdgeRoom {
+  removedWallEdges?:number[];
   id: string;
   polygon: Polygon;
 }
@@ -73,6 +74,7 @@ export function roomEdges(room: EdgeRoom): RoomEdge[] {
   if (!poly || poly.length < 3) return [];
   const out: RoomEdge[] = [];
   for (let i = 0; i < poly.length; i++) {
+    if(room.removedWallEdges?.includes(i))continue;
     const a = poly[i];
     const b = poly[(i + 1) % poly.length];
     const vx = b.x - a.x;

@@ -2,7 +2,7 @@
 import { beforeEach,afterEach,describe,it,expect } from 'vitest';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useHistoryStore,installHistorySubscriptions,__test } from '../../store/historyStore';
-import { removeBuildTarget,pickPlanRemoveTarget,PERIMETER_REMOVE_REASON } from '../removeBuildTarget';
+import { removeBuildTarget,pickPlanRemoveTarget } from '../removeBuildTarget';
 let cleanup:()=>void;
 beforeEach(()=>{
   usePropertyStore.getState().resetToDefault();const p=usePropertyStore.getState().property;
@@ -20,10 +20,29 @@ describe('specific element removal keeps one reversible edit',()=>{
       useHistoryStore.getState().undo();expect(usePropertyStore.getState().property).toEqual(before);
     });
   }
-  it('refuses a closed room boundary without changing geometry, quantities or history',()=>{
+  it('opens a shared wall and restores attached doors and both measured footprints on Undo',()=>{
+    const property=usePropertyStore.getState().property;
+    const adjacent={id:'next',name:'Next',polygon:[{x:0,y:-3},{x:8,y:-3},{x:8,y:0},{x:0,y:0}],placedItems:[]};
+    usePropertyStore.setState({property:{...property,rooms:[...property.rooms,adjacent]}});
+    useHistoryStore.getState().reset();
     const before=structuredClone(usePropertyStore.getState().property);
-    expect(removeBuildTarget({kind:'wall',hit:{kind:'edge',roomId:'r',edgeIndex:1}})).toEqual({ok:false,message:PERIMETER_REMOVE_REASON});
-    expect(usePropertyStore.getState().property).toEqual(before);expect(useHistoryStore.getState().past).toHaveLength(0);
+    expect(removeBuildTarget({kind:'wall',hit:{kind:'edge',roomId:'r',edgeIndex:0}}).ok).toBe(true);
+    const rooms=usePropertyStore.getState().property.rooms;
+    expect(rooms.map(r=>r.removedWallEdges)).toEqual([[0],[2]]);
+    expect(rooms[0].openings).toEqual([]);
+    expect(rooms.map(r=>r.polygon)).toEqual(before.rooms.map(r=>r.polygon));
+    expect(useHistoryStore.getState().past).toHaveLength(1);
+    useHistoryStore.getState().undo();expect(usePropertyStore.getState().property).toEqual(before);
+  });
+  it('removes only the shared span of a longer neighbour wall and remaps a retained opening',()=>{
+    const p=usePropertyStore.getState().property;
+    const neighbour={id:'n',name:'Neighbour',polygon:[{x:-4,y:-3},{x:12,y:-3},{x:12,y:0},{x:-4,y:0}],placedItems:[],
+      openings:[{id:'retained',kind:'door' as const,edgeIndex:2,offsetM:14,widthM:1,flipFacing:false,flipHand:false}]};
+    usePropertyStore.setState({property:{...p,rooms:[...p.rooms,neighbour]}});
+    expect(removeBuildTarget({kind:'wall',hit:{kind:'edge',roomId:'r',edgeIndex:0}}).ok).toBe(true);
+    const n=usePropertyStore.getState().property.rooms[1];
+    expect(n.polygon.slice(2)).toEqual([{x:12,y:0},{x:8,y:0},{x:0,y:0},{x:-4,y:0}]);
+    expect(n.removedWallEdges).toEqual([3]);expect(n.openings?.[0]).toMatchObject({id:'retained',edgeIndex:4,offsetM:2});
   });
   it('picks an opening ahead of its wall and the clicked object ahead of its floor',()=>{
     const p=usePropertyStore.getState().property;
