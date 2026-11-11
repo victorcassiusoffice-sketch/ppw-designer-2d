@@ -46,6 +46,7 @@ export class WalkRuntime {
   private cutawayAt = -Infinity;
   private route: THREE.Vector3[] = [];
   private routeRequest = 0;
+  private blockedByEdit=false;
   private stalled = 0;
   private notice = '';
   private lookStick = { x: 0, y: 0 };
@@ -285,9 +286,9 @@ export class WalkRuntime {
     const updated=createWalkWorld(solids,property);
     updated.roofActive=this.world.roofActive;
     const feet=this.walker.position, point={x:feet.x,y:feet.z};
-    const next=spawnAt(updated,point,this.levelId) ?? spawnOnLevel(updated,this.levelId,point)
-      ?? findWalkSpawn(updated,property) ?? spawnOnLevel(updated,updated.groundLevelId??GROUND_LEVEL_ID);
-    if(!next){updated.dispose();this.notice='The edited build has no clear standing space.';this.pauseFrames('build changed');return}
+    let next=spawnAt(updated,point,this.levelId) ?? spawnOnLevel(updated,this.levelId,point);
+    if(!next){this.levelId=updated.groundLevelId??GROUND_LEVEL_ID;updated.roofActive=false;next=findWalkSpawn(updated,property)??spawnOnLevel(updated,this.levelId)}
+    if(!next){updated.dispose();this.blockedByEdit=true;this.notice='The edited build has no clear standing space.';this.pauseFrames('build changed');return}
     for(const d of updated.doors){
       const old=this.world.doors.find(x=>x.id===d.id);if(old){d.angle=old.angle;d.targetAngle=old.targetAngle}
     }
@@ -296,6 +297,7 @@ export class WalkRuntime {
     this.walker=createWalker(updated,next.position);this.eyeHeight=next.position.y+1.55;
     this.route=[];this.routeRequest++;this.stalled=0;this.cutawayAt=-Infinity;
     this.attachDoors();this.actor.position.copy(next.position);
+    if(this.blockedByEdit){this.blockedByEdit=false;this.notice='';if(!document.hidden)this.resumeFrames('build recovered')}
   }
   get editCamera(){return this.camera}
   startBuilding(){this.clearInput();this.controls.unlock();this.route=[];this.routeRequest++}

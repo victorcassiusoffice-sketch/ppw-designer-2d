@@ -1,3 +1,4 @@
+import {cutPieces} from '../components/three/earthworkMeshes';
 import { buildingSolids } from '../designer/buildingScene';
 import { buildingLevels } from '../designer/building';
 import { isOutdoorRoom, isRoofLevel, isRoofRoom, levelsOf, roofLevel, roomLevelId } from '../designer/levels';
@@ -30,6 +31,14 @@ export function prepareWalkVisit(property: Property, sceneForLevel: (p: Property
       solids.floors.push({ roomId: room.id, key: 'floor-' + room.id, polygon: room.polygon,
         levelId: level.id, elevationM, hex: input?.floorHex ?? '#a9aba6', kind: input?.floorKind, tileM: input?.floorTileM });
     }
+  }
+  if(property.terrainCuts?.length){
+    const ids=new Set(property.rooms.filter(isOutdoorRoom).map(r=>r.id));
+    const ground=buildingLevels(property).find(l=>!isRoofLevel(l.level))?.level.id;
+    solids.floors=solids.floors.flatMap(f=>{
+      if(!ids.has(f.roomId)||(f.levelId??ground)!==ground)return [f];
+      return cutPieces(f.polygon,property.terrainCuts!).map((polygon,i)=>({...f,key:f.key+'-soil-'+i,polygon}));
+    });
   }
   const stairs = solids.stairs ?? [];
   const valid = stairs.filter(stair => stairPlacementFits(snapshot, stair.stair));

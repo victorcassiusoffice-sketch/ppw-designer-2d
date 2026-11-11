@@ -11,6 +11,24 @@ export default function SharedBuildPanel({ close }: { close: () => void }) {
       () => localStorage.getItem('olb-world-character-v1') || DEFAULT_WALK_CHARACTER_ID,
     ),
     [code, setCode] = useState('');
+  const [availability, setAvailability] = useState<
+    'checking' | 'ready' | 'unavailable' | 'read-only'
+  >('checking');
+  useEffect(() => {
+    const abort = new AbortController();
+    void fetch('/api/shared-projects/live/status', { signal: abort.signal, cache: 'no-store' })
+      .then((r) => r.json())
+      .then((state) => {
+        if (!abort.signal.aborted)
+          setAvailability(
+            !state.available ? 'unavailable' : state.writable === false ? 'read-only' : 'ready',
+          );
+      })
+      .catch(() => {
+        if (!abort.signal.aborted) setAvailability('unavailable');
+      });
+    return () => abort.abort();
+  }, []);
   useEffect(() => {
     resume();
   }, []);
@@ -86,17 +104,26 @@ export default function SharedBuildPanel({ close }: { close: () => void }) {
             />
           </label>
           <button
-            disabled={status.busy || !code.trim()}
+            disabled={availability !== 'ready' || status.busy || !code.trim()}
             onClick={() => void joinOrHost('join', { trade, avatar }, code)}
           >
             Join build
           </button>
-          <button disabled={status.busy} onClick={() => void joinOrHost('host', { trade, avatar })}>
+          <button
+            disabled={availability !== 'ready' || status.busy}
+            onClick={() => void joinOrHost('host', { trade, avatar })}
+          >
             Host this build
           </button>
         </>
       )}
-      <output aria-live="polite">{status.message}</output>
+      <output aria-live="polite">
+        {availability === 'unavailable'
+          ? 'Shared storage is unavailable on this host.'
+          : availability === 'read-only'
+            ? 'This preview is read-only.'
+            : status.message}
+      </output>
     </section>
   );
 }

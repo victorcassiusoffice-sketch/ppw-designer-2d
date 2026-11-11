@@ -50,6 +50,24 @@ try {
  }
  await Promise.all([host,guest].map(p=>p.waitForFunction(()=>Number(document.querySelector('canvas[data-shared-players]')?.dataset.sharedPlayers)>0,undefined,{timeout:35000})));
  checks.bothAvatarsOnOneScenePerClient=true;
+ await host.getByRole('button',{name:'Dig / fill',exact:true}).click();
+ const soil=host.getByTestId('earthworks-panel');
+ await soil.getByRole('button',{name:'Cell coordinates'}).click();
+ const cell=await host.evaluate(()=>{
+   const property=JSON.parse(localStorage.getItem('ppw_property_v2')).state.property;
+   const points=property.rooms.flatMap(r=>r.polygon);
+   return property.site ? {x:Math.ceil(property.site.originM.x),y:Math.ceil(property.site.originM.y)}
+     : {x:Math.floor(Math.min(0,...points.map(p=>p.x)))-2,y:Math.floor(Math.min(0,...points.map(p=>p.y)))-2};
+ });
+ await soil.getByLabel('X (m)',{exact:true}).fill(String(cell.x));
+ await soil.getByLabel('Y (m)',{exact:true}).fill(String(cell.y));
+ await soil.getByRole('button',{name:'Dig cell',exact:true}).click();
+ for(const p of [host,guest])await p.waitForFunction(({x,y})=>JSON.parse(localStorage.getItem('ppw_property_v2')).state.property.terrainCuts?.some(c=>c.x===x&&c.y===y&&c.depthM===.25),cell,{timeout:20000});
+ await soil.getByRole('button',{name:'Fill',exact:true}).click();
+ await soil.getByRole('button',{name:'Fill cell',exact:true}).click();
+ for(const p of [host,guest])await p.waitForFunction(({x,y})=>!JSON.parse(localStorage.getItem('ppw_property_v2')).state.property.terrainCuts?.some(c=>c.x===x&&c.y===y),cell,{timeout:20000});
+ await soil.getByRole('button',{name:'Close earthworks',exact:true}).click();
+ checks.digAndFillShared=true;
  await host.keyboard.down('w');await host.waitForTimeout(600);await host.keyboard.up('w');
  await host.getByRole('button',{name:'Build from here',exact:true}).click();await host.getByTestId('walk-build-return').waitFor();
  assert.equal(await host.locator('canvas[data-testid="wallpaint-3d-gl"]').count(),1);

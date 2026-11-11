@@ -10,11 +10,12 @@ export function cutPieces(polygon: Polygon, cuts: readonly TerrainCut[]): Polygo
     maxX = Math.max(...xs),
     minY = Math.min(...ys),
     maxY = Math.max(...ys);
-  let pieces = [polygon];
-  for (const c of cuts) {
-    if (c.x >= maxX || c.x + 1 <= minX || c.y >= maxY || c.y + 1 <= minY) continue;
-    pieces = pieces.flatMap((p) => subtractConvex(p, cutPolygon(c)));
-  }
+  const hits = cuts.filter((c) => c.x < maxX && c.x + 1 > minX && c.y < maxY && c.y + 1 > minY);
+  if (!hits.length) return [polygon];
+  const verts = polygon.map((p) => new THREE.Vector2(p.x, p.y));
+  let pieces = THREE.ShapeUtils.triangulateShape(verts, []).map((t) => t.map((i) => polygon[i]));
+  for (const cut of hits)
+    pieces = pieces.flatMap((piece) => subtractConvex(piece, cutPolygon(cut)));
   return pieces;
 }
 export function soilGeometry(values: number[]) {

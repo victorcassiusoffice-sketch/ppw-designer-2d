@@ -11,7 +11,7 @@ import {
 } from '../../../src/sharedBuild/contract.js';
 import { neonRoomStore, type Member, type RoomStore } from '../../_db/liveBuildStore.js';
 import { studioAccess, crossSiteWrite } from '../studioAccess.js';
-import { rejectShowcaseTransaction } from '../showcaseSafety.js';
+import { isShowcaseDeployment, rejectShowcaseTransaction } from '../showcaseSafety.js';
 import { validateSnapshotMeasurements } from '../designSnapshotValidation.js';
 import { sharedSpecOrigins } from '../sharedSpecs.js';
 
@@ -75,7 +75,7 @@ export async function handleLiveBuild(
       /* No room or participant data is read by this probe. */
     }
     res.status(200);
-    res.json({ available });
+    res.json({ available, writable: available && !isShowcaseDeployment() });
     return;
   }
   if (parts.length !== 1 || !['host', 'join', 'sync', 'edit', 'leave'].includes(route)) {

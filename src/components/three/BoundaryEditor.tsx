@@ -16,7 +16,7 @@ import {
   commitLoop,
   componentOnRay,
 } from '../../designer/componentEditing';
-import { polylineLength, snapEntity } from '../../designer/entitySnapping';
+import { firstFaceOnRay, polylineLength, snapEntity } from '../../designer/entitySnapping';
 import { usePropertyStore } from '../../store/propertyStore';
 import './boundaryEditor.css';
 
@@ -48,6 +48,7 @@ export default function BoundaryEditor({ view, onClose, initialId = '' }: Props)
     );
   const [hover, setHover] = useState<{ point: Point3; kind: string } | null>(null),
     [message, setMessage] = useState('');
+  const [faceSnapping, setFaceSnapping] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const index = useMemo(() => buildingSnapIndex(property, points), [property, points]);
   const latest = useRef({
@@ -147,7 +148,9 @@ export default function BoundaryEditor({ view, onClose, initialId = '' }: Props)
       if (!Number.isFinite(height)) return;
       const normal = { ...zero, [axis]: 1 },
         origin = { ...zero, [axis]: height };
-      const p = rayPlane(ray.origin, ray.direction, origin, normal);
+      const p =
+        (faceSnapping ? firstFaceOnRay(ray.origin, ray.direction, index) : null) ??
+        rayPlane(ray.origin, ray.direction, origin, normal);
       if (!p) {
         if (tap) setMessage('The camera is parallel to this plane. Change the plane or enter XYZ.');
         return;
@@ -293,6 +296,14 @@ export default function BoundaryEditor({ view, onClose, initialId = '' }: Props)
         )}
         {editing !== 'pick' && (
           <>
+            <label className="boundary-snap">
+              <input
+                type="checkbox"
+                checked={faceSnapping}
+                onChange={(e) => setFaceSnapping(e.target.checked)}
+              />{' '}
+              Snap to faces
+            </label>
             <div className="boundary-plane">
               <label>
                 Plane
