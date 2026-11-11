@@ -31,13 +31,19 @@ export interface RoomStore {
 type Query = (text: string, params: unknown[]) => Promise<Record<string, unknown>[]>;
 const roomType = 'olb-live-build-v1',
   playerType = 'olb-build-player-v1';
-const roomDoc = (r: Room) =>
-  JSON.stringify({ kind: roomType, model: r.model, inviteHash: r.inviteHash });
+const roomDoc = (r: Room, m: Member) =>
+  JSON.stringify({
+    kind: roomType,
+    model: r.model,
+    inviteHash: r.inviteHash,
+    slots: { [m.id]: m.seen + 86400000 },
+  });
 const memberDoc = (p: Member) =>
   JSON.stringify({
     kind: playerType,
     room: p.room,
     hash: p.hash,
+    expires: p.seen + 86400000,
     trade: p.trade,
     avatar: p.avatar,
     pose: p.pose,
@@ -56,7 +62,7 @@ export function makeRoomStore(query: Query): RoomStore {
       await query(
         `WITH newroom AS (INSERT INTO olb_shared_projects(id,owner_user_id,revision,document) VALUES($1::uuid,$2,1,$3::jsonb) RETURNING id)
         INSERT INTO olb_shared_projects(id,owner_user_id,revision,document) SELECT $4::uuid,'live:'||id::text,1,$5::jsonb FROM newroom`,
-        [r.id, creator, roomDoc(r), m.id, memberDoc(m)],
+        [r.id, creator, roomDoc(r, m), m.id, memberDoc(m)],
       );
     },
     async room(id) {
@@ -67,20 +73,24 @@ export function makeRoomStore(query: Query): RoomStore {
       return (rows[0] as unknown as Room) ?? null;
     },
     async join(m) {
-      // Lock the room while allocating a slot. Sessions that have been idle for a day no longer take a slot.
+      // The row update serialises capacity checks with concurrent joins. A day-long
+      // admission expires independently of heartbeats. Live edits do not change the slots.
       const result = await query(
-        `WITH room AS (SELECT id FROM olb_shared_projects WHERE id=$1::uuid AND document->>'kind'=$2 FOR UPDATE),
-        written AS (INSERT INTO olb_shared_projects(id,owner_user_id,revision,document)
-        SELECT $3::uuid,'live:'||room.id::text,1,$4::jsonb FROM room WHERE
-        (SELECT count(*) FROM olb_shared_projects p WHERE p.owner_user_id='live:'||room.id::text AND p.updated_at>now()-interval '24 hours')<32 RETURNING id)
-        SELECT id FROM written`,
-        [m.room, roomType, m.id, memberDoc(m)],
+        `WITH room AS (UPDATE olb_shared_projects p SET document=jsonb_set(p.document,'{slots}',
+         coalesce((SELECT jsonb_object_agg(key,value) FROM jsonb_each_text(coalesce(p.document->'slots','{}'::jsonb)) WHERE value::bigint>$5::bigint),'{}'::jsonb)
+         ||jsonb_build_object($3::text,$6::bigint))
+         WHERE p.id=$1::uuid AND p.document->>'kind'=$2 AND
+         (SELECT count(*) FROM jsonb_each_text(coalesce(p.document->'slots','{}'::jsonb)) WHERE value::bigint>$5::bigint)<32 RETURNING id),
+        cleanup AS (DELETE FROM olb_shared_projects WHERE owner_user_id='live:'||$1::text AND document->>'kind'=$7 AND (document->>'expires')::bigint<=$5::bigint)
+        INSERT INTO olb_shared_projects(id,owner_user_id,revision,document)
+         SELECT $3::uuid,'live:'||id::text,1,$4::jsonb FROM room RETURNING id`,
+        [m.room, roomType, m.id, memberDoc(m), m.seen, m.seen + 86400000, playerType],
       );
       return result.length === 1;
     },
     async member(id) {
       const rows = await query(
-        `SELECT id,document FROM olb_shared_projects WHERE id=$1::uuid AND document->>'kind'=$2 AND updated_at>now()-interval '24 hours'`,
+        `SELECT id,document FROM olb_shared_projects WHERE id=$1::uuid AND document->>'kind'=$2 AND (document->>'expires')::bigint>extract(epoch from now())*1000`,
         [id, playerType],
       );
       if (!rows.length) return null;
@@ -110,10 +120,12 @@ export function makeRoomStore(query: Query): RoomStore {
       );
     },
     async leave(id) {
-      await query("DELETE FROM olb_shared_projects WHERE id=$1::uuid AND document->>'kind'=$2", [
-        id,
-        playerType,
-      ]);
+      await query(
+        `WITH gone AS (DELETE FROM olb_shared_projects WHERE id=$1::uuid AND document->>'kind'=$2 RETURNING document->>'room' AS room)
+       UPDATE olb_shared_projects p SET document=jsonb_set(p.document,'{slots}',coalesce(p.document->'slots','{}'::jsonb)-$1::text)
+       FROM gone WHERE p.id=gone.room::uuid AND p.document->>'kind'=$3`,
+        [id, playerType, roomType],
+      );
     },
     async receipt(room, op) {
       const rows = await query(

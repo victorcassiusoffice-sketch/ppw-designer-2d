@@ -71,6 +71,7 @@ import { pointInPolygon } from '../lib/geometry';
 import { buildingSolids, type BuildingView } from '../designer/buildingScene';
 import { validateStairPlacement } from '../designer/stairPlacement';
 import { MaterialsPanel } from './MaterialsPanel';
+import {HouseStageSlot,StageMount,type LiveWalkView} from './three/HouseStageSlot';
 import { Loading3D } from './Loading3D';
 import { EnergySummary } from './EnergyPanel';
 import { HouseWorkspace, type HouseMode } from './HouseWorkspace';
@@ -535,6 +536,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     return cancelObjectTurn;
   }, [selectedInstanceId, property.id, property.activeLevelId, tool, armedProductId, cancelObjectTurn]);
   const [stageReady, setStageReady] = useState(false);
+  const [sharedStageMount]=useState(()=>new StageMount());
+  const [walkView,setWalkView]=useState<Parameters<LiveWalkView['setView']>[0]>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const cameraViewportHeightRef = useRef(0);
   const [camera, setCamera] = useState<OrbitCamera | null>(null);
@@ -2002,10 +2005,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       {/* The picture: three when it can, the painter when it cannot. */}
       <div className="absolute inset-0">
         {backend === 'gl' && camera && size.width >= 8 && size.height >= 8 ? (
-          <Suspense fallback={null}>
+          <HouseStageSlot mount={sharedStageMount}><Suspense fallback={null}>
             <ThreeStage
               ref={stageRef}
-              solids={solids}
+              solids={walkView?.solids ?? solids}
               catalogPreview={catalogPreview}
               viewHoverEnabled={itemsInteractive && !armedProductId}
               serviceFixtures={serviceFixtures}
@@ -2021,8 +2024,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               canvasBackground={canvasBackground}
               camera={renderedCamera ?? camera}
               projection={projection}
-              width={size.width}
-              height={size.height}
+              width={walkView?.width ?? size.width}
+              height={walkView?.height ?? size.height}
               hover={hover}
               selectedInstanceId={variant === 'overlay' ? selectedInstanceId : null}
               brushHex={onPaintWall ? (brushHex ?? null) : undefined}
@@ -2034,14 +2037,14 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               onFailed={() => { setBackend('painter'); setProjection('perspective'); setCameraView(''); }}
               onReady={() => setStageReady(true)}
             />
-          </Suspense>
+          </Suspense></HouseStageSlot>
         ) : backend === 'painter' ? (
           <canvas ref={painterRef} style={{ display: 'block', width: '100%', height: '100%' }} aria-hidden="true" />
         ) : null}
       </div>
       {backend === 'gl' && !stageReady && <Loading3D />}
       {backend === 'gl' && stageReady && <Suspense fallback={null}>
-        <WalkLauncher viewportRef={containerRef} property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
+        <WalkLauncher sharedMount={sharedStageMount} setWalkView={setWalkView} viewportRef={containerRef} property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
           sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
       </Suspense>}
       {removeActive && <div className="remove-build-status" role="status" data-testid="remove-3d-hud" data-target-kind={removeHover?.kind??'none'}><span>{removeTargetMessage(removeHover)}</span><button type="button" onClick={finishRemoving}>Done</button></div>}

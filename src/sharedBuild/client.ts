@@ -161,14 +161,22 @@ function accept(state: State, reference: Build) {
   revision = state.revision;
   save();
 }
+let activeTick: Promise<void> | null = null;
 function schedule(ms: number, current: number) {
   if (timer) clearTimeout(timer);
-  if (current === epoch && session) timer = setTimeout(() => void tick(current), ms);
+  if (current === epoch && session)
+    timer = setTimeout(() => {
+      activeTick = tick(current).finally(() => {
+        activeTick = null;
+      });
+    }, ms);
 }
 async function tick(current: number) {
   if (current !== epoch || !session || !base) return;
   if (currentPageId() !== session.page) {
-    await leave();
+    const secret = session.session;
+    clear();
+    void api('leave', {}, secret).catch(() => {});
     return;
   }
   if (isDrawTransactionActive()) {
@@ -302,13 +310,39 @@ export async function joinOrHost(
     publish({ busy: false });
   }
 }
-export async function leave() {
-  if (!session) return;
-  const secret = session.session;
-  // Preserve all pending design edits in the local page even if the server is offline.
-  clear();
-  publish({ message: 'Left shared build. Your design is saved on this device.' });
-  await api('leave', {}, secret).catch(() => {});
+export async function leave(keepLocal = false) {
+  if (!session || view.busy) return;
+  const current = epoch,
+    secret = session.session;
+  publish({ busy: true });
+  try {
+    if (!keepLocal) {
+      if (timer) clearTimeout(timer);
+      if (activeTick) await activeTick;
+      if (current !== epoch || !session) return;
+      if (timer) clearTimeout(timer);
+      if (isDrawTransactionActive()) {
+        publish({ message: 'Finish the active edit before leaving.' });
+        schedule(200, current);
+        return;
+      }
+      if (!conflict && base && (pending || buildChanges(base, local()).length)) await tick(current);
+      if (current !== epoch || !session) return;
+      if (conflict || pending || (base && buildChanges(base, local()).length)) {
+        publish({
+          message:
+            'Changes are still local. Resolve the conflict, reconnect, or leave with a local copy.',
+        });
+        schedule(550, current);
+        return;
+      }
+    }
+    clear();
+    publish({ message: 'Left shared build. Your design is saved on this device.' });
+    await api('leave', {}, secret).catch(() => {});
+  } finally {
+    publish({ busy: false });
+  }
 }
 export function resolveOverlap(keepMine: boolean) {
   if (!conflict?.model || !base) return;

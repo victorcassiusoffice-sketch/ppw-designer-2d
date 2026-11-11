@@ -85,6 +85,9 @@ export function sharedProperty(raw: unknown): Build {
   if (!record(raw)) throw Error('Invalid build.');
   const copy = JSON.parse(JSON.stringify(raw)) as Build;
   for (const k of privateFields) delete copy[k];
+  // An initially empty collection still has stable, independently editable children.
+  for (const name of ['boundaryComponents', 'walls', 'stairs'])
+    if (copy[name] === undefined) copy[name] = [];
   if (
     !safeJson(copy) ||
     typeof copy.id !== 'string' ||

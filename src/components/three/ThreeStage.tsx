@@ -247,6 +247,7 @@ export interface ThreeStageSurface {
 export interface ThreeStageHandle {
   /** A private deferred viewer may render its own camera without changing the design. */
   beginWalk(): ThreeStageSurface | null;
+  setWalkPickCamera?(camera: THREE.PerspectiveCamera | null): void;
   walkRay?(x: number, y: number): THREE.Ray | null;
   viewHover(x:number|null,y?:number):void;
   hitErase(x:number,y:number):ThreeEraseTarget|null;
@@ -689,6 +690,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | THREE.OrthographicCamera | null>(null);
   const walkOwnsFrames = useRef(false);
+  const walkPickCamera = useRef<THREE.PerspectiveCamera|null>(null);
   const hemiRef = useRef<THREE.HemisphereLight | null>(null);
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   /** A soft light that rides with the camera so no wall face is ever unlit. */
@@ -1749,6 +1751,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     ref,
     () => {
       const api:ThreeStageHandle = {
+      setWalkPickCamera(camera) { walkPickCamera.current = camera; },
       beginWalk() {
         const scene = sceneRef.current, renderer = rendererRef.current;
         if (!scene || !renderer) return null;
@@ -1761,7 +1764,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         };
       },
       walkRay(x, y) {
-        const view = cameraRef.current;
+        const view = walkPickCamera.current ?? cameraRef.current;
         if (!view || width < 8 || height < 8) return null;
         const caster = new THREE.Raycaster();
         caster.setFromCamera(new THREE.Vector2(x / width * 2 - 1, 1 - y / height * 2), view);
@@ -1771,7 +1774,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if(x===null||y===undefined||!viewHoverEnabled||brushHex!==undefined||brushConstruction||catalogPreview||solids.activeRoof){
           if(viewLoweredRef.current){clearViewHover();requestRender();}return;
         }
-        const c=cameraRef.current;if(!c||width<8||height<8)return;
+        const c=walkPickCamera.current ?? cameraRef.current;if(!c||width<8||height<8)return;
         const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),c);
         // Full geometry remains the hover boundary even after the visible wall
         // is lowered, preventing hide/show flicker while the cursor stays there.
@@ -1797,7 +1800,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if(solids.activeRoof)return null;
         const opening=api.hitOpening?.(x,y);if(opening)return {kind:'opening',openingId:opening};
         const wall=api.hitTest(x,y);if(wall)return {kind:'wall',hit:wall};
-        const c=cameraRef.current;if(!c||width<8||height<8)return null;
+        const c=walkPickCamera.current ?? cameraRef.current;if(!c||width<8||height<8)return null;
         const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),c);
         const floorHit=ray.intersectObjects(floorsRef.current,false)[0];if(!floorHit)return null;
         const floor=solids.floors.find(f=>f.key===floorHit.object.userData.key);
@@ -1837,7 +1840,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         requestRender(false);
       },
       hitOpening(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -1885,7 +1888,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return closest.id;
       },
       hitTest(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -1919,7 +1922,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return hit ? { ...hit, side: wall.face?.materialIndex === 2 ? 'exterior' : 'interior' } : null;
       },
       wallPoint(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -1976,7 +1979,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       samplePixel(x, y) {
         const r = rendererRef.current;
         const s = sceneRef.current;
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!r || !s || !c) return null;
         // Render now and read straight back, before the compositor swaps.
         r.render(s, c);
@@ -1987,7 +1990,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return { r: px[0], g: px[1], b: px[2] };
       },
       screenPoint(hit) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c) return null;
         const e = wallsRef.current.find((x) => sameHit(hit, x.solid.hit));
         if (!e || e.show === 'hidden') return null;
@@ -2012,7 +2015,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return out;
       },
       hitServiceFixture(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -2023,7 +2026,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return (node?.userData.serviceFixtureId as string | undefined) ?? null;
       },
       hitItem(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -2059,7 +2062,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return { instanceId: best.instanceId };
       },
       constructionPoint(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -2067,7 +2070,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -(solids.activeElevationM ?? 0)), p) ? { x: p.x, y: p.z } : null;
       },
       floorPoint(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -2079,7 +2082,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return ray.ray.intersectPlane(plane, p) ? { x: p.x, y: p.z } : null;
       },
       projectPoint(x, y, z) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         // Plan (x, y, z-up) → three (x, z, y): the same map the solids use.
         const v = new THREE.Vector3(x, z, y).project(c);

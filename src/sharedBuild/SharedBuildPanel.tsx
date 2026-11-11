@@ -47,7 +47,12 @@ export default function SharedBuildPanel({ close }: { close: () => void }) {
               <button onClick={() => resolveOverlap(true)}>Keep my edit</button>
             </div>
           )}
-          <button onClick={() => void leave()}>Leave shared build</button>
+          <button disabled={status.busy} onClick={() => void leave()}>
+            Leave shared build
+          </button>
+          {(status.conflict || status.message.includes('still local')) && (
+            <button onClick={() => void leave(true)}>Leave with local copy</button>
+          )}
         </>
       ) : (
         <>

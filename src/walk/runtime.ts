@@ -297,6 +297,8 @@ export class WalkRuntime {
     this.route=[];this.routeRequest++;this.stalled=0;this.cutawayAt=-Infinity;
     this.attachDoors();this.actor.position.copy(next.position);
   }
+  get editCamera(){return this.camera}
+  startBuilding(){this.clearInput();this.controls.unlock();this.route=[];this.routeRequest++}
   drawingRay(clientX:number,clientY:number) {
     const rect=this.host.renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return null;
     const caster=new THREE.Raycaster();

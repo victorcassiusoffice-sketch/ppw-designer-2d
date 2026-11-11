@@ -28,6 +28,7 @@ type Res = {
 export interface Dependencies {
   store(): RoomStore;
   allowHost(req: Req): Promise<boolean>;
+  allowOrigin?(origin: string): boolean;
   now(): number;
 }
 const defaults: Dependencies = {
@@ -90,7 +91,9 @@ export async function handleLiveBuild(
   const origin = req.headers?.origin;
   if (
     crossSiteWrite(req.method, req.headers) ||
-    (origin && (Array.isArray(origin) || !sharedSpecOrigins().includes(origin)))
+    (origin &&
+      (Array.isArray(origin) ||
+        !(dep.allowOrigin?.(origin) ?? sharedSpecOrigins().includes(origin))))
   ) {
     fail(403, 'Request origin is unavailable.');
     return;

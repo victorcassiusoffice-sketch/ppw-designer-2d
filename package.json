@@ -8,6 +8,7 @@
   "scripts": {
     "postinstall": "npm ci --prefix src/designer/link --workspaces=false --ignore-scripts --no-audit --no-fund",
     "dev": "vite",
+    "shared-build:serve": "vite-node --script tools/world/serve-shared-build.ts",
     "build": "tsc --noEmit && tsc --noEmit -p tsconfig.middleware.json && vite build && node tools/build-plumbing-entry.mjs",
     "preview": "vite preview --port 5173",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",

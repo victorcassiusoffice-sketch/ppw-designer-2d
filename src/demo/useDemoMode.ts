@@ -163,7 +163,12 @@ export function useDemoMode(): DemoDefinition | null {
   const pushToast = useToastStore((s) => s.push);
   useEffect(() => {
     if (!demo) return;
-    const outcome = ensureDemoPage(demo);
+    let sharedPage = false;
+    try {
+      const saved = sessionStorage.getItem('olb-live-build-v1');
+      sharedPage = !!saved && JSON.parse(saved).session?.page === currentPageId();
+    } catch { /* The normal demo can still open with unavailable storage. */ }
+    const outcome = sharedPage ? 'current' : ensureDemoPage(demo);
     useDesignerUIStore
       .getState()
       .setViewMode(demoViewFor(window.location.pathname, window.location.search));
