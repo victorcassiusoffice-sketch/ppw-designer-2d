@@ -75,7 +75,7 @@ import { shadeMeshes } from './shadeMeshes';
 import { setFoundationInspection } from './foundationInspection';
 import type { FoundationModel } from '../../designer/foundation';
 import type { ShadeModel } from '../../designer/shade';
-import { createNaturalSceneRenderer, type NaturalSceneRenderer } from './naturalSceneRenderer';
+import type { NaturalSceneRenderer } from './naturalSceneRenderer';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
 import { solarPanelPreview } from './solarPanelPreview';
 import { waterTankPreview } from './waterTankPreview';
@@ -684,6 +684,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const naturalRendererRef = useRef<NaturalSceneRenderer | null>(null);
+  const naturalFactory = useRef<typeof import('./naturalSceneRenderer').createNaturalSceneRenderer>();
+  const naturalLoading = useRef(false);
   const naturalPreparedRef = useRef<NaturalSceneRenderer | null>(null);
   const naturalBalancedRef = useRef(false);
   const naturalEnabledRef = useRef(presentation === 'natural');
@@ -835,9 +837,19 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
             if (naturalRendererRef.current && naturalBalancedRef.current !== automatic) {
               naturalRendererRef.current.dispose(); naturalRendererRef.current = null;
             }
-            if (!naturalRendererRef.current) {
+            if (!naturalFactory.current && !naturalLoading.current) {
+              naturalLoading.current = true;
+              void import('./naturalSceneRenderer').then(module => {
+                if (rendererRef.current !== r) return;
+                naturalFactory.current = module.createNaturalSceneRenderer;
+                requestRender(false);
+              }).catch(() => {
+                if (rendererRef.current === r) naturalUnavailableRef.current = true;
+              }).finally(() => { if (rendererRef.current === r) naturalLoading.current = false; });
+            }
+            if (!naturalRendererRef.current && naturalFactory.current) {
               r.domElement.dataset.aoPrepareStartMs = String(performance.now());
-              naturalRendererRef.current = createNaturalSceneRenderer(r, s, c, automatic);
+              naturalRendererRef.current = naturalFactory.current(r, s, c, automatic);
               naturalBalancedRef.current = automatic;
               if (!naturalRendererRef.current) naturalUnavailableRef.current = true;
               const preparing = naturalRendererRef.current;
@@ -1196,6 +1208,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       naturalRendererRef.current?.dispose();
       naturalRendererRef.current = null;
       naturalUnavailableRef.current = false;
+      naturalLoading.current = false;
       if (contentRef.current) disposeObject(contentRef.current);
       if (servicesRef.current) disposeObject(servicesRef.current);
       if (ecoRef.current) disposeObject(ecoRef.current);

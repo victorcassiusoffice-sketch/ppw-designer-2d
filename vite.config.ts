@@ -182,6 +182,8 @@ export default defineConfig(({ mode }) => ({
           const path = id.replace(/\\/g, '/');
           if (/\/node_modules\/(react|react-dom|scheduler)\//.test(path)) return 'vendor-react';
           if (/\/node_modules\/(konva|react-konva)\//.test(path)) return 'vendor-konva';
+          // Ambient occlusion starts after the first full frame on supported devices.
+          if (/\/three\/examples\/jsm\/(?:postprocessing|shaders)\//.test(path) || path.endsWith('/math/SimplexNoise.js')) return 'natural-effects';
           // Walk-only helpers must not grow the first-picture Three dependency.
           if (/\/three\/examples\/jsm\/controls\/PointerLockControls\.js$/.test(path)) return 'walk-controls';
           if (/\/node_modules\/three\/src\//.test(path)) return 'walk-animation';
