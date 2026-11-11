@@ -275,7 +275,9 @@ export interface ThreeStageHandle {
     fog: { near: number; far: number } | null; cameraDistance: number | null;
   };
   /** The placed item under a canvas-local point (its body or its box), or null. */
-  hitItem(x: number, y: number): { instanceId: string } | null;
+  hitItem(x: number, y: number): { instanceId: string; point?:{x:number;y:number}; walkBasis?:{rightX:number;rightY:number;metresPerPixel:number} } | null;
+  /** Pick the mounting plane for a product when building from a first-person camera. */
+  walkMountPoint?(x:number,y:number,elevationM:number):{x:number;y:number}|null;
   /** Generic plumbing/electric fixture on the active storey, in canvas pixels. */
   hitServiceFixture?(x: number, y: number): string | null;
   /** Existing wall-hosted opening, respecting cutaway and visible storeys. */
@@ -1833,7 +1835,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           const point={x:hit.point.x,y:hit.point.z};
           for(let node:THREE.Object3D|null=hit.object;node;node=node.parent){
             const data=node.userData;
-            if(data.instanceId||data.wall||floorsRef.current.includes(node as THREE.Mesh))return null;
+            if(data.instanceId||data.wall){const target=api.hitErase(x,y);return target?{target,point}:null}
+            if(floorsRef.current.includes(node as THREE.Mesh))return null;
             for(const [tag,kind] of [['stairId','stair'],['serviceRunId','run'],['serviceFixtureId','fixture'],['gardenId','garden'],['foundationId','foundation'],['boundaryComponentId','component'],['roofRoomId','roof'],['shadeSailId','shade']] as const)
               if(typeof data[tag]==='string')return {target:{kind,id:data[tag]},point};
           }
@@ -2106,7 +2109,14 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         }
         const obstruction = ray.intersectObjects(blockers, true)[0];
         if (obstruction && obstruction.distance < best.d - 0.001) return null;
-        return { instanceId: best.instanceId };
+        const picked=ray.ray.at(best.d,new THREE.Vector3()),point={x:picked.x,y:picked.z};
+        const walker=walkPickCamera.current;
+        if(!walker)return {instanceId:best.instanceId,point};
+        const right=new THREE.Vector3().setFromMatrixColumn(walker.matrixWorld,0);
+        const length=Math.hypot(right.x,right.z)||1;
+        const depth=-picked.clone().applyMatrix4(walker.matrixWorldInverse).z;
+        const metresPerPixel=2*Math.max(.05,depth)*Math.tan(THREE.MathUtils.degToRad(walker.getEffectiveFOV()/2))/height;
+        return {instanceId:best.instanceId,point,walkBasis:{rightX:right.x/length,rightY:right.z/length,metresPerPixel}};
       },
       constructionPoint(x, y) {
         const c = walkPickCamera.current ?? cameraRef.current;
@@ -2115,6 +2125,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
         const p = new THREE.Vector3();
         return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -(solids.activeElevationM ?? 0)), p) ? { x: p.x, y: p.z } : null;
+      },
+      walkMountPoint(x,y,elevationM) {
+        const c=walkPickCamera.current;if(!c||width<8||height<8)return null;
+        const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),c);
+        const p=ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-elevationM),new THREE.Vector3());
+        return p?{x:p.x,y:p.z}:null;
       },
       floorPoint(x, y) {
         const c = walkPickCamera.current ?? cameraRef.current;

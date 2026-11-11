@@ -111,22 +111,25 @@ export function SurfaceActions(props: Props) {
     function hits(x: number, y: number) {
       const v = current.current,
         direct = v.direct?.(x, y),
-        at = direct?.point ?? v.point(x, y);
-      if (!at) return null;
+        native = v.hit?.(x, y);
       const p = usePropertyStore.getState().property;
-      const list = surfaceTargets(p, activeLevelIdOf(p), at, 0.16, v.hit?.(x, y));
+      let at = direct?.point ?? v.point(x, y);
+      if (!at && native?.kind === 'item')
+        at =
+          p.rooms
+            .flatMap((r) => r.placedItems)
+            .find((item) => item.instanceId === native.instanceId) ?? null;
+      if (!at && native?.kind === 'opening') {
+        const room = p.rooms.find((r) => r.openings?.some((o) => o.id === native.openingId));
+        const opening = room?.openings?.find((o) => o.id === native.openingId);
+        if (room && opening) at = room.polygon[opening.edgeIndex] ?? null;
+      }
+      if (!at) return null;
+      const list = surfaceTargets(p, activeLevelIdOf(p), at, 0.16, native);
       const hits = direct
         ? [
             direct.target,
-            ...list.filter(
-              (h) =>
-                !(
-                  'id' in h &&
-                  'id' in direct.target &&
-                  h.kind === direct.target.kind &&
-                  h.id === direct.target.id
-                ),
-            ),
+            ...list.filter((t) => JSON.stringify(t) !== JSON.stringify(direct.target)),
           ]
         : list;
       return { at, hits };
@@ -393,17 +396,14 @@ export function SurfaceActions(props: Props) {
   };
   const group = selected ? sameSurfaceGroup(selected, property, activeLevelIdOf(property)) : null;
   const wall = selected?.kind === 'wall' ? selected.hit : null;
-  const roomWall =
-    wall?.kind === 'edge' ? property.rooms.find((r) => r.id === wall.roomId) : null;
-  const freeWall =
-    wall?.kind === 'free' ? property.walls?.find((w) => w.id === wall.wallId) : null;
+  const roomWall = wall?.kind === 'edge' ? property.rooms.find((r) => r.id === wall.roomId) : null;
+  const freeWall = wall?.kind === 'free' ? property.walls?.find((w) => w.id === wall.wallId) : null;
   const hasPaint =
     roomWall?.wallPaint?.some((p) => p.edgeIndex === wall?.edgeIndex) ||
     freeWall?.paintId ||
     freeWall?.exteriorPaint;
   const hasCladding =
-    roomWall?.wallCladding?.some((p) => p.edgeIndex === wall?.edgeIndex) ||
-    freeWall?.claddingId;
+    roomWall?.wallCladding?.some((p) => p.edgeIndex === wall?.edgeIndex) || freeWall?.claddingId;
   const edge = selected && menu ? bendAt(property, selected, menu.at) : null;
   const stair =
     selected?.kind === 'stair' ? property.stairs?.find((s) => s.id === selected.id) : null;

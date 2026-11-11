@@ -233,6 +233,15 @@ declare global {
     __ppwRoomView3d?: RoomView3DBridgeRegistry;
   }
 }
+function productPointerPoint(stage:ThreeStageHandle,x:number,y:number,product:ReturnType<typeof getProductById>,ceilingM:number){
+  if(product?.placement==='ceiling'){
+    const ceiling=stage.walkMountPoint?.(x,y,ceilingM);if(ceiling)return ceiling;
+  }
+  if(product?.placement==='wall'){
+    const wall=stage.wallPoint(x,y);if(wall)return wall;
+  }
+  return stage.floorPoint(x,y);
+}
 function bridgeRegistry(): RoomView3DBridgeRegistry {
   if (!window.__ppwRoomView3d) {
     const pick = () => reg.instances.overlay ?? reg.instances.card;
@@ -823,7 +832,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     const box = containerRef.current?.getBoundingClientRect();
     if (!pointer || !box || pointer.clientX < box.left || pointer.clientX > box.right || pointer.clientY < box.top || pointer.clientY > box.bottom) return null;
     const product = getProductById(pointer.productId);
-    const point = stageRef.current.floorPoint(pointer.clientX - box.left, pointer.clientY - box.top);
+    const point = productPointerPoint(stageRef.current,pointer.clientX-box.left,pointer.clientY-box.top,product,levelElevationM(property,level)+activeHeight);
     const pose = product && point && usePlacementIntentStore.getState().previewPlacement(product.id, point.x, point.y);
     if (!product || !pose) return null;
     const model = productModelFor(product), heightM = Math.max(0.05, Math.min(product.dimensions_cm.height / 100, activeHeight));
@@ -906,7 +915,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     }
     const p = intent.target === 'center' && product && isRoofProduct(product)
       ? roofPlacementPoint(property, product, currentSnapStepM())
-      : stage.floorPoint(local.x, local.y);
+      : productPointerPoint(stage,local.x,local.y,product,levelElevationM(property,level)+activeHeight);
     if (p) placeAtPoint(intent.productId, p.x, p.y, { strict: intent.strict, keepArmed: intent.keepArmed });
     else {
       consumeIntent();
@@ -1028,7 +1037,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     pinchGesture.current = a && b && camera ? { camera, start: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, distance: Math.hypot(a.x - b.x, a.y - b.y) } } : null;
   }
   /** An item being carried across the floor. */
-  const itemDrag = useRef<{ instanceId: string; start: { x: number; y: number }; dx: number; dy: number; moved: boolean } | null>(null);
+  const itemDrag = useRef<{ instanceId: string; start: { x: number; y: number }; walk?:{rightX:number;rightY:number;metresPerPixel:number;x:number;y:number}; dx: number; dy: number; moved: boolean } | null>(null);
   /**
    * A mouse stroke with the brush (The Sims' wallpaper tool): the press
    * paints the wall under it and the drag paints every wall it runs
@@ -1223,9 +1232,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         const openingHit = !armedProductId && stageRef.current.hitOpening?.(p.x, p.y);
         const hit = serviceHit || openingHit ? null : stageRef.current.hitItem(p.x, p.y);
         stageRef.current.viewHover?.(null);
-        const floor = hit ? stageRef.current.floorPoint(p.x, p.y) : null;
+        const floor = hit?.walkBasis ? hit.point : hit ? stageRef.current.floorPoint(p.x, p.y) : null;
         if (hit && floor) {
-          itemDrag.current = { instanceId: hit.instanceId, start: floor, dx: 0, dy: 0, moved: false };
+          itemDrag.current = { instanceId: hit.instanceId, start: floor, walk:hit.walkBasis?{...hit.walkBasis,x:e.clientX,y:e.clientY}:undefined, dx: 0, dy: 0, moved: false };
           drag.current = null;
           return;
         }
@@ -1372,8 +1381,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     }
     const carry = itemDrag.current;
     if (carry && pointers.current.size === 1 && stageRef.current) {
-      const p = localPoint(e);
-      const floor = stageRef.current.floorPoint(p.x, p.y);
+      const p = localPoint(e),basis=carry.walk;
+      // A horizontal or upward sightline never intersects the floor. Preserve the
+      // grabbed depth and map screen axes to the measured horizontal plane instead.
+      const floor = basis ? {
+        x:carry.start.x+((e.clientX-basis.x)*basis.rightX-(e.clientY-basis.y)*basis.rightY)*basis.metresPerPixel,
+        y:carry.start.y+((e.clientX-basis.x)*basis.rightY+(e.clientY-basis.y)*basis.rightX)*basis.metresPerPixel,
+      } : stageRef.current.floorPoint(p.x, p.y);
       if (!floor) {
         if (onRoofLevel) setMoveFeedback('Keep the panel over the roof · release outside to cancel');
         return;
@@ -1439,7 +1453,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     if (armedPress.current?.id === e.pointerId) {
       const press = armedPress.current; armedPress.current = null;
       if (had && !cancelled) {
-        const local = localPoint(e), point = stageRef.current?.floorPoint(local.x, local.y);
+        const local = localPoint(e), stage=stageRef.current, point = stage?productPointerPoint(stage,local.x,local.y,getProductById(press.productId),levelElevationM(property,level)+activeHeight):null;
         if (point) placeAtPoint(press.productId, point.x, point.y, { strict: true, keepArmed: e.shiftKey });
       }
       setArmedPointer(null);
