@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SharedBuildButton } from '../sharedBuild/SharedBuildButton';
 import { BoundaryTools } from '../components/three/BoundaryTools';
 import { usePropertyStore } from '../store/propertyStore';
 import { createPortal } from 'react-dom';
@@ -53,6 +54,11 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
   const stage = useRef<ThreeStageHandle>(null);
   const runtime = useRef<WalkRuntime | null>(null);
   const [choice, setChoice] = useState(savedCharacter);
+  useEffect(() => {
+    const change=(e:Event)=>{const id=(e as CustomEvent<string>).detail;if(WALK_CHARACTERS.some(c=>c.id===id))setChoice(id)};
+    window.addEventListener('olb:live-avatar',change);
+    return ()=>window.removeEventListener('olb:live-avatar',change);
+  },[]);
   const character = WALK_CHARACTERS.find(c => c.id === choice) ?? WALK_CHARACTERS[0];
   const characterCredit = character.licence === 'CC0-1.0'
     ? <a href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Kenney · CC0</a>
@@ -64,6 +70,10 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
   const [error, setError] = useState('');
   const [loading, setLoading] = useState('Preparing your walk…');
   const [visit, setVisit] = useState<ReturnType<typeof prepareVisit> | null>(null);
+  const lastVisit = useRef<ReturnType<typeof prepareVisit> | null>(null);
+  const currentVisit = useRef(visit); currentVisit.current=visit;
+  const hasVisit=!!visit;
+  const liveProperty=usePropertyStore(s=>s.property);
   const [status, setStatus] = useState<WalkStatus | null>(null);
   const [size, setSize] = useState({ width: innerWidth, height: innerHeight });
   const [touchControls, setTouchControls] = useState(() => window.matchMedia?.('(pointer: coarse)').matches ?? false);
@@ -102,9 +112,9 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
       });
     });
     return () => cancelAnimationFrame(frame);
-  }, [started]);
+  }, [started,liveProperty]);
   useEffect(() => {
-    if (!started || !ready || !visit) return;
+    if (!started || !ready || !hasVisit) return;
     const surface = stage.current?.beginWalk();
     if (!surface) return;
     let active = true, viewer: WalkRuntime | undefined;
@@ -112,7 +122,9 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
     setLoading('Loading walk controls…');
     void import('./runtime').then(async ({ WalkRuntime: Runtime }) => {
       if (!active) return;
-      viewer = new Runtime(surface, visit.solids, visit.property, value => { if (active) setStatus(value); }, () => closeVisit.current(), initialPose.current);
+      const initialVisit=currentVisit.current; if(!initialVisit)return;
+      lastVisit.current=initialVisit;
+      viewer = new Runtime(surface, initialVisit.solids, initialVisit.property, value => { if (active) setStatus(value); }, () => closeVisit.current(), initialPose.current);
       release = () => viewer?.dispose();
       runtime.current = viewer;
       await viewer.load(WALK_CHARACTERS.find(c => c.id === choice)!, startedAt.current,
@@ -124,7 +136,12 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
       }
     });
     return () => { active = false; release(); runtime.current = null; };
-  }, [started, ready, choice, visit]);
+  }, [started, ready, choice, hasVisit]);
+  useEffect(()=>{
+    if(visit&&runtime.current&&lastVisit.current!==visit){
+      lastVisit.current=visit; runtime.current.refreshDesign(visit.solids,visit.property);
+    }
+  },[visit]);
   const begin = () => {
     try { localStorage.setItem(preferenceKey, choice); } catch { /* A private session can still walk. */ }
     initialPose.current = levelChosen && levelId ? { levelId } : undefined;
@@ -206,6 +223,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
             if (p?.id === e.pointerId && !p.dragged) void runtime.current?.moveToScreen(e.clientX,e.clientY);
           }} onPointerCancel={() => { lookPointer.current = null; }} />
         <div className="world-walk-toolbar">
+          <SharedBuildButton/>
           <BoundaryTools beforeOpen={()=>{if(document.pointerLockElement)document.exitPointerLock?.()}} view={{
             element:()=>host.current,
             ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,

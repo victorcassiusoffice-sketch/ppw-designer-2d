@@ -87,6 +87,18 @@ export class WalkRuntime {
   private desired = new THREE.Vector3();
   private follow = new THREE.Vector3();
   private euler = new THREE.Euler(0, 0, 0, 'YXZ');
+  private peers?: import('../sharedBuild/remotePlayers').RemotePlayers;
+  private peerLoad?: Promise<void>;
+  private peerList: import('../sharedBuild/contract').Player[] = [];
+  private receivePeers=(event:Event)=>{
+    this.peerList=(event as CustomEvent<import('../sharedBuild/contract').Player[]>).detail;
+    if(this.peers){this.peers.update(this.peerList);return}
+    if(!this.peerList.length)return;
+    this.peerLoad??=import('../sharedBuild/remotePlayers').then(({RemotePlayers})=>{
+      if(this.disposed)return;
+      this.peers=new RemotePlayers(this.host.scene);this.peers.update(this.peerList);
+    }).catch(()=>{this.peerLoad=undefined});
+  };
   private decoder = new DRACOLoader();
   private abort = new AbortController();
   private pauseFrames(reason: string): void {
@@ -161,21 +173,9 @@ export class WalkRuntime {
     this.controls.addEventListener('unlock', this.onUnlock);
     this.controls.addEventListener('lock', this.onLock);
     this.controls.minPolarAngle = .2; this.controls.maxPolarAngle = Math.PI - .2;
-    this.hidden = hideStaticDoorLeaves(host.scene);
-    const material = new THREE.MeshStandardMaterial({ color: '#e3dccd', roughness: .72 });
-    const handleMaterial = new THREE.MeshStandardMaterial({ color: '#657477', metalness: .65, roughness: .3 });
-    for (const door of this.world.doors) {
-      const group = new THREE.Group();
-      const leaf = new THREE.Mesh(door.geometry.clone(), material);
-      leaf.castShadow = true; leaf.receiveShadow = true;
-      group.add(leaf);
-      for (const face of [-1, 1]) {
-        const handle = new THREE.Mesh(new THREE.BoxGeometry(.11, .025, .035), handleMaterial);
-        handle.position.set(door.width - .11, Math.min(1, door.height * .55), face * (door.thickness / 2 + .025));
-        group.add(handle);
-      }
-      this.doors.set(door.id, group); host.scene.add(group);
-    }
+    window.addEventListener('olb:live-peers',this.receivePeers);
+    window.dispatchEvent(new Event('olb:request-peers'));
+    this.attachDoors();
     host.scene.add(this.actor);
     host.renderer.shadowMap.needsUpdate = true;
     this.follow.copy(spawn.position).add(new THREE.Vector3(0, 1.6, 0));
@@ -257,6 +257,46 @@ export class WalkRuntime {
   toggleOverview(): void { this.overview = !this.overview; this.followReady = false; this.cutawayAt = -Infinity; this.lastStatus = -Infinity; }
   setLookStick(x: number, y: number): void { this.lookStick = { x, y }; }
 
+  private attachDoors() {
+    this.hidden = hideStaticDoorLeaves(this.host.scene);
+    const material = new THREE.MeshStandardMaterial({ color: '#e3dccd', roughness: .72 });
+    const handleMaterial = new THREE.MeshStandardMaterial({ color: '#657477', metalness: .65, roughness: .3 });
+    for (const door of this.world.doors) {
+      const group = new THREE.Group();
+      const leaf = new THREE.Mesh(door.geometry.clone(), material);
+      leaf.castShadow = true; leaf.receiveShadow = true;
+      group.add(leaf);
+      for (const face of [-1, 1]) {
+        const handle = new THREE.Mesh(new THREE.BoxGeometry(.11, .025, .035), handleMaterial);
+        handle.position.set(door.width - .11, Math.min(1, door.height * .55), face * (door.thickness / 2 + .025));
+        group.add(handle);
+      }
+      this.doors.set(door.id, group); this.host.scene.add(group);
+    }
+  }
+  private detachDoors() {
+    const materials = new Set<THREE.Material>();
+    for (const group of this.doors.values()) { group.traverse(o => { const m = o as THREE.Mesh; if (m.isMesh) { m.geometry.dispose(); for (const mat of Array.isArray(m.material) ? m.material : [m.material]) materials.add(mat); } }); group.removeFromParent(); }
+    for (const material of materials) material.dispose();
+    for (const object of this.hidden) object.visible = true;
+    this.doors.clear(); this.hidden = [];
+  }
+  refreshDesign(solids:SceneSolids, property:Property) {
+    const updated=createWalkWorld(solids,property);
+    updated.roofActive=this.world.roofActive;
+    const feet=this.walker.position, point={x:feet.x,y:feet.z};
+    const next=spawnAt(updated,point,this.levelId) ?? spawnOnLevel(updated,this.levelId,point)
+      ?? findWalkSpawn(updated,property) ?? spawnOnLevel(updated,updated.groundLevelId??GROUND_LEVEL_ID);
+    if(!next){updated.dispose();this.notice='The edited build has no clear standing space.';this.pauseFrames('build changed');return}
+    for(const d of updated.doors){
+      const old=this.world.doors.find(x=>x.id===d.id);if(old){d.angle=old.angle;d.targetAngle=old.targetAngle}
+    }
+    this.detachDoors();this.world.dispose();
+    this.world=updated;this.solids=solids;
+    this.walker=createWalker(updated,next.position);this.eyeHeight=next.position.y+1.55;
+    this.route=[];this.routeRequest++;this.stalled=0;this.cutawayAt=-Infinity;
+    this.attachDoors();this.actor.position.copy(next.position);
+  }
   drawingRay(clientX:number,clientY:number) {
     const rect=this.host.renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return null;
     const caster=new THREE.Raycaster();
@@ -505,6 +545,7 @@ export class WalkRuntime {
       if (next !== this.animation) {
         this.actions[this.animation]?.fadeOut(.18); this.actions[next]?.reset().fadeIn(.18).play(); this.animation = next;
       }
+      this.peers?.frame(dt);
       this.mixer?.update(dt);
       this.actor.position.copy(this.walker.position);
       if (actualSpeed > .08) {
@@ -560,6 +601,8 @@ export class WalkRuntime {
           if (floor?.levelId) this.levelId = floor.levelId;
           else if (patch) this.levelId = patch.levelId;
         }
+        window.dispatchEvent(new CustomEvent('olb:local-pose',{detail:{x:feet.x,y:feet.z,z:feet.y,yaw:this.actor.rotation.y,moving:this.animation!=='idle'}}));
+        if(this.peers)this.host.renderer.domElement.dataset.sharedPlayers=String(this.peers.visibleCount);
         this.onStatus({ mode: this.mode, levelId: this.levelId, grounded: this.walker.grounded,
           overview: this.overview, cutaway: this.cutaway, notice: this.notice, door: door ? (door.targetAngle ? 'Close door' : 'Open door') : null,
           blocked: now < this.blockedUntil, locked: this.controls.isLocked, animation: this.animation,
@@ -586,11 +629,11 @@ export class WalkRuntime {
     this.disposeTestHook?.(); this.disposeProjectionHook?.();
     window.removeEventListener('keyup', this.onKeyUp, true); window.removeEventListener('blur', this.onBlur);
     window.removeEventListener('focus', this.onFocus); document.removeEventListener('visibilitychange', this.onVisibility);
+    window.removeEventListener('olb:live-peers',this.receivePeers);
+    window.dispatchEvent(new CustomEvent('olb:local-pose',{detail:null}));
+    this.peers?.dispose();
     this.mixer?.stopAllAction(); disposeObject(this.actor);
-    const materials = new Set<THREE.Material>();
-    for (const group of this.doors.values()) { group.traverse(o => { const m = o as THREE.Mesh; if (m.isMesh) { m.geometry.dispose(); for (const mat of Array.isArray(m.material) ? m.material : [m.material]) materials.add(mat); } }); group.removeFromParent(); }
-    for (const material of materials) material.dispose();
-    for (const object of this.hidden) object.visible = true;
+    this.detachDoors();
     this.world.dispose(); this.host.release();
   }
 }

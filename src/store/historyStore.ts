@@ -452,3 +452,23 @@ export const __test = {
   },
   isInstalled: () => installed,
 };
+
+/** Apply a remote measured change without creating a local Undo action. Each still-compatible
+ * history frame receives the same changes so a later local Undo preserves other players' edits. */
+export function applySharedSnapshot(property:Property,rebase:(property:Property)=>Property|null):void{
+  if(isDrawTransactionActive())throw Error('Finish the active drawing before applying shared edits.');
+  flushPendingPush();
+  const history=useHistoryStore.getState();
+  const transform=(frames:Snapshot[])=>{
+    const kept:Snapshot[]=[];
+    for(const frame of frames){
+      if(frame.property.id!==property.id)continue;
+      const next=rebase(frame.property);
+      if(next)kept.push({...frame,property:next});else kept.length=0;
+    }return kept;
+  };
+  const past=transform(history.past),future=transform(history.future);
+  const previous=suppressRecording;suppressRecording=true;
+  try{usePropertyStore.setState({property});useHistoryStore.setState({past,future,hydratedFromSession:false});writeSessionFrames(past)}
+  finally{suppressRecording=previous;lastSeenSnapshot=takeSnapshot()}
+}

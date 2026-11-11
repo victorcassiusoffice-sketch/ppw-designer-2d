@@ -46,6 +46,7 @@ export async function handleSharedSpecs(segments: string[], req: Request, res: R
   res.setHeader('Vary', 'Authorization');
   const method = req.method ?? 'GET';
   const id = segments[0];
+  if (id === 'live') { const { handleLiveBuild } = await import('./sharedBuild/handler.js'); await handleLiveBuild(segments.slice(1), req, res, readBody); return; }
   const collection = segments.length === 0;
   const project = segments.length === 1;
   const changes = segments.length === 2 && segments[1] === 'changes';

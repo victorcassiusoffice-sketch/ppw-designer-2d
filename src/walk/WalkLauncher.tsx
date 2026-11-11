@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { ThreeStageHandle } from '../components/three/ThreeStage';
 import { prepareWalkVisit, visitLevels } from './visit';
+import { SharedBuildButton } from '../sharedBuild/SharedBuildButton';
 import { BoundaryTools } from '../components/three/BoundaryTools';
 import { WalkerPlacement } from './WalkerPlacement';
 import type { PlacementHint } from './placement';
@@ -98,6 +99,7 @@ export default function WalkLauncher({
       >
         Walk
       </button>
+      {!open && <SharedBuildButton/>}
       {!open && <BoundaryTools view={{
         element: () => viewportRef?.current ?? null,
         ray(x,y) {
