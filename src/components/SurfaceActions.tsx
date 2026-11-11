@@ -147,18 +147,6 @@ export function SurfaceActions(props: Props) {
       }
       let path: Vertex[], valid: boolean, label: string;
       if (g.kind === 'stair') {
-        const wall = selected?.kind === 'wall' ? selected.hit : null;
-        const roomWall =
-          wall?.kind === 'edge' ? property.rooms.find((r) => r.id === wall.roomId) : null;
-        const freeWall =
-          wall?.kind === 'free' ? property.walls?.find((w) => w.id === wall.wallId) : null;
-        const hasPaint =
-          roomWall?.wallPaint?.some((p) => p.edgeIndex === wall?.edgeIndex) ||
-          freeWall?.paintId ||
-          freeWall?.exteriorPaint;
-        const hasCladding =
-          roomWall?.wallCladding?.some((p) => p.edgeIndex === wall?.edgeIndex) ||
-          freeWall?.claddingId;
         const stair = { ...g.stair, x: at.x, y: at.y },
           result = validateStairPlacement(usePropertyStore.getState().property, stair);
         path = stairFootprint(stair);
@@ -404,6 +392,18 @@ export function SurfaceActions(props: Props) {
     close();
   };
   const group = selected ? sameSurfaceGroup(selected, property, activeLevelIdOf(property)) : null;
+  const wall = selected?.kind === 'wall' ? selected.hit : null;
+  const roomWall =
+    wall?.kind === 'edge' ? property.rooms.find((r) => r.id === wall.roomId) : null;
+  const freeWall =
+    wall?.kind === 'free' ? property.walls?.find((w) => w.id === wall.wallId) : null;
+  const hasPaint =
+    roomWall?.wallPaint?.some((p) => p.edgeIndex === wall?.edgeIndex) ||
+    freeWall?.paintId ||
+    freeWall?.exteriorPaint;
+  const hasCladding =
+    roomWall?.wallCladding?.some((p) => p.edgeIndex === wall?.edgeIndex) ||
+    freeWall?.claddingId;
   const edge = selected && menu ? bendAt(property, selected, menu.at) : null;
   const stair =
     selected?.kind === 'stair' ? property.stairs?.find((s) => s.id === selected.id) : null;
