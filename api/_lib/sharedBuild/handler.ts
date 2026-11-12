@@ -10,7 +10,7 @@ import {
   type Build,
 } from '../../../src/sharedBuild/contract.js';
 import { neonRoomStore, type Member, type RoomStore } from '../../_db/liveBuildStore.js';
-import { hostedRedisBuildStore } from '../../_db/redisLiveBuildStore.js';
+import { hostedBlobBuildStore } from '../../_db/blobLiveBuildStore.js';
 import { studioAccess, crossSiteWrite } from '../studioAccess.js';
 import { isShowcaseDeployment, rejectShowcaseTransaction } from '../showcaseSafety.js';
 import { validateSnapshotMeasurements } from '../designSnapshotValidation.js';
@@ -70,15 +70,16 @@ export async function handleLiveBuild(
     route = parts.join('/');
   const hosted = dep === defaults,
     preview = hosted && process.env.VERCEL_ENV === 'preview';
-  const redis = hosted ? hostedRedisBuildStore() : null;
+  const privateStore = hosted ? hostedBlobBuildStore() : null;
   // An immutable preview has its own expiring room namespace. Production
   // invitations and studio data are never opened by the rehearsal deployment.
-  const rehearsal = preview && !!redis && !/^(true|1)$/i.test(process.env.DEMO_ONLY?.trim() ?? '');
+  const rehearsal =
+    preview && !!privateStore && !/^(true|1)$/i.test(process.env.DEMO_ONLY?.trim() ?? '');
   const readOnly = isShowcaseDeployment() && !rehearsal;
   async function storeFor(id?: string): Promise<RoomStore | null> {
     if (!hosted) return dep.store();
-    if (id) return id[14] === '8' ? redis : preview ? null : dep.store();
-    const candidates = preview ? [redis] : [redis, () => dep.store()];
+    if (id) return id[14] === '8' ? privateStore : preview ? null : dep.store();
+    const candidates = preview ? [privateStore] : [privateStore, () => dep.store()];
     for (const candidate of candidates) {
       try {
         const s = typeof candidate === 'function' ? candidate() : candidate;
