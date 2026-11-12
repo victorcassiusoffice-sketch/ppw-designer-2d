@@ -2012,6 +2012,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               serviceRuns={serviceRuns}
               groundVisible={visible.landscape}
               ecoTrees={visible.landscape ? property.eco?.trees : undefined}
+              boundaryComponents={property.boundaryComponents}
               foundation={visibleFoundation}
               foundationView={inspectingFoundation}
               foundationBaseElevationM={foundationBaseElevationM}

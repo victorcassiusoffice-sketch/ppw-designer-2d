@@ -74,7 +74,7 @@ import { shadeMeshes } from './shadeMeshes';
 import { setFoundationInspection } from './foundationInspection';
 import type { FoundationModel } from '../../designer/foundation';
 import type { ShadeModel } from '../../designer/shade';
-import { createNaturalSceneRenderer, type NaturalSceneRenderer } from './naturalSceneRenderer';
+import type { NaturalSceneRenderer } from './naturalSceneRenderer';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
 import { solarPanelPreview } from './solarPanelPreview';
 import { waterTankPreview } from './waterTankPreview';
@@ -314,6 +314,7 @@ export interface ThreeStageProps {
   serviceRuns?: ServiceRunPlacement[];
   groundVisible?: boolean;
   ecoTrees?: readonly EcoTree[];
+  boundaryComponents?: import('../../designer/boundaryModel').BoundaryComponent[];
   foundation?: FoundationModel;
   foundationView?: boolean;
   foundationBaseElevationM?: number;
@@ -662,7 +663,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
+  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, boundaryComponents, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
   ref,
 ): JSX.Element {
   const buildSkin = useBuildSkinStore(s => s.skin);
@@ -680,6 +681,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const naturalRendererRef = useRef<NaturalSceneRenderer | null>(null);
+  const naturalFactory = useRef<typeof import('./naturalSceneRenderer').createNaturalSceneRenderer>();
+  const naturalLoading = useRef(false);
   const naturalPreparedRef = useRef<NaturalSceneRenderer | null>(null);
   const naturalBalancedRef = useRef(false);
   const naturalEnabledRef = useRef(presentation === 'natural');
@@ -815,6 +818,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
             r.domElement.dataset.firstPrepareStartMs = String(performance.now());
             try { void firstMaterialsRef.current.prepare(r, s, c).then(ready, ready); }
             catch { ready(); }
+            window.dispatchEvent(new Event('ppw:house-preparing'));
           }
           // Keep Loading 3D visible until the completed, shadowed scene has
           // actually drawn. Preparation alone never fires onReady.
@@ -830,9 +834,19 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
             if (naturalRendererRef.current && naturalBalancedRef.current !== automatic) {
               naturalRendererRef.current.dispose(); naturalRendererRef.current = null;
             }
-            if (!naturalRendererRef.current) {
+            if (!naturalFactory.current && !naturalLoading.current) {
+              naturalLoading.current = true;
+              void import('./naturalSceneRenderer').then(module => {
+                if (rendererRef.current !== r) return;
+                naturalFactory.current = module.createNaturalSceneRenderer;
+                requestRender(false);
+              }).catch(() => {
+                if (rendererRef.current === r) naturalUnavailableRef.current = true;
+              }).finally(() => { if (rendererRef.current === r) naturalLoading.current = false; });
+            }
+            if (!naturalRendererRef.current && naturalFactory.current) {
               r.domElement.dataset.aoPrepareStartMs = String(performance.now());
-              naturalRendererRef.current = createNaturalSceneRenderer(r, s, c, automatic);
+              naturalRendererRef.current = naturalFactory.current(r, s, c, automatic);
               naturalBalancedRef.current = automatic;
               if (!naturalRendererRef.current) naturalUnavailableRef.current = true;
               const preparing = naturalRendererRef.current;
@@ -895,6 +909,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if (framesRef.current === 1) {
           firstPictureAtRef.current = performance.now();
           r.domElement.dataset.firstPictureMs = String(firstPictureAtRef.current);
+          window.dispatchEvent(new Event('ppw:house-preparing'));
           onReadyRef.current?.();
           if (!detailReadyRef.current && detailTimerRef.current === null) {
             detailTimerRef.current = setTimeout(() => {
@@ -1040,12 +1055,20 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (!canvas) return;
     let renderer: THREE.WebGLRenderer;
     try {
+      // A WebGL context takes its initial drawing buffer from the canvas.
+      // Size it before allocation so opening the house does not discard a
+      // default-size buffer after the scene has already uploaded its textures.
+      canvas.width = width;
+      canvas.height = height;
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
     } catch {
       failedRef.current = true;
+      window.dispatchEvent(new Event('ppw:house-preparing'));
       onFailed?.();
       return;
     }
+    const initialRatio = qualityRef.current.pixelRatio;
+    if (initialRatio !== 1) renderer.setDrawingBufferSize(width, height, initialRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Colour truth (Vic 2026-09-17): the wall must be the SAME hex as the
     // 2D chip and the merchant's colour card. Filmic tone mapping remaps
@@ -1191,6 +1214,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       naturalRendererRef.current?.dispose();
       naturalRendererRef.current = null;
       naturalUnavailableRef.current = false;
+      naturalLoading.current = false;
       if (contentRef.current) disposeObject(contentRef.current);
       if (servicesRef.current) disposeObject(servicesRef.current);
       if (ecoRef.current) disposeObject(ecoRef.current);
@@ -1223,6 +1247,21 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene || !boundaryComponents?.length) return;
+    let active = true;
+    let release: (() => void) | undefined;
+    void import('./boundaryMeshes').then(({ addBoundaryMeshes }) => {
+      if (!active) return;
+      release = addBoundaryMeshes(scene, boundaryComponents);
+      requestRender();
+    });
+    return () => { active = false; release?.(); requestRender(); };
+  // The render callback reads the active camera and renderer through refs.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boundaryComponents]);
 
   // ---- geometry, on plan change ---------------------------------------------
   useEffect(() => {

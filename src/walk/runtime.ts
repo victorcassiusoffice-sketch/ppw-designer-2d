@@ -257,6 +257,17 @@ export class WalkRuntime {
   toggleOverview(): void { this.overview = !this.overview; this.followReady = false; this.cutawayAt = -Infinity; this.lastStatus = -Infinity; }
   setLookStick(x: number, y: number): void { this.lookStick = { x, y }; }
 
+  drawingRay(clientX:number,clientY:number) {
+    const rect=this.host.renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return null;
+    const caster=new THREE.Raycaster();
+    caster.setFromCamera(new THREE.Vector2(2*(clientX-rect.left)/rect.width-1,1-2*(clientY-rect.top)/rect.height),this.camera);
+    const {origin:o,direction:d}=caster.ray;
+    return {origin:{x:o.x,y:o.z,z:o.y},direction:{x:d.x,y:d.z,z:d.y}};
+  }
+  drawingProjection(p:{x:number;y:number;z:number}) {
+    const rect=this.host.renderer.domElement.getBoundingClientRect(),v=new THREE.Vector3(p.x,p.z,p.y).project(this.camera);
+    return v.z>1||v.z< -1?null:{x:rect.left+(v.x+1)*rect.width/2,y:rect.top+(1-v.y)*rect.height/2};
+  }
   async moveToScreen(clientX: number, clientY: number): Promise<void> {
     if (!this.ready || this.disposed || this.controls.isLocked) return;
     const rect = this.host.renderer.domElement.getBoundingClientRect();

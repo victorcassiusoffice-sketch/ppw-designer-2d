@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { BoundaryTools } from '../components/three/BoundaryTools';
+import { usePropertyStore } from '../store/propertyStore';
 import { createPortal } from 'react-dom';
 import { ThreeStage, type ThreeStageHandle } from '../components/three/ThreeStage';
 import type { SceneSolids } from '../designer/roomSolids';
@@ -46,6 +48,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
   const [levelChosen, setLevelChosen] = useState(!!initial);
   const [fallback, setFallback] = useState(false);
   const topFloor = [...levels].reverse().find(l => !isRoofLevel(l));
+  const boundaryComponents=usePropertyStore(s=>s.property.boundaryComponents);
   const host = useRef<HTMLElement>(null);
   const stage = useRef<ThreeStageHandle>(null);
   const runtime = useRef<WalkRuntime | null>(null);
@@ -166,7 +169,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
   return createPortal(
     <section ref={host} className="world-walk" data-world-walk="true" role="dialog" aria-modal="true" aria-label="Walk mode"
       data-testid="world-walk" data-status={status ? JSON.stringify(status) : undefined}>
-      {started && visit && <div className="world-walk-scene"><ThreeStage ref={stage} solids={visit.solids} camera={camera}
+      {started && visit && <div className="world-walk-scene"><ThreeStage ref={stage} solids={visit.solids} boundaryComponents={boundaryComponents} camera={camera}
         width={size.width} height={size.height} hover={null} wallView="up" presentation="architectural"
         onReady={stageReady} onFailed={() => { runtime.current?.dispose(); runtime.current = null; setError('WebGL is unavailable. Exit to return to your design.'); }} /></div>}
       <header className="world-walk-header"><div><strong>Walk mode</strong><span>Explore your design</span></div>
@@ -203,6 +206,11 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
             if (p?.id === e.pointerId && !p.dragged) void runtime.current?.moveToScreen(e.clientX,e.clientY);
           }} onPointerCancel={() => { lookPointer.current = null; }} />
         <div className="world-walk-toolbar">
+          <BoundaryTools beforeOpen={()=>{if(document.pointerLockElement)document.exitPointerLock?.()}} view={{
+            element:()=>host.current,
+            ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,
+            project:p=>runtime.current?.drawingProjection(p)??null,
+          }}/>
           {levelPicker}
           <button type="button" data-testid="walk-cutaway" aria-pressed={!!status.cutaway} onClick={() => runtime.current?.toggleCutaway()}>{tx('Cutaway')}</button>
           <button type="button" data-testid="walk-overview" aria-pressed={!!status.overview} onClick={() => runtime.current?.toggleOverview()}>{tx('Whole build')}</button>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { ThreeStageHandle } from '../components/three/ThreeStage';
 import { prepareWalkVisit, visitLevels } from './visit';
+import { BoundaryTools } from '../components/three/BoundaryTools';
 import { WalkerPlacement } from './WalkerPlacement';
 import type { PlacementHint } from './placement';
 import type { SceneInput } from '../designer/roomView3d';
@@ -97,6 +98,18 @@ export default function WalkLauncher({
       >
         Walk
       </button>
+      {!open && <BoundaryTools view={{
+        element: () => viewportRef?.current ?? null,
+        ray(x,y) {
+          const rect=viewportRef?.current?.getBoundingClientRect(); if(!rect)return null;
+          const r=stageRef.current?.walkRay?.(x-rect.left,y-rect.top); if(!r)return null;
+          return {origin:{x:r.origin.x,y:r.origin.z,z:r.origin.y},direction:{x:r.direction.x,y:r.direction.z,z:r.direction.y}};
+        },
+        project(p) {
+          const rect=viewportRef?.current?.getBoundingClientRect(),v=stageRef.current?.projectPoint?.(p.x,p.y,p.z);
+          return rect&&v?{x:rect.left+v.x,y:rect.top+v.y}:null;
+        }
+      }}/>}
       {!open && <WalkerPlacement property={property} levels={levels} stageRef={stageRef} viewportRef={viewportRef} prepare={prepare} onPlace={launch} />}
       </div>
       {open && (

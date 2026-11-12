@@ -1,0 +1,74 @@
+.boundary-panel {
+  position: fixed;
+  z-index: 1200;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  right: 12px;
+  width: min(284px, calc(100vw - 24px));
+  max-height: 49dvh;
+  overflow: auto;
+  padding: 12px;
+  background: var(--surface, #eff4ee);
+  color: var(--ink, #172e2a);
+  border: 1px solid #8fa59a;
+  border-radius: 12px;
+  box-shadow: 0 3px 16px #102b4326;
+  display: grid;
+  gap: 6px;
+  font: 13px/1.25 system-ui;
+}
+.boundary-panel header,
+.boundary-plane,
+.boundary-actions,
+.boundary-xyz {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.boundary-panel header {
+  justify-content: space-between;
+}
+.boundary-actions {
+  flex-wrap: wrap;
+}
+.boundary-panel label {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.boundary-panel input,
+.boundary-panel select,
+.boundary-panel button {
+  background: #fff;
+  color: #183e35;
+  border: 1px solid #99b2aa;
+  border-radius: 6px;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 7px;
+}
+.boundary-xyz label,
+.boundary-plane label {
+  flex: 1;
+}
+.boundary-panel output {
+  font-size: 12px;
+}
+.boundary-ink {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 1198;
+  color: #fbb742;
+}
+@media (max-width: 600px) {
+  .boundary-panel {
+    bottom: 5px;
+    right: 5px;
+    max-height: 42dvh;
+  }
+  .boundary-panel button {
+    min-height: 38px;
+  }
+}

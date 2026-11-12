@@ -1,3 +1,4 @@
+import { validComponents } from '../../src/designer/boundaryModel.js';
 import { BuildingServicesSchema } from '../../src/designer/buildingServicesContract.js';
 import { FoundationSchema } from '../../src/designer/foundationContract.js';
 import { CitySchema } from '../../src/designer/cityContract.js';
@@ -33,6 +34,7 @@ export function validateSnapshotCity(property: object): string | null {
 }
 
 export function validateSnapshotMeasurements(property: object): string | null {
+  if ('boundaryComponents' in property && !validComponents(property.boundaryComponents)) return 'Invalid measured component topology.';
   return (
     validateSnapshotServices(property) ??
     validateSnapshotFoundation(property) ??
