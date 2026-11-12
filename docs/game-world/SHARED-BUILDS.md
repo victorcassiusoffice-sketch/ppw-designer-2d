@@ -16,6 +16,8 @@ For teammates on other devices, set `--bind=0.0.0.0`, `--hostname=<your-hostname
 
 ## Hosted deployment
 
-The deployed handler uses the existing shared-project PostgreSQL tables through the existing router. `GET /api/shared-projects/live/status` reports storage readiness without reading a participant or design. The studio session authorizes room creation. Invited editors receive individual, expiring sessions. Preview deployments permit read-only checks. The standalone host and automated tests use isolated storage.
+A signed-in studio user can host from the 3D house. Invited players use a code to join that build. The deployed handler uses the connected private Vercel Blob store for new rooms. Each immutable preview has a separate rehearsal namespace. Rehearsal invitations expire after 24 hours. The two production addresses share the production namespace. The existing PostgreSQL adapter serves standalone builds and earlier PostgreSQL invitations.
 
-Project geometry, editing history and avatar positions use separate records. A committed edit and its revision are stored atomically. Presence disappears after fifteen seconds without a heartbeat. Invitations and participant secrets are sent in request bodies or authorization headers and kept out of design exports.
+The server reads the revision pointer from private storage without CDN caching. A successful conditional write publishes a complete snapshot and its receipt. Presence and membership use a separate small object. Players disappear from the live roster after 15 seconds without a heartbeat. Participant credentials expire after 24 hours. Invitations and participant credentials stay out of design exports.
+
+To verify two hosted players, use a disposable build named **Release verification**. On the host computer, pass its invitation to the standard input of `node tools/world/hosted-build-session.mjs <https-origin> <full-commit> <report-path>`. The tester joins two independent browser profiles, draws two faces, verifies both copies, reconnects and walks. The report contains checks and request counts. The readiness endpoint is `GET /api/shared-projects/live/status`.
