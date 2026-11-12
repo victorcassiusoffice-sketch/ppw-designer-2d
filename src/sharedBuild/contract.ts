@@ -197,6 +197,9 @@ export function applyChanges(current: Build, changes: readonly Change[]): Build 
         parent = value;
         continue;
       }
+      // Two independent edits can materialise the same optional room defaults.
+      // If the desired value is already present, neither player has lost an edit.
+      if (op.has ? value !== undefined && sameJson(value, op.after) : value === undefined) continue;
       if (op.had !== (value !== undefined) || (op.had && !sameJson(value, op.before)))
         throw new EditConflict('Another player changed the same element.');
       if (typeof part === 'string' && record(parent)) {

@@ -118,6 +118,28 @@ describe('private multiplayer construction through the database adapter', () => 
       (await call('sync', { revision: 0, pose: null }, guest.result.session as string)).status,
     ).toBe(401);
   });
+  it('retains both edits when two guests initialise the same empty-room defaults', async () => {
+    const room = { id: 'ground', name: 'Room', polygon: [], placedItems: [] };
+    const model = sharedProperty({ id: 'land', rooms: [room] });
+    const host = await call('host', { ...user, model });
+    const a = await call('join', { ...user, code: host.result.invite });
+    const b = await call('join', { ...user, code: host.result.invite });
+    const draw = (id: string, x: number) => buildChanges(model, {
+      ...model, rooms: [{ ...room, openings: [], floorFinish: null, floorTiles: [] }],
+      walls: [{ id, a: { x, y: 0 }, b: { x, y: 2 }, thicknessM: 0.15 }],
+    });
+    const edit = (id: string, x: number, session: unknown) => call('edit',
+      { requestId: randomUUID(), revision: 1, changes: draw(id, x) }, session as string);
+    const responses = await Promise.all([edit('west', 1, a.result.session), edit('east', 4, b.result.session)]);
+    expect(responses.map(r => r.status)).toEqual([200, 200]);
+    for (const player of [a, b]) {
+      const sync = await call('sync', { revision: 0, pose: null }, player.result.session as string);
+      expect(sync.result.model).toMatchObject({ walls: expect.arrayContaining([
+        expect.objectContaining({ id: 'west' }), expect.objectContaining({ id: 'east' }),
+      ]) });
+    }
+  });
+
   it('merges independent concurrent edits, rejects an overlapping write, and replays a retried operation once', async () => {
     const hosted = await call('host', { ...user, model: initial }),
       guest = await call('join', { ...user, code: hosted.result.invite });
