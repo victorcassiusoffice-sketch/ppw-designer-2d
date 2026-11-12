@@ -1,5 +1,6 @@
 import { usePropertyStore, normaliseLoadedProperty, type Property } from '../store/propertyStore';
-import { createPage, currentPageId } from '../lib/pages';
+import { DRAFT_ID, useDesignsStore } from '../store/designsStore';
+import { createPage, currentPageId, switchToPage } from '../lib/pages';
 import { isDrawTransactionActive, applySharedSnapshot } from '../store/historyStore';
 import {
   applyChanges,
@@ -388,6 +389,14 @@ function readField(model: Build, path: Change['path']) {
   }
   return value;
 }
+// An intentional plan switch leaves this room immediately. A reloaded tab
+// can then distinguish a genuine switch from another tab saving its own page.
+useDesignsStore.subscribe(state => {
+  if (!session || (state.currentId ?? DRAFT_ID) === session.page) return;
+  const secret = session.session;
+  clear();
+  void api('leave', {}, secret).catch(() => {});
+});
 window.addEventListener('olb:local-pose', (event) => {
   pose = (event as CustomEvent<Pose | null>).detail;
 });
@@ -400,11 +409,20 @@ export function resume() {
     const raw = sessionStorage.getItem(key);
     if (!raw) return;
     const data = JSON.parse(raw);
-    if (data.session?.page !== currentPageId() || !data.session?.session || !data.base) return;
-    base = sharedProperty(data.base);
+    if (!data.session?.session || !data.session.page || !data.base) return;
+    const restored = sharedProperty(data.base);
+    // Tabs have independent room credentials but the device's last-opened
+    // plan is shared. Restore only this invitation's saved working copy.
+    if (data.session.page !== currentPageId() || usePropertyStore.getState().property.id !== restored.id) {
+      if (data.session.page === currentPageId() || !switchToPage(data.session.page))
+        data.session.page = createPage('Shared build');
+      install(data.pending ? sharedProperty(data.pending.submitted) : restored, []);
+    }
+    base = restored;
     session = data.session;
     revision = data.revision;
     pending = data.pending ?? null;
+    save();
     publish({
       joined: true,
       avatar: session!.avatar,

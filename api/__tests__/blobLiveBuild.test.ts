@@ -34,6 +34,28 @@ const user = (id: string): Member => ({
 });
 const room = { id: roomId, inviteHash: 'digest', revision: 1, model: { name: 'Start' } };
 describe('private object-backed build rooms', () => {
+  it('moving two players persists independent poses without rewriting admissions', async () => {
+    let time = now;
+    const data = memoryObjects(), open = () => blobBuildStore(data, 'walk', true, () => time);
+    await open().create(room, 'host', user('a'));
+    await open().join(user('b'));
+    const key = 'live-build/v1/walk/demo/players.json', before = await data.read(key);
+    const pose = { x: 1, y: 2, z: 0, yaw: 0, moving: true };
+    for (let i = 0; i < 3; i++) {
+      time += 800;
+      await Promise.all([open().sync!(user('a'), { ...pose, x: i }, time, 1),
+        open().sync!(user('b'), { ...pose, y: i + 4 }, time, 1)]);
+    }
+    expect(await data.read(key)).toEqual(before);
+    const state = await open().state(roomId, 1);
+    expect(state?.players).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'a', pose: { ...pose, x: 2 } }),
+      expect.objectContaining({ id: 'b', pose: { ...pose, y: 6 } }),
+    ]));
+    await open().leave('b', roomId);
+    expect((await open().state(roomId, 1))?.players.map(p => p.id)).toEqual(['a']);
+  });
+
   it('serializes concurrent revisions, archives committed receipts and isolates staging', async () => {
     const objects = memoryObjects(),
       newStore = () => blobBuildStore(objects, 'production', false, () => now);

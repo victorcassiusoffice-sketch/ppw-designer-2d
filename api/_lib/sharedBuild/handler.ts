@@ -294,6 +294,10 @@ export async function handleLiveBuild(
       fail(400, 'Invalid build or edit.');
       return;
     }
+    // Log only the operation and a known error class. Room IDs, request
+    // bodies, credentials and provider error messages never enter logs.
+    const category = error instanceof Error ? error.constructor.name : '';
+    console.warn('Shared build storage:', route, /^(Blob[A-Za-z]+|TypeError|SyntaxError)$/.test(category) ? category : 'storage');
     fail(503, 'Shared build storage is unavailable. Your local design is still available.');
   }
 }

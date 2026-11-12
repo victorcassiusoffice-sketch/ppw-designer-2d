@@ -64,6 +64,10 @@ const privateObjects: BuildObjects = {
   },
 };
 
+type Presence = Pick<Member, 'pose' | 'seen'>;
+// Presence is visual and may lag a fraction of a second. Never cache membership
+// or credentials across requests. Each actor is the only writer of its own pose.
+const motionCaches = new WeakMap<BuildObjects, Map<string, { at: number; value: Presence }>>();
 export function blobBuildStore(
   objects: BuildObjects,
   namespace: string,
@@ -102,28 +106,46 @@ export function blobBuildStore(
     if (!doc) throw Error('Build snapshot unavailable.');
     return doc.value;
   }
+  let motion = motionCaches.get(objects);
+  if (!motion) { motion = new Map(); motionCaches.set(objects, motion); }
+  const cache = motion;
+  const location = (room: string, id: string) => path(room, 'presence/' + id + '.json');
+  function remember(key: string, value: Presence) {
+    cache.delete(key);
+    cache.set(key, { at: clock(), value });
+    if (cache.size > 512) cache.delete(cache.keys().next().value!);
+    return value;
+  }
+  async function position(room: string, p: Admission): Promise<Presence> {
+    const key = location(room, p.id), last = cache.get(key);
+    if (last && clock() - last.at < 700) return last.value;
+    const stored = await objects.read<Presence>(key);
+    return remember(key, stored?.value ?? { seen: p.seen, pose: p.pose });
+  }
   async function state(room: string, since: number, members?: Roster): Promise<State | null> {
     const [h, all] = await Promise.all([head(room), members ?? roster(room).then((r) => r?.value)]);
     if (!h || !all) return null;
-    const now = clock(),
-      players = Object.values(all)
-        .filter((p) => p.expires > now && p.seen > now - 15000)
-        .map(({ id, trade, avatar, seen, pose }) => ({ id, trade, avatar, seen, pose }));
+    const now = clock();
+    const players = await Promise.all(Object.values(all).filter(p => p.expires > now).map(async p => {
+      const { seen, pose } = await position(room, p);
+      return { id: p.id, trade: p.trade, avatar: p.avatar, seen, pose };
+    }));
     return {
       revision: h.value.revision,
-      players,
+      players: players.filter(p => p.seen > now - 15000),
       ...(h.value.revision !== since ? { model: await snapshot(room, h.value) } : {}),
     };
   }
   async function sync(m: Member, pose: Pose | null, now: number, since: number) {
-    const all = await changePlayers(m.room, (members) => {
-      const current = members[m.id];
-      if (!current || current.expires <= now) return null;
-      if (now - current.seen < 5000 && JSON.stringify(current.pose) === JSON.stringify(pose))
-        return members;
-      return { ...members, [m.id]: { ...current, seen: now, pose } };
-    });
-    return all ? state(m.room, since, all) : null;
+    const all = (await roster(m.room))?.value, current = all?.[m.id];
+    if (!all || !current || current.expires <= now) return null;
+    const latest = await position(m.room, current);
+    if (now > latest.seen && (now - latest.seen >= 5000 || JSON.stringify(latest.pose) !== JSON.stringify(pose))) {
+      const key = location(m.room, m.id), value = { seen: now, pose };
+      await objects.write(key, value, { overwrite: true });
+      remember(key, value);
+    }
+    return state(m.room, since, all);
   }
   return {
     scopedSessions: true,
