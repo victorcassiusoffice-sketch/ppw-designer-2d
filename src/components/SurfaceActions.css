@@ -1,0 +1,69 @@
+.build-action-back {
+  position: fixed;
+  inset: 0;
+  z-index: 155;
+}
+.build-action-menu {
+  position: fixed;
+  z-index: 156;
+  display: grid;
+  gap: 0.25rem;
+  width: min(218px, calc(100vw - 8px));
+  max-height: min(288px, calc(100dvh - 8px));
+  overflow: auto;
+  padding: 0.5rem;
+  border: 1px solid #b9b6a8;
+  border-radius: 10px;
+  background: #faf9f2;
+  color: #272e29;
+  box-shadow: 0 8px 26px #20282033;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.build-action-menu header,
+.build-action-menu label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+}
+.build-action-menu button,
+.build-action-menu select,
+.build-action-menu input {
+  background: #fffef8;
+  border: 1px solid #cecec1;
+  border-radius: 5px;
+  color: inherit;
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+}
+.build-action-menu input {
+  width: 74px;
+}
+.build-action-menu button:hover {
+  background: #e3ece0;
+}
+.build-action-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 22;
+  pointer-events: none;
+}
+.build-action-hint {
+  position: absolute;
+  z-index: 24;
+  left: 50%;
+  bottom: 15%;
+  transform: translateX(-50%);
+  background: #26382eef;
+  color: white;
+  padding: 0.35rem 0.7rem;
+  border-radius: 5px;
+  max-width: 85%;
+  pointer-events: none;
+  font-size: 13px;
+}

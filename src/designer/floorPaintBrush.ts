@@ -1,3 +1,4 @@
+import {beginDrawTransaction,endDrawTransaction,isDrawTransactionActive} from '../store/historyStore';
 /**
  * floorPaintBrush — ONE place that turns "the brush touched this floor"
  * into a store change. The plan's click path (RoomCanvas) and the 3D room
@@ -185,4 +186,40 @@ export function applyFloorPaintBrush(
             ? `${room.name} · ${keys.length} tiles · ${label}`
             : `${room.name} · ${label}`,
       };
+}
+
+/** The actual grid cells crossed by a pointer segment, in order. A corner enters the diagonal cell once. */
+export function strokeKeys(zone:FloorZone,a:FloorHit,b:FloorHit,polygon:import('../lib/geometry').Polygon):string[]{
+ const from=tileAt(zone,a),to=tileAt(zone,b),dx=b.x-a.x,dy=b.y-a.y;
+ const sx=Math.sign(dx),sy=Math.sign(dy),stepX=dx?zone.tileWm/Math.abs(dx):Infinity,stepY=dy?zone.tileHm/Math.abs(dy):Infinity;
+ let col=from.col,row=from.row;
+ let tx=dx?(zone.originM.x+(col+(sx>0?1:0))*zone.tileWm-a.x)/dx:Infinity;
+ let ty=dy?(zone.originM.y+(row+(sy>0?1:0))*zone.tileHm-a.y)/dy:Infinity;
+ const keys:string[]=[];
+ const size=Math.abs(to.col-col)+Math.abs(to.row-row)+1;if(size>MAX_TILES_PER_STROKE)return keys;
+ for(let i=0;i<size;i++){
+   if(tileIntersectsPolygon(tileRect(zone,row,col),polygon))keys.push(row+','+col);
+   if(row===to.row&&col===to.col)break;
+   const next=Math.min(tx,ty);
+   if(tx<=next+1e-10){col+=sx;tx+=stepX}
+   if(ty<=next+1e-10){row+=sy;ty+=stepY}
+ }
+ return keys;
+}
+export interface FloorBrushStroke {extend(point:FloorHit):number;finish():void}
+export function beginFloorBrush(hit:FloorHit,mods:BrushModifiers={}):FloorBrushStroke|null{
+ const draft=useDesignerUIStore.getState().floorDraft,mat=findFloorMaterialById(draft.materialId),room=roomAtHit(hit);
+ if(!room||!mat||!mat.tile_w_m||!mat.tile_h_m||draft.scope==='room'||mods.shift||isDrawTransactionActive())return null;
+ const finish=roomFloorMaterial(room);if(finish&&finish.tile_w_m===null)return null;
+ const zone=floorZoneForRoom(room,mat.id);if(!zone)return null;
+ const erase=draft.erase||!!mods.ctrl,seen=new Set<string>();let last=hit,started=false,closed=false;
+ const stroke:FloorBrushStroke={extend(point){
+   if(closed||seen.size>=MAX_TILES_PER_STROKE)return seen.size;
+   const additions=strokeKeys(zone,last,point,room.polygon).filter(k=>!seen.has(k)).slice(0,MAX_TILES_PER_STROKE-seen.size);
+   last=point;if(!additions.length)return seen.size;
+   if(!started){beginDrawTransaction(erase?'Erase floor stroke':'Lay floor stroke');started=true}
+   for(const k of additions)seen.add(k);
+   usePropertyStore.getState().paintFloorTiles(room.id,zone,additions,erase);return seen.size;
+ },finish(){if(closed)return;closed=true;if(started)endDrawTransaction()}};
+ stroke.extend(hit);return stroke;
 }

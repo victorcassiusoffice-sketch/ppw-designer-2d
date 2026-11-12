@@ -1,6 +1,7 @@
 /** Versioned, metre-based proposal contract shared by the browser, API and MCP.
  * Proposals are data only: validation never orders products or changes a saved plan. */
 import { z } from 'zod';
+import {validCuts,type TerrainCut} from './terrainCuts.js';
 import { validComponents, type BoundaryComponent } from './boundaryModel.js';
 import { FoundationSchema, FOUNDATION_SCHEMA_DESCRIPTION } from './foundationContract.js';
 import { foundationElementBounds, foundationExcavationBounds, foundationBoreBounds } from './foundation.js';
@@ -96,13 +97,15 @@ export const DesignDraftSchema = z
     roof: z
       .object({
         style: z.enum(['flat', 'gable', 'shed']),
-        material: z.enum(['felt', 'tile', 'metal']),
+        material: z.enum(['felt','tile','metal','iron-sheet','concrete']),
+        thicknessM:metre.min(.0003).max(2).optional(),
         pitchDeg: metre.min(5).max(60),
         overhangM: metre.min(0).max(1.5),
       })
       .strict(),
     garden: z.object({ lawn: z.boolean(), entrancePath: z.boolean() }).strict(),
     foundation: FoundationSchema.optional(),
+    terrainCuts:z.custom<TerrainCut[]>(validCuts,{message:"Invalid excavation cells."}).optional(),
     boundaryComponents: z.custom<BoundaryComponent[]>(validComponents, { message: 'Invalid measured component topology.' }).optional(),
     warnings: z.array(z.string().max(500)).max(16).default([]),
   })
@@ -474,6 +477,7 @@ export const DESIGN_SCHEMA_DESCRIPTION = {
     'verified catalogue productId only; placement must be floor (absent means floor); roof/wall/surface/ceiling hosts are not supported in version 1 room proposals; centres in world metres; rotation 0/90/180/270; known dimensions must fit without overlapping',
   connectivity:
     'all rooms require a door/stair path to an exterior ground-floor entrance; stairs fit in rooms on both adjacent storeys',
+  terrainCuts: {optional:true,description:'One metre earthwork cells with measured depth and ground elevation.'},
   boundaryComponents: { optional: true, description: 'Measured XYZ vertices, indexed edges and closed, oriented planar faces.' },
   foundation: { optional: true, ...FOUNDATION_SCHEMA_DESCRIPTION },
   optionalArrayExamples: {

@@ -18,7 +18,7 @@ export function MeasuredPathOptions() {
   }, [property.id, levelId, target, drawingPropertyId, drawingLevelId, cancel]);
   useEffect(() => {
     if (!target) return;
-    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { event.preventDefault(); cancel(); } };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { event.preventDefault(); const state=useMeasuredPathToolStore.getState(); if(state.pendingEnd) state.back(); if(!state.finish() && state.segments.length<2) state.cancel(); } };
     window.addEventListener('keydown', escape);
     return () => window.removeEventListener('keydown', escape);
   }, [target, cancel]);
@@ -39,6 +39,6 @@ export function MeasuredPathOptions() {
     {tool.target === 'roof' && <label>Overhang (m)<input type="number" min="0" max="1.5" step="0.05" value={roof.overhangM}
       onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0 && value <= 1.5) usePropertyStore.getState().setRoofConfig({ ...roof, overhangM: value }); }} /></label>}
     {tool.target === 'roof' && areas && <small>Projected {areas.projectedM2.toFixed(2)} m² · covering {areas.coveringM2.toFixed(2)} m²</small>}
-    <small>Curves share the same measured geometry in plan and 3D; chord deviation ≤ 3 mm. Esc cancels.</small>
+    <details className="measured-path-help"><summary>About curves</summary><small>Curves share the same measured geometry in plan and 3D; chord deviation ≤ 3 mm. Esc finishes completed strokes.</small></details>
   </section>;
 }

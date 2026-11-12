@@ -14,6 +14,13 @@ describe('shared roof surface', () => {
     expect(roofMaximumHeight(surface)).toBeCloseTo(roofHeightAt(surface, { x: 2, y: 1 }));
     expect(JSON.stringify(polygon)).toBe(before);
   });
+  it.each([['iron-sheet',.001],['concrete',.12]] as const)('measures %s thickness along the roof normal', (material,thickness)=>{
+    for(const value of [undefined,.17]){
+      const surface=createRoofSurface(polygon,3,{...config,material,thicknessM:value})!;
+      expect(roofHeightAt(surface,{x:surface.low,y:1})).toBeCloseTo(3+(value??thickness)/Math.cos(Math.PI/6),8);
+      expect(roofMaximumHeight(surface)).toBeCloseTo(roofHeightAt(surface,{x:surface.ridge,y:1}));
+    }
+  });
   it('tilts opposite faces in opposite directions and raises a ridge-spanning rigid panel', () => {
     const surface = createRoofSurface(polygon, 6, config)!;
     expect(roofItemMount(surface, { x0: 0.2, x1: 1.8, y0: 1, y1: 2 }).slopeX).toBeGreaterThan(0);

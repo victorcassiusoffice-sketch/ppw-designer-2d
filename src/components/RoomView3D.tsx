@@ -1,3 +1,5 @@
+import {SurfaceActions} from './SurfaceActions';
+import {beginFloorBrush,type FloorBrushStroke} from '../designer/floorPaintBrush';
 import { TradeOverlayHost } from './build/TradeOverlayHost'; // @studio-hook
 import { serviceRunPoints3D } from '../designer/buildingServices';
 import { loadThreeStage } from './threeStageLoader';
@@ -71,6 +73,7 @@ import { pointInPolygon } from '../lib/geometry';
 import { buildingSolids, type BuildingView } from '../designer/buildingScene';
 import { validateStairPlacement } from '../designer/stairPlacement';
 import { MaterialsPanel } from './MaterialsPanel';
+import {HouseStageSlot,StageMount,type LiveWalkView} from './three/HouseStageSlot';
 import { Loading3D } from './Loading3D';
 import { EnergySummary } from './EnergyPanel';
 import { HouseWorkspace, type HouseMode } from './HouseWorkspace';
@@ -230,6 +233,15 @@ declare global {
     __ppwRoomView3d?: RoomView3DBridgeRegistry;
   }
 }
+function productPointerPoint(stage:ThreeStageHandle,x:number,y:number,product:ReturnType<typeof getProductById>,ceilingM:number){
+  if(product?.placement==='ceiling'){
+    const ceiling=stage.walkMountPoint?.(x,y,ceilingM);if(ceiling)return ceiling;
+  }
+  if(product?.placement==='wall'){
+    const wall=stage.wallPoint(x,y);if(wall)return wall;
+  }
+  return stage.floorPoint(x,y);
+}
 function bridgeRegistry(): RoomView3DBridgeRegistry {
   if (!window.__ppwRoomView3d) {
     const pick = () => reg.instances.overlay ?? reg.instances.card;
@@ -265,7 +277,7 @@ function bridgeRegistry(): RoomView3DBridgeRegistry {
  */
 function openingsIncludingNeighbours(rooms: Room[]): Map<string, NonNullable<SceneRoomInput['openings']>> {
   const drawn = rooms.filter((r) => !isOutdoorRoom(r) && !isRoofRoom(r) && isDrawnPolygon(r.polygon));
-  const shared = sharedEdgeMap(drawn.map((r) => ({ id: r.id, polygon: r.polygon })));
+  const shared = sharedEdgeMap(drawn.map((r) => ({ id: r.id, polygon: r.polygon,removedWallEdges:r.removedWallEdges })));
   const edgesByRoom = new Map(drawn.map((r) => [r.id, roomEdges(r)]));
   const byId = new Map(drawn.map((r) => [r.id, r]));
   const out = new Map<string, NonNullable<SceneRoomInput['openings']>>();
@@ -357,6 +369,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       id: room.id,
       name: room.name,
       polygon: room.polygon,
+      removedWallEdges:room.removedWallEdges,
       openings: openingsByRoom.get(room.id) ?? room.openings,
       ...wallSurfaces,
       floorHex,
@@ -535,6 +548,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     return cancelObjectTurn;
   }, [selectedInstanceId, property.id, property.activeLevelId, tool, armedProductId, cancelObjectTurn]);
   const [stageReady, setStageReady] = useState(false);
+  const [sharedStageMount]=useState(()=>new StageMount());
+  const [walkView,setWalkView]=useState<Parameters<LiveWalkView['setView']>[0]>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const cameraViewportHeightRef = useRef(0);
   const [camera, setCamera] = useState<OrbitCamera | null>(null);
@@ -696,6 +711,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
    * Floor tool stroke (Sims tile paint): press anchors, drag grows a rect,
    * release commits once (one undo). Room/Shift fill still fire immediately.
    */
+  const liveFloorStroke=useRef<FloorBrushStroke|null>(null);
+  const floorPainting=!!onPaintFloor;
+  useEffect(()=>()=>{liveFloorStroke.current?.finish();liveFloorStroke.current=null},[floorPainting]);
   const floorStroke = useRef<{
     from: { x: number; y: number };
     mods: BrushModifiers;
@@ -814,7 +832,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     const box = containerRef.current?.getBoundingClientRect();
     if (!pointer || !box || pointer.clientX < box.left || pointer.clientX > box.right || pointer.clientY < box.top || pointer.clientY > box.bottom) return null;
     const product = getProductById(pointer.productId);
-    const point = stageRef.current.floorPoint(pointer.clientX - box.left, pointer.clientY - box.top);
+    const point = productPointerPoint(stageRef.current,pointer.clientX-box.left,pointer.clientY-box.top,product,levelElevationM(property,level)+activeHeight);
     const pose = product && point && usePlacementIntentStore.getState().previewPlacement(product.id, point.x, point.y);
     if (!product || !pose) return null;
     const model = productModelFor(product), heightM = Math.max(0.05, Math.min(product.dimensions_cm.height / 100, activeHeight));
@@ -897,7 +915,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     }
     const p = intent.target === 'center' && product && isRoofProduct(product)
       ? roofPlacementPoint(property, product, currentSnapStepM())
-      : stage.floorPoint(local.x, local.y);
+      : productPointerPoint(stage,local.x,local.y,product,levelElevationM(property,level)+activeHeight);
     if (p) placeAtPoint(intent.productId, p.x, p.y, { strict: intent.strict, keepArmed: intent.keepArmed });
     else {
       consumeIntent();
@@ -922,7 +940,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   // e2e bridge (DEV builds only, like the plan's geometry bridge).
   useEffect(() => {
-    if (!import.meta.env.DEV) return;
+    if (!import.meta.env.DEV && !(typeof __TEST_HOOKS__ !== 'undefined' && __TEST_HOOKS__)) return;
     const reg = bridgeRegistry();
     const clientOf = (p: { x: number; y: number } | null) => {
       const box = containerRef.current?.getBoundingClientRect();
@@ -1019,7 +1037,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     pinchGesture.current = a && b && camera ? { camera, start: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, distance: Math.hypot(a.x - b.x, a.y - b.y) } } : null;
   }
   /** An item being carried across the floor. */
-  const itemDrag = useRef<{ instanceId: string; start: { x: number; y: number }; dx: number; dy: number; moved: boolean } | null>(null);
+  const itemDrag = useRef<{ instanceId: string; start: { x: number; y: number }; walk?:{rightX:number;rightY:number;metresPerPixel:number;x:number;y:number}; dx: number; dy: number; moved: boolean } | null>(null);
   /**
    * A mouse stroke with the brush (The Sims' wallpaper tool): the press
    * paints the wall under it and the drag paints every wall it runs
@@ -1198,6 +1216,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             stroke.current = { painted: new Set(['floor']), mods };
             return;
           }
+          if(!e.altKey){
+            liveFloorStroke.current=beginFloorBrush(floor,mods);
+            if(liveFloorStroke.current){setFloorPreview({count:1,erase:draft.erase||!!mods.ctrl});return}
+          }
           floorStroke.current = { from: floor, mods, fillNow: false };
           setFloorPreview({ count: 1, erase: draft.erase || !!mods.ctrl });
           return;
@@ -1210,9 +1232,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         const openingHit = !armedProductId && stageRef.current.hitOpening?.(p.x, p.y);
         const hit = serviceHit || openingHit ? null : stageRef.current.hitItem(p.x, p.y);
         stageRef.current.viewHover?.(null);
-        const floor = hit ? stageRef.current.floorPoint(p.x, p.y) : null;
+        const floor = hit?.walkBasis ? hit.point : hit ? stageRef.current.floorPoint(p.x, p.y) : null;
         if (hit && floor) {
-          itemDrag.current = { instanceId: hit.instanceId, start: floor, dx: 0, dy: 0, moved: false };
+          itemDrag.current = { instanceId: hit.instanceId, start: floor, walk:hit.walkBasis?{...hit.walkBasis,x:e.clientX,y:e.clientY}:undefined, dx: 0, dy: 0, moved: false };
           drag.current = null;
           return;
         }
@@ -1242,6 +1264,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       cancelWallSegment();
       // A second finger ends any carry or stroke and starts a pinch.
       stroke.current = null;
+      liveFloorStroke.current?.finish();liveFloorStroke.current=null;
       floorStroke.current = null;
       setFloorPreview(null);
       if (itemDrag.current) {
@@ -1324,6 +1347,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       }
       return;
     }
+    if(liveFloorStroke.current&&pointers.current.size===1&&stageRef.current){
+      const p=localPoint(e),floor=stageRef.current.floorPoint(p.x,p.y);
+      if(floor)setFloorPreview({count:liveFloorStroke.current.extend(floor),erase:useDesignerUIStore.getState().floorDraft.erase||e.ctrlKey||e.metaKey});
+      return;
+    }
     const floorRun = floorStroke.current;
     if (gardenDrag.current && pointers.current.size === 1 && stageRef.current) {
       const p = localPoint(e);
@@ -1353,8 +1381,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     }
     const carry = itemDrag.current;
     if (carry && pointers.current.size === 1 && stageRef.current) {
-      const p = localPoint(e);
-      const floor = stageRef.current.floorPoint(p.x, p.y);
+      const p = localPoint(e),basis=carry.walk;
+      // A horizontal or upward sightline never intersects the floor. Preserve the
+      // grabbed depth and map screen axes to the measured horizontal plane instead.
+      const floor = basis ? {
+        x:carry.start.x+((e.clientX-basis.x)*basis.rightX-(e.clientY-basis.y)*basis.rightY)*basis.metresPerPixel,
+        y:carry.start.y+((e.clientX-basis.x)*basis.rightY+(e.clientY-basis.y)*basis.rightX)*basis.metresPerPixel,
+      } : stageRef.current.floorPoint(p.x, p.y);
       if (!floor) {
         if (onRoofLevel) setMoveFeedback('Keep the panel over the roof · release outside to cancel');
         return;
@@ -1420,7 +1453,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     if (armedPress.current?.id === e.pointerId) {
       const press = armedPress.current; armedPress.current = null;
       if (had && !cancelled) {
-        const local = localPoint(e), point = stageRef.current?.floorPoint(local.x, local.y);
+        const local = localPoint(e), stage=stageRef.current, point = stage?productPointerPoint(stage,local.x,local.y,getProductById(press.productId),levelElevationM(property,level)+activeHeight):null;
         if (point) placeAtPoint(press.productId, point.x, point.y, { strict: true, keepArmed: e.shiftKey });
       }
       setArmedPointer(null);
@@ -1515,6 +1548,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       stroke.current = null;
       if (pointers.current.size === 0) drag.current = null;
       return;
+    }
+    if(liveFloorStroke.current&&had){
+      if(!cancelled&&stageRef.current){const p=localPoint(e),floor=stageRef.current.floorPoint(p.x,p.y);if(floor)liveFloorStroke.current.extend(floor)}
+      liveFloorStroke.current.finish();liveFloorStroke.current=null;floorStroke.current=null;setFloorPreview(null);drag.current=null;return;
     }
     if (floorStroke.current && had) {
       const run = floorStroke.current;
@@ -1783,7 +1820,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           return;
         }
         if (wallDrag.current && (e.key === 'Escape' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'))) {
-          e.preventDefault(); e.stopImmediatePropagation(); cancelWallSegment();
+          e.preventDefault(); e.stopImmediatePropagation();
+          if(e.key==='Escape'){const preview=wallDrag.current;if(preview?.ok)commitWallBuild(preview,wallChainRef.current);finishWallRun();setConstructionTool('select')}
+          else cancelWallSegment();
           return;
         }
       }
@@ -1855,7 +1894,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     : onPaintWall
     ? 'Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase'
     : onPaintFloor
-      ? 'Click a tile · drag a rectangle · Shift = whole room · Ctrl = erase'
+      ? 'Drag to paint · Alt-drag for a rectangle · Shift fills room · Ctrl erases'
       : armedProduct
         ? `Tap the ${onRoofLevel ? 'roof' : 'floor'} to place ${armedProduct.name}`
         : itemsInteractive
@@ -1986,6 +2025,16 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     lighting={roomLighting} onLighting={setRoomLighting}
     onClose={onClose} onExpand={onExpand} />;
   const statusCaption = moveFeedback ?? flash ?? liveFloorCaption ?? hoverText ?? caption ?? defaultCaption;
+  const visitTools = backend === 'gl' && stageReady && <Suspense fallback={null}>
+        <WalkLauncher onWalkTool={action=>{
+            if(action==='foundation'){window.dispatchEvent(new Event('ppw:open-foundation'));return}
+            if(action==='electrical'||action==='plumbing'){window.dispatchEvent(new CustomEvent('ppw:open-services',{detail:{system:action==='plumbing'?'cold-water':'electrical'}}));return}
+            if(action==='remove'){if(!removeActive)toggleRemoving();return}
+            if(action==='select'||action==='wall'||action==='room'||action==='door'||action==='window'||action==='stair'){chooseBuildTool(action);return}
+            changeHouseMode(action);
+          }} sharedMount={sharedStageMount} setWalkView={setWalkView} viewportRef={containerRef} property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
+          sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
+      </Suspense>;
   const box = (
     <div
       ref={containerRef}
@@ -2002,16 +2051,17 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       {/* The picture: three when it can, the painter when it cannot. */}
       <div className="absolute inset-0">
         {backend === 'gl' && camera && size.width >= 8 && size.height >= 8 ? (
-          <Suspense fallback={null}>
+          <HouseStageSlot mount={sharedStageMount}><Suspense fallback={null}>
             <ThreeStage
               ref={stageRef}
-              solids={solids}
+              solids={walkView?.solids ?? solids}
               catalogPreview={catalogPreview}
               viewHoverEnabled={itemsInteractive && !armedProductId}
               serviceFixtures={serviceFixtures}
               serviceRuns={serviceRuns}
               groundVisible={visible.landscape}
               ecoTrees={visible.landscape ? property.eco?.trees : undefined}
+              terrainCuts={property.terrainCuts}
               boundaryComponents={property.boundaryComponents}
               foundation={visibleFoundation}
               foundationView={inspectingFoundation}
@@ -2021,8 +2071,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               canvasBackground={canvasBackground}
               camera={renderedCamera ?? camera}
               projection={projection}
-              width={size.width}
-              height={size.height}
+              width={walkView?.width ?? size.width}
+              height={walkView?.height ?? size.height}
               hover={hover}
               selectedInstanceId={variant === 'overlay' ? selectedInstanceId : null}
               brushHex={onPaintWall ? (brushHex ?? null) : undefined}
@@ -2034,17 +2084,19 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               onFailed={() => { setBackend('painter'); setProjection('perspective'); setCameraView(''); }}
               onReady={() => setStageReady(true)}
             />
-          </Suspense>
+          </Suspense></HouseStageSlot>
         ) : backend === 'painter' ? (
           <canvas ref={painterRef} style={{ display: 'block', width: '100%', height: '100%' }} aria-hidden="true" />
         ) : null}
       </div>
       {backend === 'gl' && !stageReady && <Loading3D />}
-      {backend === 'gl' && stageReady && <Suspense fallback={null}>
-        <WalkLauncher viewportRef={containerRef} property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
-          sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
-      </Suspense>}
+      {variant === 'card' && visitTools}
       {removeActive && <div className="remove-build-status" role="status" data-testid="remove-3d-hud" data-target-kind={removeHover?.kind??'none'}><span>{removeTargetMessage(removeHover)}</span><button type="button" onClick={finishRemoving}>Done</button></div>}
+      {variant==='overlay' && <SurfaceActions host={containerRef} erase={removeActive} materials={kind=>changeHouseMode(kind==='wall'?'paint':'floor')}
+        point={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.floorPoint(x-rect.left,y-rect.top)??null:null}}
+        direct={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.hitBuildPart?.(x-rect.left,y-rect.top)??null:null}}
+        hit={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.hitErase(x-rect.left,y-rect.top)??null:null}}
+        project={p=>stageRef.current?.projectPoint(p.x,p.y,(solids.activeElevationM??0)+.04)??null}/>}
       {/* The gesture surface. */}
       <div
         data-testid="wallpaint-3d-canvas"
@@ -2124,21 +2176,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     );
   }
 
-  return (
-    <div className={`designer-app fixed left-0 top-0 z-[34] flex flex-col ${className}`}
-      style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
-      data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
-      <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
-        onRemove={toggleRemoving} removeActive={removeActive}
-        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); }}
-        externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
-        drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
-        wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}
-        selection={selectionPanel && selectedProduct && selectedInstanceId ? { id: selectedInstanceId, productId: selectedProduct.id, name: selectedProduct.name, onDeselect: () => selectItem(null) } : undefined}
-        inspector={materialsOpen ? <MaterialsPanel /> : selectionPanel ?? (energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} onRequestPlacement={(intent) => { setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
-          : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
-            onSolarCatalog={() => { changeHouseMode('furnish'); window.dispatchEvent(new CustomEvent('ppw:open-catalog', { detail: { category: 'eco' } })); }}
-            gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>
+  const activeTools = <>
         {gardenPlacement && <p role="status" className="garden-draw-instruction">{gardenPlacement.mode === 'draw' ? 'Drag two corners on the ground to draw this surface.' : gardenPlacement.mode === 'resize' ? 'Drag two corners on the ground to resize this surface.' : 'Tap the ground to place this garden element.'} <button onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
         {constructionTool === 'room' && <div className="house-wall-build-strip"><span role="status">{roomPreview ? roomPreview.ok ? `${roomPreview.areaM2.toFixed(1)} m² · release to build` : roomPreview.message : 'Drag between opposite corners to build a room'}</span><button type="button" onClick={() => chooseBuildTool('select')}>Done</button></div>}
         {constructionTool === 'wall' && <div className="house-wall-build-strip" data-testid="house-wall-build-strip">
@@ -2153,6 +2191,22 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           {gardenOpen && <button type="button" onClick={() => beginMeasured('garden')}>Draw outdoor outline</button>}
         </div>}
         {measuredTool.target && <MeasuredPathOptions />}
+      </>;
+  return (
+    <div className={`designer-app fixed left-0 top-0 z-[34] flex flex-col ${className}`}
+      style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
+      data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
+      <HouseWorkspace activeTools={activeTools} visitTools={visitTools} mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
+        onRemove={toggleRemoving} removeActive={removeActive}
+        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); }}
+        externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
+        drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
+        wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}
+        selection={selectionPanel && selectedProduct && selectedInstanceId ? { id: selectedInstanceId, productId: selectedProduct.id, name: selectedProduct.name, onDeselect: () => selectItem(null) } : undefined}
+        inspector={materialsOpen ? <MaterialsPanel /> : selectionPanel ?? (energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} onRequestPlacement={(intent) => { setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
+          : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
+            onSolarCatalog={() => { changeHouseMode('furnish'); window.dispatchEvent(new CustomEvent('ppw:open-catalog', { detail: { category: 'eco' } })); }}
+            gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>
         {box}
         {viewControls}
         <p className="house-scene-caption" data-testid="wallpaint-3d-caption" data-active-feedback={!!(moveFeedback || flash || liveFloorCaption || hoverText || caption)} aria-live="polite">{statusCaption}</p>

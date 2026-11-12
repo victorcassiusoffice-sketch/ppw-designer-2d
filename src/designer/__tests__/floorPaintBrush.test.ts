@@ -4,7 +4,7 @@
  * commits on release as one undo (Sims floor paint).
  */
 import { beforeEach, describe, expect, it } from 'vitest';
-import { applyFloorPaintBrush, floorBrushLabel, isPaintableFloorPoint, previewFloorDrag } from '../floorPaintBrush';
+import { beginFloorBrush, applyFloorPaintBrush, floorBrushLabel, isPaintableFloorPoint, previewFloorDrag } from '../floorPaintBrush';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import { usePropertyStore } from '../../store/propertyStore';
 import { runsToSet } from '../floorTiles';
@@ -47,6 +47,15 @@ describe('applyFloorPaintBrush', () => {
     }));
   });
 
+  it('paints every crossed cell immediately, leaves off-path tiles unchanged, and finishes idempotently',()=>{
+    const brush=beginFloorBrush({x:.2,y:.2})!;
+    expect(tileCount()).toBe(1);
+    expect(brush.extend({x:3.2,y:3.2})).toBe(4);
+    expect([...runsToSet(zones()[0].runs)]).toEqual(['0,0','1,1','2,2','3,3']);
+    expect(brush.extend({x:.2,y:.2})).toBe(4);
+    brush.finish();brush.finish();
+    expect(brush.extend({x:4.2,y:1.2})).toBe(4);
+  });
   it('a miss says what to do', () => {
     expect(applyFloorPaintBrush(null).message).toBe('Tap the floor to lay it.');
   });

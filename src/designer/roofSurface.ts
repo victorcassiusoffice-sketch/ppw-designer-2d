@@ -6,6 +6,15 @@ import { normaliseRoofConfig, type RoofConfig } from './building';
 
 export const ROOF_COVERING_THICKNESS_M = 0.08;
 export const ROOF_MOUNT_CLEARANCE_M = 0.06;
+export function roofNormalThickness(config:RoofConfig):number{
+  if(config.thicknessM!==undefined)return config.thicknessM;
+  if(config.material==='iron-sheet')return 0.001;
+  if(config.material==='concrete')return 0.12;
+  return ROOF_COVERING_THICKNESS_M*(config.style==='flat'?1:Math.cos(config.pitchDeg*Math.PI/180));
+}
+export function roofVerticalThickness(surface:RoofSurface):number{
+  return roofNormalThickness(surface.config)*Math.hypot(1,surface.slope);
+}
 
 /** Covering quantities use precisely the overhang outline and pitch shown by
  * the renderer. Separate roof slabs may overlap; no hidden union assumption. */
@@ -75,11 +84,11 @@ export function roofHeightAt(surface: RoofSurface, point: Vertex): number {
   const rise = surface.config.style === 'flat' ? 0 : surface.config.style === 'shed'
     ? (point[surface.axis] - surface.low) * surface.slope
     : Math.max(0, (surface.high - surface.low) / 2 - Math.abs(point[surface.axis] - surface.ridge)) * surface.slope;
-  return surface.elevationM + ROOF_COVERING_THICKNESS_M + rise;
+  return surface.elevationM + roofVerticalThickness(surface) + rise;
 }
 
 export function roofMaximumHeight(surface: RoofSurface): number {
-  return surface.elevationM + ROOF_COVERING_THICKNESS_M
+  return surface.elevationM + roofVerticalThickness(surface)
     + (surface.high - surface.low) * surface.slope * (surface.config.style === 'gable' ? 0.5 : 1);
 }
 

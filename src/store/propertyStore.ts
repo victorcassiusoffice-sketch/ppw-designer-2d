@@ -3,6 +3,7 @@ import { normaliseEco, normaliseEngineeringInputs, type EcoModel, type Engineeri
 import { normaliseBuildingServices, serviceRunLengthM, type BuildingServices } from '../designer/buildingServices';
 import { resolveServiceConnections } from '../designer/serviceConnections';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
+import { validCuts, type TerrainCut } from '../designer/terrainCuts';
 import { validComponents, type BoundaryComponent } from '../designer/boundaryModel';
 import { normaliseFoundation, type FoundationModel } from '../designer/foundation';
 import { normaliseShade, SHADE_MAX_ANCHORS, SHADE_MIN_ANCHORS, type ShadeAnchor, type ShadeModel, type ShadeSail } from '../designer/shade';
@@ -142,6 +143,11 @@ function paintedEdge(edgeIndex: number, paintId: string, colour?: PaintColourCho
  * on the same world wall. Before this, a reshape or a CCW seed could leave
  * paint on the wrong wall.
  */
+function remapRemovedEdges(raw:unknown,edgeMap:readonly number[]):number[]|undefined{
+  if(!Array.isArray(raw)||!raw.length)return undefined;
+  const result=[...new Set(raw.filter(i=>Number.isInteger(i)&&i>=0&&i<edgeMap.length).map(i=>edgeMap[i]).filter(i=>i>=0))];
+  return result.length?result:undefined;
+}
 function remapPaintedEdges(
   wallPaint: PaintedEdge[] | undefined,
   edgeMap: number[],
@@ -240,6 +246,7 @@ export const SITE_MIN_M = 1;
 export const SITE_MAX_M = 500;
 
 export interface Room {
+  removedWallEdges?:number[];
   id: string;
   name: string;
   /** Closed polygon in metres (no repeated end vertex). */
@@ -336,6 +343,7 @@ export interface Property {
   city?: CityModel;
   foundation?: FoundationModel;
   boundaryComponents?: BoundaryComponent[];
+  terrainCuts?: TerrainCut[];
   /** Tensioned shade sails between posts and wall brackets; absent = none. */
   shade?: ShadeModel;
   services?: BuildingServices;
@@ -668,7 +676,7 @@ export interface PropertyState {
    * free wall — deleting work must be an explicit act on that work. Otherwise
    * its (blank) rooms and walls go with it and focus returns to ground.
    */
-  removeLevel: (id: string) => boolean;
+  removeLevel: (id: string, includeRoofContents?:boolean) => boolean;
   /**
    * Focus a storey. The active room becomes the first non-outdoor room on it,
    * created blank if there is none. Unknown ids are ignored.
@@ -685,6 +693,7 @@ export interface PropertyState {
   syncRoof: () => boolean;
   /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
   setServices: (services: BuildingServices) => boolean;
+  setTerrainCuts: (cuts:TerrainCut[])=>boolean;
   setBoundaryComponents: (components: BoundaryComponent[]) => boolean;
   setFoundation: (foundation: FoundationModel) => boolean;
   /** Replace the whole shade model; an invalid model is rejected, never clamped. */
@@ -924,6 +933,7 @@ export const usePropertyStore = create<PropertyState>()(
               return inheritMasonryRoom({
                 ...r,
                 polygon: canon.polygon,
+                removedWallEdges:remapRemovedEdges(r.removedWallEdges,canon.edgeMap),
                 openings: pruneOpenings(canon.openings, canon.polygon),
                 floorTiles: decodeFloorZones(r.floorTiles, canon.polygon),
                 ...(wallPaint ? { wallPaint } : { wallPaint: undefined }),
@@ -1625,7 +1635,7 @@ export const usePropertyStore = create<PropertyState>()(
           return { property };
         }),
 
-      removeLevel: (id) => {
+      removeLevel: (id, includeRoofContents=false) => {
         const s = get();
         if (id === GROUND_LEVEL_ID) return false;
         const levels = levelsOf(s.property);
@@ -1640,7 +1650,7 @@ export const usePropertyStore = create<PropertyState>()(
           || wallsOnLevel(s.property.walls ?? [], id).length > 0
           || (s.property.services?.runs.some(r => r.levelId === id) ?? false)
           || (s.property.services?.fixtures.some(f => f.levelId === id) ?? false);
-        if (hasWork) return false;
+        if (hasWork && !(id===ROOF_LEVEL_ID && includeRoofContents)) return false;
 
         set((st) => {
           const remainingRooms = st.property.rooms.filter((r) => roomLevelId(r) !== id);
@@ -1657,7 +1667,13 @@ export const usePropertyStore = create<PropertyState>()(
           const remainingStairs = (st.property.stairs ?? []).filter((stair) => stair.fromLevelId !== id && stair.toLevelId !== id);
           if (remainingStairs.length > 0) next.stairs = remainingStairs;
           else delete next.stairs;
-          if (id === ROOF_LEVEL_ID) delete next.roof;
+          if (id === ROOF_LEVEL_ID) {
+            delete next.roof;
+            if(includeRoofContents && next.services){
+              const services=next.services;
+              next.services={...services,fixtures:services.fixtures.filter(f=>f.levelId!==id),runs:services.runs.filter(r=>r.levelId!==id),junctions:services.junctions?.filter(j=>j.levelId!==id)};
+            }
+          }
           return { property: focusFirstRoomOnLevel(next, GROUND_LEVEL_ID), selectedInstanceId: null };
         });
         return true;
@@ -1699,6 +1715,10 @@ export const usePropertyStore = create<PropertyState>()(
         return true;
       },
 
+      setTerrainCuts: cuts => {
+        if(!validCuts(cuts))return false;
+        set(s=>({property:{...s.property,terrainCuts:cuts}}));return true;
+      },
       setBoundaryComponents: (components) => {
         if (!validComponents(components)) return false;
         set(s => ({property: {...s.property, boundaryComponents: components}}));
@@ -2180,6 +2200,7 @@ export const usePropertyStore = create<PropertyState>()(
         if (merged.property?.city !== undefined) merged.property = { ...merged.property, city: normaliseCity(merged.property.city) };
         if (merged.property?.eco !== undefined) merged.property = { ...merged.property, eco: normaliseEco(merged.property.eco) };
         if (merged.property?.engineering !== undefined) merged.property = { ...merged.property, engineering: normaliseEngineeringInputs(merged.property.engineering) };
+        if (merged.property?.terrainCuts !== undefined && !validCuts(merged.property.terrainCuts)) merged.property={...merged.property,terrainCuts:undefined};
         if (merged.property?.boundaryComponents !== undefined && !validComponents(merged.property.boundaryComponents)) merged.property = { ...merged.property, boundaryComponents: undefined };
         if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
         if (merged.property?.shade !== undefined) merged.property = { ...merged.property, shade: normaliseShade(merged.property.shade) };
@@ -2231,6 +2252,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
     const services = normaliseBuildingServices(property.services, levelIds);
     out.services = services ? resolveServiceConnections(services) : undefined;
   }
+  if (validCuts(property.terrainCuts)) out.terrainCuts=property.terrainCuts;
   if (validComponents(property.boundaryComponents)) out.boundaryComponents = property.boundaryComponents;
   if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
   if (property.shade !== undefined) out.shade = normaliseShade(property.shade);
@@ -2377,6 +2399,7 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
  * end up with a Polygon.
  */
 interface RawRoom {
+  removedWallEdges?:unknown;
   id?: string;
   name?: string;
   polygon?: Polygon;
@@ -2400,6 +2423,7 @@ interface RawProperty {
   services?: unknown;
   foundation?: unknown;
   boundaryComponents?: unknown;
+  terrainCuts?: unknown;
   shade?: unknown;
   city?: unknown;
   wallHeightM?: unknown;
@@ -2453,6 +2477,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
   const levelId = canonicalLevelId(r.levelId);
   const kind = r.kind === 'outdoor' || r.kind === 'room' || r.kind === 'roof' ? r.kind : undefined;
   return {
+    ...(r.removedWallEdges?{removedWallEdges:remapRemovedEdges(r.removedWallEdges,canon.edgeMap)}:{}),
     id: r.id ?? nanoid(8),
     name: r.name ?? 'Room',
     polygon: clean,
@@ -2678,7 +2703,7 @@ export function canonicalisePropertyWinding(property: Property): Property {
     const canon = canonicaliseRoomGeometry(room.polygon, roomOpenings(room));
     if (!canon.changed) return room;
     touched = true;
-    const next: Room = { ...room, polygon: canon.polygon };
+    const next: Room = { ...room, polygon: canon.polygon, removedWallEdges:remapRemovedEdges(room.removedWallEdges,canon.edgeMap) };
     if (room.openings) next.openings = pruneOpenings(canon.openings, canon.polygon);
     // Paint follows the same remap as the openings (2026-09-14).
     next.wallConstruction = remapConstruction(room.wallConstruction, canon.edgeMap, canon.polygon);

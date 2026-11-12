@@ -1,3 +1,5 @@
+import {soilGeometry} from '../components/three/earthworkMeshes';
+import {exposedSoil} from '../designer/terrainCuts';
 /** Lazy walk-only collision geometry. It consumes the renderer's assembled solids. */
 import {
   Box3, BoxGeometry, BufferGeometry, Float32BufferAttribute, ExtrudeGeometry,
@@ -160,6 +162,7 @@ export function createWalkWorld(solids: SceneSolids, property: Property): WalkWo
   }
   const outdoor = outdoorPatches(solids, property);
   for (const patch of outdoor) append(patchGeometry(patch));
+  if(property.terrainCuts?.length)append(soilGeometry(exposedSoil(property.terrainCuts).walls));
   const roofSurfaces: { levelId: string; surface: RoofSurface }[] = [];
   const roofPositions: number[] = [];
   for (const roof of solids.roofs ?? []) {

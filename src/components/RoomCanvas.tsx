@@ -1,3 +1,5 @@
+import {SurfaceActions} from './SurfaceActions';
+import {beginFloorBrush,type FloorBrushStroke} from '../designer/floorPaintBrush';
 import { TradeOverlayHost } from './build/TradeOverlayHost'; // @studio-hook
 import { quoteAwareAmount } from '../lib/quotedProducts';
 import { constructionHex, paintSide } from '../designer/wallConstruction';
@@ -119,6 +121,7 @@ import { useAppPreferences } from '../i18n/AppPreferences';
 import { canvasThemeFor } from '../designer/canvasTheme';
 import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../store/buildSkinStore';
 import { useMeasuredPathToolStore, measuredToolPreview, type MeasuredPathTarget } from '../store/measuredPathToolStore';
+import { CanvasDock } from './CanvasDock';
 import { MeasuredPathOptions } from './MeasuredPathOptions';
 // Units brief (2026-08-28, D10) - retype the length of a wall that exists.
 import { resizeRoomEdge } from '../designer/edgeResize';
@@ -2496,7 +2499,7 @@ export function RoomCanvas({
 
         for (const ref of shared.get(edgeKey(room.id, edge.index)) ?? []) {
           const nRoom = roomsById.get(ref.roomId);
-          const nEdge = edgesByRoom.get(ref.roomId)?.[ref.edgeIndex];
+          const nEdge = edgesByRoom.get(ref.roomId)?.find(edge=>edge.index===ref.edgeIndex);
           if (!nRoom || !nEdge) continue;
           for (const o of roomOpenings(nRoom)) {
             if (o.edgeIndex !== ref.edgeIndex) continue;
@@ -2527,6 +2530,8 @@ export function RoomCanvas({
   // (doorTool is declared up beside the HUD refs — the fit effect needs it.)
   const measureTool = tool === 'measure';
   // (floorTool is declared up beside the HUD refs — the fit effect needs it.)
+  const liveFloorBrush=useRef<FloorBrushStroke|null>(null);
+  useEffect(()=>()=>{liveFloorBrush.current?.finish();liveFloorBrush.current=null},[floorTool]);
   const floorDraft = useDesignerUIStore((st) => st.floorDraft);
   const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
   const wallPaintDraft = useDesignerUIStore((st) => st.wallPaintDraft);
@@ -3364,6 +3369,7 @@ export function RoomCanvas({
   }
   return (
     <div className="relative flex h-full min-h-0 w-full min-w-0 flex-col" data-testid="plan-workspace">
+      <CanvasDock workspace="plan">
       {viewMode !== '3d' && !measuredTool.target && (drawMode || wallDrawEnabled || isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) || gardenPlacement) && <div className="measured-drawing-launchers">
         {(drawMode || wallDrawEnabled) && <><button type="button" onClick={() => beginMeasured('wall')}>Curved wall</button><button type="button" onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-wall-materials'))}>Wall material</button></>}
         {isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) && <button type="button" onClick={() => beginMeasured('roof')}>Draw roof outline</button>}
@@ -3633,6 +3639,7 @@ export function RoomCanvas({
         </div>
       )}
 
+      </CanvasDock>
     <div
       ref={containerRef}
       data-testid="plan-drawing-viewport"
@@ -3672,6 +3679,9 @@ export function RoomCanvas({
       onPointerLeave={()=>{if(!removePress.current)setRemoveHover(null);}}
       onClickCapture={e=>{if(eraseActive&&(e.target as HTMLElement).tagName==='CANVAS')e.stopPropagation();}}
     >
+      <SurfaceActions host={containerRef} erase={eraseActive} materials={kind=>useDesignerUIStore.getState().setTool(kind==='wall'?'wallpaint':'floor')}
+        point={(x,y)=>{const p=floorWorldPoint(x,y);return p?{x:p.xM,y:p.yM}:null}}
+        project={p=>({x:viewport.x+p.x*pxPerMetre*viewport.scale,y:viewport.y+p.y*pxPerMetre*viewport.scale})}/>
       {/* Floor tool HUD card (PHONE, 2026-08-30). Replaces the old
           "Paint on · Done" chip. md:hidden — from md up the docked Floor
           panel (TopBar) is the tool's indicator. Bottom-anchored exactly
@@ -4305,9 +4315,13 @@ export function RoomCanvas({
           const w = floorWorldPoint(evt.clientX, evt.clientY);
           if (!w) return;
           const room = floorRoomAt(w.xM, w.yM);
+          if(!evt.altKey){
+            liveFloorBrush.current=beginFloorBrush({x:w.xM,y:w.yM},{shift:evt.shiftKey,ctrl:evt.ctrlKey||evt.metaKey});
+            if(liveFloorBrush.current){const el=evt.target as Element|null;if(el?.setPointerCapture)el.setPointerCapture(evt.pointerId);return}
+          }
           floorAnchorRef.current = { x: w.xM, y: w.yM, roomId: room?.id ?? null };
         }}
-        onPointerCancel={() => { measuredPress.current = null; doorGestureRef.current = null; wallPaintGestureRef.current = null; floorAnchorRef.current = null; }}
+        onPointerCancel={() => { liveFloorBrush.current?.finish();liveFloorBrush.current=null;measuredPress.current = null; doorGestureRef.current = null; wallPaintGestureRef.current = null; floorAnchorRef.current = null; }}
         onPointerUp={(e) => {
           const evt = e.evt as PointerEvent;
           if (measuredTool.target) {
@@ -4345,6 +4359,10 @@ export function RoomCanvas({
           }
           if (!floorTool) return;
           if (evt.isPrimary === false) return;
+          if(liveFloorBrush.current){
+            const w=floorWorldPoint(evt.clientX,evt.clientY);if(w)liveFloorBrush.current.extend({x:w.xM,y:w.yM});
+            liveFloorBrush.current.finish();liveFloorBrush.current=null;floorAnchorRef.current=null;setFloorPreview(null);return;
+          }
           commitFloorAt(evt);
         }}
         onPointerMove={(e) => {
@@ -4398,6 +4416,7 @@ export function RoomCanvas({
             if (evt.isPrimary === false) return;
             const w = floorWorldPoint(evt.clientX, evt.clientY);
             if (!w) return;
+            if(liveFloorBrush.current){liveFloorBrush.current.extend({x:w.xM,y:w.yM});return}
             const rooms2 = usePropertyStore.getState().property.rooms;
             const anchor = floorAnchorRef.current;
             const room = anchor
@@ -4933,6 +4952,7 @@ export function RoomCanvas({
 
           {parts.stairs && <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
           </Group>
+          {visible.foundation && propertyForPaint.terrainCuts?.map(cell=><Rect key={'cut-'+cell.id} x={cell.x*pxPerMetre} y={cell.y*pxPerMetre} width={pxPerMetre} height={pxPerMetre} fill="#96795c" opacity={0.8} stroke="#664a37" strokeWidth={1} strokeScaleEnabled={false} listening={false}/>)}
           {propertyForPaint.boundaryComponents?.map(part=><Group key={'component-'+part.id} listening={false}>
             {part.edges.map(([a,b],i)=><Line key={i} points={[part.vertices[a].x*pxPerMetre,part.vertices[a].y*pxPerMetre,part.vertices[b].x*pxPerMetre,part.vertices[b].y*pxPerMetre]} stroke="#40796a" strokeWidth={1.5} strokeScaleEnabled={false}/>)}
           </Group>)}

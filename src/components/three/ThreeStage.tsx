@@ -61,6 +61,7 @@ import type { FloorKind } from './surfaces';
 import { applyWallLook, wallTextures } from './wallSurfaces';
 import { wallJoinery } from './joinery';
 import { stairMesh, roofMesh, disposeBuildingTextures } from './buildingMeshes';
+import {cutPolygon} from '../../designer/terrainCuts';
 import { gardenMeshes } from './gardenMeshes';
 import { disposeGardenResources } from './gardenGround';
 import { visibleOpeningProfile } from './openingMeshProfile';
@@ -247,8 +248,10 @@ export interface ThreeStageSurface {
 export interface ThreeStageHandle {
   /** A private deferred viewer may render its own camera without changing the design. */
   beginWalk(): ThreeStageSurface | null;
+  setWalkPickCamera?(camera: THREE.PerspectiveCamera | null): void;
   walkRay?(x: number, y: number): THREE.Ray | null;
   viewHover(x:number|null,y?:number):void;
+  hitBuildPart?:(x:number,y:number)=>{target:import('../../designer/surfaceActions').SurfaceTarget;point:{x:number;y:number}}|null;
   hitErase(x:number,y:number):ThreeEraseTarget|null;
   setEraseHover(target:ThreeEraseTarget|null,floorOutline?:readonly {x:number;y:number}[]):void;
   /** Wall under a canvas-local point, or null. */
@@ -272,7 +275,9 @@ export interface ThreeStageHandle {
     fog: { near: number; far: number } | null; cameraDistance: number | null;
   };
   /** The placed item under a canvas-local point (its body or its box), or null. */
-  hitItem(x: number, y: number): { instanceId: string } | null;
+  hitItem(x: number, y: number): { instanceId: string; point?:{x:number;y:number}; walkBasis?:{rightX:number;rightY:number;metresPerPixel:number} } | null;
+  /** Pick the mounting plane for a product when building from a first-person camera. */
+  walkMountPoint?(x:number,y:number,elevationM:number):{x:number;y:number}|null;
   /** Generic plumbing/electric fixture on the active storey, in canvas pixels. */
   hitServiceFixture?(x: number, y: number): string | null;
   /** Existing wall-hosted opening, respecting cutaway and visible storeys. */
@@ -314,6 +319,7 @@ export interface ThreeStageProps {
   serviceRuns?: ServiceRunPlacement[];
   groundVisible?: boolean;
   ecoTrees?: readonly EcoTree[];
+  terrainCuts?:import('../../designer/terrainCuts').TerrainCut[];
   boundaryComponents?: import('../../designer/boundaryModel').BoundaryComponent[];
   foundation?: FoundationModel;
   foundationView?: boolean;
@@ -663,7 +669,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, boundaryComponents, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
+  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, terrainCuts, boundaryComponents, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
   ref,
 ): JSX.Element {
   const buildSkin = useBuildSkinStore(s => s.skin);
@@ -691,6 +697,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | THREE.OrthographicCamera | null>(null);
   const walkOwnsFrames = useRef(false);
+  const walkPickCamera = useRef<THREE.PerspectiveCamera|null>(null);
   const hemiRef = useRef<THREE.HemisphereLight | null>(null);
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   /** A soft light that rides with the camera so no wall face is ever unlit. */
@@ -1263,6 +1270,19 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boundaryComponents]);
 
+  useEffect(()=>{
+    if(!terrainCuts?.length)return;
+    const scene=sceneRef.current,ground=groundRef.current;if(!scene||!ground)return;
+    let active=true,release:(()=>void)|undefined;
+    void import('./earthworkMeshes').then(({cutBackdrop,soilMeshes})=>{
+      if(!active)return;
+      const original=ground.geometry,clipped=cutBackdrop(ground,terrainCuts),soil=soilMeshes(terrainCuts);
+      ground.geometry=clipped;scene.add(soil);requestRender();
+      release=()=>{ground.geometry=original;clipped.dispose();disposeObject(soil);soil.removeFromParent()};
+    });
+    return ()=>{active=false;release?.();requestRender()};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[terrainCuts,solids]);
   // ---- geometry, on plan change ---------------------------------------------
   useEffect(() => {
     const content = contentRef.current;
@@ -1271,7 +1291,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     clearViewHover(); clearEraseHover();
 
     // Same room, new paint: repaint in place (see structureSignature).
-    const signature = structureSignature(solids);
+    const signature = structureSignature(solids)+(terrainCuts?.length?JSON.stringify(terrainCuts):'');
     if (signature === signatureRef.current && wallsRef.current.length === solids.walls.length) {
       const byKey = new Map(solids.walls.map((w) => [w.key, w]));
       for (const e of wallsRef.current) {
@@ -1421,7 +1441,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
     if (solids.gardenVisible !== false) {
       const groundRooms = solids.gardenObstacles ?? solids.floors.filter((floor) => (floor.elevationM ?? 0) < 0.01).map((floor) => floor.polygon);
-      const garden = gardenMeshes(solids.garden, groundRooms, solids.gardenSite);
+      const garden = gardenMeshes(solids.garden, groundRooms, solids.gardenSite, terrainCuts?.map(cutPolygon));
       gardenRef.current = garden;
       content.add(garden);
       // A large plot must not spread the house's finite shadow map over its
@@ -1436,6 +1456,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     for (const roof of solids.roofs ?? []) {
       const mesh = roofMesh(roof.polygon, roof.elevationM, roof.config);
       mesh.userData.levelId = roof.levelId;
+      mesh.userData.roofRoomId = roof.roomId;
       content.add(mesh);
       mesh.updateMatrixWorld(true);
       roofsRef.current.push(mesh);
@@ -1463,7 +1484,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       requestRender();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [solids]);
+  }, [solids,terrainCuts]);
 
   // Services are presentation geometry only. Rebuilding their small dedicated
   // group never moves the camera, changes a room footprint or enters the cart.
@@ -1772,6 +1793,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     ref,
     () => {
       const api:ThreeStageHandle = {
+      setWalkPickCamera(camera) { walkPickCamera.current = camera; },
       beginWalk() {
         const scene = sceneRef.current, renderer = rendererRef.current;
         if (!scene || !renderer) return null;
@@ -1784,7 +1806,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         };
       },
       walkRay(x, y) {
-        const view = cameraRef.current;
+        const view = walkPickCamera.current ?? cameraRef.current;
         if (!view || width < 8 || height < 8) return null;
         const caster = new THREE.Raycaster();
         caster.setFromCamera(new THREE.Vector2(x / width * 2 - 1, 1 - y / height * 2), view);
@@ -1794,7 +1816,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if(x===null||y===undefined||!viewHoverEnabled||brushHex!==undefined||brushConstruction||catalogPreview||solids.activeRoof){
           if(viewLoweredRef.current){clearViewHover();requestRender();}return;
         }
-        const c=cameraRef.current;if(!c||width<8||height<8)return;
+        const c=walkPickCamera.current ?? cameraRef.current;if(!c||width<8||height<8)return;
         const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),c);
         // Full geometry remains the hover boundary even after the visible wall
         // is lowered, preventing hide/show flicker while the cursor stays there.
@@ -1813,6 +1835,24 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if(rendererRef.current)rendererRef.current.domElement.dataset.hoverCutaway=next?.solid.key??'';
         requestRender();
       },
+      hitBuildPart(x,y) {
+        const camera=walkPickCamera.current??cameraRef.current,scene=sceneRef.current;
+        if(!camera||!scene||width<8||height<8)return null;
+        const ray=new THREE.Raycaster(),meshes:THREE.Object3D[]=[];
+        ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),camera);
+        scene.traverseVisible(node=>{if((node as THREE.Mesh).isMesh)meshes.push(node)});
+        for(const hit of ray.intersectObjects(meshes,false)){
+          const point={x:hit.point.x,y:hit.point.z};
+          for(let node:THREE.Object3D|null=hit.object;node;node=node.parent){
+            const data=node.userData;
+            if(data.instanceId||data.wall){const target=api.hitErase(x,y);return target?{target,point}:null}
+            if(floorsRef.current.includes(node as THREE.Mesh))return null;
+            for(const [tag,kind] of [['stairId','stair'],['serviceRunId','run'],['serviceFixtureId','fixture'],['gardenId','garden'],['foundationId','foundation'],['boundaryComponentId','component'],['roofRoomId','roof'],['shadeSailId','shade']] as const)
+              if(typeof data[tag]==='string')return {target:{kind,id:data[tag]},point};
+          }
+        }
+        return null;
+      },
       hitErase(x,y) {
         // The existing picking methods already apply active-level and front
         // obstruction rules; removal must not reach through a wall or item.
@@ -1820,7 +1860,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if(solids.activeRoof)return null;
         const opening=api.hitOpening?.(x,y);if(opening)return {kind:'opening',openingId:opening};
         const wall=api.hitTest(x,y);if(wall)return {kind:'wall',hit:wall};
-        const c=cameraRef.current;if(!c||width<8||height<8)return null;
+        const c=walkPickCamera.current ?? cameraRef.current;if(!c||width<8||height<8)return null;
         const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),c);
         const floorHit=ray.intersectObjects(floorsRef.current,false)[0];if(!floorHit)return null;
         const floor=solids.floors.find(f=>f.key===floorHit.object.userData.key);
@@ -1860,7 +1900,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         requestRender(false);
       },
       hitOpening(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -1908,7 +1948,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return closest.id;
       },
       hitTest(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -1942,7 +1982,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return hit ? { ...hit, side: wall.face?.materialIndex === 2 ? 'exterior' : 'interior' } : null;
       },
       wallPoint(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -1999,7 +2039,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       samplePixel(x, y) {
         const r = rendererRef.current;
         const s = sceneRef.current;
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!r || !s || !c) return null;
         // Render now and read straight back, before the compositor swaps.
         r.render(s, c);
@@ -2010,7 +2050,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return { r: px[0], g: px[1], b: px[2] };
       },
       screenPoint(hit) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c) return null;
         const e = wallsRef.current.find((x) => sameHit(hit, x.solid.hit));
         if (!e || e.show === 'hidden') return null;
@@ -2035,7 +2075,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return out;
       },
       hitServiceFixture(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -2046,7 +2086,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return (node?.userData.serviceFixtureId as string | undefined) ?? null;
       },
       hitItem(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -2079,18 +2119,31 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         }
         const obstruction = ray.intersectObjects(blockers, true)[0];
         if (obstruction && obstruction.distance < best.d - 0.001) return null;
-        return { instanceId: best.instanceId };
+        const picked=ray.ray.at(best.d,new THREE.Vector3()),point={x:picked.x,y:picked.z};
+        const walker=walkPickCamera.current;
+        if(!walker)return {instanceId:best.instanceId,point};
+        const right=new THREE.Vector3().setFromMatrixColumn(walker.matrixWorld,0);
+        const length=Math.hypot(right.x,right.z)||1;
+        const depth=-picked.clone().applyMatrix4(walker.matrixWorldInverse).z;
+        const metresPerPixel=2*Math.max(.05,depth)*Math.tan(THREE.MathUtils.degToRad(walker.getEffectiveFOV()/2))/height;
+        return {instanceId:best.instanceId,point,walkBasis:{rightX:right.x/length,rightY:right.z/length,metresPerPixel}};
       },
       constructionPoint(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
         const p = new THREE.Vector3();
         return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -(solids.activeElevationM ?? 0)), p) ? { x: p.x, y: p.z } : null;
       },
+      walkMountPoint(x,y,elevationM) {
+        const c=walkPickCamera.current;if(!c||width<8||height<8)return null;
+        const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),c);
+        const p=ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-elevationM),new THREE.Vector3());
+        return p?{x:p.x,y:p.z}:null;
+      },
       floorPoint(x, y) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
@@ -2102,7 +2155,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         return ray.ray.intersectPlane(plane, p) ? { x: p.x, y: p.z } : null;
       },
       projectPoint(x, y, z) {
-        const c = cameraRef.current;
+        const c = walkPickCamera.current ?? cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
         // Plan (x, y, z-up) → three (x, z, y): the same map the solids use.
         const v = new THREE.Vector3(x, z, y).project(c);

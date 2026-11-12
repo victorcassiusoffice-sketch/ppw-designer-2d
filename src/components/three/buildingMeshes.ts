@@ -1,3 +1,4 @@
+import {roofVerticalThickness} from '../../designer/roofSurface';
 /** Building parts in metres: plan (x, y) maps to three (x, vertical y, z). */
 import * as THREE from 'three';
 import type { Polygon, Vertex } from '../../lib/geometry';
@@ -73,7 +74,7 @@ function roofSurface(material: RoofConfig['material']): THREE.MeshStandardMateri
   const size = 128;
   const pixels = new Uint8Array(size * size * 4);
   const bumpPixels = new Uint8Array(size * size * 4);
-  const base = new THREE.Color(material === 'felt' ? '#4b5051' : material === 'tile' ? '#a55a40' : '#7e9498');
+  const base = new THREE.Color(material === 'felt' ? '#4b5051' : material === 'tile' ? '#a55a40' : material === 'concrete' ? '#a9a69f' : '#7e9498');
   // DataTexture's colour-space conversion expects sRGB bytes, not linear values.
   base.convertLinearToSRGB();
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
@@ -89,6 +90,10 @@ function roofSurface(material: RoofConfig['material']): THREE.MeshStandardMateri
       const seam = y % 32 < 2 || tileX < 2;
       shade *= seam ? 0.55 : 0.9 + 0.15 * Math.sin(tileX / 32 * Math.PI);
       relief = seam ? 0.2 : 0.65 + 0.15 * Math.sin(tileX / 32 * Math.PI);
+    } else if (material === 'concrete') {
+      shade=.94+noise*.11;relief=.4+noise*.12;
+    } else if (material === 'iron-sheet') {
+      const rib=Math.cos(x*Math.PI/8);shade=.88+.12*rib;relief=.5+.45*rib;
     } else {
       const rib = x % 64;
       shade *= rib < 3 ? 0.77 : 1;
@@ -115,8 +120,8 @@ function roofSurface(material: RoofConfig['material']): THREE.MeshStandardMateri
   map.colorSpace = THREE.SRGBColorSpace;
   return new THREE.MeshStandardMaterial({
     map, bumpMap, bumpScale: material === 'felt' ? 0.009 : 0.018,
-    roughness: material === 'felt' ? 0.98 : material === 'tile' ? 0.82 : 0.4,
-    metalness: material === 'metal' ? 0.65 : 0,
+    roughness: material === 'felt' || material === 'concrete' ? 0.98 : material === 'tile' ? 0.82 : 0.4,
+    metalness: material === 'metal' || material === 'iron-sheet' ? 0.65 : 0,
     side: THREE.DoubleSide,
   });
 }
@@ -198,6 +203,9 @@ export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfi
   top.castShadow = top.receiveShadow = true;
   group.add(top);
 
+  const explicitShell=clean.thicknessM!==undefined || clean.material==='iron-sheet' || clean.material==='concrete';
+  const depth=roofVerticalThickness(surface);
+  const lowerEdge=(p:Vertex)=>explicitShell?height(p)-depth:0;
   const sidePositions: number[] = [];
   for (let i = 0; i < points.length; i++) {
     const a = points[i];
@@ -212,8 +220,8 @@ export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfi
       const start = cuts[j];
       const end = cuts[j + 1];
       sidePositions.push(
-        start.x, 0, start.y, end.x, 0, end.y, end.x, height(end), end.y,
-        start.x, 0, start.y, end.x, height(end), end.y, start.x, height(start), start.y,
+        start.x, lowerEdge(start), start.y, end.x, lowerEdge(end), end.y, end.x, height(end), end.y,
+        start.x, lowerEdge(start), start.y, end.x, height(end), end.y, start.x, height(start), start.y,
       );
     }
   }
@@ -224,8 +232,17 @@ export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfi
   sides.name = 'roof-fascia';
   sides.castShadow = sides.receiveShadow = true;
   group.add(sides);
-  const underside = new THREE.ShapeGeometry(new THREE.Shape(points.map((point) => new THREE.Vector2(point.x, point.y))));
-  underside.rotateX(Math.PI / 2);
+  let underside:THREE.BufferGeometry;
+  if(explicitShell){
+    const lower:number[]=[];
+    for(let i=0;i<topPositions.length;i+=9)for(const j of [i,i+6,i+3])lower.push(topPositions[j],topPositions[j+1]-depth,topPositions[j+2]);
+    underside=new THREE.BufferGeometry();
+    underside.setAttribute('position',new THREE.Float32BufferAttribute(lower,3));
+    underside.computeVertexNormals();
+  }else{
+    underside=new THREE.ShapeGeometry(new THREE.Shape(points.map(p=>new THREE.Vector2(p.x,p.y))));
+    underside.rotateX(Math.PI/2);
+  }
   const soffit = new THREE.Mesh(underside, new THREE.MeshStandardMaterial({ color: '#dddcd5', roughness: 0.9, side: THREE.DoubleSide }));
   soffit.name = 'roof-soffit';
   group.add(soffit);

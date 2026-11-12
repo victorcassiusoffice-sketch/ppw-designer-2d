@@ -7,6 +7,7 @@ import {
   faceLoop,
   norm,
   onFace,
+  rayPlane,
   scale,
   subtract,
   type BoundaryComponent,
@@ -104,4 +105,20 @@ export function snapEntity(p: Point3, index: SnapIndex, toleranceM: number): Ent
 }
 export function polylineLength(points: readonly Point3[]): number {
   return points.slice(1).reduce((sum, p, i) => sum + norm(subtract(p, points[i])), 0);
+}
+
+/** Closest authored face under a camera ray, in the same XYZ coordinates as the work plane. */
+export function firstFaceOnRay(origin: Point3, direction: Point3, index: SnapIndex): Point3 | null {
+  let closest: Point3 | null = null,
+    best = Infinity;
+  for (const face of index.faces) {
+    const point = rayPlane(origin, direction, face.points[0], face.normal);
+    if (!point) continue;
+    const distance = distance3(origin, point);
+    if (distance < best && onFace(face, point)) {
+      closest = point;
+      best = distance;
+    }
+  }
+  return closest;
 }

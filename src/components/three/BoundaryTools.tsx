@@ -1,3 +1,4 @@
+import { useToolPanel } from '../../hooks/useToolPanel';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { DrawingView } from './BoundaryEditor';
 import { usePropertyStore } from '../../store/propertyStore';
@@ -10,7 +11,10 @@ export function BoundaryTools({
   view: DrawingView;
   beforeOpen?: () => void;
 }) {
-  const [open, setOpen] = useState(false),
+  const [open, setOpen] = useToolPanel(() => {
+      const handled = view.element()?.dispatchEvent(new Event('olb:finish-component-edit', { cancelable: true }));
+      if (handled !== false) setOpen(false);
+    }),
     [initialId, setInitialId] = useState('');
   const hasComponents = usePropertyStore((s) => !!s.property.boundaryComponents?.length);
   const actions = useRef({ view, beforeOpen });
@@ -53,7 +57,7 @@ export function BoundaryTools({
         onClick={() => {
           beforeOpen?.();
           setInitialId('');
-          setOpen((v) => !v);
+          setOpen(!open);
         }}
         aria-expanded={open}
       >

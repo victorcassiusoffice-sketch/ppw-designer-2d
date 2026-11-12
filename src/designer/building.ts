@@ -27,7 +27,9 @@ export type NewBuildingStair = Pick<BuildingStair, 'fromLevelId' | 'toLevelId'>
 
 export interface RoofConfig {
   style: 'flat' | 'gable' | 'shed';
-  material: 'felt' | 'tile' | 'metal';
+  material: 'felt' | 'tile' | 'metal' | 'iron-sheet' | 'concrete';
+  /** Covering thickness measured perpendicular to the roof face, in metres. */
+  thicknessM?: number;
   pitchDeg: number;
   overhangM: number;
   /** Optional authored footprint, shared by the plan, mesh and takeoff. */
@@ -101,13 +103,15 @@ export function normaliseRoofConfig(value: unknown): RoofConfig | undefined {
   const outline = isSimpleMeasuredPolygon(raw.outline) ? raw.outline.map(v => ({ ...v })) : undefined;
   if (outline && outline.reduce((sum, a, i) => { const b = outline[(i + 1) % outline.length]; return sum + a.x * b.y - b.x * a.y; }, 0) < 0) outline.reverse();
   if (!['flat', 'gable', 'shed'].includes(raw.style as string)
-    || !['felt', 'tile', 'metal'].includes(raw.material as string)) return undefined;
+    || !['felt','tile','metal','iron-sheet','concrete'].includes(raw.material as string)) return undefined;
+  if(raw.thicknessM!==undefined && (typeof raw.thicknessM!=='number'||!Number.isFinite(raw.thicknessM)||raw.thicknessM<0.0003||raw.thicknessM>2))return undefined;
   return {
     style: raw.style as RoofConfig['style'], material: raw.material as RoofConfig['material'],
     pitchDeg: typeof raw.pitchDeg === 'number' && Number.isFinite(raw.pitchDeg)
       ? Math.max(5, Math.min(60, raw.pitchDeg)) : DEFAULT_ROOF_CONFIG.pitchDeg,
     overhangM: typeof raw.overhangM === 'number' && Number.isFinite(raw.overhangM)
       ? Math.max(0, Math.min(1.5, raw.overhangM)) : DEFAULT_ROOF_CONFIG.overhangM,
+    ...(raw.thicknessM!==undefined ? {thicknessM:raw.thicknessM as number} : {}),
     ...(outline ? { outline } : {}),
   };
 }

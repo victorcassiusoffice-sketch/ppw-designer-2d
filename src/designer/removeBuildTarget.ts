@@ -1,8 +1,8 @@
-import { usePropertyStore, roomOpenings, type Property } from '../store/propertyStore';
-import { beginDrawTransaction, endDrawTransaction } from '../store/historyStore';
+import { usePropertyStore, roomOpenings, type Property, type Room } from '../store/propertyStore';
+import { beginDrawTransaction, endDrawTransaction, isDrawTransactionActive } from '../store/historyStore';
 import { getProductById } from '../data/products';
 import { rotatedFootprint, pointInPolygon, type Vertex } from '../lib/geometry';
-import { roomEdges } from './wallEdges';
+import { collinearOverlap, pointAlongEdge, roomEdges, type RoomEdge } from './wallEdges';
 import { openingSpan } from './openings';
 import { roomLevelId } from './levels';
 import { tileAt, tileRect, runsToSet, setToRuns } from './floorTiles';
@@ -10,7 +10,6 @@ import type { WallHit } from './roomView3d';
 
 export type RemoveBuildTarget = { kind:'item'; instanceId:string } | { kind:'opening'; openingId:string }
   | { kind:'wall'; hit:WallHit } | { kind:'floor'; roomId:string; point:Vertex };
-export const PERIMETER_REMOVE_REASON = 'Room-boundary removal is not available here: the closed room and its measurements are kept. Separate drawn walls can be removed.';
 const distance = (p:Vertex,a:Vertex,b:Vertex) => {
   const dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy),t=length?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(length*length))):0;
   return { distance:Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy),along:t*length };
@@ -45,19 +44,53 @@ export function pickPlanRemoveTarget(property:Property,level:string,p:Vertex,tol
 }
 export function removeTargetMessage(target:RemoveBuildTarget|null):string {
   if(!target)return 'Hover to highlight · tap to remove · Esc to finish';
-  if(target.kind==='wall'&&target.hit.kind==='edge')return PERIMETER_REMOVE_REASON;
+  if(target.kind==='wall'&&target.hit.kind==='edge')return 'Remove this room wall · Undo restores it';
   return target.kind==='floor'?'Remove this floor finish; the room and structure stay.':`Remove this ${target.kind==='opening'?'door or window':target.kind==='wall'?'drawn wall':'object'} · Undo is available`;
+}
+/** Retain the room footprint. A shorter neighbour can expose just the middle of a longer wall. */
+function removeBoundarySpan(room:Room, selected:RoomEdge):Room {
+  const edges=roomEdges(room),overlaps=new Map(edges.flatMap(e=>{const span=collinearOverlap(e,selected);return span?[[e.index,{edge:e,span}] as const]:[]}));
+  if(!overlaps.size)return room;
+  const polygon:Vertex[]=[],removed:number[]=[];
+  const spans=room.polygon.map((a,index)=>{
+    const first=polygon.length,overlap=overlaps.get(index);polygon.push(a);
+    if(!overlap){
+      const gone=!!room.removedWallEdges?.includes(index);if(gone)removed.push(first);
+      return [{index:first,start:0,end:Infinity,gone}];
+    }
+    const {edge,span}=overlap,segments=[];
+    const start=span.t0>.001?span.t0:0,end=edge.lengthM-span.t1>.001?span.t1:edge.lengthM;
+    if(start>0){segments.push({index:first,start:0,end:start,gone:false});polygon.push(pointAlongEdge(edge,start))}
+    const middle=polygon.length-1;segments.push({index:middle,start,end,gone:true});removed.push(middle);
+    if(end<edge.lengthM){const final=polygon.length;polygon.push(pointAlongEdge(edge,end));segments.push({index:final,start:end,end:edge.lengthM,gone:false})}
+    return segments;
+  });
+  const finishes=<T extends {edgeIndex:number}>(list?:T[])=>list?.flatMap(f=>(spans[f.edgeIndex]??[]).filter(s=>!s.gone).map(s=>({...f,edgeIndex:s.index})));
+  const openings=roomOpenings(room).flatMap(o=>{
+    const span=openingSpan(o),part=spans[o.edgeIndex]?.find(s=>!s.gone&&span.t0>=s.start-.001&&span.t1<=s.end+.001);
+    return part?[{...o,edgeIndex:part.index,offsetM:o.offsetM-part.start}]:[];
+  });
+  return {...room,polygon,removedWallEdges:removed,openings,wallPaint:finishes(room.wallPaint),wallConstruction:finishes(room.wallConstruction),wallCladding:finishes(room.wallCladding)};
 }
 /** One deliberate release, one existing history transaction. Never deletes a room. */
 export function removeBuildTarget(target:RemoveBuildTarget):{ok:boolean;message:string} {
   const store=usePropertyStore.getState(),property=store.property;
-  if(target.kind==='wall'&&target.hit.kind==='edge')return {ok:false,message:PERIMETER_REMOVE_REASON};
+  if(target.kind==='wall'&&target.hit.kind==='edge'){
+    const wall=target.hit,room=property.rooms.find(r=>r.id===wall.roomId),edge=room&&roomEdges(room).find(e=>e.index===wall.edgeIndex);
+    if(!room||!edge)return {ok:false,message:'This wall is no longer available.'};
+    const rooms=property.rooms.map(r=>{
+      if(roomLevelId(r)!==roomLevelId(room)||r.kind==='outdoor'||r.kind==='roof')return r;
+      return removeBoundarySpan(r,edge);
+    });
+    const owns=!isDrawTransactionActive();if(owns)beginDrawTransaction('Remove room wall');try{usePropertyStore.setState({property:{...property,rooms}})}finally{if(owns)endDrawTransaction()}
+    return {ok:true,message:'Wall removed · Undo restores it.'};
+  }
   const exists=target.kind==='item'?property.rooms.some(r=>r.placedItems.some(i=>i.instanceId===target.instanceId))
     :target.kind==='opening'?property.rooms.some(r=>roomOpenings(r).some(o=>o.id===target.openingId))
     :target.kind==='wall'?property.walls?.some(w=>w.id===target.hit.wallId)
     :property.rooms.some(r=>r.id===target.roomId&&(r.floorFinish||floorTile(property,target)));
   if(!exists)return {ok:false,message:'That element is no longer available.'};
-  beginDrawTransaction('remove element');
+  const owns=!isDrawTransactionActive();if(owns)beginDrawTransaction('remove element');
   try {
     if(target.kind==='item')store.removeItem(target.instanceId);
     else if(target.kind==='opening')store.removeOpening(target.openingId);
@@ -70,7 +103,7 @@ export function removeBuildTarget(target:RemoveBuildTarget):{ok:boolean;message:
         usePropertyStore.setState({property:{...property,rooms:property.rooms.map(r=>r.id===target.roomId?{...r,floorTiles:zones.length?zones:undefined}:r)}});
       } else store.clearRoomFloor(target.roomId);
     }
-  } finally {endDrawTransaction();}
+  } finally {if(owns)endDrawTransaction();}
   return {ok:true,message:'Removed · Undo restores it.'};
 }
 export function removeTargetOutline(property:Property,target:RemoveBuildTarget|null):Vertex[] {

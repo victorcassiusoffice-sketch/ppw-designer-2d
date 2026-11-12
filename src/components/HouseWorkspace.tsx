@@ -1,4 +1,5 @@
 import { quoteAwareAmount } from '../lib/quotedProducts';
+import { CanvasDock } from './CanvasDock';
 import { OpeningDimensions } from './OpeningDimensions';
 import { ServicesLaunchButton } from './ServicesWorkspace';
 import { FoundationLaunchButton } from './FoundationWorkspace';
@@ -40,9 +41,9 @@ function area(points: { x: number; y: number }[]) {
 }
 
 /** The architectural workspace uses the same property, catalog and history as Plan. */
-export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children, inspector, externalPanel, drawing, onDraw, onSelect, wallDrawing = false, onWalls, selection, buildTool = 'select', onBuildTool, onFloorAdded, onRemove, removeActive }: {
+export function HouseWorkspace({ activeTools, visitTools, mode, onMode, onPlan, onSave, onCart, children, inspector, externalPanel, drawing, onDraw, onSelect, wallDrawing = false, onWalls, selection, buildTool = 'select', onBuildTool, onFloorAdded, onRemove, removeActive }: {
   mode: HouseMode; onMode: (mode: HouseMode) => void; onPlan?: () => void; onSave?: () => void; onCart?: () => void;
-  children: ReactNode; inspector: ReactNode; externalPanel: boolean; drawing: boolean;
+  activeTools?: ReactNode; visitTools?: ReactNode; children: ReactNode; inspector: ReactNode; externalPanel: boolean; drawing: boolean;
   onDraw: () => void; onSelect: () => void;
   onRemove?: () => void; removeActive?: boolean;
   wallDrawing?: boolean; onWalls?: () => void;
@@ -58,6 +59,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   const property = usePropertyStore((s) => s.property);
   const foundationView = useDesignerUIStore(s => s.foundationView);
   const [mobileInspector, setMobileInspector] = useState(false);
+  const [shortcuts, setShortcuts] = useState(false);
   const [costOpen, setCostOpen] = useState(false);
   const [buildPaletteOpen, setBuildPaletteOpen] = useState(false);
   const measuredTarget = useMeasuredPathToolStore(s => s.target);
@@ -93,7 +95,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
     setCostOpen(false); setMobileInspector(false);
   }, [selection?.id, selection?.productId]);
   useEffect(() => { if (mode === 'materials') { setMobileInspector(true); setCostOpen(false); } }, [mode]);
-  useEffect(() => { if (drawing || wallDrawing || buildTool !== 'select') setBuildPaletteOpen(true); }, [drawing, wallDrawing, buildTool]);
+  useEffect(() => { if (drawing || wallDrawing || buildTool !== 'select') setBuildPaletteOpen(false); }, [drawing, wallDrawing, buildTool]);
   useEffect(() => {
     if (!buildPaletteOpen) return;
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setBuildPaletteOpen(false); };
@@ -132,10 +134,11 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
     window.dispatchEvent(new CustomEvent('ppw:close-view-settings'));
   }
   return <div className="house-workspace" data-build-open={buildPaletteOpen}>
-    <header className="house-header">
+    <header className="house-header" data-shortcuts={shortcuts}>
       <div className="house-brand" aria-label="One Live Build"><span className="house-mark"><StudioIcon name="room" /></span><div><strong>{readOnly ? tx('Demo') : 'One Live Build'}</strong><span title={readOnly ? DEMO_NOTICE : name}>{readOnly ? tx('Preview · no orders') : name}</span></div></div>
       <div className="house-view-switch" aria-label="Design view"><button onClick={onPlan} aria-label="2D Plan"><StudioIcon name="box" size={18} /><span>2D <span className="studio-view-word">Plan</span></span></button><button aria-label="3D House" aria-pressed="true"><StudioIcon name="cube" size={18} /><span>3D <span className="studio-view-word">House</span></span></button></div>
-      <div className="house-project-actions">
+      <button type="button" className="house-shortcuts" aria-expanded={shortcuts} aria-controls="house-project-actions" onClick={() => setShortcuts(!shortcuts)}>Shortcuts</button>
+      <div id="house-project-actions" className="house-project-actions">
         <button type="button" className="house-project-hub" aria-label={t('projectHub')} title={t('projectHub')} onClick={() => window.dispatchEvent(new Event('olb:open-project'))}><StudioIcon name="room" size={18} /><span className="studio-view-word">{t('projectHub')}</span></button>
         <LocaleThemeControls designer compact />
         <AiDesignButton onBeforeOpen={onSelect} />
@@ -158,7 +161,9 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
         </button>)}
       </nav>
       <div className="house-scene-column">
-        <div className="house-scene-bar">
+        <CanvasDock workspace="house" focusTarget={buildPaletteOpen ? '#house-build-palette' : measuredTarget ? '.measured-path-options' : drawing || wallDrawing ? '.house-wall-build-strip' : buildTool === 'window' || buildTool === 'door' ? '.house-opening-options' : undefined}>
+          {activeTools}
+          <div className="house-scene-bar">
           <div className="house-floor-picker"><span className="house-status-dot" /><strong className="sr-only">{levelName}</strong><select aria-label="View floor" value={current} onChange={event => selectFloor(event.target.value)}>
             {levelsOf(property).map(level => <option key={level.id} value={level.id}>{level.name}</option>)}
             {!levels.some(isRoofLevel) && <option value="__roof">Roof</option>}
@@ -173,14 +178,14 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
             {onWalls && <button disabled={onRoof} aria-pressed={wallDrawing} onClick={() => { setMobileInspector(false); onWalls(); }} data-testid="house-draw-walls"><StudioIcon name="pen" size={18} /><span>Walls</span></button>}
             <button disabled={onRoof} aria-pressed={drawing} onClick={() => { setMobileInspector(false); onDraw(); }} data-testid="house-draw-room"><StudioIcon name="box" size={18} /><span>Draw room</span></button>
             {onBuildTool && mode === 'build' && <div className="house-opening-tools" role="group" aria-label="Doors windows and stairs" data-active-tool={buildTool}>
-              {(['door', 'window', 'stair'] as const).map(tool => <button key={tool} type="button" aria-pressed={buildTool === tool} disabled={onRoof || (tool === 'stair' && !canUseStairs)} title={tool === 'stair' && !canUseStairs ? 'Add another floor first' : undefined} onClick={() => { setCostOpen(false); setMobileInspector(false); onBuildTool(buildTool === tool ? 'select' : tool); }}><StudioIcon name={tool} size={18} /><span>{tool === 'door' ? 'Door' : tool === 'window' ? 'Window' : 'Stairs'}</span></button>)}
-              <span>{onRoof ? 'Choose a floor to add openings' : buildTool === 'door' || buildTool === 'window' ? 'Slide along a wall · release to place · repeat or Done' : buildTool === 'stair' ? 'Tap clear floor space to place stairs' : !canUseStairs ? 'Add floor for stairs' : 'Build on the selected floor'}</span>
+              {(['door', 'window', 'stair'] as const).map(tool => <button key={tool} type="button" data-stair-source={tool==='stair'?true:undefined} style={tool==='stair'?{touchAction:'none'}:undefined} aria-pressed={buildTool === tool} disabled={onRoof || (tool === 'stair' && !canUseStairs)} title={tool === 'stair' && !canUseStairs ? 'Add another floor first' : undefined} onClick={() => { setCostOpen(false); setMobileInspector(false); onBuildTool(buildTool === tool ? 'select' : tool); }}><StudioIcon name={tool} size={18} /><span>{tool === 'door' ? 'Door' : tool === 'window' ? 'Window' : 'Stairs'}</span></button>)}
+              <span>{onRoof ? 'Choose a floor to add openings' : buildTool === 'door' || buildTool === 'window' ? 'Slide along a wall · release to place · repeat or Done' : buildTool === 'stair' ? 'Drag Stairs onto clear floor space or tap to place' : !canUseStairs ? 'Add floor for stairs' : 'Build on the selected floor'}</span>
               {buildTool !== 'select' && buildTool !== 'wall' && buildTool !== 'room' && <button type="button" onClick={() => onBuildTool('select')}>Done</button>}
             </div>}
             {!externalPanel && <button className="house-details-button" aria-expanded={mobileInspector} onClick={() => { setCostOpen(false); setMobileInspector(!mobileInspector); window.dispatchEvent(new CustomEvent('ppw:close-catalog')); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }}>Details</button>}
           </div>
         </div>
-        {onBuildTool && (buildTool === 'door' || buildTool === 'window') && <div className="house-opening-options" role="group" aria-label="Opening placement options">
+        {onBuildTool && (buildTool === 'door' || buildTool === 'window') && <div key={buildTool} className="house-opening-options" role="group" aria-label="Opening placement options">
           <label>Width <select aria-label="Opening width" value={doorDraft.widthM} onChange={event => useDesignerUIStore.getState().setDoorDraft({ widthM: Number(event.target.value) })}>
             {[...new Set([...(buildTool === 'window' ? [0.6, 0.9, 1.2, 1.5, 1.8, 2.4] : DOOR_WIDTHS_M), doorDraft.widthM])].sort((a, b) => a - b).map(width => <option key={width} value={width}>{width} m</option>)}
           </select></label>
@@ -188,6 +193,8 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
           <small>Slide along a wall · release to place · repeat or Done. Esc cancels · right-drag or two fingers move the view</small>
           <OpeningDimensions />
         </div>}
+        {visitTools}
+        </CanvasDock>
         <div className="house-scene-surface">
         {selection && <div className="house-selection-strip" data-testid="house-selection-strip">
           <span><small>SELECTED</small><strong>{selection.name}</strong></span>

@@ -91,7 +91,7 @@ function captureKeys(event: KeyboardEvent): void {
 export function useWorkspaceFocus(
   host: RefObject<HTMLElement>,
   onEscape: () => void,
-  options: { fallbackFocusSelector?: string; onKeyDown?: (event: KeyboardEvent) => void } = {},
+  options: { enabled?:boolean; fallbackFocusSelector?: string; onKeyDown?: (event: KeyboardEvent) => void } = {},
 ): void {
   const action = useRef(onEscape);
   action.current = onEscape;
@@ -101,7 +101,7 @@ export function useWorkspaceFocus(
   key.current = options.onKeyDown;
   useLayoutEffect(() => {
     const node = host.current;
-    if (!node) return;
+    if (!node || options.enabled===false) return;
     const top = active[active.length - 1];
     const workspace: Workspace = {
       node,
@@ -141,5 +141,5 @@ export function useWorkspaceFocus(
             ?.focus({ preventScroll: true });
       }
     };
-  }, [host]);
+  }, [host,options.enabled]);
 }

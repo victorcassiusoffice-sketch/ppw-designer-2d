@@ -1,27 +1,31 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import type {LiveWalkView,StageMount} from '../components/three/HouseStageSlot';
+import { useMemo, useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { ThreeStageHandle } from '../components/three/ThreeStage';
 import { prepareWalkVisit, visitLevels } from './visit';
+import { SharedBuildButton } from '../sharedBuild/SharedBuildButton';
 import { BoundaryTools } from '../components/three/BoundaryTools';
+import {takeResume,clearParkedWalker} from './buildReturn';
 import { WalkerPlacement } from './WalkerPlacement';
 import type { PlacementHint } from './placement';
 import type { SceneInput } from '../designer/roomView3d';
 import type { Property } from '../store/propertyStore';
 import WalkMode from './WalkMode';
 
-type BackgroundStage = Pick<ThreeStageHandle, 'beginWalk' | 'debug'> & Partial<Pick<ThreeStageHandle, 'walkRay' | 'projectPoint'>>;
+type BackgroundStage = Pick<ThreeStageHandle, 'beginWalk' | 'debug'> & Partial<Pick<ThreeStageHandle, 'walkRay' | 'projectPoint' | 'setWalkPickCamera'>>;
 
 /** Loaded after the first picture: the enabled launch button and chooser arrive together. */
 export default function WalkLauncher({
   property,
   sceneForLevel,
   onOpen,
-  stageRef, viewportRef,
+  stageRef, viewportRef, sharedMount,setWalkView,onWalkTool,
 }: {
   property: Property;
   sceneForLevel: (property: Property) => SceneInput;
   onOpen: () => void;
   stageRef: RefObject<BackgroundStage | null>;
   viewportRef?: RefObject<HTMLDivElement | null>;
+  sharedMount?:StageMount;setWalkView?:LiveWalkView['setView'];onWalkTool?:LiveWalkView['tool'];
 }): JSX.Element {
   const [open, setOpen] = useState(false);
   const [hint, setHint] = useState<PlacementHint>();
@@ -32,7 +36,14 @@ export default function WalkLauncher({
     release: () => void;
     readFrames: () => number;
     paused: boolean;
+    surface?:ReturnType<ThreeStageHandle['beginWalk']>;
   } | null>(null);
+  const toolRef=useRef(onWalkTool);toolRef.current=onWalkTool;
+  const live=useMemo<LiveWalkView|undefined>(()=>sharedMount&&setWalkView?{
+    tool:action=>toolRef.current?.(action),mount:sharedMount,setView:setWalkView,surface:()=>{
+      const s=background.current?.surface;return s?{...s,release:()=>{}}:null;
+    },pickWith:camera=>stageRef.current?.setWalkPickCamera?.(camera),
+  }:undefined,[sharedMount,setWalkView,stageRef]);
   const resumeBackground = useCallback(() => {
     const acquired = background.current;
     if (!acquired?.paused) return;
@@ -74,6 +85,7 @@ export default function WalkLauncher({
       background.current =
         original && surface
           ? {
+              surface,
               release: () => surface.release(),
               readFrames: () => original.debug().frames,
               paused: true,
@@ -82,7 +94,14 @@ export default function WalkLauncher({
     }
     setOpen(true);
   };
+  const launchRef=useRef(launch);launchRef.current=launch;
+  useEffect(()=>{
+    const resume=()=>{const hint=takeResume(property.id);if(hint)launchRef.current(hint)};
+    resume();window.addEventListener('olb:resume-walk',resume);
+    return ()=>window.removeEventListener('olb:resume-walk',resume);
+  },[property.id]);
   const close = () => {
+    clearParkedWalker();
     setOpen(false);
   };
   return (
@@ -98,6 +117,7 @@ export default function WalkLauncher({
       >
         Walk
       </button>
+      {!open && <SharedBuildButton/>}
       {!open && <BoundaryTools view={{
         element: () => viewportRef?.current ?? null,
         ray(x,y) {
@@ -114,7 +134,7 @@ export default function WalkLauncher({
       </div>
       {open && (
         <WalkMode
-          onClose={close}
+          live={live} onClose={close}
           initial={hint} levels={levels} prepareVisit={prepare}
         />
       )}

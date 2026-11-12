@@ -188,10 +188,10 @@ function fenceMesh(fence: GardenFence, garden: Garden): THREE.Group {
 }
 
 /** Plan (x,y,height) maps to THREE (x,height,y), like all room meshes. */
-export function gardenMeshes(garden: Garden | undefined, occupiedPolygons: readonly Polygon[] = [], site?: GardenSite): THREE.Group {
+export function gardenMeshes(garden: Garden | undefined, occupiedPolygons: readonly Polygon[] = [], site?: GardenSite, terrainHoles:readonly Polygon[]=[]): THREE.Group {
   const group = new THREE.Group();
   group.name = 'garden';
-  group.add(surroundingLawn(occupiedPolygons, garden, site));
+  group.add(surroundingLawn(occupiedPolygons, garden, site, terrainHoles));
   if (!garden) return group;
   garden.surfaces.forEach((surface, index) => {
     // Later patches at the same elevation win, just as their surface plane
@@ -200,7 +200,7 @@ export function gardenMeshes(garden: Garden | undefined, occupiedPolygons: reado
     const cutouts = garden.surfaces.filter(s => s.kind === 'pool').map(gardenGroundCutout).filter(polygon =>
       Math.min(...polygon.map(p => p.x)) < surface.x + surface.widthM && Math.max(...polygon.map(p => p.x)) > surface.x
       && Math.min(...polygon.map(p => p.y)) < surface.y + surface.depthM && Math.max(...polygon.map(p => p.y)) > surface.y);
-    group.add(surfaceMesh(surface, index, [...occupiedPolygons, ...covered.map(gardenSurfacePolygon)], cutouts));
+    group.add(surfaceMesh(surface, index, [...occupiedPolygons, ...covered.map(gardenSurfacePolygon)], [...cutouts,...terrainHoles]));
   });
   garden.fences.forEach((fence) => group.add(fenceMesh(fence, garden)));
   return group;

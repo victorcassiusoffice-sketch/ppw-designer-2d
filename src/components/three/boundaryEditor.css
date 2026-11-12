@@ -72,3 +72,4 @@
     min-height: 38px;
   }
 }
+.boundary-panel .boundary-snap{display:flex;align-items:center;gap:5px}.boundary-panel .boundary-snap input{min-height:16px}

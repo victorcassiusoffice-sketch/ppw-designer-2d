@@ -1,3 +1,4 @@
+import { validCuts } from '../../src/designer/terrainCuts.js';
 import { validComponents } from '../../src/designer/boundaryModel.js';
 import { BuildingServicesSchema } from '../../src/designer/buildingServicesContract.js';
 import { FoundationSchema } from '../../src/designer/foundationContract.js';
@@ -34,6 +35,20 @@ export function validateSnapshotCity(property: object): string | null {
 }
 
 export function validateSnapshotMeasurements(property: object): string | null {
+  if ('rooms' in property && Array.isArray(property.rooms)) {
+    for (const room of property.rooms) {
+      if (!room || typeof room !== 'object' || room.removedWallEdges === undefined) continue;
+      const edges:unknown = room.removedWallEdges;
+      if (!Array.isArray(room.polygon) || !Array.isArray(edges) || edges.length > room.polygon.length ||
+          edges.some(i => !Number.isInteger(i) || i < 0 || i >= room.polygon.length) || new Set(edges).size !== edges.length)
+        return 'Invalid removed room wall indices.';
+    }
+  }
+  if('roof' in property && property.roof && typeof property.roof==='object' && 'thicknessM' in property.roof) {
+    const t=property.roof.thicknessM;
+    if(typeof t!=='number'||!Number.isFinite(t)||t<.0003||t>2)return 'Invalid roof covering thickness.';
+  }
+  if ('terrainCuts' in property && !validCuts(property.terrainCuts)) return 'Invalid excavation cells.';
   if ('boundaryComponents' in property && !validComponents(property.boundaryComponents)) return 'Invalid measured component topology.';
   return (
     validateSnapshotServices(property) ??

@@ -117,7 +117,10 @@ import './styles/designerStudio.css';
 // is being delivered. It told customers the product was second-class on the
 // device most of them use. (Previous implementation in git history.)
 
+const WalkReturn = lazy(() => import('./walk/buildReturn').then(m => ({default:m.WalkReturn})));
 export default function App() {
+  const [walkParked,setWalkParked]=useState(()=>typeof document!=='undefined'&&document.documentElement.hasAttribute('data-walk-parked'));
+  useEffect(()=>{const update=()=>setWalkParked(document.documentElement.hasAttribute('data-walk-parked'));window.addEventListener('olb:walk-parked',update);return ()=>window.removeEventListener('olb:walk-parked',update)},[]);
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.designerSkin = 'glacier';
@@ -424,6 +427,7 @@ export default function App() {
       {/* Separate PLANS (Vic 2026-08-28). Rooms are areas on one canvas; a
           page is a different space or client. Hidden until there is something
           to switch between — i.e. at least two plans. */}
+      {walkParked && <Suspense fallback={null}><WalkReturn /></Suspense>}
       {planCount >= 2 && <div {...(designView === '3d' ? { inert: '', 'aria-hidden': true as const } : {})}><PageTabs /></div>}
       {/* RoomList now renders ONLY its dropdown overlay — the permanent
           224 px rail is gone. The TopBar hosts its trigger at every

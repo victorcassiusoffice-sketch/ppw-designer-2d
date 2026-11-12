@@ -1,4 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { CanvasDock } from '../components/CanvasDock';
+import { dismissToolPanel, useToolPanel } from '../hooks/useToolPanel';
+import {WALK_BUILD_TOOLS,type WalkBuildTool,type LiveWalkView} from '../components/three/HouseStageSlot';
+import { lazy,Suspense,useLayoutEffect,useCallback, useEffect, useRef, useState } from 'react';
+import { SharedBuildButton } from '../sharedBuild/SharedBuildButton';
+import {parkWalker,detachWalker,clearParkedWalker} from './buildReturn';
 import { BoundaryTools } from '../components/three/BoundaryTools';
 import { usePropertyStore } from '../store/propertyStore';
 import { createPortal } from 'react-dom';
@@ -16,6 +21,7 @@ import type { WalkRuntime, WalkStatus } from './runtime';
 import { createTapActivator, ownTouchSequences } from './touchInput';
 import './walk.css';
 
+const EarthworkTool=lazy(()=>import('./EarthworkTool'));
 const camera: OrbitCamera = { target: { x: 0, y: 0, z: 1 }, distanceM: 10, azimuthRad: 0, elevationRad: .6, fovRad: Math.PI / 3 };
 const preferenceKey = 'olb-world-character-v1';
 function savedCharacter(): string {
@@ -37,9 +43,10 @@ function ControlsCopy({ touchFirst }: { touchFirst: boolean }): JSX.Element {
   return <>{touchFirst ? [touch, keyboard] : [keyboard, touch]}</>;
 }
 
-export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }: {
+export default function WalkMode({ prepareVisit, onClose, initial, levels = [],live }: {
   prepareVisit: () => { property: Property; solids: SceneSolids; invalidStairs?: number };
   initial?: PlacementHint; levels?: Level[];
+  live?:LiveWalkView;
   onClose: () => void;
 }): JSX.Element {
   const pref = useAppPreferences();
@@ -50,20 +57,32 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
   const topFloor = [...levels].reverse().find(l => !isRoofLevel(l));
   const boundaryComponents=usePropertyStore(s=>s.property.boundaryComponents);
   const host = useRef<HTMLElement>(null);
+  const walkSlot=useRef<HTMLDivElement>(null);
+  const [building,setBuilding]=useState(false);
+  const [earthwork,setEarthwork]=useToolPanel();
   const stage = useRef<ThreeStageHandle>(null);
   const runtime = useRef<WalkRuntime | null>(null);
   const [choice, setChoice] = useState(savedCharacter);
+  useEffect(() => {
+    const change=(e:Event)=>{const id=(e as CustomEvent<string>).detail;if(WALK_CHARACTERS.some(c=>c.id===id))setChoice(id)};
+    window.addEventListener('olb:live-avatar',change);
+    return ()=>window.removeEventListener('olb:live-avatar',change);
+  },[]);
   const character = WALK_CHARACTERS.find(c => c.id === choice) ?? WALK_CHARACTERS[0];
   const characterCredit = character.licence === 'CC0-1.0'
     ? <a href="https://kenney.nl/assets/mini-characters" target="_blank" rel="noreferrer">Kenney · CC0</a>
     : <span title={character.licence}>{character.label} · {tx('Generated character')}</span>;
   const [started, setStarted] = useState(!!initial);
   const [ready, setReady] = useState(false);
-  const [help, setHelp] = useState(false);
+  const [help, setHelp] = useToolPanel();
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState('Preparing your walk…');
   const [visit, setVisit] = useState<ReturnType<typeof prepareVisit> | null>(null);
+  const lastVisit = useRef<ReturnType<typeof prepareVisit> | null>(null);
+  const currentVisit = useRef(visit); currentVisit.current=visit;
+  const hasVisit=!!visit;
+  const liveProperty=usePropertyStore(s=>s.property);
   const [status, setStatus] = useState<WalkStatus | null>(null);
   const [size, setSize] = useState({ width: innerWidth, height: innerHeight });
   const [touchControls, setTouchControls] = useState(() => window.matchMedia?.('(pointer: coarse)').matches ?? false);
@@ -78,7 +97,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
   prepare.current = prepareVisit;
   const lookSurface = useOwnedTouchSurface(), stickSurface = useOwnedTouchSurface();
   const doorTap = useRef(createTapActivator(() => { runtime.current?.interact(); })).current;
-  useWorkspaceFocus(host, () => { if (!runtime.current?.escape()) onClose(); }, { onKeyDown: event => { if (!help) runtime.current?.keyDown(event); } });
+  useWorkspaceFocus(host, () => { if (!dismissToolPanel() && !runtime.current?.escape()) onClose(); }, { enabled:!building,onKeyDown: event => { if (!help) runtime.current?.keyDown(event); } });
   useEffect(() => {
     const resize = () => setSize({ width: innerWidth, height: innerHeight });
     window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize);
@@ -91,6 +110,18 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
     pointer.addEventListener('change', update);
     return () => pointer.removeEventListener('change', update);
   }, []);
+  useLayoutEffect(()=>{
+    if(!live||!started||!hasVisit)return;
+    live.mount.show(building?null:walkSlot.current);
+    live.pickWith(building?runtime.current?.editCamera??null:null);
+    setReady(true);
+    return ()=>{live.pickWith(null);live.mount.show(null)};
+  },[live,started,hasVisit,building]);
+  useEffect(()=>{
+    if(!live)return;
+    live.setView(started&&visit&&!building?{solids:visit.solids,width:size.width,height:size.height}:null);
+    return ()=>live.setView(null);
+  },[live,started,visit,building,size.width,size.height]);
   const stageReady = useCallback(() => setReady(true), []);
   useEffect(() => {
     if (!started) return;
@@ -102,17 +133,19 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
       });
     });
     return () => cancelAnimationFrame(frame);
-  }, [started]);
+  }, [started,liveProperty]);
   useEffect(() => {
-    if (!started || !ready || !visit) return;
-    const surface = stage.current?.beginWalk();
+    if (!started || !ready || !hasVisit) return;
+    const surface = live ? live.surface() : stage.current?.beginWalk();
     if (!surface) return;
     let active = true, viewer: WalkRuntime | undefined;
     let release = () => surface.release();
     setLoading('Loading walk controls…');
     void import('./runtime').then(async ({ WalkRuntime: Runtime }) => {
       if (!active) return;
-      viewer = new Runtime(surface, visit.solids, visit.property, value => { if (active) setStatus(value); }, () => closeVisit.current(), initialPose.current);
+      const initialVisit=currentVisit.current; if(!initialVisit)return;
+      lastVisit.current=initialVisit;
+      viewer = new Runtime(surface, initialVisit.solids, initialVisit.property, value => { if (active) setStatus(value); }, () => closeVisit.current(), initialPose.current);
       release = () => viewer?.dispose();
       runtime.current = viewer;
       await viewer.load(WALK_CHARACTERS.find(c => c.id === choice)!, startedAt.current,
@@ -124,7 +157,18 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
       }
     });
     return () => { active = false; release(); runtime.current = null; };
-  }, [started, ready, choice, visit]);
+  }, [started, ready, choice, hasVisit,live]);
+  useEffect(()=>{
+    if(visit&&runtime.current&&lastVisit.current!==visit){
+      lastVisit.current=visit; runtime.current.refreshDesign(visit.solids,visit.property);
+    }
+  },[visit]);
+  useEffect(()=>{if(building)return ()=>detachWalker()},[building]);
+  const buildFromHere=()=>{
+    if(!status)return;
+    parkWalker(liveProperty.id,{levelId:status.levelId??levelId??levels[0]?.id??'ground',point:{x:status.position[0],y:status.position[2]}});
+    runtime.current?.startBuilding();setBuilding(true);
+  };
   const begin = () => {
     try { localStorage.setItem(preferenceKey, choice); } catch { /* A private session can still walk. */ }
     initialPose.current = levelChosen && levelId ? { levelId } : undefined;
@@ -166,12 +210,18 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
     aimStick.current = null; runtime.current?.setLookStick(0, 0);
     e.currentTarget.style.setProperty('--stick-x','0px'); e.currentTarget.style.setProperty('--stick-y','0px');
   };
+  if(building&&live)return createPortal(<div className="walk-build-return" data-testid="walk-build-return" data-world-walk="true" data-status={status?JSON.stringify(status):undefined}>
+    <strong>Building in Walk</strong>
+    <select aria-label="Walk build tool" defaultValue="" onChange={e=>{const value=e.target.value as WalkBuildTool;live.tool?.(value);e.target.value=''}}><option value="">Build tools</option>{WALK_BUILD_TOOLS.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select>
+    <button onClick={()=>{clearParkedWalker();setBuilding(false)}}>Resume walking</button>
+    <button onClick={()=>runtime.current?.toggleOverview()}>Whole build</button><button onClick={onClose}>Exit walk</button>
+  </div>,document.body);
   return createPortal(
     <section ref={host} className="world-walk" data-world-walk="true" role="dialog" aria-modal="true" aria-label="Walk mode"
       data-testid="world-walk" data-status={status ? JSON.stringify(status) : undefined}>
-      {started && visit && <div className="world-walk-scene"><ThreeStage ref={stage} solids={visit.solids} boundaryComponents={boundaryComponents} camera={camera}
+      {started && visit && <div className="world-walk-scene" ref={walkSlot}>{!live&&<ThreeStage ref={stage} solids={visit.solids} terrainCuts={liveProperty.terrainCuts} boundaryComponents={boundaryComponents} camera={camera}
         width={size.width} height={size.height} hover={null} wallView="up" presentation="architectural"
-        onReady={stageReady} onFailed={() => { runtime.current?.dispose(); runtime.current = null; setError('WebGL is unavailable. Exit to return to your design.'); }} /></div>}
+        onReady={stageReady} onFailed={() => { runtime.current?.dispose(); runtime.current = null; setError('WebGL is unavailable. Exit to return to your design.'); }} />}</div>}
       <header className="world-walk-header"><div><strong>Walk mode</strong><span>Explore your design</span></div>
         <button type="button" onClick={onClose} className="world-walk-exit">Exit walk <span aria-hidden="true">×</span></button></header>
       {!started ? <div className="world-walk-card" data-testid="walk-chooser">
@@ -205,7 +255,11 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
           onPointerUp={e => { const p = lookPointer.current; lookPointer.current = null;
             if (p?.id === e.pointerId && !p.dragged) void runtime.current?.moveToScreen(e.clientX,e.clientY);
           }} onPointerCancel={() => { lookPointer.current = null; }} />
-        <div className="world-walk-toolbar">
+        <CanvasDock workspace="walk"><div className="world-walk-toolbar">
+          {live&&<button type="button" onClick={buildFromHere}>Build from here</button>}
+          <button type="button" aria-expanded={earthwork} onClick={()=>{if(document.pointerLockElement)document.exitPointerLock?.();setEarthwork(!earthwork)}}>Dig / fill</button>
+
+          <SharedBuildButton/>
           <BoundaryTools beforeOpen={()=>{if(document.pointerLockElement)document.exitPointerLock?.()}} view={{
             element:()=>host.current,
             ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,
@@ -219,6 +273,8 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [] }
           <button type="button" aria-pressed={running} onClick={() => { setRunning(!running); runtime.current?.setRunning(!running); }}>{running ? 'Running' : 'Walk / run'}</button>
           <button type="button" aria-expanded={help} onClick={() => { runtime.current?.clearInput(); setHelp(!help); }}>Controls</button>
         </div>
+        </CanvasDock>
+          {earthwork&&<Suspense fallback={null}><EarthworkTool view={{element:()=>host.current,ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,project:p=>runtime.current?.drawingProjection(p)??null}} onClose={()=>setEarthwork(false)}/></Suspense>}
         {(fallback || status.notice || !!visit?.invalidStairs) && <div className="world-walk-notice" role="status">
           {fallback ? <>{tx('No clear standing surface on this level.')} {topFloor && <button type="button" onClick={() => chooseLevel(topFloor.id)}>{tx('Go to top floor')}</button>}</>
             : tx(status.notice || 'A stair no longer fits its floors. It is unavailable in this visit.')}

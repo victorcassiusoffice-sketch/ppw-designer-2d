@@ -1,3 +1,4 @@
+import {roofNormalThickness} from '../designer/roofSurface';
 import { useEffect, useState } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
 import { activeLevelIdOf, isRoofLevel } from '../designer/levels';
@@ -237,7 +238,7 @@ export function BuildingControls({
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'select' ? ACTIVE : ''}`} aria-pressed={tool === 'select'} onClick={() => chooseTool('select')}><BuildIcon name="select" />Select / move</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'wall' ? ACTIVE : ''}`} aria-pressed={tool === 'wall'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'wall' ? 'select' : 'wall')}><BuildIcon name="wall" />Draw walls</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'room' ? ACTIVE : ''}`} aria-pressed={tool === 'room'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'room' ? 'select' : 'room')}><BuildIcon name="house" />Draw room</button>
-      <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'stair' ? ACTIVE : ''}`} aria-pressed={tool === 'stair'} disabled={!canPlaceStairs} title={canPlaceStairs ? `Stairs: ${lowerStairLevel.level.name} to ${upperStairLevel.level.name}` : 'Add a second floor to build stairs'} onClick={() => chooseTool(tool === 'stair' ? 'select' : 'stair')}><BuildIcon name="stairs" />Stairs</button>
+      <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'stair' ? ACTIVE : ''}`} aria-pressed={tool === 'stair'} data-stair-source style={{touchAction:'none'}} disabled={!canPlaceStairs} title={canPlaceStairs ? `Stairs: ${lowerStairLevel.level.name} to ${upperStairLevel.level.name}` : 'Add a second floor to build stairs'} onClick={() => chooseTool(tool === 'stair' ? 'select' : 'stair')}><BuildIcon name="stairs" />Stairs</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'window' ? ACTIVE : ''}`} aria-pressed={tool === 'window'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'window' ? 'select' : 'window')}><BuildIcon name="window" />Window</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'door' ? ACTIVE : ''}`} aria-pressed={tool === 'door'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'door' ? 'select' : 'door')}><BuildIcon name="door" />Door</button>
       <span className="mx-0.5 h-6 w-px shrink-0 bg-ppw-rim md:mx-2" />
@@ -283,9 +284,10 @@ export function BuildingControls({
             </label>
             <label className="flex min-w-0 flex-col gap-1 text-xs text-[#5b5852]">Finish
               <select className={FIELD} aria-label="Roof finish" value={roof.material} data-testid="building-roof-material" onChange={(event) => changeRoof({ material: event.target.value as RoofConfig['material'] })}>
-                <option value="felt">Felt</option><option value="tile">Tile</option><option value="metal">Metal</option>
+                <option value="felt">Felt</option><option value="tile">Tile</option><option value="metal">Metal</option><option value="iron-sheet">Iron sheet</option><option value="concrete">Concrete</option>
               </select>
             </label>
+            <BuildingNumber label="Roof thickness" value={Number((roofNormalThickness(roof)*1000).toFixed(2))} min={0.3} max={2000} step={0.1} unit="mm" testId="building-roof-thickness" onCommit={mm=>changeRoof({thicknessM:mm/1000})} />
             {roof.style !== 'flat' && <BuildingNumber label="Pitch" value={roof.pitchDeg} min={5} max={60} step={1} unit="°" testId="building-roof-pitch" onCommit={(pitchDeg) => changeRoof({ pitchDeg })} />}
             <BuildingNumber label="Overhang" value={roof.overhangM} min={0} max={1.5} step={0.05} testId="building-roof-overhang" onCommit={(overhangM) => changeRoof({ overhangM })} />
           </div>

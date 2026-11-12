@@ -63,7 +63,7 @@ export function subtractConvex(polygon: Polygon, cut: Polygon): Polygon[] {
 }
 
 /** Adjacent/overlapping rooms and arbitrary concave shapes do not create turf holes. */
-export function lawnFootprint(occupied: readonly Polygon[], garden?: Garden, site?: GardenSite): LawnFootprint | null {
+export function lawnFootprint(occupied: readonly Polygon[], garden?: Garden, site?: GardenSite, cuts:readonly Polygon[]=[]): LawnFootprint | null {
   const buildings = occupied.filter(valid);
   const points = buildings.length ? buildings.flat() : gardenPoints(garden);
   let extent: ReturnType<typeof bounds>;
@@ -79,7 +79,7 @@ export function lawnFootprint(occupied: readonly Polygon[], garden?: Garden, sit
   let pieces = [boundary];
   // Every explicit patch owns its surface, including lawn. Nothing is saved,
   // replaced or priced by this automatic surround.
-  for (const polygon of [...buildings, ...(garden?.surfaces.map(gardenGroundCutout) ?? [])]) {
+  for (const polygon of [...buildings, ...(garden?.surfaces.map(gardenGroundCutout) ?? []), ...cuts]) {
     if (!valid(polygon)) continue;
     const vertices = polygon.map((p) => new Vector2(p.x, p.y));
     for (const triangle of ShapeUtils.triangulateShape(vertices, [])) {
