@@ -426,7 +426,7 @@ export default function App() {
           0 px when it is not mounted). The section — and therefore the
           Konva stage the ResizeObserver measures — is then exactly the
           VISIBLE area; nothing sits under the toolbar any more. */}
-      <main {...(designView === '3d' ? { inert: '', 'aria-hidden': true as const } : {})} className="flex flex-1 overflow-hidden pb-[var(--sims-toolbar-h,0px)] lg:pb-0">
+      <main {...(designView === '3d' ? { inert: '', 'aria-hidden': true as const, style: { display: 'none' } } : {})} className="flex flex-1 overflow-hidden pb-[var(--sims-toolbar-h,0px)] lg:pb-0">
         <section className="relative flex-1 overflow-hidden">
           {/* 2026-08-25: MiniCartPill un-mounted. It sat at `right-3 top-3`
               and OVERLAPPED RoomCanvas's own top-right Reset/Share/Capture

@@ -1053,12 +1053,19 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (!canvas) return;
     let renderer: THREE.WebGLRenderer;
     try {
+      // A WebGL context takes its initial drawing buffer from the canvas.
+      // Size it before allocation so opening the house does not discard a
+      // default-size buffer after the scene has already uploaded its textures.
+      canvas.width = width;
+      canvas.height = height;
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
     } catch {
       failedRef.current = true;
       onFailed?.();
       return;
     }
+    const initialRatio = qualityRef.current.pixelRatio;
+    if (initialRatio !== 1) renderer.setDrawingBufferSize(width, height, initialRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Colour truth (Vic 2026-09-17): the wall must be the SAME hex as the
     // 2D chip and the merchant's colour card. Filmic tone mapping remaps
