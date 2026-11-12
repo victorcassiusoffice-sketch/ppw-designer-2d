@@ -1,3 +1,4 @@
+import { EcoVisual } from './EcoVisual';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { Property } from '../store/propertyStore';
 import { usePropertyStore } from '../store/propertyStore';
@@ -126,6 +127,9 @@ function EcoView({
       </div>
     );
   }
+  const visual = (name: Card) => card === name ? (
+    <EcoVisual card={name} property={property} quantities={q} energy={energy} rain={rain[study.region]} />
+  ) : null;
   const stat = (label: string, value: string, note: string) => (
     <div className="eco-stat">
       <span>{label}</span>
@@ -159,7 +163,7 @@ function EcoView({
     >
       <header>
         <div>
-          <small>PLAN STUDY</small>
+          <img src="/brand/olb/olb-mark.svg" alt="" width="26" height="26" />
           <h1 id="eco-title">Eco sheet</h1>
         </div>
         <button onClick={() => window.print()}>Print A4</button>
@@ -178,6 +182,7 @@ function EcoView({
         <p className="eco-intro">{property.name} · Estimates only, not an approval.</p>
         <section hidden={card !== 'Water'}>
           <h2>Water</h2>
+          {visual('Water')}
           <p>Catch rain from the roof. Compare the tank with non-potable demand.</p>
           <div className="eco-stats">
             {stat(
@@ -299,6 +304,7 @@ function EcoView({
         </section>
         <section hidden={card !== 'Energy'}>
           <h2>Energy</h2>
+          {visual('Energy')}
           <p>Electrical items placed on this plan.</p>
           <div className="eco-stats">
             {stat('Installed solar', fmt(energy.totalWp) + ' Wp', 'Panel ratings on the plan')}
@@ -364,6 +370,7 @@ function EcoView({
         </section>
         <section hidden={card !== 'Materials'}>
           <h2>Materials</h2>
+          {visual('Materials')}
           <p>
             Choose a measured part of the plan to see how its finish changes the study. Each choice
             is a pilot.
