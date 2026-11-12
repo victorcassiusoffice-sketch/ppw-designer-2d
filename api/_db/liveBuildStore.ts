@@ -17,14 +17,16 @@ export interface State {
   players: Player[];
 }
 export interface RoomStore {
+  scopedSessions?: boolean;
   available(): Promise<boolean>;
   create(room: Room, creator: string, member: Member): Promise<void>;
   room(id: string): Promise<Room | null>;
   join(member: Member): Promise<boolean>;
-  member(id: string): Promise<Member | null>;
+  member(id: string, room?: string): Promise<Member | null>;
   state(id: string, since: number): Promise<State | null>;
   pose(member: Member, pose: Pose | null, now: number): Promise<void>;
-  leave(id: string): Promise<void>;
+  sync?(member: Member, pose: Pose | null, now: number, since: number): Promise<State | null>;
+  leave(id: string, room?: string): Promise<void>;
   receipt(room: string, op: string): Promise<{ actor: string; hash: string } | null>;
   write(room: Room, model: Build, actor: string, requestId: string, hash: string): Promise<boolean>;
 }

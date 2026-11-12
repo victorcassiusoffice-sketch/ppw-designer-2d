@@ -10,6 +10,7 @@ import {
   type Build,
 } from '../../../src/sharedBuild/contract.js';
 import { neonRoomStore, type Member, type RoomStore } from '../../_db/liveBuildStore.js';
+import { hostedRedisBuildStore } from '../../_db/redisLiveBuildStore.js';
 import { studioAccess, crossSiteWrite } from '../studioAccess.js';
 import { isShowcaseDeployment, rejectShowcaseTransaction } from '../showcaseSafety.js';
 import { validateSnapshotMeasurements } from '../designSnapshotValidation.js';
@@ -67,15 +68,37 @@ export async function handleLiveBuild(
   };
   const method = req.method ?? 'GET',
     route = parts.join('/');
+  const hosted = dep === defaults,
+    preview = hosted && process.env.VERCEL_ENV === 'preview';
+  const redis = hosted ? hostedRedisBuildStore() : null;
+  // An immutable preview has its own expiring room namespace. Production
+  // invitations and studio data are never opened by the rehearsal deployment.
+  const rehearsal = preview && !!redis && !/^(true|1)$/i.test(process.env.DEMO_ONLY?.trim() ?? '');
+  const readOnly = isShowcaseDeployment() && !rehearsal;
+  async function storeFor(id?: string): Promise<RoomStore | null> {
+    if (!hosted) return dep.store();
+    if (id) return id[14] === '8' ? redis : preview ? null : dep.store();
+    const candidates = preview ? [redis] : [redis, () => dep.store()];
+    for (const candidate of candidates) {
+      try {
+        const s = typeof candidate === 'function' ? candidate() : candidate;
+        if (s && (await s.available())) return s;
+      } catch {
+        /* Try the other configured room store. */
+      }
+    }
+    return null;
+  }
   if (method === 'GET' && route === 'status') {
     let available = false;
     try {
-      available = await dep.store().available();
+      const s = await storeFor();
+      available = hosted ? !!s : !!s && (await s.available());
     } catch {
-      /* No room or participant data is read by this probe. */
+      /* Private storage failure. */
     }
     res.status(200);
-    res.json({ available, writable: available && !isShowcaseDeployment() });
+    res.json({ available, writable: available && !readOnly });
     return;
   }
   if (parts.length !== 1 || !['host', 'join', 'sync', 'edit', 'leave'].includes(route)) {
@@ -87,7 +110,7 @@ export async function handleLiveBuild(
     fail(405, 'Use a build session request.');
     return;
   }
-  if (rejectShowcaseTransaction(res)) return;
+  if (readOnly && rejectShowcaseTransaction(res)) return;
   const origin = req.headers?.origin;
   if (
     crossSiteWrite(req.method, req.headers) ||
@@ -113,18 +136,33 @@ export async function handleLiveBuild(
       fail(413, 'Build request too large.');
       return;
     }
-    const store = dep.store(),
-      now = dep.now();
+    const now = dep.now();
     if (route === 'host' || route === 'join') {
       const input = route === 'host' ? Create.parse(raw) : Join.parse(raw);
       if (!allowedAvatars.has(input.avatar)) {
         fail(400, 'Choose a listed character.');
         return;
       }
+      const requested =
+        route === 'join' ? capability.exec((input as z.infer<typeof Join>).code)?.[1] : undefined;
+      if (route === 'join' && !requested) {
+        fail(404, 'Build invitation unavailable.');
+        return;
+      }
+      const store = await storeFor(requested);
+      if (!store) {
+        fail(
+          route === 'join' ? 404 : 503,
+          route === 'join'
+            ? 'Build invitation unavailable.'
+            : 'Shared build storage is unavailable.',
+        );
+        return;
+      }
+      const generated = randomUUID();
       const roomKey =
-        route === 'host'
-          ? randomUUID()
-          : capability.exec((input as z.infer<typeof Join>).code)?.[1];
+        requested ??
+        (store.scopedSessions ? generated.slice(0, 14) + '8' + generated.slice(15) : generated);
       if (!roomKey) {
         fail(404, 'Build invitation unavailable.');
         return;
@@ -165,32 +203,45 @@ export async function handleLiveBuild(
       res.json({
         roomId: roomKey,
         actorId: member.id,
-        session: member.id + '.' + memberSecret,
+        session: (store.scopedSessions ? roomKey + '.' : '') + member.id + '.' + memberSecret,
         ...(invite ? { invite } : {}),
         ...(await store.state(roomKey, 0)),
       });
       return;
     }
     const auth = req.headers?.authorization;
-    const bearer =
-      typeof auth === 'string' && auth.startsWith('Bearer ')
-        ? capability.exec(auth.slice(7))
-        : null;
-    const member = bearer ? await store.member(bearer[1]) : null;
-    if (!bearer || !member || !match(member.hash, digest(bearer[2]))) {
+    const partsOfToken =
+      typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7).split('.') : [];
+    const hint = partsOfToken.length === 3 ? partsOfToken.shift() : undefined;
+    const bearer = capability.exec(partsOfToken.join('.'));
+    const validHint =
+      !hint || /^[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(hint);
+    const store = bearer && validHint ? await storeFor(hint ?? bearer[1]) : null;
+    const member = store && bearer ? await store.member(bearer[1], hint) : null;
+    if (
+      !store ||
+      !bearer ||
+      !member ||
+      (hint && member.room !== hint) ||
+      !match(member.hash, digest(bearer[2]))
+    ) {
       fail(401, 'Join the build again.');
       return;
     }
     if (route === 'leave') {
-      await store.leave(member.id);
+      await store.leave(member.id, member.room);
       res.status(200);
       res.json({ left: true });
       return;
     }
     if (route === 'sync') {
       const sync = Sync.parse(raw);
-      await store.pose(member, sync.pose, now);
-      const state = await store.state(member.room, sync.revision);
+      let state;
+      if (store.sync) state = await store.sync(member, sync.pose, now, sync.revision);
+      else {
+        await store.pose(member, sync.pose, now);
+        state = await store.state(member.room, sync.revision);
+      }
       if (!state) {
         fail(404, 'Build session unavailable.');
         return;
