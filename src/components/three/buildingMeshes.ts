@@ -70,11 +70,11 @@ export function stairMesh(stair: BuildingStair, baseM: number, riseM: number): T
 }
 
 /** Small deterministic textures require neither DOM/canvas nor remote image requests. */
-function roofSurface(material: RoofConfig['material']): THREE.MeshStandardMaterial {
+function roofSurface(material: RoofConfig['material'], coolCoating = false): THREE.MeshStandardMaterial {
   const size = 128;
   const pixels = new Uint8Array(size * size * 4);
   const bumpPixels = new Uint8Array(size * size * 4);
-  const base = new THREE.Color(material === 'felt' ? '#4b5051' : material === 'tile' ? '#a55a40' : material === 'concrete' ? '#a9a69f' : '#7e9498');
+  const base = new THREE.Color(coolCoating ? '#e7e6d6' : material === 'felt' ? '#4b5051' : material === 'tile' ? '#a55a40' : material === 'concrete' ? '#a9a69f' : '#7e9498');
   // DataTexture's colour-space conversion expects sRGB bytes, not linear values.
   base.convertLinearToSRGB();
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
@@ -198,8 +198,7 @@ export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfi
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(topPositions, 3));
   geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   geometry.computeVertexNormals();
-  const top = new THREE.Mesh(geometry, roofSurface(clean.material));
-  if (coolCoating) top.material.color.set('#e7e6d6');
+  const top = new THREE.Mesh(geometry, roofSurface(clean.material, coolCoating));
   top.name = 'roof-covering';
   top.castShadow = top.receiveShadow = true;
   group.add(top);

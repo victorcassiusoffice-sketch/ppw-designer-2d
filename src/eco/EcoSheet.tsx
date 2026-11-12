@@ -49,5 +49,14 @@ export default function EcoSheet({property,onClose}:{property:Property;onClose:(
     {numeric('recycledPct','Recycled aggregate (pilot) · %',100,1)}{numeric('aggregateTM3','Aggregate bulk density · t/m³',5,.1)}</div>
     <div className="eco-stats">{stat('Moss render (pilot)',fmt(q.moss)+' m²','One face of room walls, openings deducted')}{stat('Bagasse ash block (pilot)',fmt(q.block)+' m²','Masonry area, excludes concrete and glass')}{stat('New stone displaced',fmt(q.stone)+' t','Concrete aggregate × density × recycled share')}{stat('Permeable paving',fmt(q.paving)+' m²','Measured outdoor surface; feeds infiltration')}{stat('Cool roof coating',fmt(q.coating)+' m²','Roof footprint adjusted for pitch')}{stat('Rain tank',fmt(capacity)+' L','Placed tank capacity or chosen scenario')}</div>
     <p className="eco-source">{assumption} Effects on strength, growth, heat and infiltration require field measurements.</p></section>
-    </div></dialog>
+    </div>
+    <style media="print">{'@page { size: A4 portrait; margin: 14mm }'}</style>
+    <article className="eco-print"><h1>Eco sheet · {property.name}</h1><p>Estimates only, not an approval.</p>
+      <h2>Water · {study.region}</h2><p>{fmt(q.roof)} m² roof · runoff {study.runoff} · {fmt(capacity)} L tank · {study.people} people. Catch {fmt(b.captured/1000)} m³/year. Mains saved {fmt(b.saved/1000)} m³/year. Household demand covered {b.homeCoverage===null?'—':fmt(b.homeCoverage)+'%'}.</p>
+      <table><thead><tr><th>Month</th><th>Rain mm</th><th>Catch m³</th><th>Saved m³</th><th>End tank L</th></tr></thead><tbody>{b.rows.map((row,i)=><tr key={i}><th>{months[i]}</th><td>{rain[study.region][i]}</td><td>{fmt(row.captured/1000)}</td><td>{fmt(row.saved/1000)}</td><td>{fmt(row.stored)}</td></tr>)}</tbody></table>
+      <p>Non-potable demand {study.homeLDay} L/person/day; recoverable greywater {study.greyLDay} L/person/day; irrigation {study.gardenLDay} L/m²/day. Garden and green-wall mains requirement: {fmt(b.gardenMains/1000)} m³/year. Paving infiltration {fmt(b.infiltrated/1000)} m³/year at fraction {study.infiltration}.</p>
+      <h2>Energy</h2><p>{fmt(energy.totalWp)} Wp installed · {fmt(energy.loadWhDay/1000)} kWh/day from item ratings and operating hours.</p>
+      <h2>Materials · pilot estimates</h2><p>Moss render {fmt(q.moss)} m² · Bagasse ash block {fmt(q.block)} m² · Paving {fmt(q.paving)} m² · Cool roof {fmt(q.coating)} m² · New stone displaced {fmt(q.stone)} t ({study.recycledPct}% at {study.aggregateTM3} t/m³).</p>
+      <p><a href={rainSource}>Source: Mauritius Meteorological Services, regional monthly means 1991–2020.</a> Dimensions from the plan. Demand, runoff, reuse, density and infiltration are planning assumptions to be measured in the pilot. The tank starts empty; daily rain is evenly distributed within each month.</p>
+    </article></dialog>
 }
