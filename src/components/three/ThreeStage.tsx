@@ -1454,7 +1454,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       bounds.expandByObject(stairs);
     }
     for (const roof of solids.roofs ?? []) {
-      const mesh = roofMesh(roof.polygon, roof.elevationM, roof.config);
+      const mesh = roofMesh(roof.polygon, roof.elevationM, roof.config, roof.coolCoating);
       mesh.userData.levelId = roof.levelId;
       mesh.userData.roofRoomId = roof.roomId;
       content.add(mesh);

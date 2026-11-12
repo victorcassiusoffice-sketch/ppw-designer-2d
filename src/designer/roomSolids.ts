@@ -147,7 +147,7 @@ export interface SceneSolids {
   activeElevationM?: number;
   activeRoof?: boolean;
   stairs?: Array<{ stair: import('./building').BuildingStair; baseM: number; riseM: number }>;
-  roofs?: Array<{ roomId?: string; levelId?: string; polygon: Vertex[]; elevationM: number; config: import('./building').RoofConfig }>;
+  roofs?: Array<{ coolCoating?: boolean; roomId?: string; levelId?: string; polygon: Vertex[]; elevationM: number; config: import('./building').RoofConfig }>;
   wallHeightM: number;
   floors: FloorSolid[];
   walls: WallSolid[];

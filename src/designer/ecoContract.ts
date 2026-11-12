@@ -39,9 +39,19 @@ export const GreenRoofSchema = z
   })
   .strict();
 
+export const WaterStudySchema = z.object({
+  region: z.enum(['North','South','East','West','Centre']),
+  people: number(0,10000).int(), runoff: number(0,1), tankL: number(0,10000000).nullable(),
+  homeLDay: number(0,1000), greyLDay: number(0,1000), gardenLDay: number(0,100),
+  infiltration: number(0,1), recycledPct: number(0,100), aggregateTM3: number(0,5),
+  mossRoom: id.nullable(), blockRoom: id.nullable(), pavingId: id.nullable(), coolRoof: z.boolean(),
+}).strict();
+export type WaterStudy = z.infer<typeof WaterStudySchema>;
+
 export const EcoSchema = z
   .object({
     version: z.literal(1),
+    waterStudy: WaterStudySchema.optional(),
     trees: z.array(EcoTreeSchema).max(300),
     greenRoofs: z.array(GreenRoofSchema).max(100),
   })

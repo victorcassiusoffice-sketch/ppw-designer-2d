@@ -36,11 +36,12 @@ import { StudioIcon } from './StudioIcon';
 import './projectWorkspace.css';
 // @studio-only
 import { lazy, Suspense } from 'react';
+const EcoSheet = lazy(() => import('../eco/EcoSheet'));
 const BuildDashboard = lazy(() => import('./build/BuildDashboard'));
 const privateDesigner = () => /^\/designer\/?$/.test(location.pathname);
 // @end-studio-only
 
-type Section = 'overview' | 'departments' | 'engineeringReview' | 'ecology' | 'handover' | 'buildDashboard';
+type Section = 'overview' | 'departments' | 'engineeringReview' | 'ecology' | 'handover' | 'buildDashboard' | 'ecoSheet';
 const SECTIONS: Section[] = ['overview', 'departments', 'engineeringReview', 'ecology', 'handover'];
 export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }) {
   const [initialSection, setInitialSection] = useState<Section>('overview');
@@ -53,6 +54,7 @@ export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void })
       setInitialSection((event as CustomEvent<{section?: string}> | undefined)?.detail?.section === 'engineeringReview' ? 'engineeringReview' : 'overview');
       // @studio-only
       if (privateDesigner() && ((event as CustomEvent<{section?:string}> | undefined)?.detail?.section === 'buildDashboard' || location.hash.startsWith('#w=') || new URLSearchParams(location.search).get('panel') === 'build')) setInitialSection('buildDashboard');
+      if (privateDesigner() && new URLSearchParams(location.search).get('panel') === 'eco') setInitialSection('ecoSheet');
       // @end-studio-only
       pending = false;
       beginWorkspaceNavigation('project');
@@ -96,7 +98,7 @@ export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void })
     });
     // @studio-only
     const answerLink = () => { if (privateDesigner() && location.hash.startsWith('#w=')) show(); };
-    if (privateDesigner() && (location.hash.startsWith('#w=') || new URLSearchParams(location.search).get('panel') === 'build')) pending = true;
+    if (privateDesigner() && (location.hash.startsWith('#w=') || ['build','eco'].includes(new URLSearchParams(location.search).get('panel') ?? ''))) pending = true;
     window.addEventListener('hashchange', answerLink);
     // @end-studio-only
     ready();
@@ -129,11 +131,11 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
   const property = usePropertyStore((s) => s.property);
   const { locale, formatNumber } = useAppPreferences();
   // @studio-only
-  const privateSections: Section[] | undefined = privateDesigner() ? [...SECTIONS, 'buildDashboard'] : undefined;
+  const privateSections: Section[] | undefined = privateDesigner() ? [...SECTIONS, 'ecoSheet', 'buildDashboard'] : undefined;
   // @end-studio-only
-  const c = (key: ProjectCopyKey | 'buildDashboard') =>
+  const c = (key: ProjectCopyKey | 'buildDashboard' | 'ecoSheet') =>
     // @studio-only
-    key === 'buildDashboard' ? 'Build dashboard' :
+    key === 'ecoSheet' ? 'Eco sheet' : key === 'buildDashboard' ? 'Build dashboard' :
     // @end-studio-only
     projectCopy(locale, key as ProjectCopyKey);
   const [section, setSection] = useState<Section>(initialSection);
@@ -263,6 +265,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
     }
   }
   // @studio-only
+  if (section === 'ecoSheet' && privateDesigner()) return <Suspense fallback={<p role="status">Opening Eco sheet…</p>}><EcoSheet property={property} onClose={onClose} /></Suspense>;
   if (section === 'buildDashboard' && privateDesigner()) return <Suspense fallback={<div className="project-workspace" role="status" aria-live="polite"><p>Loading build dashboard…</p></div>}>
     <BuildDashboard property={property} onBack={() => setSection('overview')} onClose={onClose} />
   </Suspense>;

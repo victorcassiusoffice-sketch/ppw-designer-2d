@@ -32,7 +32,7 @@ export function buildingSolids(
     activeLevelId: active, activeElevationM: levelElevationM(property, active),
     activeRoof: entries.some((entry) => entry.level.id === active && isRoofLevel(entry.level)),
     floors: [], walls: [], items: [], stairs: [], roofs: [],
-    garden: view === 'building' || active === GROUND_LEVEL_ID ? property.garden : undefined,
+    garden: view === 'building' || active === GROUND_LEVEL_ID ? (property.garden && property.eco?.waterStudy?.pavingId ? { ...property.garden, surfaces: property.garden.surfaces.map(surface => surface.id === property.eco?.waterStudy?.pavingId ? { ...surface, pilotPermeable: true } : surface) } : property.garden) : undefined,
     gardenSite: property.site ?? undefined,
     gardenVisible: view === 'building' || active === GROUND_LEVEL_ID,
     gardenObstacles: property.rooms.filter((room) =>
@@ -78,7 +78,7 @@ export function buildingSolids(
     }));
     if (isRoofLevel(level) && showRoof) {
       for (const room of rooms.filter(isRoofRoom)) {
-        if (room.polygon.length >= 3) result.roofs!.push({ roomId: room.id, levelId: level.id, polygon: room.polygon, elevationM, config: roofConfigOf(property) });
+        if (room.polygon.length >= 3) result.roofs!.push({ coolCoating: property.eco?.waterStudy?.coolRoof, roomId: room.id, levelId: level.id, polygon: room.polygon, elevationM, config: roofConfigOf(property) });
       }
     }
   }

@@ -182,7 +182,7 @@ export function roofTopVertices(surface: NonNullable<ReturnType<typeof createRoo
 }
 
 /** Polygon roof with true-pitch slopes, overhanging eaves, fascia and felt/tile/metal finish. */
-export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfig): THREE.Group {
+export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfig, coolCoating = false): THREE.Group {
   const group = new THREE.Group();
   group.name = 'building-roof';
   group.userData = { buildingPart: 'roof', material: config.material };
@@ -199,6 +199,7 @@ export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfi
   geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   geometry.computeVertexNormals();
   const top = new THREE.Mesh(geometry, roofSurface(clean.material));
+  if (coolCoating) top.material.color.set('#e7e6d6');
   top.name = 'roof-covering';
   top.castShadow = top.receiveShadow = true;
   group.add(top);

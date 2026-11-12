@@ -1,0 +1,53 @@
+import { useEffect,useMemo,useRef,useState } from 'react';
+import type { Property } from '../store/propertyStore';
+import { usePropertyStore } from '../store/propertyStore';
+import { emptyEco } from '../designer/eco';
+import type { WaterStudy } from '../designer/ecoContract';
+import { useEnergyReport } from '../designer/useEnergyReport';
+import { balance,defaults,months,rain,rainSource } from './water';
+import { ecoQuantities } from './quantities';
+import './ecoSheet.css';
+
+const fmt=(n:number)=>n.toLocaleString(undefined,{maximumFractionDigits:1});
+const assumption='Planning assumption · to be measured in the pilot.';
+type Card='Water'|'Energy'|'Materials';
+export default function EcoSheet({property,onClose}:{property:Property;onClose:()=>void}){
+  const study=property.eco?.waterStudy??defaults;
+  const [card,setCard]=useState<Card>('Water'),dialog=useRef<HTMLDialogElement>(null),body=useRef<HTMLDivElement>(null);
+  const setEco=usePropertyStore(s=>s.setEco);
+  const change=(delta:Partial<WaterStudy>)=>setEco({...usePropertyStore.getState().property.eco??emptyEco(),waterStudy:{...usePropertyStore.getState().property.eco?.waterStudy??defaults,...delta}});
+  const q=useMemo(()=>ecoQuantities(property,study),[property,study]),energy=useEnergyReport();
+  const capacity=study.tankL??q.tankL;
+  const b=balance(study,q.roof,q.green,q.paving,capacity);
+  useEffect(()=>{const d=dialog.current;if(d&&!d.open)d.showModal();return ()=>d?.close()},[]);
+  function open(c:Card){setCard(c);body.current?.scrollTo(0,0)}
+  function numeric(key:'people'|'runoff'|'homeLDay'|'greyLDay'|'gardenLDay'|'infiltration'|'recycledPct'|'aggregateTM3',label:string,max:number,step:number){
+    return <label>{label}<input type="number" min="0" max={max} step={step} value={study[key]} onChange={e=>{const n=e.currentTarget.valueAsNumber;if(Number.isFinite(n)&&n>=0&&n<=max&&(key!=='people'||Number.isInteger(n)))change({[key]:n})}} /></label>
+  }
+  const stat=(label:string,value:string,note:string)=><div className="eco-stat"><span>{label}</span><strong>{value}</strong><small>{note}</small></div>;
+  const roomChoice=(key:'mossRoom'|'blockRoom',label:string)=><label>{label}<select value={study[key]??''} onChange={e=>change({[key]:e.target.value||null})}><option value="">No room selected</option>{q.rooms.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label>;
+  return <dialog ref={dialog} className="eco-sheet" data-build-surface="" aria-labelledby="eco-title" onCancel={e=>{e.preventDefault();onClose()}}>
+    <header><div><small>PLAN STUDY</small><h1 id="eco-title">Eco sheet</h1></div><button onClick={()=>window.print()}>Print A4</button><button autoFocus aria-label="Close Eco sheet" onClick={onClose}>Close</button></header>
+    <nav aria-label="Eco cards">{(['Water','Energy','Materials'] as const).map(c=><button key={c} aria-pressed={card===c} onClick={()=>open(c)}>{c}</button>)}</nav>
+    <div className="eco-body" ref={body}>
+    <p className="eco-intro">{property.name} · Estimates only, not an approval.</p>
+    <section hidden={card!=='Water'}><h2>Water</h2><p>Catch rain from the roof. Compare the tank with non-potable demand.</p>
+    <div className="eco-stats">{stat('Rain caught / year',fmt(b.captured/1000)+' m³','Roof area × rainfall × runoff')}{stat('Mains saved / year',fmt(b.saved/1000)+' m³','Rain used + greywater reused')}{stat('House demand covered',b.homeCoverage==null?'No demand':fmt(b.homeCoverage)+'%','Non-potable demand only')}{stat('Greywater available / year',fmt(b.grey/1000)+' m³','People × greywater allowance')}</div>
+    <p>{q.green===0?'No garden or moss wall selected.':b.gardenMains<.01?'The garden and moss wall need no mains water in this estimate.':'Garden and moss wall still need '+fmt(b.gardenMains/1000)+' m³/year of mains water.'}</p>
+    <div className="eco-fields"><label>Rain region<select value={study.region} onChange={e=>change({region:e.target.value as WaterStudy['region']})}>{Object.keys(rain).map(x=><option key={x}>{x}</option>)}</select></label>
+    {numeric('people','People',10000,1)}{numeric('runoff','Roof runoff fraction',1,.05)}
+    <label>Rain tank capacity<select value={study.tankL??'plan'} onChange={e=>change({tankL:e.target.value==='plan'?null:Number(e.target.value)})}><option value="plan">Placed tanks · {fmt(q.tankL)} L</option>{[0,500,1000,2000,5000,10000].map(n=><option key={n} value={n}>{n.toLocaleString()} L scenario</option>)}</select></label>
+    {numeric('homeLDay','Non-potable use · L/person/day',1000,1)}{numeric('greyLDay','Recoverable greywater · L/person/day',1000,1)}{numeric('gardenLDay','Irrigation · L/m²/day',100,.1)}{numeric('infiltration','Paving infiltration fraction',1,.05)}</div>
+    <p><b>{fmt(q.roof)} m²</b> horizontal roof catchment from the measured plan. Tank: {fmt(capacity)} L. Paving infiltration: {fmt(b.infiltrated/1000)} m³/year, kept separate from water in the tank.</p>
+    <p className="eco-source"><a href={rainSource} target="_blank" rel="noreferrer">Monthly rainfall: Mauritius Meteorological Services, 1991–2020</a>. All editable factors: {assumption} Tank starts empty. Rain falls evenly within each month; overflow is lost. Greywater serves irrigation only; no treatment performance is implied.</p>
+    <table><caption>Monthly water balance</caption><thead><tr><th>Month</th><th>Rain mm</th><th>Catch m³</th><th>Saved m³</th><th>End tank L</th></tr></thead><tbody>{b.rows.map((row,i)=><tr key={i}><th>{months[i]}</th><td>{rain[study.region][i]}</td><td>{fmt(row.captured/1000)}</td><td>{fmt(row.saved/1000)}</td><td>{fmt(row.stored)}</td></tr>)}</tbody></table></section>
+    <section hidden={card!=='Energy'}><h2>Energy</h2><p>Electrical items placed on this plan.</p><div className="eco-stats">{stat('Installed solar',fmt(energy.totalWp)+' Wp','Panel ratings on the plan')}{stat('Daily demand',fmt(energy.loadWhDay/1000)+' kWh','Item watts × active hours')}</div></section>
+    <section hidden={card!=='Materials'}><h2>Materials</h2><p>Choose a measured part of the plan to see how its finish changes the study. Each choice is a pilot.</p>
+    <div className="eco-fields">{roomChoice('mossRoom','Moss render (pilot) · room walls')}{roomChoice('blockRoom','Bagasse ash block (pilot) · room walls')}
+    <label>Permeable paving (pilot)<select value={study.pavingId??''} onChange={e=>change({pavingId:e.target.value||null})}><option value="">No outdoor surface</option>{q.paths.map((p,i)=><option key={p.id} value={p.id}>Outdoor {p.kind} {i+1}</option>)}</select></label>
+    <label>Roof finish<select value={study.coolRoof?'cool':'existing'} onChange={e=>change({coolRoof:e.target.value==='cool'})}><option value="existing">Existing finish</option><option value="cool">Cool roof coating (pilot)</option></select></label>
+    {numeric('recycledPct','Recycled aggregate (pilot) · %',100,1)}{numeric('aggregateTM3','Aggregate bulk density · t/m³',5,.1)}</div>
+    <div className="eco-stats">{stat('Moss render (pilot)',fmt(q.moss)+' m²','One face of room walls, openings deducted')}{stat('Bagasse ash block (pilot)',fmt(q.block)+' m²','Masonry area, excludes concrete and glass')}{stat('New stone displaced',fmt(q.stone)+' t','Concrete aggregate × density × recycled share')}{stat('Permeable paving',fmt(q.paving)+' m²','Measured outdoor surface; feeds infiltration')}{stat('Cool roof coating',fmt(q.coating)+' m²','Roof footprint adjusted for pitch')}{stat('Rain tank',fmt(capacity)+' L','Placed tank capacity or chosen scenario')}</div>
+    <p className="eco-source">{assumption} Effects on strength, growth, heat and infiltration require field measurements.</p></section>
+    </div></dialog>
+}
