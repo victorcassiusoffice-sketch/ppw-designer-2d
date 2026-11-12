@@ -40,7 +40,10 @@ export const GreenRoofSchema = z
   .strict();
 
 export const WaterStudySchema = z.object({
-  region: z.enum(['North','South','East','West','Centre']),
+  region: z.enum(['North','South','East','West','Centre','Rodrigues']),
+  place: z.string().max(60).optional(), kinetic: z.boolean().optional(), wind: z.boolean().optional(),
+  windPoint: z.object({x:number(-10000,10000),y:number(-10000,10000)}).optional(),
+  kineticPoint: z.object({x:number(-10000,10000),y:number(-10000,10000)}).optional(),
   people: number(0,10000).int(), runoff: number(0,1), tankL: number(0,10000000).nullable(),
   homeLDay: number(0,1000), greyLDay: number(0,1000), gardenLDay: number(0,100),
   infiltration: number(0,1), recycledPct: number(0,100), aggregateTM3: number(0,5),

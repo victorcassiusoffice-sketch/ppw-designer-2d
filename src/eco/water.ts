@@ -2,7 +2,10 @@ import type { WaterStudy } from '../designer/ecoContract';
 
 export const rainSource = 'https://data.govmu.org/dataset/3690f341-b8dd-47b3-b73c-fa2055cc961c/resource/b27f5eaf-e15b-4cb5-a28b-515b2adeda80/download/mean-rainfall-by-region-and-by-month-2017-2021.pdf';
 /** Mauritius Meteorological Services, 1991–2020 monthly long-term means in mm, Jan–Dec. */
+export const islandSource='https://unfccc.int/resource/docs/natc/musnc2.pdf';
+export function rainReference(region:WaterStudy['region']) {return region==='Rodrigues'?{url:islandSource,label:'Mauritius Meteorological Services · Rodrigues, 1971–2000, table 1.3'}:{url:rainSource,label:'Mauritius Meteorological Services · regional means, 1991–2020'}}
 export const rain = {
+  Rodrigues:[135,169,155,129,85,73,85,61,46,42,56,80],
   North:[191,218,206,127,90,67,65,56,45,39,48,102],
   South:[324,374,352,269,195,159,188,149,114,101,114,227],
   East:[344,400,382,284,207,161,179,150,116,97,109,211],

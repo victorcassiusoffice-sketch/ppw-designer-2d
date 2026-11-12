@@ -604,3 +604,5 @@
   width: 44px;
   height: 44px;
 }
+
+.site-programme-pin{display:grid;place-items:center;border:2px solid white;background:#275640;color:white;min-width:24px;height:24px;border-radius:50%;font-weight:700;box-shadow:0 1px 3px #132c24aa}

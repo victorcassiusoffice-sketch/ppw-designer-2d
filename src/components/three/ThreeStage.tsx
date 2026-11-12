@@ -63,6 +63,8 @@ import { wallJoinery } from './joinery';
 import { stairMesh, roofMesh, disposeBuildingTextures } from './buildingMeshes';
 import {cutPolygon} from '../../designer/terrainCuts';
 import { gardenMeshes } from './gardenMeshes';
+import { pilotDemonstration } from './pilotDemonstrations';
+import { gardenElevationAt as pilotGround } from '../../designer/garden';
 import { disposeGardenResources } from './gardenGround';
 import { visibleOpeningProfile } from './openingMeshProfile';
 import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../../store/buildSkinStore';
@@ -1444,6 +1446,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       const garden = gardenMeshes(solids.garden, groundRooms, solids.gardenSite, terrainCuts?.map(cutPolygon));
       gardenRef.current = garden;
       content.add(garden);
+      for(const item of solids.pilotItems??[]){
+        const mesh=pilotDemonstration(item.kind);mesh.position.set(item.x,solids.garden?pilotGround(solids.garden,item):0,item.y);content.add(mesh);bounds.expandByObject(mesh);
+      }
       // A large plot must not spread the house's finite shadow map over its
       // entire lawn. User-built terrain/fences still participate in lighting.
       for (const child of garden.children) if (!child.userData.automaticLawn) bounds.expandByObject(child);
