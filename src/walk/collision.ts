@@ -1,3 +1,4 @@
+import { cameraDistances } from './followSettings';
 import { Box3, DoubleSide, Matrix4, Quaternion, Ray, Vector3 } from 'three';
 import { Line3 } from 'three/src/math/Line3.js';
 import type { ExtendedTriangle, MeshBVH } from 'three-mesh-bvh';
@@ -320,25 +321,29 @@ export function pullInCamera(world: WalkWorld, target: Vector3, desired: Vector3
  * shoulders. If no external camera sphere fits, use the clear first-person eye.
  * Every interpolated location is swept against the world and checked against
  * the actor capsule. Zooming back out is deliberately slower than pulling in. */
-export function followCamera(world: WalkWorld, feet: Vector3, direction: Vector3, previous: Vector3 | null, dt: number, height = WALK_HEIGHT_M): { position: Vector3; target: Vector3; firstPerson: boolean } {
+export function followCamera(world: WalkWorld, feet: Vector3, direction: Vector3, previous: Vector3 | null, dt: number, height = WALK_HEIGHT_M, distance: number = cameraDistances.wide): { position: Vector3; target: Vector3; firstPerson: boolean } {
   const radius = .18;
   const eye = feet.clone().addScaledVector(UP, Math.min(1.55, height - .1));
   const overhead = feet.clone().addScaledVector(UP, height + radius + .08);
   const pivot = pullInCamera(world, eye, overhead, radius);
   const forward = new Vector3(direction.x, 0, direction.z).normalize();
   if (forward.lengthSq() < .5) forward.set(0, 0, -1);
-  const shoulder = new Vector3(-forward.z, 0, forward.x).multiplyScalar(.6);
-  const desired = pivot.clone().addScaledVector(forward, -2.15).add(shoulder);
-  desired.y += .2 + Math.max(0, -direction.y) * .4;
+  // Orbit around the subject. Pitch moves the camera as well as the sight line.
+  const pitch = Math.max(-.9, Math.min(.65, Math.asin(Math.max(-1, Math.min(1, direction.y)))));
+  const boom = Math.max(2, Math.min(8, distance));
+  const shoulder = new Vector3(-forward.z, 0, forward.x).multiplyScalar(.52);
+  const desired = pivot.clone().addScaledVector(forward, -boom * Math.cos(pitch)).add(shoulder);
+  desired.y = Math.max(feet.y + .30, pivot.y + .38 - Math.sin(pitch) * boom);
   const safe = pullInCamera(world, pivot, desired, radius);
   const oldDistance = previous?.distanceTo(pivot) ?? safe.distanceTo(pivot);
   const rate = safe.distanceTo(pivot) < oldDistance ? 24 : 6;
   const interpolated = previous ? previous.clone().lerp(safe, 1 - Math.exp(-rate * Math.max(0, dt))) : safe;
   // Moving up stairs must never interpolate the camera down through the head.
-  interpolated.y = Math.max(interpolated.y, pivot.y);
+  const closeToHead = Math.hypot(safe.x - feet.x, safe.z - feet.z) < 1.25 || Math.hypot(interpolated.x - feet.x, interpolated.z - feet.z) < 1.25;
+  if (desired.y >= pivot.y || closeToHead) interpolated.y = Math.max(interpolated.y, pivot.y);
   let position = pullInCamera(world, pivot, interpolated, radius);
-  const target = eye.clone().addScaledVector(direction, 1.4);
-  target.y -= .25;
+  const target = eye.clone().addScaledVector(forward, .8);
+  target.y -= .38;
   const body = new Line3(feet.clone().addScaledVector(UP, WALK_RADIUS_M), feet.clone().addScaledVector(UP, height - WALK_RADIUS_M));
   const outsideActor = (point: Vector3) => body.closestPointToPoint(point, true, new Vector3()).distanceTo(point) >= WALK_RADIUS_M + radius + .025;
   if (!outsideActor(position)) {
@@ -357,7 +362,7 @@ export function followCamera(world: WalkWorld, feet: Vector3, direction: Vector3
   // When a wall shortens the boom, preserve the navigation horizon instead of
   // tilting down into a close-up of the head. Full boom retains body framing.
   const horizontalDistance = Math.hypot(position.x - feet.x, position.z - feet.z);
-  const compression = Math.max(0, Math.min(1, (2.15 - horizontalDistance) / .65));
+  const compression = Math.max(0, Math.min(1, (1.25 - horizontalDistance) / .6));
   target.lerp(position.clone().addScaledVector(direction, 3), compression);
   return { position, target, firstPerson: false };
 }

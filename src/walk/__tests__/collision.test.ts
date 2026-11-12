@@ -248,6 +248,16 @@ describe('manual doors and camera', () => {
     expect(interactionDoor(w, new Vector3(3.8, 1.55, .6), new Vector3(0, 0, 1), null)).toBeNull();
   });
 
+  it('frames the whole figure in open land and offers a longer running view', () => {
+    const w = world(), feet = new Vector3(20, 0, 20), ahead = new Vector3(0, 0, -1);
+    const wide = followCamera(w, feet, ahead, null, 1 / 60);
+    const sprint = followCamera(w, feet, ahead, null, 1 / 60, 1.7, 5.65);
+    expect(wide.position.z - feet.z).toBeCloseTo(4.8);
+    expect(sprint.position.z - wide.position.z).toBeCloseTo(.85);
+    expect(wide.firstPerson).toBe(false);
+    expect(followCamera(w, feet, new Vector3(0,-.5,-1).normalize(), null, 1/60).position.y).toBeGreaterThan(wide.position.y + 1);
+  });
+
   it('keeps a shortened tight-room follow camera above the actor and inside the wall while recovering smoothly', () => {
     const p = property(3), w = world(p), feet = new Vector3(1.5, .001, 7.65), forward = new Vector3(0, 0, -1);
     let view = followCamera(w, feet, forward, null, 1 / 60);
@@ -263,7 +273,9 @@ describe('manual doors and camera', () => {
     for (let i = 0; i < 120; i++) view = followCamera(w, feet, forward, view.position, 1 / 60);
     expect(view.position.distanceTo(final.position)).toBeLessThan(.001);
     expect(view.position.distanceTo(feet)).toBeGreaterThan(near);
-    expect(view.position.distanceTo(feet.clone().add(new Vector3(0, 1.55, 0)))).toBeLessThan(2.5);
+    // The wider follow camera can now use the room up to the back wall at z=8.
+    expect(view.position.z).toBeGreaterThan(7.5);
+    expect(view.position.z).toBeLessThan(7.83);
   });
 
   it('sweeps the interpolated shoulder camera at corners and raises it above the head on a stair step', () => {

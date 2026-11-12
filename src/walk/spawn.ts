@@ -3,7 +3,7 @@ import { GROUND_LEVEL_ID } from '../designer/levels';
 export { spawnAt } from './placement';
 import type { Property } from '../store/propertyStore';
 import type { Vertex } from '../lib/geometry';
-import { capsuleClear, createWalker, groundHeight } from './collision';
+import { capsuleClear, createWalker, followCamera, groundHeight } from './collision';
 import type { WalkSpawn, WalkWorld } from './types';
 
 function inside(point: { x: number; y: number }, polygon: Vertex[]): boolean {
@@ -34,7 +34,7 @@ export function findWalkSpawn(world: WalkWorld, property: Property): WalkSpawn |
     return capsuleClear(world, state);
   };
   const facing = (position: Vector3, preferredYaw: number): number => {
-    let bestYaw = preferredYaw, bestDistance = -1;
+    let bestYaw = preferredYaw, bestScore = -Infinity;
     // Face a useful clear route. A valid capsule in a corner must not begin
     // looking straight into the nearest wall/window.
     for (let i = 0; i < 16; i++) {
@@ -45,7 +45,11 @@ export function findWalkSpawn(world: WalkWorld, property: Property): WalkSpawn |
         if (!safe(position.clone().addScaledVector(direction, d))) break;
         distance = d;
       }
-      if (distance > bestDistance + .001) { bestDistance = distance; bestYaw = yaw; }
+      // A clear path alone can put the lens against the wall behind the player.
+      const view = followCamera(world, position, direction, null, 0);
+      const roomBehind = Math.hypot(view.position.x - position.x, view.position.z - position.z);
+      const score = Math.min(distance, 1.4) * 4 + Math.min(roomBehind, 4.8) + distance * .35;
+      if (score > bestScore + .001) { bestScore = score; bestYaw = yaw; }
     }
     return Math.atan2(Math.sin(bestYaw), Math.cos(bestYaw));
   };

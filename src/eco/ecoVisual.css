@@ -1,0 +1,271 @@
+@media screen {
+  .eco-sheet[open] {
+    width: min(61rem, calc(100vw - 1rem));
+    color: var(--ui-ink);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-line);
+    box-shadow: var(--studio-raised, 0 16px 54px #172b3a55);
+    font:
+      14px/1.45 Inter,
+      'Segoe UI',
+      system-ui,
+      sans-serif;
+  }
+  .eco-sheet[open]::backdrop {
+    background: rgb(14 31 43 / 0.58);
+  }
+  .eco-sheet[open] header {
+    background: var(--skin-gradient, var(--ui-surface));
+    color: var(--ui-ink);
+    border-bottom: 1px solid var(--ui-line);
+  }
+  .eco-sheet[open] header > div {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .eco-sheet[open] header img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    background: #eef6ee;
+    border-radius: 6px;
+    padding: 3px;
+  }
+  .eco-sheet[open] nav {
+    background: var(--ui-surface);
+    border-color: var(--ui-line);
+  }
+  .eco-sheet[open] button,
+  .eco-sheet[open] input,
+  .eco-sheet[open] select {
+    color: var(--ui-ink);
+    background: var(--ui-surface);
+    border-color: var(--ui-line);
+  }
+  .eco-sheet[open] nav button,
+  .eco-sheet[open] header button {
+    background: var(--skin-gradient, var(--ui-surface));
+    box-shadow: inset 0 1px 1px var(--skin-highlight);
+  }
+  .eco-sheet[open] nav button[aria-pressed='true'] {
+    background: var(--ui-accent);
+    color: var(--ui-on-accent);
+  }
+  .eco-sheet[open] :focus-visible {
+    outline: 3px solid var(--ui-focus, var(--ui-accent));
+    outline-offset: 2px;
+  }
+  .eco-sheet[open] :is(.eco-source, .eco-intro, .eco-stat small) {
+    color: var(--ui-muted);
+  }
+  .eco-sheet[open] a {
+    color: var(--ui-accent);
+  }
+  .eco-sheet[open] .eco-stat {
+    border-radius: 0.6rem;
+    border: 1px solid var(--ui-line);
+    background: var(--ui-surface);
+    padding: 0.65rem 0.8rem;
+  }
+  .eco-sheet[open] :is(th, td, fieldset, .eco-programme) {
+    border-color: var(--ui-line);
+  }
+  .eco-sheet[open] .eco-body {
+    background: var(--ui-bg);
+  }
+  .eco-visual {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    margin: 0.6rem 0 0.9rem;
+    padding: 4px;
+    gap: 4px;
+    border: 1px solid var(--ui-line);
+    background: var(--ui-surface);
+    border-radius: 14px;
+    box-shadow: var(--studio-raised);
+    overflow: hidden;
+  }
+  .eco-cover {
+    margin: 0;
+    position: relative;
+    min-width: 0;
+    min-height: 166px;
+    isolation: isolate;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #253c41;
+  }
+  .eco-cover img,
+  .eco-cover::after {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .eco-cover::after {
+    content: '';
+    background: linear-gradient(95deg, #0d252de8 5%, #152b36a8 48%, #14303b15);
+  }
+  .eco-cover figcaption {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    padding: 1rem;
+    color: #fff;
+    min-width: 0;
+  }
+  .eco-cover figcaption small {
+    font-size: 0.8rem;
+    font-weight: 650;
+  }
+  .eco-cover figcaption strong {
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+    line-height: 1.1;
+  }
+  .eco-cover figcaption span {
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .eco-graphic {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 0.55rem 0.85rem;
+    color: var(--ui-ink);
+  }
+  .eco-graphic h3 {
+    font-size: 1rem;
+    line-height: 1.2;
+    margin: 0;
+  }
+  .eco-graphic-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+  }
+  .eco-graphic output {
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ui-muted);
+  }
+  .eco-rain-bars {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    height: 96px;
+    margin: 0.5rem 0 0;
+  }
+  .eco-sheet[open] .eco-rain-bars button {
+    position: relative;
+    min-height: 0;
+    min-width: 0;
+    padding: 0 2px 18px;
+    background: transparent;
+    color: var(--ui-ink);
+    border: none;
+    border-radius: 3px;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-end;
+    box-shadow: none;
+    font-size: 0.69rem;
+  }
+  .eco-rain-bars i {
+    display: block;
+    width: 100%;
+    min-height: 2px;
+    background: color-mix(in srgb, var(--ui-accent) 52%, var(--ui-surface));
+    border-radius: 4px 4px 0 0;
+  }
+  .eco-rain-bars button[aria-pressed='true'] i {
+    background: var(--ui-accent);
+  }
+  .eco-rain-bars span {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+  .eco-loads {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+  }
+  .eco-loads li {
+    font-size: 0.8rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0 0.4rem;
+    align-items: center;
+    margin: 0.3rem 0;
+  }
+  .eco-loads span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .eco-loads meter {
+    grid-column: span 2;
+    width: 100%;
+    accent-color: var(--ui-accent);
+  }
+  .eco-footprint {
+    height: 80px;
+    min-height: 0;
+    width: 100%;
+    margin: 4px 0;
+    background: var(--ui-bg);
+    border-radius: 5px;
+  }
+  .eco-footprint polygon {
+    fill: var(--ui-raised);
+    stroke: var(--ui-muted);
+    stroke-width: 1.2;
+  }
+  .eco-footprint polygon.is-chosen {
+    fill: var(--ui-soft);
+    stroke: var(--ui-accent);
+    stroke-width: 2;
+  }
+  @media (max-width: 600px) {
+    .eco-sheet[open] {
+      width: 100vw;
+      height: 100dvh;
+      border-radius: 0;
+    }
+    .eco-visual {
+      grid-template-columns: 1fr;
+    }
+    .eco-cover {
+      min-height: 86px;
+    }
+    .eco-cover figcaption {
+      padding: 0.45rem 0.75rem;
+    }
+    .eco-graphic {
+      padding: 0.45rem 0.6rem;
+    }
+    .eco-rain-bars {
+      height: 64px;
+    }
+    .eco-footprint {
+      height: 65px;
+    }
+  }
+}
+@media print {
+  .eco-visual {
+    display: none !important;
+  }
+}
