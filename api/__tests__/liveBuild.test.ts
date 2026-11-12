@@ -70,6 +70,18 @@ describe('private multiplayer construction through the database adapter', () => 
     );
     return { status, result };
   }
+  it('hosts a fresh empty plot and joins it before anyone has placed a door', async () => {
+    const room = { id: 'ground', name: 'Main Room', polygon: [], placedItems: [] };
+    const model = { id: 'empty', name: 'New plot', rooms: [room] };
+    const host = await call('host', { ...user, model });
+    expect(host.status).toBe(201);
+    const guest = await call('join', { ...user, code: host.result.invite });
+    expect(guest.status).toBe(201);
+    expect(guest.result.model).toMatchObject({ rooms: [{ ...room, openings: [] }] });
+    expect(room).not.toHaveProperty('openings');
+    expect(() => sharedProperty({ ...model, rooms: [{ ...room, openings: null }] })).toThrow('Invalid room');
+  });
+
   it('requires a studio host, issues independent capabilities, and never returns another session in presence', async () => {
     expect(
       (await call('host', { ...user, model: initial }, undefined, { allowHost: async () => false }))

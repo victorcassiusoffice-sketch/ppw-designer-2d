@@ -98,6 +98,9 @@ export function sharedProperty(raw: unknown): Build {
   )
     throw Error('Invalid or oversized build.');
   for (const room of copy.rooms) {
+    // New empty and older saved rooms omit openings until the first door.
+    // Canonicalise absence on the private copy so adding a first door syncs by ID.
+    if (record(room) && !has(room, 'openings')) room.openings = [];
     if (
       !record(room) ||
       typeof room.id !== 'string' ||
