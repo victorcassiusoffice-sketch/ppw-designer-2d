@@ -20,6 +20,8 @@ export const FENCE_MATERIALS = {
 export type FenceMaterial = keyof typeof FENCE_MATERIALS;
 
 export interface GardenSurface {
+  /** Transient rendering choice resolved from the Eco study. */
+  pilotPermeable?: boolean;
   id: string;
   kind: GardenSurfaceKind;
   /** Top-left corner in plan metres. */

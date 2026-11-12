@@ -1,3 +1,4 @@
+import { cameraDistances, readWalkControls, type WalkControls } from './followSettings';
 import * as THREE from 'three';
 // Import the mixer from Three's source entry so its implementation stays in
 // the deferred walk chunk instead of growing the first-picture vendor bundle.
@@ -40,6 +41,14 @@ export class WalkRuntime {
   private keys = new Set<string>();
   private stick = { x: 0, y: 0 };
   private running = false;
+  private preferences = readWalkControls();
+  private forwardSpeed = 0;
+  private sprintPullback = 0;
+  private lastLookInput = 0;
+  setControlPreferences(value: WalkControls): void {
+    this.preferences = value;
+  }
+
   private levelId: string;
   private cutaway = true;
   private overview = false;
@@ -405,7 +414,7 @@ export class WalkRuntime {
     if (event.code === 'KeyV') { event.preventDefault(); this.toggleView(); }
     if (event.code === 'KeyE') { event.preventDefault(); this.interact(); }
   }
-  clearInput(): void { this.route = []; this.routeRequest++; this.lookStick = { x: 0, y: 0 }; this.keys.clear(); this.stick = { x: 0, y: 0 }; this.inputMeasure = null; this.measurementArmed = false; }
+  clearInput(): void { this.forwardSpeed = 0; this.route = []; this.routeRequest++; this.lookStick = { x: 0, y: 0 }; this.keys.clear(); this.stick = { x: 0, y: 0 }; this.inputMeasure = null; this.measurementArmed = false; }
   setStick(x: number, y: number): void {
     if (!this.ready || this.disposed) return;
     if (y && !this.stick.y) this.measureInput('touch', 'stick');
@@ -453,6 +462,7 @@ export class WalkRuntime {
   dragLook(dx: number, dy: number): void {
     if (!this.ready || this.disposed) return;
     this.euler.setFromQuaternion(this.look.quaternion, 'YXZ');
+    this.lastLookInput = performance.now();
     this.euler.y -= dx * .004; this.euler.x = THREE.MathUtils.clamp(this.euler.x - dy * .004, -1.35, 1.35);
     this.look.quaternion.setFromEuler(this.euler);
   }
@@ -497,7 +507,7 @@ export class WalkRuntime {
       this.desired.copy(this.eye).addScaledVector(this.direction, 1.4); this.desired.y -= .45;
     }
     else {
-      const view = followCamera(this.world, this.walker.position, this.direction, this.followReady ? this.follow : null, dt, this.walker.height);
+      const view = followCamera(this.world, this.walker.position, this.direction, this.followReady ? this.follow : null, dt, this.walker.height, cameraDistances[this.preferences.framing] + this.sprintPullback);
       this.follow.copy(view.position); this.followReady = true;
       this.camera.position.copy(view.position); this.desired.copy(view.target);
       firstPersonCamera = view.firstPerson;
@@ -523,21 +533,27 @@ export class WalkRuntime {
     const elapsed = now - this.last, dt = Math.min(.05, Math.max(0, elapsed / 1000)); this.last = now;
     if (!this.paused && !document.hidden) {
       this.euler.setFromQuaternion(this.look.quaternion, 'YXZ');
-      // Phone stick steers and moves with one thumb; the second pad optionally looks around.
-      this.euler.y -= (this.stick.x + this.lookStick.x) * dt * 1.9;
+      const steer = this.preferences.oneHanded || this.mode === 'first';
+      const yawInput = this.lookStick.x + (steer ? this.stick.x : 0);
+      if (yawInput || this.lookStick.y) this.lastLookInput = now;
+      this.euler.y -= yawInput * dt * 1.9;
       this.euler.x = THREE.MathUtils.clamp(this.euler.x - this.lookStick.y * dt * 1.6, -1.35, 1.35);
       this.look.quaternion.setFromEuler(this.euler);
-      const x = Number(this.keys.has('KeyD') || this.keys.has('ArrowRight')) - Number(this.keys.has('KeyA') || this.keys.has('ArrowLeft'));
-      const z = Number(this.keys.has('KeyS') || this.keys.has('ArrowDown')) - Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) + this.stick.y;
-      const speed = this.running || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? RUN_SPEED_M_S : WALK_SPEED_M_S;
-      this.velocity.set(x, 0, z); if (this.velocity.lengthSq() > 1) this.velocity.normalize();
-      this.velocity.multiplyScalar(speed).applyAxisAngle(THREE.Object3D.DEFAULT_UP, this.euler.y);
+      const lateral = Number(this.keys.has('KeyD') || this.keys.has('ArrowRight')) - Number(this.keys.has('KeyA') || this.keys.has('ArrowLeft'));
+      const forward = Number(this.keys.has('KeyS') || this.keys.has('ArrowDown')) - Number(this.keys.has('KeyW') || this.keys.has('ArrowUp'));
+      const sprint = this.running || this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+      const speed = sprint ? RUN_SPEED_M_S : WALK_SPEED_M_S;
+      this.velocity.set(lateral + (steer ? 0 : this.stick.x), 0, forward + this.stick.y);
+      const moving = this.velocity.lengthSq() > 0 || this.route.length > 0;
+      this.forwardSpeed = moving ? THREE.MathUtils.damp(Math.max(WALK_SPEED_M_S * .5, this.forwardSpeed), speed, 12, dt) : 0;
+      if (this.velocity.lengthSq() > 1) this.velocity.normalize();
+      this.velocity.multiplyScalar(this.forwardSpeed).applyAxisAngle(THREE.Object3D.DEFAULT_UP, this.euler.y);
       const target = this.route[0];
       if (target) {
         this.velocity.set(target.x - this.walker.position.x, 0, target.z - this.walker.position.z);
         const distance = this.velocity.length();
         if (distance <= .08) { this.route.shift(); this.velocity.set(0, 0, 0); }
-        else this.velocity.multiplyScalar(Math.min(speed, distance / Math.max(dt, .001)) / distance);
+        else this.velocity.multiplyScalar(Math.min(this.forwardSpeed, distance / Math.max(dt, .001)) / distance);
       }
       const movement = stepWalker(this.world, this.walker, this.velocity, dt);
       if (target && this.route.length) {
@@ -545,6 +561,13 @@ export class WalkRuntime {
         if (this.stalled > .6) { this.route = []; this.notice = 'The route is blocked.'; }
       }
       const actualSpeed = dt ? movement.movedM / dt : 0;
+      this.sprintPullback = THREE.MathUtils.damp(this.sprintPullback, sprint && actualSpeed > 2 ? .85 : 0, 3, dt);
+      if (target && this.mode === 'third' && !this.overview && !this.controls.isLocked && actualSpeed > .4 && now - this.lastLookInput > 1200) {
+        const behind = Math.atan2(-this.velocity.x, -this.velocity.z);
+        const turn = Math.atan2(Math.sin(behind - this.euler.y), Math.cos(behind - this.euler.y));
+        this.euler.y += turn * (1 - Math.exp(-2 * dt));
+        this.look.quaternion.setFromEuler(this.euler);
+      }
       const next = actualSpeed < .08 ? 'idle' : actualSpeed > 2.1 ? 'run' : 'walk';
       if (next !== this.animation) {
         this.actions[this.animation]?.fadeOut(.18); this.actions[next]?.reset().fadeIn(.18).play(); this.animation = next;

@@ -81,7 +81,7 @@ function surfaceMesh(surface: GardenSurface, order: number, occupied: readonly P
   const paving = surface.kind === 'path' ? findOutdoorPavingProduct(surface.pavingProductId) : undefined;
   const map = gardenSurfaceMap(surface.kind === 'lawn');
   map.repeat.set(surface.widthM / 1.6, surface.depthM / 1.6);
-  const material = new THREE.MeshStandardMaterial({ color: surface.kind === 'lawn' ? '#ffffff' : paving?.renderHex ?? GARDEN_SURFACES[surface.kind].hex, map, roughness: 0.98, side: THREE.DoubleSide });
+  const material = new THREE.MeshStandardMaterial({ color: surface.pilotPermeable ? '#91a28c' : surface.kind === 'lawn' ? '#ffffff' : paving?.renderHex ?? GARDEN_SURFACES[surface.kind].hex, map, roughness: 0.98, side: THREE.DoubleSide });
   material.userData.gardenTextures = [map];
   const floor = new THREE.Mesh(surfaceGeometry(surface, cutouts), material);
   floor.position.y = top;

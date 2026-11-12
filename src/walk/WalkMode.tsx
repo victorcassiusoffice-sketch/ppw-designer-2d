@@ -1,3 +1,4 @@
+import { readWalkControls, saveWalkControls, type WalkControls } from './followSettings';
 import { CanvasDock } from '../components/CanvasDock';
 import { dismissToolPanel, useToolPanel } from '../hooks/useToolPanel';
 import {WALK_BUILD_TOOLS,type WalkBuildTool,type LiveWalkView} from '../components/three/HouseStageSlot';
@@ -38,7 +39,7 @@ function useOwnedTouchSurface(): (node: HTMLDivElement | null) => void {
 }
 
 function ControlsCopy({ touchFirst }: { touchFirst: boolean }): JSX.Element {
-  const touch = <p key="touch"><b>Touch:</b> Use the pad to move and turn. Drag the view to look. Tap a door button when close. Tap Exit walk to return to your design.</p>;
+  const touch = <p key="touch"><b>Touch:</b> Use the left pad to move. Drag the view or use the right pad to look. For one-hand steering, open Controls. Tap a door button when close. Tap Exit walk to return to your design.</p>;
   const keyboard = <p key="keyboard"><b>Keyboard and mouse:</b> WASD or arrows to move · Shift to run · mouse to look · V to switch view · E for doors. Esc frees the mouse; press Esc again to exit.</p>;
   return <>{touchFirst ? [touch, keyboard] : [keyboard, touch]}</>;
 }
@@ -76,6 +77,14 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
   const [ready, setReady] = useState(false);
   const [help, setHelp] = useToolPanel();
   const [running, setRunning] = useState(false);
+  const [preferences, setPreferences] = useState(readWalkControls);
+  function updateControls(delta: Partial<WalkControls>) {
+    const next = { ...preferences, ...delta };
+    setPreferences(next);
+    saveWalkControls(next);
+    runtime.current?.setControlPreferences(next);
+  }
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState('Preparing your walk…');
   const [visit, setVisit] = useState<ReturnType<typeof prepareVisit> | null>(null);
@@ -279,14 +288,16 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
           {fallback ? <>{tx('No clear standing surface on this level.')} {topFloor && <button type="button" onClick={() => chooseLevel(topFloor.id)}>{tx('Go to top floor')}</button>}</>
             : tx(status.notice || 'A stair no longer fits its floors. It is unavailable in this visit.')}
         </div>}
-        {help && <div className="world-walk-help"><strong>How to walk</strong><ControlsCopy touchFirst={touchControls} /><button type="button" onClick={() => setHelp(false)}>Got it</button></div>}
+        {help && <div className="world-walk-help"><strong>How to walk</strong><label>Third-person camera<select value={preferences.framing} onChange={e=>updateControls({framing:e.target.value as WalkControls['framing']})}><option value="close">Close</option><option value="wide">Wide</option><option value="far">Far</option></select></label>
+          {touchControls && <label><input type="checkbox" checked={preferences.oneHanded} onChange={e=>updateControls({oneHanded:e.target.checked})}/> One-hand steering</label>}
+          <ControlsCopy touchFirst={touchControls} /><button type="button" onClick={() => setHelp(false)}>Got it</button></div>}
         <div className="world-walk-aim" aria-hidden="true">·</div>
         <div className="world-walk-door" role="status">{status.blocked ? <span>Step away so the door can move safely.</span> : status.door && <button type="button" aria-label={status.door}
           onPointerDown={event => doorTap.pointerDown(event)} onPointerUp={event => doorTap.pointerUp(event)} onPointerCancel={event => doorTap.pointerCancel(event)} onClick={() => doorTap.click()}>{status.door}{!touchControls && <> <kbd aria-hidden="true">E</kbd></>}</button>}</div>
-        <div className="world-walk-stick" ref={stickSurface} role="application" aria-label="Move and turn with one thumb" tabIndex={0}
+        <div className="world-walk-stick" ref={stickSurface} role="application" aria-label={preferences.oneHanded || status.mode === 'first' ? 'Move and turn with one thumb' : 'Move relative to camera'} tabIndex={0}
           onPointerDown={event => { stickPointer.current = event.pointerId; event.currentTarget.setPointerCapture(event.pointerId); moveStick(event); }}
           onPointerMove={moveStick} onPointerUp={stopStick} onPointerCancel={stopStick} onLostPointerCapture={stopStick}>
-          <span className="world-walk-stick-knob" /><span className="world-walk-stick-label">Move + turn</span>
+          <span className="world-walk-stick-knob" /><span className="world-walk-stick-label">{preferences.oneHanded || status.mode === 'first' ? 'Move + turn' : 'Move'}</span>
         </div>
         {touchControls && <div className="world-look-stick" aria-label={tx('Look around')} role="application"
           onPointerDown={e => { aimStick.current = e.pointerId; e.currentTarget.setPointerCapture(e.pointerId); steerLook(e); }}

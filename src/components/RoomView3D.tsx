@@ -313,6 +313,18 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
     // A roof slab has no walls to paint — items only, like outdoors.
     const outdoor = isOutdoorRoom(room) || isRoofRoom(room) || !isDrawnPolygon(room.polygon);
     const wallSurfaces = resolvedWallSurfaces(room);
+    const pilot = property.eco?.waterStudy;
+    if (pilot?.mossRoom === room.id || pilot?.blockRoom === room.id) {
+      room.polygon.forEach((_, i) => {
+        const kind = wallSurfaces.wallConstructionByEdge.get(i);
+        if (kind === 'glass' || room.removedWallEdges?.includes(i)) return;
+        if (pilot.blockRoom === room.id && kind !== 'concrete' && !wallSurfaces.wallFinishByEdge.has(i)) wallSurfaces.wallColourByEdge.set(i, '#ab9777');
+        if (pilot.mossRoom === room.id) {
+          wallSurfaces.wallColourByEdge.set(i, '#648153');
+          wallSurfaces.wallFinishByEdge.set(i, 'textured');
+        }
+      });
+    }
     // Floor: the largest painted zone's material, else the whole-room finish —
     // its hex, and (P3) what it reads as and its tile size for the surface.
     let floorMaterial = roomFloorMaterial(room);
