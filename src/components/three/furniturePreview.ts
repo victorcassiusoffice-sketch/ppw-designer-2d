@@ -8,7 +8,7 @@
  * merged by material once on construction to keep the phone draw count low.
  */
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { furnitureBox } from './furnitureBox';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { ItemSolid } from '../../designer/roomSolids';
 import { itemPose } from '../../designer/fitToSize';
@@ -72,9 +72,9 @@ class Parts {
     const finish = material.userData.furnitureFinish;
     const eased = radius || (['wood', 'metal', 'stone', 'enamel', 'plastic'].includes(finish) ? Math.min(0.003, w * 0.06, h * 0.06, d * 0.06) : 0);
     const geometry = eased > 0
-      ? new RoundedBoxGeometry(w, h, d, radius > 0 ? 2 : 1, Math.min(eased, w / 3, h / 3, d / 3))
+      ? furnitureBox(w, h, d, radius > 0 ? 2 : 1, Math.min(eased, w / 3, h / 3, d / 3))
       : new THREE.BoxGeometry(w, h, d);
-    physicalFurnitureUVs(geometry);
+    if (!eased) physicalFurnitureUVs(geometry);
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = name;
     mesh.position.set(...position);
@@ -167,13 +167,13 @@ class Parts {
     for (const [index, child] of this.root.children.entries()) {
       const mesh = child as THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
       names.push(mesh.name);
-      const geometry = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry.clone();
+      const geometry = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry;
       geometry.applyMatrix4(mesh.matrixWorld);
       furnitureOcclusion(geometry, bounds[index], bounds);
       const list = groups.get(mesh.material) ?? [];
       list.push(geometry);
       groups.set(mesh.material, list);
-      mesh.geometry.dispose();
+      if (geometry !== mesh.geometry) mesh.geometry.dispose();
     }
     const group = new THREE.Group();
     for (const [material, geometries] of groups) {

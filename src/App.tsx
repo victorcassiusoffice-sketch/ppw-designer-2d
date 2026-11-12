@@ -47,11 +47,11 @@ import { useGardenEditorStore } from './store/gardenEditorStore';
  * from a bottom-sheet to the canvas on touch devices).
  */
 
-import { lazy, Suspense, useState, useEffect, useCallback, useRef } from 'react';
+import { lazy, Suspense, useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { PageTabs } from './components/PageTabs';
 import { TopBar } from './components/TopBar';
 import { CoachMark } from './components/uxKit';
-import { RoomCanvas } from './components/RoomCanvas';
+const RoomCanvas=lazy(()=>import('./components/RoomCanvas').then(module=>({default:module.RoomCanvas})));
 import { PlanAnalysisWorkspace } from './components/PlanAnalysisWorkspace';
 import { AiDesignWorkspace } from './components/AiDesignWorkspace';
 import { PlanGardenWorkspace } from './components/PlanGardenWorkspace';
@@ -297,6 +297,20 @@ export default function App() {
    */
   const hasDrawnRoom = usePropertyStore((s) => s.property.rooms.some((r) => isDrawnPolygon(r.polygon)));
   const designView = useDesignerUIStore((s) => s.viewMode);
+  // House owns the visible viewport. Start the plan's editor bindings once
+  // the GPU has its first scene, or immediately on an edit / switch to Plan.
+  const [planStarted,setPlanStarted]=useState(()=>designView!=='3d');
+  useLayoutEffect(()=>{
+    if(planStarted)return;
+    const start=()=>setPlanStarted(true);
+    if(designView==='plan'||document.querySelector('[data-first-prepare-start-ms], [data-first-picture-ms]')){start();return}
+    window.addEventListener('ppw:house-preparing',start,{once:true});
+    window.addEventListener('pointerdown',start,{once:true,capture:true});
+    window.addEventListener('keydown',start,{once:true,capture:true});
+    const timer=window.setTimeout(start,2500);
+    return ()=>{clearTimeout(timer);window.removeEventListener('ppw:house-preparing',start);
+      window.removeEventListener('pointerdown',start,true);window.removeEventListener('keydown',start,true)};
+  },[designView,planStarted]);
   useEffect(() => { if (designView === '3d') setDrawMode(false); }, [designView, setDrawMode]);
   const hadDrawnRoomRef = useRef<boolean | null>(null);
   useEffect(() => {
@@ -430,7 +444,7 @@ export default function App() {
           0 px when it is not mounted). The section — and therefore the
           Konva stage the ResizeObserver measures — is then exactly the
           VISIBLE area; nothing sits under the toolbar any more. */}
-      <main {...(designView === '3d' ? { inert: '', 'aria-hidden': true as const } : {})} className="flex flex-1 overflow-hidden pb-[var(--sims-toolbar-h,0px)] lg:pb-0">
+      <main {...(designView === '3d' ? { inert: '', 'aria-hidden': true as const, style: { display: 'none' } } : {})} className="flex flex-1 overflow-hidden pb-[var(--sims-toolbar-h,0px)] lg:pb-0">
         <section className="relative flex-1 overflow-hidden">
           {/* 2026-08-25: MiniCartPill un-mounted. It sat at `right-3 top-3`
               and OVERLAPPED RoomCanvas's own top-right Reset/Share/Capture
@@ -441,12 +455,12 @@ export default function App() {
           <CanvasErrorBoundary onReset={() => setDrawMode(false)}>
             <div style={{ width: '100%', height: '100%' }}>
               <div style={{ width: '100%', height: '100%' }}>
-                <RoomCanvas
+                {(planStarted||designView==='plan')&&<Suspense fallback={null}><RoomCanvas
                   drawMode={drawMode}
                   onDrawComplete={() => setDrawMode(false)}
                   pendingProductId={pendingProductId}
                   setPendingProductId={setPendingProductId}
-                />
+                /></Suspense>}
               </div>
             </div>
           </CanvasErrorBoundary>
