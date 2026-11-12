@@ -39,6 +39,6 @@ export function MeasuredPathOptions() {
     {tool.target === 'roof' && <label>Overhang (m)<input type="number" min="0" max="1.5" step="0.05" value={roof.overhangM}
       onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0 && value <= 1.5) usePropertyStore.getState().setRoofConfig({ ...roof, overhangM: value }); }} /></label>}
     {tool.target === 'roof' && areas && <small>Projected {areas.projectedM2.toFixed(2)} m² · covering {areas.coveringM2.toFixed(2)} m²</small>}
-    <small>Curves share the same measured geometry in plan and 3D; chord deviation ≤ 3 mm. Esc finishes completed strokes.</small>
+    <details className="measured-path-help"><summary>About curves</summary><small>Curves share the same measured geometry in plan and 3D; chord deviation ≤ 3 mm. Esc finishes completed strokes.</small></details>
   </section>;
 }

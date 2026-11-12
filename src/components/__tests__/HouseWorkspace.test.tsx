@@ -60,11 +60,15 @@ describe('HouseWorkspace controls', () => {
     expect(host.querySelector('[data-testid="scene"]')).toBe(scene);
   });
 
-  it('reveals armed building tools and dismisses the palette with Escape without replacing the scene', () => {
+  it('keeps opening settings available after stowing the tool list and preserves the scene on Escape', () => {
     props.onBuildTool = vi.fn();
     render();
     const scene = host.querySelector('[data-testid="scene"]');
+    click(button('Build tools'));
     props.buildTool = 'door'; render();
+    expect(button('Build tools').getAttribute('aria-expanded')).toBe('false');
+    expect(host.querySelector('[aria-label="Opening width"]')).not.toBeNull();
+    click(button('Build tools'));
     expect(button('Build tools').getAttribute('aria-expanded')).toBe('true');
     act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
     expect(button('Build tools').getAttribute('aria-expanded')).toBe('false');

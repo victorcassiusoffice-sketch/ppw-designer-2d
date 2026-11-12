@@ -1,0 +1,101 @@
+/* One edge row, in document flow in the editors. Only its grip owns drag;
+   scrolling tools, painting the canvas and dragging a stair keep their native gestures. */
+.canvas-edge-dock {
+  --dock-paper:var(--ui-surface, #eff4ed); --dock-ink:var(--ui-ink,#203e34);
+  display:flex; align-items:center; gap:3px; width:100%; min-width:0; flex:0 0 auto;
+  padding:2px 4px; color:var(--dock-ink); background:var(--dock-paper);
+  border-block:1px solid var(--ui-line,#a8bcb0);
+}
+.canvas-edge-dock[data-edge=bottom] { order:2; }
+.edge-dock-scroll { min-width:0; flex:1; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; }
+.edge-dock-scroll::-webkit-scrollbar {display:none}
+.edge-dock-content { width:max-content; min-width:100%; display:flex; align-items:center; gap:5px; }
+.canvas-edge-dock :is(.edge-dock-grip,.edge-dock-more) {
+  display:grid;place-items:center;flex:0 0 32px;min-width:32px;min-height:42px;padding:0;
+  color:var(--dock-ink);background:transparent;border:0;border-radius:9px;
+}
+.canvas-edge-dock .edge-dock-grip {cursor:grab; touch-action:none;user-select:none;}
+.canvas-edge-dock .edge-dock-grip:active {cursor:grabbing}
+.canvas-edge-dock .edge-dock-more {font-size:23px;border-inline-start:1px solid var(--ui-line,#a8bcb0);border-radius:0}
+.canvas-edge-dock :is(.edge-dock-grip,.edge-dock-more):hover {background:var(--ui-soft,#dce8de)}
+.edge-dock-guide { pointer-events:none; position:absolute; z-index:35; left:4px; right:4px;
+  background:#245e50; color:white; text-align:center; font:600 12px/22px system-ui; border-radius:6px; }
+.edge-dock-guide[data-at=top] {top:1px} .edge-dock-guide[data-at=bottom] {bottom:1px}
+.canvas-edge-dock[data-workspace=plan] .plan-view-toolbar {width:100%;border:0;min-width:max-content}
+.canvas-edge-dock[data-workspace=plan] .plan-document-actions {margin-inline-start:auto}
+.canvas-edge-dock .measured-drawing-launchers {display:flex;flex-wrap:nowrap; order:1;white-space:nowrap}
+.canvas-edge-dock .wall-draw-dock {border:0!important; padding:1px 3px; width:max-content; flex:none}
+.canvas-edge-dock .wall-draw-dock__controls,.canvas-edge-dock .wall-draw-dock__settings,.canvas-edge-dock .wall-draw-dock__actions {flex-wrap:nowrap;flex-basis:auto;overflow:visible}
+.canvas-edge-dock .wall-draw-dock__status {white-space:nowrap}
+.canvas-edge-dock .wall-draw-dock[data-compact=true] .wall-draw-dock__actions {flex-basis:auto}
+.canvas-edge-dock[data-workspace=plan]:has(:is(.wall-draw-dock,.measured-path-options,[data-testid=remove-hud])) .plan-view-toolbar {display:none}
+.designer-app:has(.canvas-edge-dock .wall-draw-dock) .plan-topbar .plan-build-tools[data-expanded=false] {display:none}
+.canvas-edge-dock .measured-path-options {grid-template-columns:auto auto;gap:2px 6px;padding:2px 4px;border:0;background:transparent}
+.canvas-edge-dock .measured-path-options__row {flex-wrap:nowrap}
+.canvas-edge-dock .measured-path-help {grid-column:2;grid-row:2;font-size:11px}
+.canvas-edge-dock .measured-path-help small {display:block;max-width:260px;white-space:normal}
+.canvas-edge-dock .measured-path-options p {grid-column:1;grid-row:2;max-width:220px}
+.designer-app .canvas-edge-dock[data-workspace=house] .house-scene-bar {width:100%;min-height:40px;padding:0 3px;flex-wrap:nowrap;gap:6px}
+.designer-app .canvas-edge-dock .house-scene-bar .house-scene-actions {flex-basis:auto;flex-wrap:nowrap;min-width:max-content;width:auto;padding:0;gap:4px!important}
+.designer-app .canvas-edge-dock .house-opening-options {min-width:max-content;flex-wrap:nowrap;padding:2px}
+.designer-app .canvas-edge-dock .house-opening-options>small {display:none}
+.designer-app .canvas-edge-dock .house-floor-picker {flex:none}
+@media(max-width:767px) {
+ .designer-app .canvas-edge-dock .house-quick-tools {margin:0}
+ .designer-app .house-workspace[data-build-open=true] .canvas-edge-dock .house-scene-actions {display:flex}
+ .designer-app .canvas-edge-dock .house-scene-actions button {flex:none}
+ .canvas-edge-dock .wall-draw-dock__status {min-height:15px}
+ .canvas-edge-dock .wall-draw-dock[data-compact=true] button {min-height:40px}
+}
+.world-walk .canvas-edge-dock {position:absolute;z-index:5;left:max(8px,env(safe-area-inset-left));width:max-content;max-width:calc(100% - 16px);padding:2px 3px;border:1px solid #a2b6aa;border-radius:14px;box-shadow:0 2px 10px #123c3022;}
+.world-walk .canvas-edge-dock[data-edge=top] {top:max(66px,calc(env(safe-area-inset-top) + 56px))}
+.world-walk .canvas-edge-dock[data-edge=bottom] {bottom:max(204px,calc(env(safe-area-inset-bottom) + 190px))}
+.world-walk .canvas-edge-dock .edge-dock-content {min-width:max-content}
+.world-walk .canvas-edge-dock .world-walk-toolbar {position:static;display:flex;flex-wrap:nowrap;gap:4px;align-items:center}
+.world-walk .canvas-edge-dock .world-walk-toolbar>button,.world-walk .canvas-edge-dock .world-level-picker select {min-height:42px;margin:0;padding:5px 9px;flex:none;white-space:nowrap;font-size:12px}
+.world-walk .canvas-edge-dock .world-level-picker {font-size:0}
+.world-walk .canvas-edge-dock .world-level-picker select {font-size:12px}
+.world-walk .canvas-edge-dock :is(.edge-dock-grip,.edge-dock-more) {min-width:32px;min-height:42px;padding:0}
+.world-walk:has(.canvas-edge-dock) :is(.world-walk-help,.boundary-panel,.live-build-panel) {
+ position:fixed;top:max(120px,calc(env(safe-area-inset-top) + 112px));bottom:auto;left:8px;right:auto;
+ max-height:min(45dvh,calc(100dvh - 322px));overflow:auto;overscroll-behavior:contain;touch-action:pan-y;
+}
+.world-walk:has(.canvas-edge-dock[data-edge=bottom]) :is(.world-walk-help,.boundary-panel,.live-build-panel) {top:max(66px,calc(env(safe-area-inset-top) + 56px));max-height:min(48dvh,calc(100dvh - 333px))}
+@media(max-height:480px) {
+ .world-walk:has(.canvas-edge-dock) :is(.world-walk-help,.boundary-panel,.live-build-panel) {max-height:40dvh;left:auto;right:8px}
+ .world-walk .canvas-edge-dock[data-edge=bottom] {bottom:8px;z-index:6}
+}
+
+
+.house-header .house-shortcuts {display:none}
+.designer-app .canvas-edge-dock[data-workspace=house] .house-scene-bar {width:auto;flex:1 0 auto}
+.canvas-edge-dock .world-walk-dock {position:static;display:flex;flex:none;flex-wrap:nowrap;max-width:none;gap:4px}
+.canvas-edge-dock .world-walk-dock :is(button,.world-person-token) {min-height:40px;min-width:40px;font-size:12px;white-space:nowrap}
+.world-placement-options.world-placement-sheet {position:fixed;right:8px;bottom:max(76px,env(safe-area-inset-bottom));z-index:40;box-shadow:0 4px 16px #203d3526}
+body:has(.canvas-edge-dock[data-workspace=house][data-edge=bottom]) .world-placement-sheet {bottom:max(134px,env(safe-area-inset-bottom))}
+@media(max-width:767px) {
+ .designer-app .house-workspace .house-header {display:grid;grid-template-columns:auto 1fr auto;height:auto;min-height:47px;padding:2px 6px;gap:3px;align-items:center}
+ .designer-app .house-workspace .house-header .house-view-switch {grid-column:1;grid-row:1;margin:0}
+ .designer-app .house-workspace .house-header .house-shortcuts {display:block;grid-column:2;grid-row:1;justify-self:end;min-height:40px;padding:0 8px;font-size:11px;border-radius:9px;background:var(--ui-surface,#e5eee8)}
+ .designer-app .house-workspace .house-header .house-project-actions {grid-column:3;grid-row:1;width:auto;margin:0;gap:3px}
+ .designer-app .house-workspace .house-header[data-shortcuts=false] .house-project-actions > :not(.house-project-hub,.locale-theme-controls,[aria-label="Project tools"]) {display:none}
+ .designer-app .house-workspace .house-header[data-shortcuts=true] .house-project-actions {grid-column:1/-1;grid-row:2;display:flex;flex-wrap:wrap;justify-content:flex-start}
+ .designer-app .house-workspace .house-header[data-shortcuts=true] .house-shortcuts {grid-column:3}
+ .canvas-edge-dock[data-workspace=plan][data-edge=bottom] {margin-bottom:12px}
+}
+
+.designer-app .canvas-edge-dock[data-workspace=house] .world-walk-dock {display:contents}
+.designer-app .canvas-edge-dock[data-workspace=house] .world-walk-launch {position:static;order:-1;min-height:40px;padding:4px 10px}
+.designer-app .canvas-edge-dock[data-workspace=house] .house-wall-build-strip,
+.designer-app .canvas-edge-dock[data-workspace=house] .garden-draw-instruction,
+.designer-app .canvas-edge-dock[data-workspace=house] .measured-path-options {order:-3}
+.designer-app .canvas-edge-dock[data-workspace=house] .measured-drawing-launchers {order:-2}
+.designer-app .canvas-edge-dock .house-wall-build-strip {padding:2px 4px;gap:5px;min-height:40px;border:0}
+.designer-app .canvas-edge-dock .house-wall-build-strip [role=status] {min-width:86px;max-width:125px;line-height:1.25}
+
+.designer-app .canvas-edge-dock[data-workspace=house] .house-scene-bar .house-scene-actions {
+  flex:0 0 auto;justify-content:flex-start;width:max-content;max-width:none;overflow:visible
+}
+.designer-app .canvas-edge-dock[data-workspace=house] .house-scene-actions button {
+  flex:0 0 auto;width:auto;min-width:44px;max-width:none
+}

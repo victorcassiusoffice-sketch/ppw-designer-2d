@@ -1,7 +1,8 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { useToolPanel } from '../hooks/useToolPanel';
+import { lazy, Suspense, useEffect } from 'react';
 const Panel = lazy(() => import('./SharedBuildPanel'));
 export function SharedBuildButton() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useToolPanel();
   useEffect(() => {
     try {
       if (sessionStorage.getItem('olb-live-build-v1'))
@@ -12,7 +13,7 @@ export function SharedBuildButton() {
   }, []);
   return (
     <>
-      <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)}>
         Shared build
       </button>
       {open && (

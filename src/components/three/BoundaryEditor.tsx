@@ -165,10 +165,12 @@ export default function BoundaryEditor({ view, onClose, initialId = '' }: Props)
     const el = latest.current.view.element();
     if (!el) return;
     let pointer: { id: number; x: number; y: number } | null = null;
-    const ui = (e: Event) =>
-      (e.target as Element)?.closest(
-        'button, input, select, label, [role="dialog"], .boundary-panel, .world-walk-toolbar, .world-walk-stick, .world-look-stick',
-      );
+    const ui = (e: Event) => {
+      const control = (e.target as Element)?.closest('button,input,select,label,[role="dialog"],.boundary-panel,.canvas-edge-dock,.world-walk-stick,.world-look-stick');
+      // In Walk the editing surface is itself a dialog; exclude its controls,
+      // not the entire 3D scene.
+      return control && control !== el && el.contains(control);
+    };
     const down = (e: PointerEvent) => {
       if (e.button !== 0 || !e.isPrimary || ui(e)) return;
       e.preventDefault();
@@ -204,12 +206,15 @@ export default function BoundaryEditor({ view, onClose, initialId = '' }: Props)
     el.addEventListener('pointermove', move, true);
     el.addEventListener('pointerup', up, true);
     el.addEventListener('pointercancel', cancel, true);
+    const finish = (event: Event) => { event.preventDefault(); latest.current.finish(); };
+    el.addEventListener('olb:finish-component-edit', finish);
     window.addEventListener('keydown', key, true);
     return () => {
       el.removeEventListener('pointerdown', down, true);
       el.removeEventListener('pointermove', move, true);
       el.removeEventListener('pointerup', up, true);
       el.removeEventListener('pointercancel', cancel, true);
+      el.removeEventListener('olb:finish-component-edit', finish);
       window.removeEventListener('keydown', key, true);
     };
   }, []);

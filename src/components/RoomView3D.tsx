@@ -2025,6 +2025,16 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     lighting={roomLighting} onLighting={setRoomLighting}
     onClose={onClose} onExpand={onExpand} />;
   const statusCaption = moveFeedback ?? flash ?? liveFloorCaption ?? hoverText ?? caption ?? defaultCaption;
+  const visitTools = backend === 'gl' && stageReady && <Suspense fallback={null}>
+        <WalkLauncher onWalkTool={action=>{
+            if(action==='foundation'){window.dispatchEvent(new Event('ppw:open-foundation'));return}
+            if(action==='electrical'||action==='plumbing'){window.dispatchEvent(new CustomEvent('ppw:open-services',{detail:{system:action==='plumbing'?'cold-water':'electrical'}}));return}
+            if(action==='remove'){if(!removeActive)toggleRemoving();return}
+            if(action==='select'||action==='wall'||action==='room'||action==='door'||action==='window'||action==='stair'){chooseBuildTool(action);return}
+            changeHouseMode(action);
+          }} sharedMount={sharedStageMount} setWalkView={setWalkView} viewportRef={containerRef} property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
+          sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
+      </Suspense>;
   const box = (
     <div
       ref={containerRef}
@@ -2080,16 +2090,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         ) : null}
       </div>
       {backend === 'gl' && !stageReady && <Loading3D />}
-      {backend === 'gl' && stageReady && <Suspense fallback={null}>
-        <WalkLauncher onWalkTool={action=>{
-            if(action==='foundation'){window.dispatchEvent(new Event('ppw:open-foundation'));return}
-            if(action==='electrical'||action==='plumbing'){window.dispatchEvent(new CustomEvent('ppw:open-services',{detail:{system:action==='plumbing'?'cold-water':'electrical'}}));return}
-            if(action==='remove'){if(!removeActive)toggleRemoving();return}
-            if(action==='select'||action==='wall'||action==='room'||action==='door'||action==='window'||action==='stair'){chooseBuildTool(action);return}
-            changeHouseMode(action);
-          }} sharedMount={sharedStageMount} setWalkView={setWalkView} viewportRef={containerRef} property={property} onOpen={cancelObjectTurn} stageRef={stageRef}
-          sceneForLevel={p => sceneFromProperty(p, null, SOLIDS_CAMERA)} />
-      </Suspense>}
+      {variant === 'card' && visitTools}
       {removeActive && <div className="remove-build-status" role="status" data-testid="remove-3d-hud" data-target-kind={removeHover?.kind??'none'}><span>{removeTargetMessage(removeHover)}</span><button type="button" onClick={finishRemoving}>Done</button></div>}
       {variant==='overlay' && <SurfaceActions host={containerRef} erase={removeActive} materials={kind=>changeHouseMode(kind==='wall'?'paint':'floor')}
         point={(x,y)=>{const rect=containerRef.current?.getBoundingClientRect();return rect?stageRef.current?.floorPoint(x-rect.left,y-rect.top)??null:null}}
@@ -2175,21 +2176,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     );
   }
 
-  return (
-    <div className={`designer-app fixed left-0 top-0 z-[34] flex flex-col ${className}`}
-      style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
-      data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
-      <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
-        onRemove={toggleRemoving} removeActive={removeActive}
-        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); }}
-        externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
-        drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
-        wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}
-        selection={selectionPanel && selectedProduct && selectedInstanceId ? { id: selectedInstanceId, productId: selectedProduct.id, name: selectedProduct.name, onDeselect: () => selectItem(null) } : undefined}
-        inspector={materialsOpen ? <MaterialsPanel /> : selectionPanel ?? (energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} onRequestPlacement={(intent) => { setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
-          : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
-            onSolarCatalog={() => { changeHouseMode('furnish'); window.dispatchEvent(new CustomEvent('ppw:open-catalog', { detail: { category: 'eco' } })); }}
-            gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>
+  const activeTools = <>
         {gardenPlacement && <p role="status" className="garden-draw-instruction">{gardenPlacement.mode === 'draw' ? 'Drag two corners on the ground to draw this surface.' : gardenPlacement.mode === 'resize' ? 'Drag two corners on the ground to resize this surface.' : 'Tap the ground to place this garden element.'} <button onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
         {constructionTool === 'room' && <div className="house-wall-build-strip"><span role="status">{roomPreview ? roomPreview.ok ? `${roomPreview.areaM2.toFixed(1)} m² · release to build` : roomPreview.message : 'Drag between opposite corners to build a room'}</span><button type="button" onClick={() => chooseBuildTool('select')}>Done</button></div>}
         {constructionTool === 'wall' && <div className="house-wall-build-strip" data-testid="house-wall-build-strip">
@@ -2204,6 +2191,22 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           {gardenOpen && <button type="button" onClick={() => beginMeasured('garden')}>Draw outdoor outline</button>}
         </div>}
         {measuredTool.target && <MeasuredPathOptions />}
+      </>;
+  return (
+    <div className={`designer-app fixed left-0 top-0 z-[34] flex flex-col ${className}`}
+      style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
+      data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
+      <HouseWorkspace activeTools={activeTools} visitTools={visitTools} mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
+        onRemove={toggleRemoving} removeActive={removeActive}
+        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); }}
+        externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
+        drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
+        wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}
+        selection={selectionPanel && selectedProduct && selectedInstanceId ? { id: selectedInstanceId, productId: selectedProduct.id, name: selectedProduct.name, onDeselect: () => selectItem(null) } : undefined}
+        inspector={materialsOpen ? <MaterialsPanel /> : selectionPanel ?? (energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} onRequestPlacement={(intent) => { setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
+          : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
+            onSolarCatalog={() => { changeHouseMode('furnish'); window.dispatchEvent(new CustomEvent('ppw:open-catalog', { detail: { category: 'eco' } })); }}
+            gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>
         {box}
         {viewControls}
         <p className="house-scene-caption" data-testid="wallpaint-3d-caption" data-active-feedback={!!(moveFeedback || flash || liveFloorCaption || hoverText || caption)} aria-live="polite">{statusCaption}</p>

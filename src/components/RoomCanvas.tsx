@@ -121,6 +121,7 @@ import { useAppPreferences } from '../i18n/AppPreferences';
 import { canvasThemeFor } from '../designer/canvasTheme';
 import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../store/buildSkinStore';
 import { useMeasuredPathToolStore, measuredToolPreview, type MeasuredPathTarget } from '../store/measuredPathToolStore';
+import { CanvasDock } from './CanvasDock';
 import { MeasuredPathOptions } from './MeasuredPathOptions';
 // Units brief (2026-08-28, D10) - retype the length of a wall that exists.
 import { resizeRoomEdge } from '../designer/edgeResize';
@@ -3368,6 +3369,7 @@ export function RoomCanvas({
   }
   return (
     <div className="relative flex h-full min-h-0 w-full min-w-0 flex-col" data-testid="plan-workspace">
+      <CanvasDock workspace="plan">
       {viewMode !== '3d' && !measuredTool.target && (drawMode || wallDrawEnabled || isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) || gardenPlacement) && <div className="measured-drawing-launchers">
         {(drawMode || wallDrawEnabled) && <><button type="button" onClick={() => beginMeasured('wall')}>Curved wall</button><button type="button" onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-wall-materials'))}>Wall material</button></>}
         {isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) && <button type="button" onClick={() => beginMeasured('roof')}>Draw roof outline</button>}
@@ -3637,6 +3639,7 @@ export function RoomCanvas({
         </div>
       )}
 
+      </CanvasDock>
     <div
       ref={containerRef}
       data-testid="plan-drawing-viewport"

@@ -1,3 +1,5 @@
+import { CanvasDock } from '../components/CanvasDock';
+import { dismissToolPanel, useToolPanel } from '../hooks/useToolPanel';
 import {WALK_BUILD_TOOLS,type WalkBuildTool,type LiveWalkView} from '../components/three/HouseStageSlot';
 import { lazy,Suspense,useLayoutEffect,useCallback, useEffect, useRef, useState } from 'react';
 import { SharedBuildButton } from '../sharedBuild/SharedBuildButton';
@@ -57,7 +59,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
   const host = useRef<HTMLElement>(null);
   const walkSlot=useRef<HTMLDivElement>(null);
   const [building,setBuilding]=useState(false);
-  const [earthwork,setEarthwork]=useState(false);
+  const [earthwork,setEarthwork]=useToolPanel();
   const stage = useRef<ThreeStageHandle>(null);
   const runtime = useRef<WalkRuntime | null>(null);
   const [choice, setChoice] = useState(savedCharacter);
@@ -72,7 +74,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
     : <span title={character.licence}>{character.label} · {tx('Generated character')}</span>;
   const [started, setStarted] = useState(!!initial);
   const [ready, setReady] = useState(false);
-  const [help, setHelp] = useState(false);
+  const [help, setHelp] = useToolPanel();
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState('Preparing your walk…');
@@ -95,7 +97,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
   prepare.current = prepareVisit;
   const lookSurface = useOwnedTouchSurface(), stickSurface = useOwnedTouchSurface();
   const doorTap = useRef(createTapActivator(() => { runtime.current?.interact(); })).current;
-  useWorkspaceFocus(host, () => { if (!runtime.current?.escape()) onClose(); }, { enabled:!building,onKeyDown: event => { if (!help) runtime.current?.keyDown(event); } });
+  useWorkspaceFocus(host, () => { if (!dismissToolPanel() && !runtime.current?.escape()) onClose(); }, { enabled:!building,onKeyDown: event => { if (!help) runtime.current?.keyDown(event); } });
   useEffect(() => {
     const resize = () => setSize({ width: innerWidth, height: innerHeight });
     window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize);
@@ -253,10 +255,10 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
           onPointerUp={e => { const p = lookPointer.current; lookPointer.current = null;
             if (p?.id === e.pointerId && !p.dragged) void runtime.current?.moveToScreen(e.clientX,e.clientY);
           }} onPointerCancel={() => { lookPointer.current = null; }} />
-        <div className="world-walk-toolbar">
+        <CanvasDock workspace="walk"><div className="world-walk-toolbar">
           {live&&<button type="button" onClick={buildFromHere}>Build from here</button>}
-          <button type="button" aria-expanded={earthwork} onClick={()=>{if(document.pointerLockElement)document.exitPointerLock?.();setEarthwork(v=>!v)}}>Dig / fill</button>
-          {earthwork&&<Suspense fallback={null}><EarthworkTool view={{element:()=>host.current,ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,project:p=>runtime.current?.drawingProjection(p)??null}} onClose={()=>setEarthwork(false)}/></Suspense>}
+          <button type="button" aria-expanded={earthwork} onClick={()=>{if(document.pointerLockElement)document.exitPointerLock?.();setEarthwork(!earthwork)}}>Dig / fill</button>
+
           <SharedBuildButton/>
           <BoundaryTools beforeOpen={()=>{if(document.pointerLockElement)document.exitPointerLock?.()}} view={{
             element:()=>host.current,
@@ -271,6 +273,8 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
           <button type="button" aria-pressed={running} onClick={() => { setRunning(!running); runtime.current?.setRunning(!running); }}>{running ? 'Running' : 'Walk / run'}</button>
           <button type="button" aria-expanded={help} onClick={() => { runtime.current?.clearInput(); setHelp(!help); }}>Controls</button>
         </div>
+        </CanvasDock>
+          {earthwork&&<Suspense fallback={null}><EarthworkTool view={{element:()=>host.current,ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,project:p=>runtime.current?.drawingProjection(p)??null}} onClose={()=>setEarthwork(false)}/></Suspense>}
         {(fallback || status.notice || !!visit?.invalidStairs) && <div className="world-walk-notice" role="status">
           {fallback ? <>{tx('No clear standing surface on this level.')} {topFloor && <button type="button" onClick={() => chooseLevel(topFloor.id)}>{tx('Go to top floor')}</button>}</>
             : tx(status.notice || 'A stair no longer fits its floors. It is unavailable in this visit.')}

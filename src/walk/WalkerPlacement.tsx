@@ -1,3 +1,5 @@
+import { createPortal } from 'react-dom';
+import { useToolPanel } from '../hooks/useToolPanel';
 import { useEffect, useRef, useState, type PointerEvent as ReactPointer, type RefObject } from 'react';
 import type { Property } from '../store/propertyStore';
 import type { ThreeStageHandle } from '../components/three/ThreeStage';
@@ -18,7 +20,7 @@ interface Props {
 export function WalkerPlacement({ property, levels, stageRef, viewportRef, prepare, onPlace }: Props) {
   const pref = useAppPreferences();
   const tx = walkWords(pref.locale, pref.tx);
-  const [armed, setArmed] = useState(false);
+  const [armed, setArmed] = useToolPanel();
   const [level, setLevel] = useState(activeLevelIdOf(property));
   const selected = levels.some(l => l.id === level) ? level : levels[0]?.id;
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -123,12 +125,12 @@ export function WalkerPlacement({ property, levels, stageRef, viewportRef, prepa
       <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
         <circle cx="12" cy="4" r="2.5"/><path d="M7 13l2-5h6l2 5M10 10v5l-2 7m6-12v5l2 7"/></svg>
     </button>
-    {armed && <div className="world-placement-options">
+    {armed && createPortal(<div className="world-placement-options world-placement-sheet">
       <label>{tx('Place a person')}<select value={selected} aria-label={tx('Placement level')} onChange={e => { sequence.current++; setLevel(e.target.value); setPreview(null); setInvalid(false); }}>
         {levels.map(l => <option key={l.id} value={l.id}>{tx(l.name)}</option>)}</select></label>
       <button type="button" onClick={cancel}>{tx('Cancel')}</button>
       <small role="status">{tx(invalid ? 'Choose clear ground on this level.' : 'Drag the person or tap a clear spot.')}</small>
-    </div>}
+    </div>, document.body)}
     {armed && preview && <span aria-hidden="true" className="world-placement-ring" data-valid={!!preview.hint}
       style={{ left: preview.x, top: preview.y }}>{preview.hint ? '✓' : '×'}</span>}
   </div>;
