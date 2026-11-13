@@ -83,7 +83,7 @@ export const useCheckoutStore = create<CheckoutState>()(
 
 /** Form validation helpers (exported for unit tests). */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PHONE_RE = /^[+]?[0-9 ()\-]{6,20}$/;
+const PHONE_RE = /^[+]?[0-9 ()-]{6,20}$/;
 
 export interface ValidationErrors {
   name?: string;

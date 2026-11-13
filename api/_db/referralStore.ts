@@ -131,7 +131,7 @@ export function drizzleReferralStore(db: Db = getDb()): ReferralStore {
  * the network.
  */
 export function createInMemoryReferralStore(seed: DesignerReferral[] = []): ReferralStore {
-  let rows: DesignerReferral[] = [...seed];
+  const rows: DesignerReferral[] = [...seed];
   let nextId = (seed.reduce((m, r) => Math.max(m, r.id), 0)) + 1;
   return {
     async insert(input) {

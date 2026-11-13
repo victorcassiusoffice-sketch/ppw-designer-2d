@@ -115,7 +115,7 @@ export function parsePlanLines(content: string): PlanLineEntry[] {
   const lines = content.split(/\r?\n/);
   // Strict pattern: opening `[ ]`/`[x]`/`[~]`/`[?]`/`[-]` (optional backtick) then a micro ID.
   // Supports `**M9.A.1**` (V4 plan) and bare `M9.A.1` (V3.1 plan).
-  const re = /^[\s>-]*[*-]?\s*`?\[([ x~?\-])\]`?\s*\*{0,2}([A-Z][A-Z0-9]*(?:\.[A-Z0-9]+)+)\*{0,2}/;
+  const re = /^[\s>-]*[*-]?\s*`?\[([ x~?-])\]`?\s*\*{0,2}([A-Z][A-Z0-9]*(?:\.[A-Z0-9]+)+)\*{0,2}/;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const m = re.exec(line);

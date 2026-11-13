@@ -26,6 +26,7 @@ export default function OlbHomePage() {
           <OlbLockup height={32} />
         </Link>
         <nav aria-label="One Live Build">
+          <a href="/pilots">Pilots</a>
           <Link to="/designer">Designer</Link>
           <Link to="/demo">Demo</Link>
           <Link to="/products">Shop</Link>

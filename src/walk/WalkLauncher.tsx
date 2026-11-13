@@ -100,6 +100,13 @@ export default function WalkLauncher({
     resume();window.addEventListener('olb:resume-walk',resume);
     return ()=>window.removeEventListener('olb:resume-walk',resume);
   },[property.id]);
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    if (location.pathname !== '/designer' || query.get('pilotPlan') !== property.id || query.get('pilotWalk') !== '1') return;
+    query.delete('pilotWalk');
+    history.replaceState(history.state, '', location.pathname + '?' + query.toString() + location.hash);
+    launchRef.current();
+  }, [property.id]);
   const close = () => {
     clearParkedWalker();
     setOpen(false);

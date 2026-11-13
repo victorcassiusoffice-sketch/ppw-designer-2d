@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useToolPanel } from '../hooks/useToolPanel';
-import { useEffect, useRef, useState, type PointerEvent as ReactPointer, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointer, type RefObject } from 'react';
 import type { Property } from '../store/propertyStore';
 import type { ThreeStageHandle } from '../components/three/ThreeStage';
 import type { prepareWalkVisit } from './visit';
@@ -53,11 +53,11 @@ export function WalkerPlacement({ property, levels, stageRef, viewportRef, prepa
     el.addEventListener('world-walk-project', project);
     return () => el.removeEventListener('world-walk-project', project);
   }, [stageRef, viewportRef]);
-  const cancel = () => {
+  const cancel = useCallback(() => {
     sequence.current++; gesture.current = null;
     const pending = resource.current; resource.current = null; void pending?.then(({ world }) => world.dispose(), () => {});
     setArmed(false); setInvalid(false); setPreview(null);
-  };
+  }, [setArmed]);
   callbacks.current.pick = async (x, y, drop) => {
     const id = ++sequence.current;
     const rect = viewportRef?.current?.getBoundingClientRect(), stage = stageRef.current;
@@ -110,7 +110,7 @@ export function WalkerPlacement({ property, levels, stageRef, viewportRef, prepa
       view.removeEventListener('pointerup', up, true); view.removeEventListener('pointercancel', abortContact, true);
       window.removeEventListener('keydown', esc, true);
     };
-  }, [armed, viewportRef]);
+  }, [armed, viewportRef, cancel]);
   const moved = (e: ReactPointer) => gesture.current?.id === e.pointerId &&
     Math.hypot(e.clientX - gesture.current.x, e.clientY - gesture.current.y) > 5;
   return <div className="world-walk-placement">

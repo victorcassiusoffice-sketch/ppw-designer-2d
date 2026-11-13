@@ -62,7 +62,7 @@ export default function AuditLogPage(): JSX.Element {
     void load();
   }, [load]);
 
-  const rows = data?.rows ?? [];
+  const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
   const uniqueActions = useMemo(() => {
     const s = new Set<string>();
     for (const r of rows) s.add(r.action);
