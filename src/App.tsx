@@ -119,6 +119,11 @@ import './styles/designerStudio.css';
 
 const WalkReturn = lazy(() => import('./walk/buildReturn').then(m => ({default:m.WalkReturn})));
 export default function App() {
+  useEffect(() => {
+    if(location.pathname !== '/designer') return;
+    const query = new URLSearchParams(location.search);
+    if(query.has('pilotPlan')) useDesignerUIStore.getState().setViewMode(query.get('view') === '3d' ? '3d' : 'plan');
+  }, []);
   const [walkParked,setWalkParked]=useState(()=>typeof document!=='undefined'&&document.documentElement.hasAttribute('data-walk-parked'));
   useEffect(()=>{const update=()=>setWalkParked(document.documentElement.hasAttribute('data-walk-parked'));window.addEventListener('olb:walk-parked',update);return ()=>window.removeEventListener('olb:walk-parked',update)},[]);
   useEffect(() => {

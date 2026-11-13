@@ -1,0 +1,408 @@
+.pilot {
+  --paper: var(--ui-surface, #faf9f3);
+  --ink: var(--ui-ink, #243d39);
+  --rule: var(--ui-line, #b7c8bf);
+  --green: var(--ui-accent, #42624d);
+  box-sizing: border-box;
+  max-width: 100%;
+  width: 100%;
+  height: 100dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: var(--ink);
+  background: var(--ui-bg, #f2f3eb);
+  font:
+    16px/1.46 system-ui,
+    sans-serif;
+  padding: 0 max(1rem, calc((100% - 1100px) / 2)) 2rem;
+  scroll-padding-top: 80px;
+  color-scheme: inherit;
+}
+.pilot * {
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pilot a {
+  color: inherit;
+}
+.pilot-header,
+.pilot footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.8rem 0;
+}
+.pilot-header span {
+  margin-left: auto;
+}
+.pilot-header img,
+.pilot footer img {
+  object-fit: contain;
+}
+.pilot h1,
+.pilot h2,
+.pilot h3,
+.pilot h4,
+.pilot p {
+  margin: 0.4em 0;
+}
+.pilot small,
+.pilot-header span {
+  font-size: 0.83rem;
+}
+.pilot-title {
+  padding: clamp(1rem, 3vw, 2.4rem) 0 0.8rem;
+}
+.pilot-title h1 {
+  font-size: clamp(1.85rem, 5vw, 3.65rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+.pilot h2 {
+  font-size: clamp(1.4rem, 3vw, 2.1rem);
+}
+.pilot-section {
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.pilot nav {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.35rem 0;
+  background: var(--ui-bg, #f2f3eb);
+  border-bottom: 1px solid var(--rule);
+}
+.pilot button,
+.pilot input,
+.pilot select,
+.pilot textarea,
+.pilot summary,
+.pilot nav a,
+.pilot-actions a,
+.pilot-header a {
+  font: inherit;
+  min-height: 48px;
+  max-width: 100%;
+}
+.pilot :is(button, select, input, textarea) {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0.55rem 0.7rem;
+}
+.pilot button,
+.pilot summary,
+.pilot a {
+  cursor: pointer;
+}
+.pilot button:hover,
+.pilot nav a:hover,
+.pilot a:focus-visible {
+  outline: 2px solid var(--green);
+}
+.pilot button[aria-pressed='true'],
+.pilot nav a[aria-current] {
+  background: var(--green);
+  color: var(--ui-on-accent, white);
+}
+.pilot nav a,
+.pilot-actions a,
+.pilot-header a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  text-decoration: none;
+  border-radius: 8px;
+}
+.pilot summary {
+  padding: 0.7rem 0;
+  font-weight: 650;
+}
+.pilot details {
+  margin: 0.7rem 0;
+}
+.pilot textarea {
+  min-height: 5rem;
+}
+.pilot label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+.pilot-form,
+.pilot-timeline li {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  gap: 0.7rem;
+  align-items: end;
+  margin: 0.5rem 0 1rem;
+}
+.pilot-actions,
+.pilot-map-tools,
+.pilot-legend,
+.pilot-map-index {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pilot-actions a {
+  border: 1px solid var(--rule);
+}
+.pilot-atlas {
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--paper);
+  overflow: hidden;
+}
+.pilot-atlas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.pilot-atlas g[role='button'] {
+  cursor: pointer;
+}
+.pilot-atlas g:focus-visible circle {
+  stroke: #171d23;
+  stroke-width: 4;
+}
+.pilot-map-tools,
+.pilot-map-index,
+.pilot-legend {
+  padding: 0.55rem 0.9rem;
+}
+.pilot-map-tools button {
+  min-width: 48px;
+}
+.pilot-legend span {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+.pilot-legend i {
+  border-radius: 50%;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+.pilot-map-index button {
+  border: 0;
+  text-decoration: underline;
+}
+.pilot-cards,
+.pilot-cameras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15.5rem, 100%), 1fr));
+  gap: 0.9rem;
+}
+.pilot article,
+.pilot-list-card,
+.pilot-timeline li,
+.pilot-sheet {
+  display: block;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 1rem;
+}
+.pilot-list-card {
+  text-decoration: none;
+}
+.pilot-site.picked {
+  outline: 3px solid var(--green);
+}
+.pilot article img,
+.pilot-placeholder,
+.pilot-panorama,
+.pilot iframe,
+.pilot-poster {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 0;
+}
+.pilot-placeholder,
+.pilot-poster {
+  display: grid;
+  place-items: center;
+  background: #d6e8dc;
+  color: #334e43;
+}
+.pilot-panorama {
+  touch-action: none;
+  overflow: hidden;
+}
+.pilot-panorama canvas {
+  width: 100%;
+  height: 100%;
+}
+.pilot article output {
+  display: block;
+  padding: 0.5rem;
+}
+.pilot-timeline {
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: 0.6rem;
+  list-style: none;
+}
+.pilot-timeline li {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+}
+.pilot-bars > div,
+.pilot-log > div {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 0;
+}
+.pilot-bars meter {
+  flex: 1;
+  accent-color: var(--green);
+}
+.pilot-log > div > * {
+  flex: 1 1 7rem;
+}
+.pilot-section article + article {
+  margin-top: 0.5rem;
+}
+.pilot-cards article + article,
+.pilot-cameras article + article {
+  margin: 0;
+}
+.pilot footer {
+  justify-content: space-between;
+}
+.pilot-cameras iframe {
+  margin: 0.5rem 0;
+}
+.pilot :focus-visible {
+  outline: 3px solid var(--ui-focus, var(--green));
+  outline-offset: 2px;
+}
+@media (max-width: 650px) {
+  .pilot {
+    padding-inline: 0.65rem;
+    scroll-padding-top: 0;
+  }
+  .pilot nav {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .pilot nav a {
+    justify-content: center;
+    border: 1px solid var(--rule);
+  }
+  .pilot-header {
+    gap: 0.3rem;
+  }
+  .pilot-header span {
+    margin-left: 0;
+  }
+  .pilot-map-index {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .pilot article {
+    padding: 0.7rem;
+  }
+  .pilot-title h1 {
+    font-size: 2.1rem;
+  }
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  body:has(.pilot),
+  html:has(.pilot),
+  #root:has(.pilot) {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .pilot {
+    height: auto;
+    overflow: visible;
+    background: white;
+    color: black;
+    padding: 0;
+  }
+  .pilot > *:not(.s-sheet),
+  .pilot .s-sheet > h2,
+  .pilot-sheet button,
+  .pilot .pilot-legend {
+    display: none !important;
+  }
+  .pilot .s-sheet,
+  .pilot .pilot-sheet {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: white;
+    color: black;
+  }
+  .pilot-sheet {
+    font-size: 10pt;
+  }
+  .pilot-sheet h2,
+  .pilot-sheet h3 {
+    margin: 3mm 0 1mm;
+  }
+  .pilot-sheet p {
+    margin: 1mm 0;
+  }
+  .pilot-sheet .pilot-atlas {
+    max-width: 135mm;
+  }
+  .pilot-sheet svg {
+    max-height: 65mm;
+  }
+  .pilot-sheet p {
+    break-inside: avoid;
+  }
+}
+
+.pilot .pilot-more {
+  display: none;
+}
+@media (max-width: 650px) {
+  .pilot {
+    scroll-padding-top: 62px;
+  }
+  .pilot nav {
+    position: sticky;
+    top: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.35fr;
+  }
+  .pilot nav:not([data-expanded='true']) a:nth-of-type(n + 3) {
+    display: none;
+  }
+  .pilot nav .pilot-more {
+    display: block;
+  }
+  .pilot nav[data-expanded='true'] .pilot-more {
+    grid-column: 1/-1;
+  }
+  .pilot nav a {
+    padding: 0.35rem;
+  }
+}

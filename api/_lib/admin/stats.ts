@@ -130,7 +130,7 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
   );
 
   // Revenue from captured orders only.
-  let revenue = { totalMinor: 0, byCurrency: {} as Record<string, number> };
+  const revenue = { totalMinor: 0, byCurrency: {} as Record<string, number> };
   try {
     const rows = (await db.execute(
       sql`SELECT currency, COALESCE(SUM(total_minor),0)::int AS total FROM orders WHERE payment_status = 'captured' GROUP BY currency`,

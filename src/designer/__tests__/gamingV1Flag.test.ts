@@ -9,7 +9,7 @@ import { isGamingV1Active, GAMING_V1_QUERY_KEY, GAMING_V1_QUERY_VALUE } from '..
 
 describe('gamingV1Flag — V4 default-ON', () => {
   beforeEach(() => {
-    try { if (typeof localStorage !== 'undefined') localStorage.clear(); } catch {}
+    try { if (typeof localStorage !== 'undefined') localStorage.clear(); } catch { /* Storage may be disabled in this test environment. */ }
   });
 
   it('flag is ON by default (V4 Vic action 2026-05-18)', () => {

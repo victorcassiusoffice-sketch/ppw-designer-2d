@@ -383,7 +383,11 @@ export interface Property {
   wallPaintPrimer?: boolean;
 }
 
-const PROPERTY_KEY = 'ppw_property_v2';
+const pageLocation = (globalThis as {location?: {pathname:string; search:string}}).location;
+const pilotPlanKey = pageLocation?.pathname === '/designer'
+  ? new URLSearchParams(pageLocation.search).get('pilotPlan') : null;
+const PROPERTY_KEY = pilotPlanKey && /^[a-z0-9][a-z0-9-]{0,79}$/.test(pilotPlanKey)
+  ? 'ppw-pilot-plan-' + pilotPlanKey : 'ppw_property_v2';
 const LEGACY_KEY = 'ppw_design_v1';
 
 const DEFAULT_ROOM_DIMS: RoomDims = { lengthM: 5, widthM: 4 };
@@ -801,7 +805,7 @@ function findRoomByInstanceId(property: Property, instanceId: string): Room | un
 export const usePropertyStore = create<PropertyState>()(
   persist(
     (set, get) => ({
-      property: tryHydrateFromLegacy() ?? makeDefaultProperty(),
+      property: (PROPERTY_KEY === 'ppw_property_v2' ? tryHydrateFromLegacy() : null) ?? makeDefaultProperty(),
       selectedInstanceId: null,
       showGrid: true,
       pxPerMetre: 100,

@@ -20,7 +20,7 @@ export default function TradeProgressOverlay(frame:OverlayFrame) {
   const rows=useLinkStore(s=>s.packages),loadError=useLinkStore(s=>s.loadError);
   const flow=useTradeFlow(), [look,setLook]=useState(false),[showKey,setKey]=useState(false);
   const [selection,setSelection]=useState<{id:string;ref:string}|null>(null),[message,setMessage]=useState('');
-  const [cameraTick,refresh]=useState(0);
+  const [,refresh]=useState(0);
   const pointer=useRef<{id:number;x:number;y:number}|null>(null),panel=useRef<HTMLDialogElement>(null);
   const lastFocus=useRef<HTMLElement|null>(null);
   useEffect(()=>{void useLinkStore.getState().hydrate()},[]);
@@ -35,7 +35,7 @@ export default function TradeProgressOverlay(frame:OverlayFrame) {
   const visibleLevels=useMemo(()=>new Set(solids?
     [frame.levelId,...solids.floors.map(f=>f.levelId??'ground'),...solids.walls.map(f=>f.levelId??'ground'),...solids.items.map(f=>f.levelId??'ground')]:[frame.levelId]),[frame.levelId,solids]);
   const items=useMemo(()=>data.items.filter(i=>flow.role==='owner'||flow.role===i.trade),[data.items,flow.role]);
-  const drawing=useMemo(()=>{
+  const drawing=(()=>{
     if(!data.g)return [];
     const project=overlayProjection(frame,data.g,property.foundation);
     return items.flatMap(item=>{
@@ -43,7 +43,7 @@ export default function TradeProgressOverlay(frame:OverlayFrame) {
       return anchors.length?[{item,anchors}]:[];
     });
     // The frame is intentionally sampled after the Three camera commit.
-  },[frame,data.g,items,visibleLevels,property.foundation,cameraTick]);
+  })();
   const selected=items.find(i=>i.id===selection?.id);
   const related=selection?items.filter(i=>i.id!==selection.id&&i.anchors.some(pin=>pin.planRef===selection.ref)):[];
   const modal=showKey||!!selected;

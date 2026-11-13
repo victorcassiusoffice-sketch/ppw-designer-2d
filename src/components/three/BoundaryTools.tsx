@@ -48,7 +48,7 @@ export function BoundaryTools({
       active = false;
       remove?.();
     };
-  }, [hasComponents]);
+  }, [hasComponents, setOpen]);
   return (
     <>
       <button
