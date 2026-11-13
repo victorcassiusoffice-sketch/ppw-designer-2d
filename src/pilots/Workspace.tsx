@@ -21,6 +21,8 @@ import { Field, Picture } from './ui';
 import { formValues, str } from './fields';
 import { ensurePlan, planLink } from './plans';
 import './pilot.css';
+import { useRemote, isShared, enterShared, permissions } from './remote';
+import { SharedList, Invites } from './SharedControls';
 const sections = [
   'Map',
   'Sites',
@@ -67,18 +69,24 @@ function SiteCard({ p, s, selected }: { p: Pilot; s: Site; selected: boolean }) 
       ) : (
         <>
           <p>No build drawn yet</p>
-          <button
-            onClick={() => {
-              const plan = uid();
-              ensurePlan(s, plan);
-              update(p.slug, (q) => {
-                q.sites.find((x) => x.id === s.id)!.plan = plan;
-              });
-              location.assign(planLink(plan, 'draw'));
-            }}
-          >
-            Draw it
-          </button>
+          {permissions(p).owner && (
+            <button
+              onClick={async () => {
+                const plan = uid();
+                ensurePlan(s, plan);
+                await update(p.slug, (q) => {
+                  q.sites.find((x) => x.id === s.id)!.plan = plan;
+                });
+                if (
+                  !isShared(p.slug) ||
+                  useRemote.getState().doc?.pilot.sites.find((x) => x.id === s.id)?.plan === plan
+                )
+                  location.assign(planLink(plan, 'draw'));
+              }}
+            >
+              Draw it
+            </button>
+          )}
         </>
       )}
     </article>
@@ -90,8 +98,9 @@ function SiteForm({ p }: { p: Pilot }) {
       <summary>Add site</summary>
       <form
         className="pilot-form"
-        onSubmit={(e) => {
-          const f = formValues(e);
+        onSubmit={async (e) => {
+          const form = e.currentTarget,
+            f = formValues(e);
           const site = siteSchema.parse({
             id: uid(),
             name: str(f, 'name'),
@@ -102,8 +111,8 @@ function SiteForm({ p }: { p: Pilot }) {
             state: 'concept',
             area: str(f, 'area') ? Number(f.get('area')) : undefined,
           });
-          update(p.slug, (q) => q.sites.push(site));
-          e.currentTarget.reset();
+          if (!(await update(p.slug, (q) => q.sites.push(site)))) return;
+          form.reset();
           requestAnimationFrame(() => scrollToId('site-' + site.id));
         }}
       >
@@ -137,7 +146,7 @@ function SiteForm({ p }: { p: Pilot }) {
 function Sheet({ p }: { p: Pilot }) {
   return (
     <div className="pilot-sheet">
-      <small>Example data · Pilot sheet</small>
+      <small>{isShared(p.slug) ? 'Member record' : 'On this device'} · Pilot sheet</small>
       <h2>{p.name}</h2>
       <p>
         {p.lane} · {p.state}
@@ -175,7 +184,15 @@ export default function Workspace() {
     error = usePilots((s) => s.error),
     navigate = useNavigate(),
     { locale } = useAppPreferences();
-  const p = pilots.find((x) => x.slug === slug);
+  const memberIndex = slug === 'shared',
+    shared = isShared(slug),
+    remote = useRemote(),
+    doc = remote.slug === slug ? remote.doc : undefined;
+  useEffect(() => {
+    if (slug && isShared(slug)) return enterShared(slug);
+  }, [slug]);
+  const p = shared ? doc?.pilot : pilots.find((x) => x.slug === slug);
+  const owner = !shared || doc?.owner === true;
   const [selected, setSelected] = useState(''),
     [section, setSection] = useState('Map'),
     [more, setMore] = useState(false),
@@ -216,10 +233,29 @@ export default function Workspace() {
         <a href="/home">
           <OlbLockup />
         </a>
-        <Link to="/pilots">Pilots</Link>
-        <span>Example data · On this device only</span>
+        <Link to={shared || memberIndex ? '/pilots/shared' : '/pilots'}>Pilots</Link>
+        <span>
+          {shared || memberIndex
+            ? 'Private pilot · members only'
+            : 'On this device only' + (!slug || slug === exampleSlug ? ' · Example data' : '')}
+        </span>
       </header>
-      {error ? (
+      {shared && p && remote.message && (
+        <p className="pilot-save-status" role="status">
+          {remote.message}
+        </p>
+      )}
+      {memberIndex ? (
+        <SharedList memberOnly />
+      ) : shared && !p ? (
+        <p>
+          {remote.denied
+            ? 'Ask the owner for your link.'
+            : remote.offline
+              ? 'Shared record unavailable. Try again.'
+              : 'Opening private pilot…'}
+        </p>
+      ) : !shared && error ? (
         <p role="alert">{error}</p>
       ) : !slug ? (
         <>
@@ -243,6 +279,8 @@ export default function Workspace() {
               </form>
             </details>
           </div>
+          <SharedList />
+          <h2>On this device</h2>
           <div className="pilot-cards">
             {pilots.map((q) => (
               <Link className="pilot-list-card" to={'/pilots/' + q.slug} key={q.slug}>
@@ -306,7 +344,7 @@ export default function Workspace() {
                       <SiteCard key={s.id} s={s} p={p} selected={selected === s.id} />
                     ))}
                   </div>
-                  <SiteForm p={p} />
+                  {owner && <SiteForm p={p} />}
                 </>
               ) : name === 'Wall' ? (
                 <Wall p={p} />
@@ -321,7 +359,10 @@ export default function Workspace() {
               ) : name === 'Record' ? (
                 <Record p={p} />
               ) : name === 'Team' ? (
-                <Team p={p} />
+                <>
+                  <Team p={p} />
+                  {shared && owner && <Invites slug={p.slug} />}
+                </>
               ) : name === 'Notes' ? (
                 <Notes p={p} />
               ) : name === 'Papers' ? (
@@ -331,45 +372,69 @@ export default function Workspace() {
               )}
             </section>
           ))}
-          <details>
-            <summary>Pilot settings</summary>
-            <label>
-              Pilot state
-              <select
-                value={p.state}
-                onChange={(e) =>
-                  update(p.slug, (q) => {
-                    q.state = states[e.target.selectedIndex];
-                  })
-                }
-              >
-                {states.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </label>
-            {p.slug === exampleSlug && (
-              <>
-                <button onClick={() => setConfirm(true)}>Reset example</button>
-                {confirm && (
-                  <div>
-                    <p>Replace this example’s edits with the original record?</p>
-                    <button
-                      onClick={async () => {
-                        await resetExample();
-                        setConfirm(false);
-                        setStatus('Example restored.');
-                        location.reload();
-                      }}
-                    >
-                      Restore example
-                    </button>
-                    <button onClick={() => setConfirm(false)}>Keep edits</button>
-                  </div>
-                )}
-              </>
-            )}
-          </details>
+          {owner && (
+            <details>
+              <summary>Pilot settings</summary>
+              {shared && (
+                <form
+                  className="pilot-form"
+                  onSubmit={(e) => {
+                    const f = formValues(e);
+                    update(p.slug, (q) => {
+                      q.name = str(f, 'name');
+                      q.summary = str(f, 'summary');
+                    });
+                  }}
+                >
+                  <Field name="name" label="Pilot name" value={p.name} />
+                  <Field
+                    name="summary"
+                    label="Summary"
+                    value={p.summary}
+                    maxLength={500}
+                    required={false}
+                  />
+                  <button>Save pilot details</button>
+                </form>
+              )}
+              <label>
+                Pilot state
+                <select
+                  value={p.state}
+                  onChange={(e) =>
+                    update(p.slug, (q) => {
+                      q.state = states[e.target.selectedIndex];
+                    })
+                  }
+                >
+                  {states.map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
+              {p.slug === exampleSlug && (
+                <>
+                  <button onClick={() => setConfirm(true)}>Reset example</button>
+                  {confirm && (
+                    <div>
+                      <p>Replace this example’s edits with the original record?</p>
+                      <button
+                        onClick={async () => {
+                          await resetExample();
+                          setConfirm(false);
+                          setStatus('Example restored.');
+                          location.reload();
+                        }}
+                      >
+                        Restore example
+                      </button>
+                      <button onClick={() => setConfirm(false)}>Keep edits</button>
+                    </div>
+                  )}
+                </>
+              )}
+            </details>
+          )}
           <p>Photos, readings and notes are shared with this pilot’s members only.</p>
         </>
       )}
