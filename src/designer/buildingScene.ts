@@ -33,6 +33,12 @@ export function buildingSolids(
     activeRoof: entries.some((entry) => entry.level.id === active && isRoofLevel(entry.level)),
     floors: [], walls: [], items: [], stairs: [], roofs: [],
     garden: view === 'building' || active === GROUND_LEVEL_ID ? (property.garden && property.eco?.waterStudy?.pavingId ? { ...property.garden, surfaces: property.garden.surfaces.map(surface => surface.id === property.eco?.waterStudy?.pavingId ? { ...surface, pilotPermeable: true } : surface) } : property.garden) : undefined,
+    pilotItems: (['wind','kinetic'] as const).flatMap(kind=>{
+      const study=property.eco?.waterStudy;
+      if(!study?.[kind])return [];
+      const point=study[kind==='wind'?'windPoint':'kineticPoint']??{x:kind==='wind'?2:0,y:0};
+      return [{kind,...point}];
+    }),
     gardenSite: property.site ?? undefined,
     gardenVisible: view === 'building' || active === GROUND_LEVEL_ID,
     gardenObstacles: property.rooms.filter((room) =>

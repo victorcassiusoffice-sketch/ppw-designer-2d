@@ -63,11 +63,13 @@ export default function SiteMap({
   points,
   closed,
   center,
+  programmePins,
   onChange,
 }: {
   points: LonLat[];
   closed: boolean;
   center: LonLat;
+  programmePins?:readonly {id:string;lon:number;lat:number;name:string}[];
   onChange: (p: LonLat[]) => void;
 }) {
   const host = useRef<HTMLDivElement>(null),
@@ -182,6 +184,17 @@ export default function SiteMap({
       return marker;
     });
   }, [points, closed, ready]);
+  useEffect(()=>{
+    const instance=map.current;
+    if(!instance||!ready||!programmePins?.length)return;
+    // DOM markers only: private records never enter a tile URL or remote data source.
+    const pins=programmePins.map((p,i)=>{
+      const el=document.createElement('span');el.textContent=String(i+1);el.title=p.name;
+      el.setAttribute('aria-label',p.name);el.className='site-programme-pin';
+      return new Marker({element:el}).setLngLat([p.lon,p.lat]).addTo(instance);
+    });
+    return ()=>pins.forEach(pin=>pin.remove());
+  },[programmePins,ready]);
   return (
     <div className="site-map-shell">
       <div

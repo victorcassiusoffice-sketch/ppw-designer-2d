@@ -1,3 +1,7 @@
+import { places } from '../eco/places';
+import { defaults as ecoDefaults } from '../eco/water';
+import { emptyEco } from '../designer/eco';
+import { usePins } from '../eco/programme';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
 import { normaliseMaterialsSettings } from '../designer/materials';
@@ -43,6 +47,8 @@ export default function SiteWorkspace({
   const property = usePropertyStore((s) => s.property),
     setSite = usePropertyStore((s) => s.setSite),
     host = useRef<HTMLDivElement>(null);
+  const isPrivateEco = !demo && /^\/designer\/?$/.test(location.pathname);
+  const programmePins=usePins(isPrivateEco ? property.id : '');
   useWorkspaceFocus(host, onClose, { fallbackFocusSelector: '[aria-label="Site from the map"]' });
   const initial = useRef(demo ? sampleSite() : validateWorld(property.site?.world));
   const [site, setDraft] = useState<GeoSite | undefined>(initial.current),
@@ -497,6 +503,13 @@ export default function SiteWorkspace({
                   </>
                 ) : (
                   <>
+                    {isPrivateEco && <label>Jump to a district or Rodrigues<select value={property.eco?.waterStudy?.place??''} onChange={event=>{
+                      const place=places.find(p=>p.name===event.target.value);if(!place)return;
+                      setCenter([place.lon,place.lat]);setOriginText([place.lon,place.lat].join(', '));
+                      const eco=usePropertyStore.getState().property.eco??emptyEco();
+                      usePropertyStore.getState().setEco({...eco,waterStudy:{...eco.waterStudy??ecoDefaults,place:place.name,region:place.region}});
+                      setMessage('Map centred on '+place.name+'. Eco rainfall and solar defaults updated. Existing boundaries are unchanged.');
+                    }}><option value="">Choose a place</option>{places.map(p=><option key={p.name}>{p.name}</option>)}</select></label>}
                     <form
                       className="site-search"
                       onSubmit={(e) => {
@@ -538,6 +551,7 @@ export default function SiteWorkspace({
                     )}
                     <Suspense fallback={<p>Loading the map…</p>}>
                       <SiteMap
+                        programmePins={programmePins}
                         points={points}
                         closed={closed}
                         center={center}
