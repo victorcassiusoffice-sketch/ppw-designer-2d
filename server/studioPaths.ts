@@ -16,6 +16,9 @@ export function opensWithoutStudioCode(pathname: string): boolean {
   // the open pages (/demo, /embed) draw them before anyone has entered the code.
   if (pathname.startsWith('/brand/')) return true;
   if (pathname.startsWith('/fonts/')) return true;
+  // Only the empty member shell passes the door. It requests its record with a pilot-bound cookie.
+  if(pathname==='/pilots/shared')return true;
+  if (/^\/pilots\/shared-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/?$/.test(pathname)) return true;
   if (pathname === '/demo' || pathname.startsWith('/demo/')) return true;
   if (pathname === '/embed' || pathname.startsWith('/embed/')) return true;
   if (pathname.startsWith('/pitch/')) return true;

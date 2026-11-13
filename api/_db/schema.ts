@@ -26,6 +26,7 @@
 
 import {
   pgTable,
+  char,
   serial,
   text,
   varchar,
@@ -785,3 +786,22 @@ export const olbSharedSpecRevisions = pgTable('olb_shared_spec_revisions', {
   version: primaryKey({ columns: [table.projectId, table.revision] }),
   retry: uniqueIndex('olb_shared_spec_revisions_project_id_request_id_key').on(table.projectId, table.requestId),
 }));
+
+// Private pilot records. Production migration is deliberately separate from deployment.
+const pilotTime = (name:string)=>timestamp(name,{withTimezone:true});
+export const pilots=pgTable('pilots',{
+ id:uuid('id').primaryKey(),slug:varchar('slug',{length:80}).notNull().unique(),ownerId:varchar('owner_id',{length:80}).notNull(),
+ name:varchar('name',{length:160}).notNull(),lane:varchar('lane',{length:160}).notNull(),state:varchar('state',{length:24}).notNull(),
+ summary:varchar('summary',{length:500}).notNull().default(''),publicSummary:boolean('public_summary').notNull().default(false),revision:integer('revision').notNull().default(1),
+ created:pilotTime('created').notNull().defaultNow(),updated:pilotTime('updated').notNull().defaultNow()
+},t=>({owner:index('pilots_owner').on(t.ownerId)}));
+export const pilotMembers=pgTable('pilot_members',{
+ pilotId:uuid('pilot_id').notNull().references(()=>pilots.id),id:varchar('id',{length:80}).notNull(),role:varchar('role',{length:32}).notNull(),
+ firstName:varchar('first_name',{length:160}).notNull(),organisation:varchar('organisation',{length:160}).notNull(),state:varchar('state',{length:12}).notNull(),
+ inviteHash:char('invite_hash',{length:64}),inviteExpires:pilotTime('invite_expires'),cookieKeyHash:char('cookie_key_hash',{length:64}),cookieExpires:pilotTime('cookie_expires'),
+ created:pilotTime('created').notNull().defaultNow(),lastSeen:pilotTime('last_seen')
+},t=>({key:primaryKey({columns:[t.pilotId,t.id]}),cookie:index('pilot_members_cookie').on(t.cookieKeyHash).where(sql`${t.cookieKeyHash} IS NOT NULL`)}));
+export const pilotItems=pgTable('pilot_items',{
+ pilotId:uuid('pilot_id').notNull().references(()=>pilots.id),id:varchar('id',{length:80}).notNull(),kind:varchar('kind',{length:16}).notNull(),
+ payload:jsonb('payload').notNull(),createdBy:varchar('created_by',{length:80}).notNull(),created:pilotTime('created').notNull().defaultNow(),updated:pilotTime('updated').notNull().defaultNow(),hidden:boolean('hidden').notNull().default(false)
+},t=>({key:primaryKey({columns:[t.pilotId,t.id]}),kind:index('pilot_items_by_kind').on(t.pilotId,t.kind)}));

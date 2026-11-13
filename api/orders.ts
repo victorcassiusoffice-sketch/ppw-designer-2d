@@ -1518,6 +1518,12 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
     return;
   }
 
+  if (resource === 'pilots') {
+    const { handlePilots } = await import('./_lib/pilots.js');
+    await handlePilots(segments, req, res, () => readJsonBody(req));
+    return;
+  }
+
   if (resource === 'shared-projects') {
     await handleSharedSpecs(segments, req, res, () => readJsonBody(req));
     return;

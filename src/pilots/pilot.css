@@ -406,3 +406,6 @@
     padding: 0.35rem;
   }
 }
+
+.pilot-save-status { position:fixed; z-index:3; bottom:0.4rem; left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100% - 2rem); padding:.45rem .8rem; background:var(--paper); color:var(--ink); border:1px solid var(--rule); border-radius:8px; pointer-events:none;}
+@media print { .pilot-save-status {display:none} }
