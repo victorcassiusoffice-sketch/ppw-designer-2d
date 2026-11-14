@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { exampleSlug, pilotSchema, type Pilot, type Photo } from './contract';
 import { samplePilot } from './example';
 import { bytes, writeBytes, sampleImage } from './photos';
+import { isShared, editShared, uploadShared } from './remote';
 const key = 'olb-pilots-v1',
   saved = z.array(pilotSchema).max(100);
 const initial = () => [samplePilot()];
@@ -40,11 +41,13 @@ function save(next: Pilot[]) {
   usePilots.setState({ pilots: data, error: '' });
 }
 export function update(slug: string, change: (p: Pilot) => void) {
+  if (isShared(slug)) return editShared(slug, change);
   const next = read(),
     p = next.find((p) => p.slug === slug);
   if (!p) throw Error('Pilot no longer exists.');
   change(p);
   save(next);
+  return true;
 }
 export function createPilot(p: Pilot) {
   const next = read();
@@ -60,6 +63,14 @@ export async function resetExample() {
 }
 const pending = new Map<string, Promise<Blob>>();
 export async function photoBytes(photo: Photo, p: Pilot) {
+  if (isShared(p.slug)) {
+    const res = await fetch('/api/pilots/' + p.slug + '/photos/' + photo.id, {
+      credentials: 'same-origin',
+      cache: 'no-store',
+    });
+    if (!res.ok) throw Error('Photo unavailable.');
+    return res.blob();
+  }
   const b = await bytes(photo.id);
   if (b) return b;
   if (p.slug !== exampleSlug || !/^sample-photo-[0-4]$/.test(photo.id))
@@ -79,6 +90,7 @@ export async function photoBytes(photo: Photo, p: Pilot) {
   return job;
 }
 export async function addPhotos(slug: string, added: Array<[Photo, Blob]>) {
+  if (isShared(slug)) return uploadShared(slug, added);
   const action = async () => {
     const all = read();
     const rows = all.flatMap((p) => p.photos);

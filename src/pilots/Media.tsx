@@ -4,6 +4,7 @@ import { addPhotos, update } from './store';
 import { resizePhoto } from './resize';
 import { Field, Picture } from './ui';
 import { formValues, str, usePhoto } from './fields';
+import { permissions, isShared } from './remote';
 const Panorama = lazy(() => import('./Panorama'));
 export function Wall({ p }: { p: Pilot }) {
   const [busy, setBusy] = useState(false),
@@ -14,10 +15,15 @@ export function Wall({ p }: { p: Pilot }) {
     .sort((a, b) => b.date.localeCompare(a.date));
   return (
     <>
-      {p.sites.length > 0 && (
+      {permissions(p).write && p.sites.length > 0 && (
         <details>
           <summary>Add photos</summary>
-          <p>Choose wall or site pictures without faces. Photos stay on this device.</p>
+          <p>
+            Choose wall or site pictures without faces.{' '}
+            {isShared(p.slug)
+              ? 'Photos are private to pilot members.'
+              : 'Photos stay on this device.'}
+          </p>
           <form
             className="pilot-form"
             onSubmit={async (e) => {
@@ -78,7 +84,10 @@ export function Wall({ p }: { p: Pilot }) {
               Added by
               <select name="member">
                 {p.members
-                  .filter((m) => m.state === 'active')
+                  .filter(
+                    (m) =>
+                      m.state === 'active' && (!permissions(p).by || permissions(p).by === m.id),
+                  )
                   .map((m) => (
                     <option value={m.id} key={m.id}>
                       {m.name} · {m.organisation}
@@ -133,16 +142,18 @@ export function Wall({ p }: { p: Pilot }) {
                       .filter((m) => m.id === ph.member)
                       .map((m) => m.name + ' · ' + m.organisation)}
                   </small>
-                  <button
-                    onClick={() =>
-                      update(p.slug, (q) => {
-                        const x = q.photos.find((x) => x.id === ph.id);
-                        if (x) x.hidden = true;
-                      })
-                    }
-                  >
-                    Hide photo
-                  </button>
+                  {permissions(p).owner && (
+                    <button
+                      onClick={() =>
+                        update(p.slug, (q) => {
+                          const x = q.photos.find((x) => x.id === ph.id);
+                          if (x) x.hidden = true;
+                        })
+                      }
+                    >
+                      Hide photo
+                    </button>
+                  )}
                 </article>
               ))}
           </div>
@@ -206,32 +217,34 @@ export function Camera({ p, s }: { p: Pilot; s: Site }) {
           ) : (
             <p>No camera at this site yet. Any live stream address the owner adds shows here.</p>
           )}
-          <form
-            className="pilot-form"
-            onSubmit={(e) => {
-              const f = formValues(e),
-                value = str(f, 'stream');
-              if (value && !stream.safeParse(value).success) {
-                setError('Enter a supported HTTPS video embed address.');
-                return;
-              }
-              setError('');
-              setEmbed('');
-              update(p.slug, (q) => {
-                q.cameras = q.cameras.filter((c) => c.site !== s.id);
-                if (value) q.cameras.push({ site: s.id, address: value });
-              });
-            }}
-          >
-            <Field
-              name="stream"
-              label="Stream address"
-              type="url"
-              value={address}
-              required={false}
-            />
-            <button>Save address</button>
-          </form>
+          {permissions(p).owner && (
+            <form
+              className="pilot-form"
+              onSubmit={(e) => {
+                const f = formValues(e),
+                  value = str(f, 'stream');
+                if (value && !stream.safeParse(value).success) {
+                  setError('Enter a supported HTTPS video embed address.');
+                  return;
+                }
+                setError('');
+                setEmbed('');
+                update(p.slug, (q) => {
+                  q.cameras = q.cameras.filter((c) => c.site !== s.id);
+                  if (value) q.cameras.push({ site: s.id, address: value });
+                });
+              }}
+            >
+              <Field
+                name="stream"
+                label="Stream address"
+                type="url"
+                value={address}
+                required={false}
+              />
+              <button>Save address</button>
+            </form>
+          )}
           {error && <p role="alert">{error}</p>}
         </>
       )}

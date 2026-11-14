@@ -125,6 +125,8 @@
     { "source": "/api/merchants/:slug/products/:id", "destination": "/api/products" },
     { "source": "/api/merchants/:slug/products", "destination": "/api/products" },
     { "source": "/api/designs", "destination": "/api/orders" },
+    { "source": "/api/pilots", "destination": "/api/orders" },
+    { "source": "/api/pilots/(.*)", "destination": "/api/orders" },
     { "source": "/api/shared-projects", "destination": "/api/orders" },
     { "source": "/api/shared-projects/(.*)", "destination": "/api/orders" },
     { "source": "/api/designs/(.*)", "destination": "/api/orders" },
