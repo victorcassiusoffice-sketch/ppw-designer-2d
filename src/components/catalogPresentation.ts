@@ -1,5 +1,4 @@
 import type { Product } from '../data/products.schema';
-import type { KeyboardEvent } from 'react';
 import { MACRO_CATEGORY_LABEL, macroOf, type MacroCategory } from './mobile/catalogMacros';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import { catalogRoomRelevance, matchesCatalogBrowse, type CatalogBrowse } from './catalogMetadata';
@@ -54,19 +53,4 @@ export function catalogPrice(product: Product): string {
   if (isPitchEmbed()) return '';
   if (product.price_on_request) return 'Price on request';
   return `${product.price.value.toLocaleString('en-MU', { maximumFractionDigits: 0 })} ${product.price.currency}`;
-}
-
-/** Roving tab focus also reveals categories outside the horizontal viewport. */
-export function handleCatalogCategoryKey(event: KeyboardEvent<HTMLButtonElement>): void {
-  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-  const tabs = Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? []);
-  if (!tabs.length) return;
-  event.preventDefault();
-  const index = tabs.indexOf(event.currentTarget);
-  const nextIndex = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
-    : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-  const next = tabs[nextIndex];
-  next.focus();
-  next.click();
-  next.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 }

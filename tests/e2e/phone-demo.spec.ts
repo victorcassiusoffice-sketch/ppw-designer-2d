@@ -51,7 +51,7 @@ test('the show flat opens with the strip folded; a category tap unfolds it', asy
   await expect(page.locator('[data-testid="sims-toolbar-minimize"]')).toHaveCount(0);
   await openCatalog(page);
   await expect(page.locator('[data-testid="sims-toolbar-minimize"]')).toHaveAttribute('aria-expanded', 'true');
-  await page.locator('[data-testid="sims-cat-cardio"]').tap();
+  await page.getByTestId('sims-filter').selectOption('category/cardio');
   await expect(page.locator('[data-testid="sims-thumb-strip"]')).toBeVisible();
 });
 

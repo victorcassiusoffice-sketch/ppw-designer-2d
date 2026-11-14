@@ -12,7 +12,7 @@ export function useCatalogDismissal({ viewMode, open, desktop, close, placing = 
     const visible = () => (window.innerWidth >= 1024) === desktop;
     if (visible()) window.dispatchEvent(new CustomEvent('ppw:catalog-visibility', { detail: { open: viewMode === '3d' && open } }));
     const dismiss = () => { if (visible()) close(); };
-    const resize = () => { if (viewMode === '3d' && open && !visible()) close(); };
+    const resize = () => { if (open && !visible()) close(); };
     const scene = (event: Event) => {
       if (viewMode !== '3d' || !open || !visible()) return;
       // Keep the canvas dimensions stable during an intentional placement.

@@ -60,14 +60,15 @@ describe('SimsBottomToolbar', () => {
     // Empty tabs hide. The source-linked Comfy sofa now fills Furniture;
     // Recovery, Sauna and Appliances still have no ordinary seeded items.
     for (const cat of ['all', 'furniture', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']) {
-      expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`), cat).not.toBeNull();
+      expect(container.querySelector(`[data-testid="sims-filter"] option[value="category/${cat}"]`), cat).not.toBeNull();
     }
     for (const cat of ['recovery', 'sauna', 'appliances']) {
-      expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`), cat).toBeNull();
+      expect(container.querySelector(`[data-testid="sims-filter"] option[value="category/${cat}"]`), cat).toBeNull();
     }
     // Bundled catalog (22 products) renders thumbnails in the "All" tab.
     expect(container.querySelectorAll('[data-testid="sims-thumb"]').length).toBeGreaterThan(0);
-    act(() => (container.querySelector('[data-testid="sims-cat-furniture"]') as HTMLButtonElement).click());
+    const filter = container.querySelector<HTMLSelectElement>('[data-testid="sims-filter"]')!;
+    act(() => { filter.value = 'category/furniture'; filter.dispatchEvent(new Event('change', { bubbles: true })); });
     expect(container.querySelectorAll('[data-testid="sims-thumb"]').length).toBe(1);
     expect(container.querySelector('[data-product-id="courts-comfy-3-seater-dove"]')).not.toBeNull();
   });

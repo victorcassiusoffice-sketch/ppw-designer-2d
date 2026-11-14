@@ -1,9 +1,9 @@
+import type { CartTotals } from '../store/cartStore';
 import { useState } from 'react';
 import type { Product } from '../data/products.schema';
 import { productPlanSymbolUrl } from '../data/products';
 import { catalogImageSources } from '../data/catalogImageSources';
-import { availabilityInfo, catalogThumbnailImages, catalogVariants, CATALOG_FUNCTIONS, CATALOG_ROOMS, CATALOG_GROUP_LABELS, type CatalogBrowse, type CatalogThumbnailImage } from './catalogMetadata';
-import { handleCatalogCategoryKey } from './catalogPresentation';
+import { availabilityInfo, catalogThumbnailImages, catalogVariants, type CatalogThumbnailImage } from './catalogMetadata';
 
 /** Actual photo first, then clearly labelled static fallbacks. Never starts WebGL. */
 export function CatalogProductImage({ product, className = '', detail = false }: { product: Product; className?: string; detail?: boolean }) {
@@ -36,16 +36,13 @@ export function CatalogSwatches({ product, products, onSelect, selectedSku = pro
     </button>)}
   </div>;
 }
-export function CatalogBrowseTabs({ value, onChange, onClose, closeLabel = 'Close product catalog' }: { value: CatalogBrowse; onChange: (value: CatalogBrowse) => void; onClose?: () => void; closeLabel?: string }) {
-  const options = value.mode === 'function' ? CATALOG_FUNCTIONS : CATALOG_ROOMS;
-  return <div className="catalog-browse">
-    <div className="catalog-browse-top"><div role="tablist" aria-label="Browse products by">
-      {(['category', 'function', 'room'] as const).map(mode => <button type="button" role="tab" key={mode} aria-selected={value.mode === mode}
-        tabIndex={value.mode === mode ? 0 : -1} onKeyDown={handleCatalogCategoryKey}
-        onClick={() => onChange({ mode, value: 'all' })}>{mode === 'category' ? 'Categories' : mode === 'function' ? 'By function' : 'By room'}</button>)}
-    </div>{value.mode !== 'category' && onClose && <button type="button" className="catalog-browse-close" aria-label={closeLabel} onClick={onClose}>×</button>}</div>
-    {value.mode !== 'category' && <div role="tablist" aria-label={value.mode === 'function' ? 'Product functions' : 'Rooms'}>
-      {options.map(group => <button type="button" role="tab" key={group} aria-selected={value.value === group} tabIndex={value.value === group ? 0 : -1} onKeyDown={handleCatalogCategoryKey} onClick={() => onChange({ ...value, value: group })}>{CATALOG_GROUP_LABELS[group]}</button>)}
-    </div>}
-  </div>;
+
+/** Pictures and measured finishes from the current design share one scroll lane. */
+export function DesignProductShelf({ cart }: { cart: CartTotals }) {
+  return <ul className="design-product-shelf" aria-label="Placed products and finishes">
+    {cart.lines.map(line => <li key={line.productId} data-testid="basket-product-line"><CatalogProductImage product={line.product} /><span>{line.product.name}</span></li>)}
+    {cart.floorLines.map(line => <li key={line.lineId}><small>Floor</small><span>{line.materialName}</span></li>)}
+    {cart.wallPaintLines.map(line => <li key={line.lineId}><small>Paint</small><span>{line.paintName} {line.colourName}</span></li>)}
+    {cart.claddingLines.map(line => <li key={line.lineId}><small>Cladding</small><span>{line.name}</span></li>)}
+  </ul>;
 }
