@@ -384,6 +384,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       removedWallEdges:room.removedWallEdges,
       openings: openingsByRoom.get(room.id) ?? room.openings,
       ...wallSurfaces,
+      pilotWallRoom: pilot?.mossRoom === room.id,
       floorHex,
       floorKind,
       floorTileM,

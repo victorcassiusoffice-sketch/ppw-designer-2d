@@ -185,7 +185,12 @@ export async function handlePilots(
             rows.push({ slug: s, name: access.name, lane: access.lane, state: access.state });
         }
         if (!owner && !rows.length) return forbidden();
-        return ok({ owner: !!owner, pilots: [...new Map(rows.map((r) => [r.slug, r])).values()] });
+        const sites = owner ? await db.programme(owner) : [];
+        return ok({
+          owner: !!owner,
+          sites,
+          pilots: [...new Map(rows.map((r) => [r.slug, r])).values()],
+        });
       }
       if (!owner || method !== 'POST') return forbidden();
       const p = newPilot.parse(await body());

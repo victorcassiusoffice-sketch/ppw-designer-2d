@@ -33,12 +33,27 @@ export const day = z
     return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === s;
   });
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
+export function isHls(value: string) {
+  try {
+    const u = new URL(value);
+    return (
+      u.protocol === 'https:' &&
+      !u.username &&
+      !u.password &&
+      !u.hash &&
+      /\.m3u8$/i.test(u.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
 export const stream = z
   .string()
-  .max(150)
-  .regex(
-    /^https:\/\/www\.youtube(?:-nocookie)?\.com\/embed\/[a-zA-Z0-9_-]{11}$/,
-    'Use a supported HTTPS video embed address.',
+  .max(1000)
+  .refine(
+    (v) =>
+      isHls(v) || /^https:\/\/www\.youtube(?:-nocookie)?\.com\/embed\/[a-zA-Z0-9_-]{11}$/.test(v),
+    'Use an HTTPS playlist or supported embed address.',
   );
 export const siteSchema = z
   .object({
@@ -51,6 +66,7 @@ export const siteSchema = z
     lon: z.number().finite().min(-180).max(180),
     area: z.number().finite().nonnegative().max(1e8).optional(),
     plan: id.optional(),
+    photoWall: z.boolean().optional(),
   })
   .strict();
 export const memberSchema = z

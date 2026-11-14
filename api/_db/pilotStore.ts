@@ -24,6 +24,12 @@ export function pilotStore(query: Query) {
         [a.owner, a.member],
       );
     },
+    async programme(owner: string) {
+      return query(
+        "SELECT p.slug,p.name,i.payload FROM pilots p JOIN pilot_items i ON i.pilot_id=p.id AND i.kind='site' AND NOT i.hidden WHERE p.owner_id=$1 ORDER BY p.created,i.created",
+        [owner],
+      );
+    },
     async access(slug: string, a: Actor) {
       return (await one(
         `SELECT p.*,m.id AS member_id,m.role FROM pilots p LEFT JOIN pilot_members m ON ${membership} WHERE p.slug=$3 AND (p.owner_id=$1 OR m.id IS NOT NULL)`,

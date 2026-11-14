@@ -1,5 +1,7 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { stream, today, uid, type Pilot, type Photo, type Site } from './contract';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import SiteVideo from './SiteVideo';
+import { exportLapse } from './mediaExtras';
+import { isHls, stream, today, uid, type Pilot, type Photo, type Site } from './contract';
 import { addPhotos, update } from './store';
 import { resizePhoto } from './resize';
 import { Field, Picture } from './ui';
@@ -175,6 +177,9 @@ export function Camera({ p, s }: { p: Pilot; s: Site }) {
     pan = photos.filter((ph) => ph.kind === '360 panorama').slice(-1)[0],
     url = usePhoto(p, tab === 'Look around' ? pan : undefined),
     address = p.cameras.find((c) => c.site === s.id)?.address;
+  const job = useRef<AbortController | null>(null),
+    [saving, setSaving] = useState(false);
+  useEffect(() => () => job.current?.abort(), [s.id]);
   const frame = frames[Math.min(index, frames.length - 1)];
   useEffect(() => {
     if (!playing || tab !== 'Time-lapse' || frames.length < 2) return;
@@ -202,7 +207,9 @@ export function Camera({ p, s }: { p: Pilot; s: Site }) {
       {tab === 'Live' && (
         <>
           {address ? (
-            embed === address ? (
+            embed === address && isHls(address) ? (
+              <SiteVideo address={address} title={s.name + ' stream'} />
+            ) : embed === address ? (
               <iframe
                 title={s.name + ' live stream'}
                 src={address}
@@ -224,7 +231,7 @@ export function Camera({ p, s }: { p: Pilot; s: Site }) {
                 const f = formValues(e),
                   value = str(f, 'stream');
                 if (value && !stream.safeParse(value).success) {
-                  setError('Enter a supported HTTPS video embed address.');
+                  setError('Enter a supported embed or HTTPS .m3u8 playlist.');
                   return;
                 }
                 setError('');
@@ -277,6 +284,26 @@ export function Camera({ p, s }: { p: Pilot; s: Site }) {
             <button disabled={frames.length < 2} onClick={() => play(!playing)}>
               {playing ? 'Pause' : 'Play'}
             </button>
+            <button
+              disabled={saving || frames.length < 2}
+              onClick={async () => {
+                const ctl = new AbortController();
+                job.current = ctl;
+                setSaving(true);
+                setError('');
+                try {
+                  await exportLapse(p, frames, ctl.signal);
+                } catch (e) {
+                  if (!ctl.signal.aborted)
+                    setError(e instanceof Error ? e.message : 'Export failed.');
+                } finally {
+                  if (!ctl.signal.aborted) setSaving(false);
+                }
+              }}
+            >
+              {saving ? 'Preparing WebM…' : 'Download WebM'}
+            </button>
+            {error && <p role="status">{error}</p>}
           </>
         ) : (
           <p>Add dated wall photos to start a time-lapse.</p>

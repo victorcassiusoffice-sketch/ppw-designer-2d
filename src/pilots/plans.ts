@@ -35,8 +35,17 @@ export function ensurePlan(s: Site, plan: string) {
     JSON.stringify({ state: { property, showGrid: true, pxPerMetre: 50 }, version: 2 }),
   );
 }
-export function planLink(plan: string, view: 'house' | 'walk' | 'draw') {
+export function planLink(
+  plan: string,
+  view: 'house' | 'walk' | 'draw',
+  slug?: string,
+  site?: string,
+) {
   const qs = new URLSearchParams({ pilotPlan: plan, view: view === 'draw' ? '2d' : '3d' });
+  if (slug && site) {
+    qs.set('pilotRecord', slug);
+    qs.set('pilotSite', site);
+  }
   if (view === 'walk') qs.set('pilotWalk', '1');
   return '/designer?' + qs;
 }
