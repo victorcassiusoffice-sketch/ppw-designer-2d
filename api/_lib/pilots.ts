@@ -1,3 +1,4 @@
+import { money, currency, managesMoney, type Budget } from '../../src/pilots/money.js';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { get, put, del } from '@vercel/blob';
@@ -207,6 +208,81 @@ export async function handlePilots(
     if (!p) return forbidden();
     const isOwner = !!owner && p.owner_id === owner,
       by = isOwner ? 'lead' : p.member_id!;
+    if (action === 'money' && !key) {
+      if (!managesMoney(isOwner, p.role)) return forbidden();
+      const rows = (await db.money(p)).map((r) => money.parse(r.payload));
+      const setting = rows.find(
+        (x): x is Budget => x.type === 'budget_line' && x.id === 'book-currency',
+      );
+      if (method === 'GET')
+        return ok({
+          revision: p.revision,
+          currency: setting?.currency ?? null,
+          rows: rows.filter((x) => x !== setting),
+        });
+      if (method !== 'POST') return forbidden();
+      const value = await body();
+      const select = z.object({ revision, currency }).strict().safeParse(value);
+      if (select.success) {
+        if (!isOwner || setting) return forbidden();
+        const row: Budget = {
+          id: 'book-currency',
+          type: 'budget_line',
+          currency: select.data.currency,
+          label: 'Currency',
+          category: 'other',
+          planned: 0,
+          committed: 0,
+          spent: 0,
+          state: 'planned',
+          note: '',
+        };
+        return (await db.saveItem(
+          p,
+          select.data.revision,
+          'money',
+          row.id,
+          row,
+          by,
+          false,
+          false,
+          true,
+        ))
+          ? ok({ saved: true })
+          : conflict();
+      }
+      const v = z
+        .object({ revision, row: money, hide: z.boolean().optional() })
+        .strict()
+        .parse(value);
+      if (!setting) return fail(400, 'Choose a currency first.');
+      const row = v.row,
+        prior = await db.item(p, row.id);
+      if (
+        row.id === 'book-currency' ||
+        (prior &&
+          (prior.hidden || prior.kind !== 'money' || money.parse(prior.payload).type !== row.type))
+      )
+        return forbidden();
+      if (row.type === 'budget_line') {
+        if (!row.id.startsWith('budget-') || row.currency !== setting.currency) return forbidden();
+        if (v.hide && rows.some((x) => x.type === 'pay_row' && x.from === row.id))
+          return fail(400, 'Reassign or hide linked pay rows first.');
+      } else {
+        const member = await db.memberRole(p, row.memberId);
+        if (
+          !member ||
+          member.role !== row.role ||
+          row.id !== 'pay-' + row.memberId ||
+          !rows.some((x) => x.type === 'budget_line' && x.id !== setting.id && x.id === row.from)
+        )
+          return forbidden();
+      }
+      if (v.hide && !prior) return forbidden();
+      return (await db.saveItem(p, v.revision, 'money', row.id, row, by, !!prior, !!v.hide, true))
+        ? ok({ saved: true })
+        : conflict();
+    }
     if (!action && method === 'GET') return ok(await record(db, p, isOwner, by));
     if (!action && method === 'PUT' && isOwner) {
       const v = header
