@@ -12,7 +12,9 @@
 .design-product-shelf { display: flex; gap: 8px; overflow-x: auto; padding: 4px 10px; scrollbar-width: thin; }
 .design-product-shelf li { flex: 0 0 110px; overflow: hidden; background: var(--studio-cap, #e9e8dc); border-radius: 10px; padding: 4px; font-size: 11px; }
 .design-product-shelf li > span:last-child { display: block; line-height: 14px; overflow-wrap: anywhere; }
-.design-product-shelf .catalog-product-visual { height: clamp(38px, 6dvh, 54px); }
+.design-product-shelf .basket-product-picture { display: block; width: 100%; min-width: 0; height: clamp(38px, 6dvh, 54px); }
+.design-product-shelf .basket-product-picture img { height: 100%; }
+.design-product-shelf li > span:last-child { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 
 .designer-app:has(> [data-inventory]) > .sims-catalog { display: none; }
 .designer-app[data-view="plan"]:has(> [data-inventory]) .plan-topbar :is(.plan-build-tools,.plan-project-bar) { display: none; }

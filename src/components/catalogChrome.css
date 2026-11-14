@@ -218,10 +218,11 @@
 /* House renders its scene above the Plan shell; anchor its measured shelf to
    the same viewport edge as the scene's bottom inset. */
 .sims-catalog[data-catalog-mode="3d"][data-catalog-open="true"] { position: fixed; inset: auto 0 0; }
-.designer-app[data-view="plan"]:has(> .sims-catalog[data-catalog-open="true"]) .plan-topbar :is(.plan-build-tools,.plan-project-bar) { display: none; }
+.designer-app[data-view="plan"]:has(> .sims-catalog[data-catalog-open="true"], [data-testid="plan-drawing-viewport"][data-armed="true"]) .plan-topbar :is(.plan-build-tools,.plan-project-bar) { display: none; }
 @media (max-height: 500px) {
-  .designer-app[data-view="plan"]:has(> .sims-catalog[data-catalog-open="true"]) .plan-view-toolbar,
-  body:has(.sims-catalog[data-catalog-mode="3d"][data-catalog-open="true"]) :is(.house-view-dock,.house-scene-bar,.house-scene-caption) { display: none; }
+  .designer-app[data-view="plan"]:has(> .sims-catalog[data-catalog-open="true"], [data-testid="plan-drawing-viewport"][data-armed="true"]) .canvas-edge-dock[data-workspace="plan"],
+  body:has(.sims-catalog[data-catalog-mode="3d"][data-catalog-open="true"]) .canvas-edge-dock[data-workspace="house"],
+  body:has(.sims-catalog[data-catalog-mode="3d"][data-catalog-open="true"]) :is(.house-view-dock,.house-scene-caption) { display: none; }
 }
 .catalog-shelf-header { flex-wrap: wrap; }
 .catalog-shelf-header input { width: 0; }

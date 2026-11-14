@@ -17,6 +17,7 @@ import { flushSync } from 'react-dom';
 import { act } from 'react';
 import { SimsBottomToolbar } from '../SimsBottomToolbar';
 import { MobileProductPopup } from '../MobileProductPopup';
+import { resetPitchEmbedCache } from '../../../demo/pitchEmbed';
 import { getAllProducts } from '../../../data/products';
 import type { Product } from '../../../data/products.schema';
 import { useDesignerUIStore } from '../../../store/designerUIStore';
@@ -103,6 +104,21 @@ describe('MobileProductPopup', () => {
     const addBtn = container.querySelector('[data-testid="popup-add-to-room"]') as HTMLButtonElement;
     act(() => addBtn.click());
     expect(onAdd).toHaveBeenCalledWith(product.id);
+  });
+
+  it('keeps merchant prices from the source notes out of public product details', () => {
+    window.history.replaceState(null, '', '/demo');
+    resetPitchEmbedCache();
+    try {
+      const source = { ...product, notes: 'Supplier snapshot: Rs 5,499', supplier: 'Test Merchant' };
+      act(() => root.render(<MobileProductPopup product={source} embedded onAdd={vi.fn()} onDragPlace={vi.fn()} onClose={vi.fn()} />));
+      expect(container.textContent).toContain(product.name);
+      expect(container.textContent).toContain(' cm');
+      expect(container.textContent).not.toMatch(/5,499|Test Merchant/);
+    } finally {
+      window.history.replaceState(null, '', '/');
+      resetPitchEmbedCache();
+    }
   });
 
   it('truncates a long description behind a "more" expander', () => {

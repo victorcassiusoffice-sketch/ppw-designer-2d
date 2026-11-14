@@ -185,6 +185,14 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
     onCancel: () => dragPointer.cancel(),
   });
 
+  function backToProducts() {
+    setDetails(null);
+    requestAnimationFrame(() => {
+      const buttons = sectionRef.current?.querySelectorAll<HTMLButtonElement>('[data-detail-id]');
+      Array.from(buttons ?? []).find(button => button.dataset.detailId === details?.id)?.focus({ preventScroll: true });
+    });
+  }
+
   const closeCatalog = useCallback(() => {
     setCollapsed(true);
     setDetails(null);
@@ -288,7 +296,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                   // counts (dock tile + canvas = 2) are untouched.
                   const isOn = tool === 'floor' && floorMaterialId === floorMat.id;
                   return (
-                    <li key={p.id} className="catalog-product-tile shrink-0">
+                    <li key={original.id} className="catalog-product-tile shrink-0">
                       <div
                         role="button"
                         tabIndex={0}
@@ -318,12 +326,12 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                         <FloorBadge />
                         <span className="mt-0.5 block w-full truncate text-center text-[11px] font-medium" aria-hidden="true">{p.name}</span>
                       </div>
-                      <button type="button" className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(original); setPendingProductId?.(null); }}><span aria-hidden="true">ⓘ</span></button>
+                      <button type="button" data-detail-id={original.id} className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(original); setPendingProductId?.(null); }}><span aria-hidden="true">ⓘ</span></button>
                     </li>
                   );
                 }
                 return (
-                  <li key={p.id} className="catalog-product-tile shrink-0">
+                  <li key={original.id} className="catalog-product-tile shrink-0">
                     <div
                       role="button"
                       tabIndex={0}
@@ -377,7 +385,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                       <DockThumb product={p} />
                       <span className="mt-0.5 block w-full truncate text-center text-[11px] font-medium" aria-hidden="true">{p.name}</span>
                     </div>
-                    <button type="button" className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(original); setPendingProductId?.(null); }}><span aria-hidden="true">ⓘ</span></button>
+                    <button type="button" data-detail-id={original.id} className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(original); setPendingProductId?.(null); }}><span aria-hidden="true">ⓘ</span></button>
                   </li>
                 );
               })
@@ -388,7 +396,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
           swatches={<CatalogSwatches product={details} selectedSku={(variants[details.id] ?? details).sku} products={allProducts}
             onSelect={value => setVariants(current => ({ ...current, [details.id]: value }))} />}
           onAdd={(id) => { setPendingProductId?.(id); setDetails(null); setCollapsed(true); }}
-          onDragPlace={(id, x, y) => usePlacementIntentStore.getState().placeAt(id, x, y)} onClose={() => setDetails(null)} />}
+          onDragPlace={(id, x, y) => usePlacementIntentStore.getState().placeAt(id, x, y)} onClose={backToProducts} />}
       </section>
 
     </>

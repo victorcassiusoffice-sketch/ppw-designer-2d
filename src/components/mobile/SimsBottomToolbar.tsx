@@ -207,6 +207,14 @@ export function SimsBottomToolbar() {
     onTap: choosePosition,
   });
 
+  function backToProducts() {
+    setSelected(null);
+    requestAnimationFrame(() => {
+      const buttons = sectionRef.current?.querySelectorAll<HTMLButtonElement>('[data-detail-id]');
+      Array.from(buttons ?? []).find(button => button.dataset.detailId === selected?.id)?.focus({ preventScroll: true });
+    });
+  }
+
   const closeCatalog = useCallback(() => { setMinimized(true); setSelected(null); }, []);
   useCatalogDismissal({ viewMode, open: !minimized, desktop: false, close: closeCatalog, placing: dragging });
 
@@ -214,7 +222,7 @@ export function SimsBottomToolbar() {
           swatches={<CatalogSwatches product={selected} selectedSku={(variants[selected.id] ?? selected).sku} products={allProducts}
             onSelect={value => setVariants(current => ({ ...current, [selected.id]: value }))} />}
     onAdd={choosePosition}
-    onDragPlace={(productId, x, y) => placeAt(productId, x, y)} onClose={() => setSelected(null)} />;
+    onDragPlace={(productId, x, y) => placeAt(productId, x, y)} onClose={backToProducts} />;
 
   return (
     <>
@@ -276,7 +284,7 @@ export function SimsBottomToolbar() {
                     // separate; floor products are never dropped as loose items.
                     const isOn = tool === 'floor' && floorMaterialId === floorMat.id;
                     return (
-                      <div key={p.id} className="catalog-product-tile"><button
+                      <div key={original.id} className="catalog-product-tile"><button
                         type="button"
                         data-testid="sims-thumb"
                         data-product-id={p.id}
@@ -310,12 +318,12 @@ export function SimsBottomToolbar() {
                         </span>
                         <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
                       </button>
-                      <button type="button" className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(original)}><span aria-hidden="true">ⓘ</span></button>
+                      <button type="button" data-detail-id={original.id} className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(original)}><span aria-hidden="true">ⓘ</span></button>
                       </div>
                     );
                   }
                   return (
-                  <div key={p.id} className="catalog-product-tile">
+                  <div key={original.id} className="catalog-product-tile">
                   <button
                     type="button"
                     data-testid="sims-thumb"
@@ -338,7 +346,7 @@ export function SimsBottomToolbar() {
                     <span className="relative block h-[52px] w-full shrink-0"><ThumbImage product={p} /></span>
                     <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
                   </button>
-                  <button type="button" className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(original)}><span aria-hidden="true">ⓘ</span></button>
+                  <button type="button" data-detail-id={original.id} className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(original)}><span aria-hidden="true">ⓘ</span></button>
                   </div>
                   );
                 })}

@@ -40,7 +40,7 @@ export function CatalogSwatches({ product, products, onSelect, selectedSku = pro
 /** Pictures and measured finishes from the current design share one scroll lane. */
 export function DesignProductShelf({ cart }: { cart: CartTotals }) {
   return <ul className="design-product-shelf" aria-label="Placed products and finishes">
-    {cart.lines.map(line => <li key={line.productId} data-testid="basket-product-line"><CatalogProductImage product={line.product} /><span>{line.product.name}</span></li>)}
+    {cart.lines.map(line => <li key={line.productId} data-testid="basket-product-line"><CatalogProductImage product={line.product} className="basket-product-picture" /><span>{line.product.name}</span></li>)}
     {cart.floorLines.map(line => <li key={line.lineId}><small>Floor</small><span>{line.materialName}</span></li>)}
     {cart.wallPaintLines.map(line => <li key={line.lineId}><small>Paint</small><span>{line.paintName} {line.colourName}</span></li>)}
     {cart.claddingLines.map(line => <li key={line.lineId}><small>Cladding</small><span>{line.name}</span></li>)}

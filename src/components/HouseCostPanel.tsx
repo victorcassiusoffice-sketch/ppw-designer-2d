@@ -22,8 +22,8 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
     {product && <section className="house-product-detail" aria-label="Selected product description">
       <div className="house-product-heading"><CatalogProductImage product={product} className="basket-product-picture" detail /><div><h3>{product.name}</h3>{!pitch && <span>{product.supplier}</span>}{!pitch && <strong>{product.price_on_request ? 'Price on request' : formatCurrency(product.price.value, product.price.currency)}</strong>}</div></div>
       <p className="house-product-dimensions">{product.dimensions_cm.length} × {product.dimensions_cm.width} × {product.dimensions_cm.height} cm · L × W × H</p>
-      {product.notes && <p>{product.notes}</p>}
-      <ProductSourceNote product={product} />
+      {!pitch && product.notes && <p>{product.notes}</p>}
+      {!pitch && <ProductSourceNote product={product} />}
       {hasSolarPanelPreview(product) && <p>{SOLAR_PANEL_PREVIEW_NOTE}</p>}
       {onEdit && <button type="button" onClick={onEdit}>Move / rotate / duplicate</button>}
     </section>}
