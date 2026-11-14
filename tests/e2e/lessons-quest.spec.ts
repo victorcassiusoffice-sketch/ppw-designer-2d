@@ -166,9 +166,7 @@ async function runQuest(page: Page, touch: boolean): Promise<void> {
   await showMe(page, touch);
   await expect(page.locator('[data-lesson-card="furnish"]')).toBeVisible();
   // Small pieces (decor), so three fit in a small room.
-  const decor = page.locator(touch ? '[data-testid="sims-cat-decor"]' : '[data-testid="dock-cat-decor"]').first();
-  if (touch) await decor.tap();
-  else await decor.click();
+  await page.getByTestId(touch ? 'sims-filter' : 'dock-filter').selectOption('category/decor');
   const tiles = page.locator(
     touch
       ? '[data-testid="sims-thumb"]:not([data-floor-material])'
@@ -184,7 +182,7 @@ async function runQuest(page: Page, touch: boolean): Promise<void> {
     if (touch && !(await tile.isVisible().catch(() => false))) {
       // The phone catalogue folds after each placement: open it again, as a person would.
       await page.getByTestId('sims-catalog-open').first().tap();
-      await page.locator('[data-testid="sims-cat-decor"]').first().tap();
+      await page.getByTestId('sims-filter').selectOption('category/decor');
     }
     await expect(tile).toBeVisible();
     if (touch) await tile.tap();

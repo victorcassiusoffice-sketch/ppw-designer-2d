@@ -15,7 +15,7 @@
  * as CartStrip / DetailsPanel — primary = ink fill + paper, Cancel = chrome
  * + rim — so the sheet is one control set with the rest of the designer.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Product } from '../../data/products.schema';
 import { catalogDetailImageUrl } from '../catalogMetadata';
 import { CHROME_BG, CHROME_RIM, CHROME_TEXT } from '../../designer/blueprintTheme';
@@ -71,6 +71,8 @@ export interface MobileProductPopupProps {
   onClose: () => void;
   /** House mode reserves this detail page inside the catalog instead of covering the scene. */
   embedded?: boolean;
+  swatches?: ReactNode;
+  onDismiss?: () => void;
 }
 
 export function MobileProductPopup({
@@ -79,7 +81,11 @@ export function MobileProductPopup({
   onDragPlace,
   onClose,
   embedded = false,
+  swatches,
+  onDismiss,
 }: MobileProductPopupProps) {
+  const backRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (embedded) backRef.current?.focus({ preventScroll: true }); }, [embedded]);
   const [expanded, setExpanded] = useState(false);
   const imgUrl = catalogDetailImageUrl(product);
   const floorMat = floorMaterialForProduct(product);
@@ -89,9 +95,10 @@ export function MobileProductPopup({
     if (!floorMat) return;
     setFloorDraft({ materialId: floorMat.id, erase: false });
     setTool('floor');
-    onClose();
+    (onDismiss ?? onClose)();
   }
-  const desc = product.notes?.trim() ?? '';
+  const pitch = isPitchEmbed();
+  const desc = pitch ? '' : product.notes?.trim() ?? '';
   const truncated = desc.length > DESC_LIMIT;
   const shownDesc = expanded || !truncated ? desc : `${desc.slice(0, DESC_LIMIT).trimEnd()}…`;
 
@@ -114,17 +121,21 @@ export function MobileProductPopup({
 
   if (embedded) return <>
     <section data-testid="mobile-product-popup" className="catalog-product-detail" aria-label={`${product.name} details`}>
-      <button type="button" className="catalog-detail-back" onClick={onClose}>← Products</button>
+      <div className="catalog-detail-actions">
+        <button type="button" ref={backRef} className="catalog-detail-back" onClick={onClose}>← Products</button>
+        <button type="button" data-testid={floorMat ? 'popup-lay-floor' : 'popup-add-to-room'} className="catalog-detail-place"
+          onClick={floorMat ? layFloor : () => onAdd(product.id)}>{floorMat ? 'Lay this floor' : 'Choose position'}</button>
+        {onDismiss && <button type="button" className="catalog-browser-close" onClick={onDismiss} aria-label="Close product catalog">×</button>}
+      </div>
       <div className="catalog-detail-content">
         <div className="catalog-detail-photo ppw-no-callout" style={{ touchAction: floorMat ? undefined : 'none' }}
           onPointerDown={floorMat ? undefined : (event) => start(event, product.id, imgUrl)} onContextMenu={(event) => event.preventDefault()}>
           <img src={imgUrl} alt={product.name} draggable={false} />
         </div>
-        <div><h3>{product.name}</h3><strong>{formatPrice(product)}</strong><p>{formatDims(product)}</p><p>Supplier: {product.supplier || 'Ask supplier'}</p>
+        <div><h3>{product.name}</h3><strong>{formatPrice(product)}</strong><p>{formatDims(product)}</p>{!pitch && <p>Supplier: {product.supplier || 'Ask supplier'}</p>}
           <CatalogAvailability product={product} detail />
           {desc && <p>{shownDesc}{truncated && <button type="button" className="catalog-detail-more" onClick={() => setExpanded((value) => !value)}>{expanded ? 'less' : 'more'}</button>}</p>}
-          <button type="button" data-testid={floorMat ? 'popup-lay-floor' : 'popup-add-to-room'} className="catalog-detail-place"
-            onClick={floorMat ? layFloor : () => onAdd(product.id)}>{floorMat ? 'Lay this floor' : 'Choose position'}</button>
+          {swatches}
         </div>
       </div>
     </section>
@@ -205,7 +216,7 @@ export function MobileProductPopup({
               </span>
             </div>
             <p className={CAPTION}>
-              {formatDims(product)} · {product.supplier}
+              {formatDims(product)}{!pitch && ' · ' + product.supplier}
             </p>
             <CatalogAvailability product={product} detail />
             {desc && (

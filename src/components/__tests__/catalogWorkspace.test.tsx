@@ -50,7 +50,10 @@ describe('workspace catalog navigation', () => {
     expect(launcher().textContent).toContain('Furnish');
     act(() => launcher().click());
     expect(strip()?.querySelectorAll('[data-product-id]').length).toBeGreaterThan(0);
-    act(() => host.querySelector<HTMLButtonElement>(`[data-testid="${prefix}-cat-eco"]`)!.click());
+    const filter = host.querySelector<HTMLSelectElement>(`[data-testid="${prefix}-filter"]`)!;
+    act(() => { filter.value = 'room/bath'; filter.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(strip()?.querySelectorAll('[data-product-id]').length).toBeGreaterThan(0);
+    act(() => { filter.value = 'category/eco'; filter.dispatchEvent(new Event('change', { bubbles: true })); });
     expect([...strip()!.querySelectorAll('[data-product-id]')].every(card => card.getAttribute('data-macro') === 'eco')).toBe(true);
     act(() => host.querySelector<HTMLButtonElement>(width < 1024 ? '[data-testid="sims-toolbar-minimize"]' : '[data-testid="dock-collapse"]')!.click());
     expect(strip()).toBeNull();
@@ -76,7 +79,7 @@ describe('workspace catalog navigation', () => {
     expect(host.querySelector('[data-testid="sims-dock"]')?.getAttribute('data-catalog-mode')).toBe('3d');
     expect(host.querySelector('[data-testid="dock-strip"]')).toBeNull();
     openCatalog('eco');
-    expect(host.querySelector('[data-testid="sims-dock"] .catalog-browser-header strong')?.textContent).toBe('Eco');
+    expect(host.querySelector<HTMLSelectElement>('[data-testid="sims-dock"] .catalog-filter')?.value).toBe('category/eco');
     expect(document.activeElement).toBe(host.querySelector('[data-testid="dock-search"]'));
     const cards = host.querySelectorAll('[data-testid="dock-strip"] [data-product-id]');
     expect(cards.length).toBeGreaterThan(0);
@@ -89,7 +92,7 @@ describe('workspace catalog navigation', () => {
     useDesignerUIStore.setState({ viewMode: '3d' });
     act(() => root.render(<><SimsDock /><SimsBottomToolbar /></>));
     openCatalog('eco');
-    expect(host.querySelector('[data-testid="sims-bottom-toolbar"] .catalog-browser-header strong')?.textContent).toBe('Eco');
+    expect(host.querySelector<HTMLSelectElement>('[data-testid="sims-bottom-toolbar"] .catalog-filter')?.value).toBe('category/eco');
     expect(document.activeElement).toBe(host.querySelector('[data-testid="sims-bottom-toolbar"] .catalog-browser-back'));
     expect(host.querySelector('[data-testid="sims-thumb-strip"]')).not.toBeNull();
     expect(host.querySelector('[data-testid="dock-strip"]')).toBeNull();
