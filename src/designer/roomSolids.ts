@@ -49,6 +49,7 @@ export interface WallOpeningSolid {
 }
 
 export interface WallSolid {
+  pilotWallRoom?: boolean;
   construction?: import('./wallConstruction').WallConstruction;
   exteriorHex?: string;
   exteriorFinish?: string;
@@ -220,6 +221,7 @@ export function buildSolids(input: SceneInput): SceneSolids {
           centred: Boolean(glassPair),
           ...(glassPair && glassPair.ownerKey !== edgeKey(room.id, e.index) ? { renderDuplicateOf: `wall-${glassPair.peer.id}-${glassPair.peerEdgeIndex}` } : {}),
           hex: room.wallColourByEdge?.get(e.index) ?? PLASTER_HEX,
+          pilotWallRoom: room.pilotWallRoom,
           finish: room.wallFinishByEdge?.get(e.index),
           construction: room.wallConstructionByEdge?.get(e.index),
           exteriorHex: room.exteriorColourByEdge?.get(e.index),

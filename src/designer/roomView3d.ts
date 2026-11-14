@@ -129,6 +129,7 @@ export interface SceneRoomInput {
   /** Resolved colour per painted edge (paint product hex or the chosen tint). */
   wallColourByEdge?: Map<number, string>;
   /** The paint's finish per painted edge (3D Mode: roughness / sheen); absent = bare plaster. */
+  pilotWallRoom?: boolean;
   wallFinishByEdge?: Map<number, string>;
   exteriorColourByEdge?: Map<number, string>;
   exteriorFinishByEdge?: Map<number, string>;

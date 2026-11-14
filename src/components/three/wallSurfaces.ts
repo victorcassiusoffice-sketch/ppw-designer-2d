@@ -134,5 +134,7 @@ export function applyWallLook(
     material.normalMap = textures.concreteNormal ?? textures.plasterNormal;
     material.normalScale.set(painted ? 0.25 : 0.55, painted ? 0.25 : 0.55);
   }
+  const photo = material.userData.pilotPhoto as THREE.Texture | undefined;
+  if (photo && !glass) {material.map=photo;material.color.set('#ffffff');material.normalMap=null;material.roughness=0.9;}
   material.needsUpdate = true;
 }

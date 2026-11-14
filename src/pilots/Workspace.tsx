@@ -15,6 +15,7 @@ import {
 import { blankPilot } from './example';
 import { usePilots, createPilot, update, resetExample, photoBytes } from './store';
 import PilotMap from './PilotMap';
+import { siteFrames } from './mediaExtras';
 import { Wall, Camera } from './Media';
 import Record, { Team, Notes, Papers } from './Record';
 import { Field, Picture } from './ui';
@@ -60,8 +61,30 @@ function SiteCard({ p, s, selected }: { p: Pilot; s: Site; selected: boolean }) 
       </p>
       {s.plan ? (
         <div className="pilot-actions">
+          {permissions(p).owner && (
+            <label>
+              <input
+                type="checkbox"
+                checked={!!s.photoWall}
+                onChange={(e) => {
+                  const enabled = e.currentTarget.checked;
+                  void update(p.slug, (q) => {
+                    q.sites.find((x) => x.id === s.id)!.photoWall = enabled;
+                  });
+                }}
+              />{' '}
+              Show latest wall photo on the build
+            </label>
+          )}
+          {s.photoWall && !siteFrames(p, s.id).length && (
+            <small>Add a dated wall photo to see it on the build.</small>
+          )}
           {(['house', 'walk'] as const).map((view) => (
-            <a key={view} href={planLink(s.plan!, view)} onClick={() => ensurePlan(s, s.plan!)}>
+            <a
+              key={view}
+              href={planLink(s.plan!, view, p.slug, s.id)}
+              onClick={() => ensurePlan(s, s.plan!)}
+            >
               {view === 'house' ? 'Open the build' : 'Walk it'}
             </a>
           ))}
@@ -202,6 +225,11 @@ export default function Workspace() {
     document.title = (p?.name ?? 'Pilots') + ' · One Live Build';
     if (!slug) return;
     const id = location.hash.slice(1);
+    if (id.startsWith('site-') && p?.sites.some((s) => 'site-' + s.id === id)) {
+      setSection('Sites');
+      setSelected(id.slice(5));
+      requestAnimationFrame(() => scrollToId(id));
+    }
     if (sections.some((s) => s.toLowerCase() === id)) requestAnimationFrame(() => scrollToId(id));
   }, [slug, p?.name]);
   useEffect(() => {
