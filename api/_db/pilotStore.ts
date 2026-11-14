@@ -37,6 +37,15 @@ export function pilotStore(query: Query) {
         [a.owner, a.member],
       );
     },
+    async memberRole(p: Access, id: string) {
+      return one('SELECT role FROM pilot_members WHERE pilot_id=$1 AND id=$2', [p.id, id]);
+    },
+    async money(p: Access) {
+      return query(
+        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden ORDER BY created,id",
+        [p.id],
+      );
+    },
     async programme(owner: string) {
       return query(
         "SELECT p.slug,p.name,i.payload FROM pilots p JOIN pilot_items i ON i.pilot_id=p.id AND i.kind='site' AND NOT i.hidden WHERE p.owner_id=$1 ORDER BY p.created,i.created",
@@ -74,7 +83,7 @@ export function pilotStore(query: Query) {
     },
     async document(p: Access, owner: boolean) {
       const [d] = await query(
-        `SELECT p.name,p.slug,p.lane,p.state,p.summary,p.revision,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',m.id,'name',m.first_name,'organisation',m.organisation,'role',m.role,'state',m.state) ORDER BY m.created,m.id) FROM pilot_members m WHERE m.pilot_id=p.id),'[]') AS members,COALESCE((SELECT jsonb_agg(jsonb_build_object('kind',i.kind,'payload',i.payload,'author',i.created_by) ORDER BY i.created,i.id) FROM pilot_items i WHERE i.pilot_id=p.id AND (NOT i.hidden OR ($2 AND i.kind='photo'))),'[]') AS items FROM pilots p WHERE p.id=$1`,
+        `SELECT p.name,p.slug,p.lane,p.state,p.summary,p.revision,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',m.id,'name',m.first_name,'organisation',m.organisation,'role',m.role,'state',m.state) ORDER BY m.created,m.id) FROM pilot_members m WHERE m.pilot_id=p.id),'[]') AS members,COALESCE((SELECT jsonb_agg(jsonb_build_object('kind',i.kind,'payload',i.payload,'author',i.created_by) ORDER BY i.created,i.id) FROM pilot_items i WHERE i.pilot_id=p.id AND i.kind<>'money' AND (NOT i.hidden OR ($2 AND i.kind='photo'))),'[]') AS items FROM pilots p WHERE p.id=$1`,
         [p.id, owner],
       );
       return d;
@@ -117,6 +126,7 @@ export function pilotStore(query: Query) {
       by: string,
       patch: boolean,
       hidden: boolean,
+      manageMoney = false,
     ) {
       const edit = patch
         ? 'UPDATE pilot_items i SET payload=$5::jsonb,hidden=$7,updated=now() FROM bump WHERE i.pilot_id=bump.id AND i.id=$4 AND i.kind=$3 AND ($8 OR i.created_by=$6) RETURNING i.id'
@@ -131,7 +141,7 @@ export function pilotStore(query: Query) {
           JSON.stringify(payload),
           by,
           hidden,
-          ...(patch ? [by === 'lead'] : []),
+          ...(patch ? [by === 'lead' || (kind === 'money' && manageMoney)] : []),
         ],
       );
     },

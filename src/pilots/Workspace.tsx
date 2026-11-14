@@ -1,3 +1,5 @@
+import MoneyPanel from './MoneyPanel';
+import { managesMoney } from './money';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { OlbLockup } from '../brand/OlbLockup';
@@ -31,6 +33,7 @@ const sections = [
   'Camera',
   'Record',
   'Team',
+  'Money',
   'Notes',
   'Papers',
   'Sheet',
@@ -216,6 +219,9 @@ export default function Workspace() {
   }, [slug]);
   const p = shared ? doc?.pilot : pilots.find((x) => x.slug === slug);
   const owner = !shared || doc?.owner === true;
+  const availableSections = sections.filter(
+    (s) => s !== 'Money' || (shared && doc && managesMoney(owner, doc.role)),
+  );
   const [selected, setSelected] = useState(''),
     [section, setSection] = useState('Map'),
     [more, setMore] = useState(false),
@@ -336,7 +342,7 @@ export default function Workspace() {
             <p>{p.summary}</p>
           </div>
           <nav aria-label="Pilot sections" data-expanded={more}>
-            {sections.map((s) => (
+            {availableSections.map((s) => (
               <a
                 href={'#' + s.toLowerCase()}
                 key={s}
@@ -356,7 +362,7 @@ export default function Workspace() {
               {more ? 'Fewer sections' : 'More sections'}
             </button>
           </nav>
-          {sections.map((name) => (
+          {availableSections.map((name) => (
             <section
               key={name}
               id={name.toLowerCase()}
@@ -391,6 +397,8 @@ export default function Workspace() {
                   <Team p={p} />
                   {shared && owner && <Invites slug={p.slug} />}
                 </>
+              ) : name === 'Money' ? (
+                <MoneyPanel p={p} owner={owner} />
               ) : name === 'Notes' ? (
                 <Notes p={p} />
               ) : name === 'Papers' ? (
