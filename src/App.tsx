@@ -393,8 +393,7 @@ export default function App() {
   // "3D Preview at the top is pointless. 2D can work but better to show
   // images of the products."). The TopBar prop is left undefined so its
   // toggle is hidden; the canvas wrapper below no longer applies the
-  // perspective transform. The Sims-style hover DetailCard (P0-ζ, now on
-  // SimsDock) replaces the "show what you're placing" need.
+  // perspective transform. Product details open inside the furnishing shelf.
 
   // P3-2 — paint/flooring estimate beta panel; OFF unless ?paint=1.
   const paintEstimateActive = isPaintEstimateActive();

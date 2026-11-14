@@ -17,6 +17,7 @@ import { flushSync } from 'react-dom';
 import { act } from 'react';
 import { SimsBottomToolbar } from '../SimsBottomToolbar';
 import { MobileProductPopup } from '../MobileProductPopup';
+import { resetPitchEmbedCache } from '../../../demo/pitchEmbed';
 import { getAllProducts } from '../../../data/products';
 import type { Product } from '../../../data/products.schema';
 import { useDesignerUIStore } from '../../../store/designerUIStore';
@@ -60,14 +61,15 @@ describe('SimsBottomToolbar', () => {
     // Empty tabs hide. The source-linked Comfy sofa now fills Furniture;
     // Recovery, Sauna and Appliances still have no ordinary seeded items.
     for (const cat of ['all', 'furniture', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']) {
-      expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`), cat).not.toBeNull();
+      expect(container.querySelector(`[data-testid="sims-filter"] option[value="category/${cat}"]`), cat).not.toBeNull();
     }
     for (const cat of ['recovery', 'sauna', 'appliances']) {
-      expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`), cat).toBeNull();
+      expect(container.querySelector(`[data-testid="sims-filter"] option[value="category/${cat}"]`), cat).toBeNull();
     }
     // Bundled catalog (22 products) renders thumbnails in the "All" tab.
     expect(container.querySelectorAll('[data-testid="sims-thumb"]').length).toBeGreaterThan(0);
-    act(() => (container.querySelector('[data-testid="sims-cat-furniture"]') as HTMLButtonElement).click());
+    const filter = container.querySelector<HTMLSelectElement>('[data-testid="sims-filter"]')!;
+    act(() => { filter.value = 'category/furniture'; filter.dispatchEvent(new Event('change', { bubbles: true })); });
     expect(container.querySelectorAll('[data-testid="sims-thumb"]').length).toBe(1);
     expect(container.querySelector('[data-product-id="courts-comfy-3-seater-dove"]')).not.toBeNull();
   });
@@ -102,6 +104,21 @@ describe('MobileProductPopup', () => {
     const addBtn = container.querySelector('[data-testid="popup-add-to-room"]') as HTMLButtonElement;
     act(() => addBtn.click());
     expect(onAdd).toHaveBeenCalledWith(product.id);
+  });
+
+  it('keeps merchant prices from the source notes out of public product details', () => {
+    window.history.replaceState(null, '', '/demo');
+    resetPitchEmbedCache();
+    try {
+      const source = { ...product, notes: 'Supplier snapshot: Rs 5,499', supplier: 'Test Merchant' };
+      act(() => root.render(<MobileProductPopup product={source} embedded onAdd={vi.fn()} onDragPlace={vi.fn()} onClose={vi.fn()} />));
+      expect(container.textContent).toContain(product.name);
+      expect(container.textContent).toContain(' cm');
+      expect(container.textContent).not.toMatch(/5,499|Test Merchant/);
+    } finally {
+      window.history.replaceState(null, '', '/');
+      resetPitchEmbedCache();
+    }
   });
 
   it('truncates a long description behind a "more" expander', () => {

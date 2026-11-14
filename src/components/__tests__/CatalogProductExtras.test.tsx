@@ -3,7 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getAllProducts } from '../../data/products';
-import { CatalogBrowseTabs, CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
+import { CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
 import { catalogThumbnailUrls } from '../catalogMetadata';
 import { catalogImageSources } from '../../data/catalogImageSources';
 
@@ -50,13 +50,5 @@ describe('catalogue controls', () => {
     expect(select).toHaveBeenCalledOnce(); expect(select).toHaveBeenCalledWith(variant); expect(placement).not.toHaveBeenCalled();
     act(() => root.render(<CatalogSwatches product={product} products={[product, variant]} onSelect={select} />));
     expect(host.querySelector('button')).toBeNull();
-  });
-  it('keeps room choices and an explicit close action reachable without opening a placement tool', () => {
-    const change = vi.fn(), close = vi.fn();
-    act(() => root.render(<CatalogBrowseTabs value={{ mode: 'room', value: 'all' }} onChange={change} onClose={close} />));
-    const room = [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'Bathroom')!;
-    act(() => room.click()); expect(change).toHaveBeenCalledOnce(); expect(change).toHaveBeenCalledWith({ mode: 'room', value: 'bath' });
-    act(() => host.querySelector<HTMLButtonElement>('[aria-label="Close product catalog"]')!.click());
-    expect(close).toHaveBeenCalledOnce();
   });
 });

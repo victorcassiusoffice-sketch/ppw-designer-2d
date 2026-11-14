@@ -7,3 +7,19 @@
 .house-product-heading .basket-product-picture{height:78px}
 .house-product-heading .basket-product-picture img{width:100%;height:60px}
 .house-product-heading .basket-product-picture .catalog-image-label{color:#404b47}
+
+[data-testid="cart-sheet"][data-inventory] { position: relative; flex: none; width: 100%; inset: auto; background: var(--studio-field, #dce2d8); color: var(--studio-ink, #293f38); }
+.design-product-shelf { display: flex; gap: 8px; overflow-x: auto; padding: 4px 10px; scrollbar-width: thin; }
+.design-product-shelf li { flex: 0 0 110px; overflow: hidden; background: var(--studio-cap, #e9e8dc); border-radius: 10px; padding: 4px; font-size: 11px; }
+.design-product-shelf li > span:last-child { display: block; line-height: 14px; overflow-wrap: anywhere; }
+.design-product-shelf .basket-product-picture { display: block; width: 100%; min-width: 0; height: clamp(38px, 6dvh, 54px); }
+.design-product-shelf .basket-product-picture img { height: 100%; }
+.design-product-shelf li > span:last-child { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+
+.designer-app:has(> [data-inventory]) > .sims-catalog { display: none; }
+.designer-app[data-view="plan"]:has(> [data-inventory]) .plan-topbar :is(.plan-build-tools,.plan-project-bar) { display: none; }
+.design-product-shelf li small { display: block; color: var(--studio-ink, #293f38); }
+[data-testid="cart-sheet"]:not([data-inventory]) { max-height: min(55dvh, 430px); overflow: auto; }
+[data-testid="cart-sheet"]:not([data-inventory]) > div:first-child { position: sticky; top: 0; z-index: 1; background: inherit; }
+[data-testid="cart-sheet"]:not([data-inventory]) table .basket-product-picture { height: 45px; }
+[data-testid="cart-sheet"]:not([data-inventory]) table .basket-product-picture img { height: 39px; }

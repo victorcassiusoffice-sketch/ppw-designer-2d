@@ -162,14 +162,9 @@ export async function openCatalog(page: Page, category?: MacroCategory): Promise
 
 /** Press a category on an OPEN catalogue: a plan tab, or a 3D home tile (going back to the tiles first if needed). */
 async function pickCategory(page: Page, category: MacroCategory): Promise<void> {
-  const control = categoryControl(page, category);
-  if (!(await shows(control))) {
-    // 3D strip page: the tiles live behind "← Categories".
-    const back = page.locator('.catalog-browser-back').filter({ visible: true }).first();
-    if (await shows(back)) await back.click();
-  }
-  await expect(control, `the ${category} category is offered`).toBeVisible({ timeout: 10_000 });
-  await control.click();
+  const filter = page.locator('.catalog-filter:visible').first();
+  if (await shows(filter)) await filter.selectOption('category/' + category);
+  else await categoryControl(page, category).click();
   await waitForStrip(page);
 }
 

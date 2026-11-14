@@ -73,7 +73,7 @@
 .canvas-edge-dock .world-walk-dock :is(button,.world-person-token) {min-height:40px;min-width:40px;font-size:12px;white-space:nowrap}
 .world-placement-options.world-placement-sheet {position:fixed;right:8px;bottom:max(76px,env(safe-area-inset-bottom));z-index:40;box-shadow:0 4px 16px #203d3526}
 body:has(.canvas-edge-dock[data-workspace=house][data-edge=bottom]) .world-placement-sheet {bottom:max(134px,env(safe-area-inset-bottom))}
-@media(max-width:767px) {
+@media(max-width:1023px) {
  .designer-app .house-workspace .house-header {display:grid;grid-template-columns:auto 1fr auto;height:auto;min-height:47px;padding:2px 6px;gap:3px;align-items:center}
  .designer-app .house-workspace .house-header .house-view-switch {grid-column:1;grid-row:1;margin:0}
  .designer-app .house-workspace .house-header .house-shortcuts {display:block;grid-column:2;grid-row:1;justify-self:end;min-height:40px;padding:0 8px;font-size:11px;border-radius:9px;background:var(--ui-surface,#e5eee8)}
@@ -81,6 +81,8 @@ body:has(.canvas-edge-dock[data-workspace=house][data-edge=bottom]) .world-place
  .designer-app .house-workspace .house-header[data-shortcuts=false] .house-project-actions > :not(.house-project-hub,.locale-theme-controls,[aria-label="Project tools"]) {display:none}
  .designer-app .house-workspace .house-header[data-shortcuts=true] .house-project-actions {grid-column:1/-1;grid-row:2;display:flex;flex-wrap:wrap;justify-content:flex-start}
  .designer-app .house-workspace .house-header[data-shortcuts=true] .house-shortcuts {grid-column:3}
+}
+@media(max-width:767px) {
  .canvas-edge-dock[data-workspace=plan][data-edge=bottom] {margin-bottom:12px}
 }
 

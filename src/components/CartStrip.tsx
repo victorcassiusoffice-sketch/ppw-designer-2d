@@ -24,7 +24,7 @@
  * doesn't clip them. Tap targets ≥44px.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../store/cartStore';
 import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
@@ -33,7 +33,7 @@ import { CATEGORY_LABELS } from '../data/products';
 import { formatCurrency as formatMoney } from '../lib/currency';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import { hasQuotedProducts, quoteAwareAmount } from '../lib/quotedProducts';
-import { CatalogProductImage } from './CatalogProductExtras';
+import { CatalogProductImage, DesignProductShelf } from './CatalogProductExtras';
 import './basketPictures.css';
 
 // Chrome recipe (toolbar contract 2026-08-29) — same strings as the
@@ -85,6 +85,16 @@ export function CartStrip() {
   // The sheet is opened deliberately, so show the line items straight away.
   const [expanded, setExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    window.dispatchEvent(new Event('ppw:close-catalog'));
+    const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeRef.current?.focus({ preventScroll: true });
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setMobileOpen(false); };
+    window.addEventListener('keydown', escape);
+    return () => { window.removeEventListener('keydown', escape); trigger?.focus({ preventScroll: true }); };
+  }, [mobileOpen]);
   useEffect(() => { const open = () => setMobileOpen(true); window.addEventListener('ppw:open-design-cart', open); return () => window.removeEventListener('ppw:open-design-cart', open); }, []);
 
   // Vic 2026-08-29: a painted / whole-room floor with no product yet is
@@ -345,28 +355,26 @@ export function CartStrip() {
       {/* Expanded state: the SAME cart body, as a bottom sheet. */}
       {mobileOpen && (
         <>
+          {!pitch && <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setMobileOpen(false)} />}
           <div
-            className="fixed inset-0 z-40 bg-black/30"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div
-            data-testid="cart-sheet"
+            data-testid="cart-sheet" data-inventory={pitch || undefined} aria-label={pitch ? 'Products in this design' : 'Cart'} role="region"
             className="fixed bottom-0 left-0 right-0 z-40 rounded-t-xl border-t border-ppw-rim bg-ppw-chrome md:left-auto md:w-[min(96vw,720px)]"
             style={{
               paddingBottom: 'env(safe-area-inset-bottom)',
               boxShadow: '0 -12px 32px rgba(42,41,38,0.18)',
             }}
           >
-            <div className="flex justify-end px-2 pt-2">
+            <div className="flex items-center justify-end gap-2 px-2 pt-2">
+              {pitch && <h2 className="mr-auto pl-2 text-sm font-semibold">Products in this design</h2>}
               <button
                 type="button"
-                onClick={() => setMobileOpen(false)}
+                ref={closeRef} onClick={() => setMobileOpen(false)}
                 className={CTRL_REST}
               >
                 Close
               </button>
             </div>
-            {body}
+            {pitch ? <DesignProductShelf cart={cart} /> : body}
           </div>
         </>
       )}

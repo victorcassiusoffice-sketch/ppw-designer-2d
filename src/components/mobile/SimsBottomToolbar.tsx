@@ -21,7 +21,6 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
-import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
 import type { Product } from '../../data/products.schema';
 import { mergeCatalog } from '../../data/mergeCatalog';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
@@ -40,22 +39,19 @@ import { useDesignsStore } from '../../store/designsStore';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useBelowMd } from '../../lib/useBelowMd';
 import {
-  visibleMacroCategories,
   MACRO_CATEGORY_LABEL,
   macroOf,
   type MacroCategory,
 } from './catalogMacros';
-import { MacroIcon } from './MacroIcon';
 import { MobileProductPopup } from './MobileProductPopup';
 import { useDragToPlace } from './useDragToPlace';
-import { CATALOG_CHROME, catalogPrice, catalogRequestCategory, filterCatalog, handleCatalogCategoryKey, type CatalogSort } from '../catalogPresentation';
+import { CATALOG_CHROME, catalogRequestCategory, filterCatalog, type CatalogSort } from '../catalogPresentation';
 import '../catalogChrome.css';
-import { CatalogHeader, CatalogHome } from '../CatalogHome';
+import { CatalogShelfHeader, CatalogHome } from '../CatalogHome';
 import { useCatalogDismissal } from '../useCatalogDismissal';
 import { PlanCatalogLauncher } from '../PlanCatalogLauncher';
-import { CatalogAvailability, CatalogBrowseTabs, CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
+import { CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
 import { catalogDragImageUrl, type CatalogBrowse } from '../catalogMetadata';
-import { isPitchEmbed } from '../../demo/pitchEmbed';
 
 const { DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
 
@@ -85,7 +81,7 @@ export function SimsBottomToolbar() {
   const stripRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setMinimized(true); }, [viewMode]);
+  useEffect(() => { setMinimized(true); setSelected(null); }, [viewMode]);
   useEffect(() => {
     let focusFrame: number | undefined;
     const open = (event: Event) => {
@@ -185,7 +181,7 @@ export function SimsBottomToolbar() {
   const allProducts = useMemo(() => mergeCatalog(apiProducts), [apiProducts]);
 
   const filtered = useMemo(() => filterCatalog(allProducts, activeCategory, query, sort, browse), [allProducts, activeCategory, query, sort, browse]);
-  useEffect(() => { if (stripRef.current) stripRef.current.scrollLeft = 0; }, [activeCategory, query, sort]);
+  useEffect(() => { if (stripRef.current) stripRef.current.scrollLeft = 0; }, [activeCategory, browse, query, sort]);
 
   // Floor tool state for the floor cards (scalar selectors — the strip must
   // not re-render for draft fields it does not show).
@@ -211,12 +207,22 @@ export function SimsBottomToolbar() {
     onTap: choosePosition,
   });
 
+  function backToProducts() {
+    setSelected(null);
+    requestAnimationFrame(() => {
+      const buttons = sectionRef.current?.querySelectorAll<HTMLButtonElement>('[data-detail-id]');
+      Array.from(buttons ?? []).find(button => button.dataset.detailId === selected?.id)?.focus({ preventScroll: true });
+    });
+  }
+
   const closeCatalog = useCallback(() => { setMinimized(true); setSelected(null); }, []);
   useCatalogDismissal({ viewMode, open: !minimized, desktop: false, close: closeCatalog, placing: dragging });
 
-  const productDetails = selected && <MobileProductPopup product={selected} embedded
+  const productDetails = selected && <MobileProductPopup product={variants[selected.id] ?? selected} embedded onDismiss={closeCatalog}
+          swatches={<CatalogSwatches product={selected} selectedSku={(variants[selected.id] ?? selected).sku} products={allProducts}
+            onSelect={value => setVariants(current => ({ ...current, [selected.id]: value }))} />}
     onAdd={choosePosition}
-    onDragPlace={(productId, x, y) => placeAt(productId, x, y)} onClose={() => setSelected(null)} />;
+    onDragPlace={(productId, x, y) => placeAt(productId, x, y)} onClose={backToProducts} />;
 
   return (
     <>
@@ -231,112 +237,21 @@ export function SimsBottomToolbar() {
         style={{
           background: DOCK_BG,
           borderTop: `1px solid ${DOCK_BORDER}`,
-          maxHeight: 'min(44dvh, 300px)',
           paddingBottom: 'env(safe-area-inset-bottom)',
           boxShadow: '0 -6px 20px rgba(42,41,38,0.12)',
         }}
       >
-        {!minimized && <CatalogConnectionNotice />}
         {viewMode === 'plan' && minimized && <PlanCatalogLauncher prefix="sims"
-          onOpen={() => { setMinimized(false); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLButtonElement>('[data-testid="sims-cat-all"]')?.focus()); }}
+          onOpen={() => { setMinimized(false); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLSelectElement>('[data-testid="sims-filter"]')?.focus()); }}
           onSearch={() => { setMinimized(false); requestAnimationFrame(() => searchRef.current?.focus()); }} />}
-        {viewMode === '3d' && (browse.mode === 'category' || selected) && <CatalogHeader home={categoryHome} category={activeCategory} onBack={() => { setCategoryHome(true); setBrowse({ mode: 'category', value: 'all' }); setQuery(''); setSelected(null); }} onClose={closeCatalog} />}
-        {!minimized && !selected && <CatalogBrowseTabs value={browse} onClose={closeCatalog} closeLabel={viewMode === '3d' ? 'Close home store' : 'Close product catalog'} onChange={value => { setBrowse(value); setCategoryHome(value.mode === 'category'); setQuery(''); }} />}
-        {viewMode === '3d' && browse.mode === 'category' && categoryHome && !minimized && <CatalogHome prefix="sims" products={allProducts} onCategory={(category) => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
-        {/* Plan keeps its compact category bar. 3D shows one home-store page at a time. */}
-        {viewMode !== '3d' && browse.mode === 'category' && !minimized && !selected && <div className="plan-catalog-categories flex shrink-0 items-center gap-1 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
-          <div
-            role="tablist"
-            aria-label="Product category"
-            className="flex flex-1 gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {browse.mode === 'category' && visibleMacroCategories(allProducts).map((mc) => {
-              const active = activeCategory === mc;
-              return (
-                <button
-                  key={mc}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  tabIndex={active ? 0 : -1}
-                  onKeyDown={handleCatalogCategoryKey}
-                  data-testid={`sims-cat-${mc}`}
-                  onClick={() => {
-                    setActiveCategory(mc);
-                    setMinimized(false);
-                  }}
-                  className={`flex h-11 min-w-[60px] shrink-0 flex-col items-center justify-center gap-1 rounded-lg px-2 ${DOCK_CONTROL} ${
-                    active ? '' : 'hover:bg-[var(--catalog-hover)]'
-                  }`}
-                  style={{
-                    // Shop selected style: dark ink on a mint tint with a
-                    // mint rim — never mint (or gold) TEXT, which fails
-                    // contrast on the light ground.
-                    color: active ? 'var(--catalog-selected-text)' : DOCK_TEXT,
-                    background: active ? 'var(--catalog-selected)' : 'transparent',
-                    boxShadow: active ? `inset 0 0 0 1px ${DOCK_ACCENT}` : 'none',
-                  }}
-                >
-                  <MacroIcon macro={mc} size={20} />
-                  {/* Caption: 11/600 uppercase, .06em — the contract floor
-                      (was 9 px). */}
-                  <span className="text-[11px] font-semibold uppercase leading-none tracking-[0.06em]">
-                    {MACRO_CATEGORY_LABEL[mc]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <button type="button" aria-label="Search catalog" data-testid="sims-search-open"
-            onClick={() => { setMinimized(false); requestAnimationFrame(() => searchRef.current?.focus()); }}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${DOCK_CONTROL}`} style={{ color: DOCK_TEXT }}>
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg>
-          </button>
-          <button
-            type="button"
-            data-testid="sims-toolbar-minimize"
-            aria-label="Close product catalog"
-            aria-expanded={!minimized}
-            aria-controls="mobile-catalog-products"
-            onClick={closeCatalog}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-[var(--catalog-hover)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] ${DOCK_CONTROL}`}
-            style={{
-              color: DOCK_TEXT,
-              background: DOCK_BG_RAISED,
-              boxShadow: `inset 0 0 0 1px ${DOCK_BORDER}`,
-            }}
-          >
-            <span className="sr-only">Close</span><svg
-              viewBox="0 0 24 24"
-              width={20}
-              height={20}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="motion-reduce:transition-none"
-              style={{ transform: minimized ? 'rotate(180deg)' : 'none', transition: 'transform 120ms ease-out' }}
-            >
-              <path d="M6 15l6-6 6 6" />
-            </svg>
-          </button>
-        </div>}
-
-        {!minimized && !selected && (viewMode !== '3d' || !categoryHome) && <div className="catalog-browser-search flex shrink-0 items-center gap-2 px-2 pt-2">
-          <label className="catalog-field flex h-11 min-w-0 flex-1 items-center rounded-lg border px-2.5 focus-within:ring-2 focus-within:ring-[var(--catalog-focus)]" style={{ borderColor: DOCK_BORDER }}>
-            <input ref={searchRef} type="search" value={query} data-testid="sims-search" aria-label="Search product catalog"
-              placeholder={activeCategory === 'all' ? 'Search products or brands' : `Search ${MACRO_CATEGORY_LABEL[activeCategory].toLowerCase()}`}
-              onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape' && viewMode !== '3d') setQuery(''); }} className="catalog-field min-w-0 flex-1 text-[16px] outline-none placeholder:text-[12px]" />
-          </label>
-          <select value={sort} data-testid="sims-sort" aria-label="Sort products" onChange={(event) => setSort(event.target.value as CatalogSort)}
-            className={`catalog-field h-11 w-[116px] shrink-0 rounded-lg border px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
-            <option value="catalog">Catalog order</option><option value="name">Name A–Z</option><option value="footprint">Smallest first</option>
-            {!isPitchEmbed() && <><option value="price-asc">Price low–high</option><option value="price-desc">Price high–low</option></>}
-          </select>
-        </div>}
-
+        {!minimized && !selected && <CatalogShelfHeader prefix="sims" house={viewMode === '3d'} home={viewMode === '3d' && categoryHome}
+          category={activeCategory} products={allProducts} browse={browse} query={query} sort={sort} searchRef={searchRef}
+          onFilter={(category, group) => { setActiveCategory(category); setBrowse(group); setCategoryHome(false); setQuery(''); }}
+          onSearch={value => { setQuery(value); setCategoryHome(false); }} onSort={setSort}
+          onBack={() => { setCategoryHome(true); setActiveCategory('all'); setBrowse({ mode: 'category', value: 'all' }); setQuery(''); }}
+          onClose={closeCatalog} />}
+        {viewMode === '3d' && categoryHome && !minimized && !selected && <CatalogHome prefix="sims" products={allProducts}
+          onCategory={category => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
         {/* One named row keeps products recognizable and leaves the plan visible. */}
         {!minimized && !selected && (viewMode !== '3d' || !categoryHome) && (
           <div
@@ -355,9 +270,8 @@ export function SimsBottomToolbar() {
               <div
                 className="grid py-1"
                 style={{
-                  gridTemplateRows: '96px',
                   gridAutoFlow: 'column',
-                  gridAutoColumns: '104px',
+                  gridAutoColumns: 'var(--catalog-card-width)',
                   gap: 8,
                 }}
               >
@@ -370,7 +284,7 @@ export function SimsBottomToolbar() {
                     // separate; floor products are never dropped as loose items.
                     const isOn = tool === 'floor' && floorMaterialId === floorMat.id;
                     return (
-                      <div key={p.id} className="catalog-product-tile"><button
+                      <div key={original.id} className="catalog-product-tile"><button
                         type="button"
                         data-testid="sims-thumb"
                         data-product-id={p.id}
@@ -403,16 +317,13 @@ export function SimsBottomToolbar() {
                           Floor
                         </span>
                         <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
-                        <span aria-hidden="true" className="catalog-muted block w-full truncate text-[11px] tabular-nums">{catalogPrice(p)}</span>
-                        <CatalogAvailability product={p} />
                       </button>
-                      <button type="button" className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(p)}><span aria-hidden="true">ⓘ</span></button>
-                      <CatalogSwatches product={original} selectedSku={p.sku} products={allProducts} onSelect={value => setVariants(current => ({ ...current, [original.id]: value }))} />
+                      <button type="button" data-detail-id={original.id} className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(original)}><span aria-hidden="true">ⓘ</span></button>
                       </div>
                     );
                   }
                   return (
-                  <div key={p.id} className="catalog-product-tile">
+                  <div key={original.id} className="catalog-product-tile">
                   <button
                     type="button"
                     data-testid="sims-thumb"
@@ -434,11 +345,8 @@ export function SimsBottomToolbar() {
                         leaving the cream tile). Reduced-motion handled inside. */}
                     <span className="relative block h-[52px] w-full shrink-0"><ThumbImage product={p} /></span>
                     <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
-                    <span aria-hidden="true" className="catalog-muted block w-full truncate text-[11px] tabular-nums">{catalogPrice(p)}</span>
-                    <CatalogAvailability product={p} />
                   </button>
-                  <button type="button" className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(p)}><span aria-hidden="true">ⓘ</span></button>
-                  <CatalogSwatches product={original} selectedSku={p.sku} products={allProducts} onSelect={value => setVariants(current => ({ ...current, [original.id]: value }))} />
+                  <button type="button" data-detail-id={original.id} className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(original)}><span aria-hidden="true">ⓘ</span></button>
                   </div>
                   );
                 })}
@@ -446,9 +354,9 @@ export function SimsBottomToolbar() {
             )}
           </div>
         )}
-        {!minimized && !selected && (viewMode !== '3d' || !categoryHome) && <div className="catalog-muted flex shrink-0 items-center justify-between gap-2 px-3 pb-1 text-[11px]">
+        {!minimized && !selected && (viewMode !== '3d' || !categoryHome) && <div className="sr-only">
           <span role="status" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'product' : 'products'}</span>
-          <span>Tap then place · hold to drag</span>
+
         </div>}
         {!minimized && productDetails}
       </section>

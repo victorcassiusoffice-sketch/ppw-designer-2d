@@ -174,15 +174,12 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
     // The dock starts collapsed behind its Furnish launcher (2026-09-26); the
     // tab bar renders only once it is open.
     await openCatalog(page);
-    const labels = ['All', 'Cardio', 'Flooring', 'Walls', 'Decor', 'Lighting', 'Outdoor', 'Eco'];
-    for (const label of labels) {
-      // The catalog moved from ProductPalette's plain <button> chips to
-      // SimsDock, whose macro tabs carry role="tab". The label text is
-      // unchanged; only the ROLE moved.
-      const tab = page.getByRole('tab', { name: new RegExp(`^${label}$`) }).first();
-      await expect(tab).toBeVisible({ timeout: 10_000 });
+    const filter = page.getByTestId('dock-filter');
+    await expect(filter).toBeVisible();
+    for (const category of ['all', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']) {
+      await filter.selectOption('category/' + category);
+      await expect(filter).toHaveValue('category/' + category);
     }
-    await expect(page.locator('[data-testid^="dock-cat-"]')).toHaveCount(labels.length);
   });
 
   test.skip('catalog tiles render in a grid with ≥4 columns at 320 px width (Tweak 05)', async ({ page }) => {

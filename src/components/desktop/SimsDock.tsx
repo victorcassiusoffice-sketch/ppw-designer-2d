@@ -21,36 +21,31 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
-import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
 import type { Product } from '../../data/products.schema';
 import { mergeCatalog } from '../../data/mergeCatalog';
 import {
-  visibleMacroCategories,
   MACRO_CATEGORY_LABEL,
   macroOf,
   type MacroCategory,
 } from '../mobile/catalogMacros';
-import { MacroIcon } from '../mobile/MacroIcon';
 // Sims drag-drop (2026-08-28, D-B1) - the SAME pointer hook the mobile
 // surfaces use. One mechanism for mouse and touch; two would drift.
 import { useDragToPlace } from '../mobile/useDragToPlace';
 import { useDragPointerStore } from '../../store/dragPointerStore';
-import { DetailCard } from '../../designer/DetailCard';
 // Floor tool (2026-08-30): the six K1 tile/roll SKUs are FLOOR cards. Their
 // card arms the Floor tool with that material instead of placing a loose
 // item, so the catalog and the Floor panel are one path, not two.
 import { floorMaterialForProduct } from '../../data/floorMaterials';
 import { useDesignerUIStore } from '../../store/designerUIStore';
-import { CATALOG_CHROME, catalogPrice, catalogRequestCategory, filterCatalog, handleCatalogCategoryKey, type CatalogSort } from '../catalogPresentation';
+import { CATALOG_CHROME, catalogPrice, catalogRequestCategory, filterCatalog, type CatalogSort } from '../catalogPresentation';
 import '../catalogChrome.css';
-import { CatalogHeader, CatalogHome } from '../CatalogHome';
+import { CatalogShelfHeader, CatalogHome } from '../CatalogHome';
 import { useCatalogDismissal } from '../useCatalogDismissal';
 import { PlanCatalogLauncher } from '../PlanCatalogLauncher';
 import { MobileProductPopup } from '../mobile/MobileProductPopup';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
-import { CatalogAvailability, CatalogBrowseTabs, CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
-import { CATALOG_GROUP_LABELS, catalogDragImageUrl, catalogDetailImageUrl, type CatalogBrowse } from '../catalogMetadata';
-import { isPitchEmbed } from '../../demo/pitchEmbed';
+import { CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
+import { CATALOG_GROUP_LABELS, catalogDragImageUrl, type CatalogBrowse } from '../catalogMetadata';
 
 const { CHROME_TEXT_2, DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
 
@@ -68,12 +63,6 @@ export interface SimsDockProps {
   setPendingProductId?: (id: string | null) => void;
 }
 
-interface HoverState {
-  product: Product;
-  anchorXPx: number;
-  anchorYPx: number;
-}
-
 export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProps = {}) {
   const viewMode = useDesignerUIStore((s) => s.viewMode);
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
@@ -84,14 +73,12 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
   const [browse, setBrowse] = useState<CatalogBrowse>({ mode: 'category', value: 'all' });
   const [variants, setVariants] = useState<Record<string, Product>>({});
   const apiProducts = useMerchantCatalog();
-  const [hover, setHover] = useState<HoverState | null>(null);
   const [details, setDetails] = useState<Product | null>(null);
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const stripRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setCollapsed(true); setHover(null); setDetails(null); }, [viewMode]);
+  useEffect(() => { setCollapsed(true); setDetails(null); }, [viewMode]);
   useEffect(() => {
     let focusFrame: number | undefined;
     const open = (event: Event) => {
@@ -102,7 +89,6 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
       setCategoryHome(category === undefined);
       setQuery('');
       setCollapsed(false);
-      setHover(null);
       setDetails(null);
       if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
       focusFrame = requestAnimationFrame(() => {
@@ -149,29 +135,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
   const allProducts = useMemo(() => mergeCatalog(apiProducts), [apiProducts]);
 
   const filtered = useMemo(() => filterCatalog(allProducts, activeCategory, query, sort, browse), [allProducts, activeCategory, query, sort, browse]);
-  useEffect(() => { if (stripRef.current) stripRef.current.scrollLeft = 0; }, [activeCategory, query, sort]);
-  useEffect(() => () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }, []);
-
-  function armHover(product: Product, rect: DOMRect): void {
-    if (viewMode === '3d') return;
-    if (hoverTimer.current) {
-      clearTimeout(hoverTimer.current);
-      hoverTimer.current = null;
-    }
-    setHover({
-      product,
-      // Anchor ABOVE the tile — the dock sits at the bottom of the screen,
-      // so the card has to open upward or it lands off-viewport.
-      anchorXPx: rect.left + rect.width / 2,
-      anchorYPx: rect.top,
-    });
-  }
-
-  function disarmHover(): void {
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    hoverTimer.current = setTimeout(() => setHover(null), 80);
-  }
-
+  useEffect(() => { if (stripRef.current) stripRef.current.scrollLeft = 0; }, [activeCategory, browse, query, sort]);
   /**
    * Arm WITHOUT toggling off (Sims drag-drop, D-B9).
    *
@@ -214,7 +178,6 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
     onDragStart: (productId, x, y) => {
       const p = allProducts.find((q: Product) => q.id === productId);
       if (p) armOnly(p);
-      disarmHover();
       dragPointer.begin(productId, x, y);
     },
     onDragMove: (productId, x, y) => dragPointer.move(productId, x, y),
@@ -222,9 +185,16 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
     onCancel: () => dragPointer.cancel(),
   });
 
+  function backToProducts() {
+    setDetails(null);
+    requestAnimationFrame(() => {
+      const buttons = sectionRef.current?.querySelectorAll<HTMLButtonElement>('[data-detail-id]');
+      Array.from(buttons ?? []).find(button => button.dataset.detailId === details?.id)?.focus({ preventScroll: true });
+    });
+  }
+
   const closeCatalog = useCallback(() => {
     setCollapsed(true);
-    setHover(null);
     setDetails(null);
     setPendingProductId?.(null);
   }, [setPendingProductId]);
@@ -252,8 +222,8 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
   function armFloor(materialId: string): void {
     setFloorDraft({ materialId, erase: false });
     setTool('floor');
+    setCollapsed(true);
     if (setPendingProductId && pendingProductId) setPendingProductId(null);
-    setHover(null);
   }
 
   const emptyLabel = browse.mode === 'category' ? MACRO_CATEGORY_LABEL[activeCategory] : CATALOG_GROUP_LABELS[browse.value];
@@ -279,81 +249,22 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
           boxShadow: '0 -6px 20px rgba(42,41,38,0.10)',
         }}
       >
-        {!collapsed && <CatalogConnectionNotice />}
         {viewMode === 'plan' && collapsed && <PlanCatalogLauncher prefix="dock"
-          onOpen={() => { setCollapsed(false); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLButtonElement>('[data-testid="dock-cat-all"]')?.focus()); }}
+          onOpen={() => { setCollapsed(false); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLSelectElement>('[data-testid="dock-filter"]')?.focus()); }}
           onSearch={() => { setCollapsed(false); requestAnimationFrame(() => searchRef.current?.focus()); }} />}
         {/* The DOM thumbnail ghost shows only while the pointer is OUTSIDE
             the canvas. Over the canvas the Konva footprint ghost is the
             single truth, so exactly one preview is ever visible. */}
         {!overCanvas && dockDrag.ghost}
 
-        {viewMode === '3d' && (browse.mode === 'category' || details) && <CatalogHeader home={categoryHome} category={activeCategory} onBack={() => { setCategoryHome(true); setBrowse({ mode: 'category', value: 'all' }); setQuery(''); setDetails(null); }} onClose={closeCatalog} />}
-        {!collapsed && !details && <CatalogBrowseTabs value={browse} onClose={viewMode === '3d' ? closeCatalog : undefined} closeLabel="Close home store" onChange={value => { setBrowse(value); setCategoryHome(value.mode === 'category'); setQuery(''); }} />}
-        {viewMode === '3d' && browse.mode === 'category' && categoryHome && !collapsed && <CatalogHome prefix="dock" products={allProducts} onCategory={(category) => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
-        {!collapsed && !details && (viewMode !== '3d' || !categoryHome) && <div className="catalog-browser-search flex min-w-0 items-center gap-2">
-          <label className="catalog-field flex h-10 w-[210px] shrink-0 items-center gap-2 rounded-xl border px-2.5 focus-within:ring-2 focus-within:ring-[var(--catalog-focus)] xl:w-[250px]" style={{ borderColor: DOCK_BORDER }}>
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg>
-            <input ref={searchRef} type="search" value={query} data-testid="dock-search" aria-label="Search product catalog" placeholder="Search products or brands"
-              onChange={(event) => { setQuery(event.target.value); setCollapsed(false); setHover(null); }}
-              onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape' && viewMode !== '3d') setQuery(''); }}
-              className="catalog-field min-w-0 flex-1 text-[12px] outline-none" />
-          </label>
-        {viewMode !== '3d' && browse.mode === 'category' && <div
-          role="tablist"
-          aria-label="Product category"
-          className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1 [scrollbar-width:thin]"
-        >
-          {visibleMacroCategories(allProducts).map((mc) => {
-            const active = activeCategory === mc;
-            return (
-              <button
-                key={mc}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                tabIndex={active ? 0 : -1}
-                onKeyDown={handleCatalogCategoryKey}
-                data-testid={`dock-cat-${mc}`}
-                onClick={() => {
-                  setActiveCategory(mc);
-                  setCollapsed(false);
-                }}
-                className={`flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg px-2.5 ${DOCK_CONTROL} ${
-                  active ? '' : 'hover:bg-[var(--catalog-hover)]'
-                }`}
-                style={{
-                  // Shop soft-neumorphic selected style: dark ink on a mint
-                  // tint with a mint rim (NOT mint text, which is illegible
-                  // on the light dock). Matches the shop side-item.
-                  color: active ? 'var(--catalog-selected-text)' : DOCK_TEXT,
-                  background: active ? 'var(--catalog-selected)' : undefined,
-                  boxShadow: active ? `inset 0 0 0 1px ${DOCK_ACCENT}` : 'none',
-                }}
-                title={`${MACRO_CATEGORY_LABEL[mc]} — show this category`}
-              >
-                <MacroIcon macro={mc} size={17} />
-                {/* Caption: 11/600 uppercase, .06em — the contract floor.
-                    (Was 9 px, below the 11 px minimum.) */}
-                <span className="text-[12px] font-medium leading-none">
-                  {MACRO_CATEGORY_LABEL[mc]}
-                </span>
-              </button>
-            );
-          })}
-        </div>}
-          <select data-testid="dock-sort" aria-label="Sort products" value={sort} onChange={(event) => { setSort(event.target.value as CatalogSort); setCollapsed(false); }}
-            className={`catalog-field h-10 w-[124px] shrink-0 rounded-lg border px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
-            <option value="catalog">Catalog order</option><option value="name">Name A–Z</option><option value="footprint">Smallest first</option>
-            {!isPitchEmbed() && <><option value="price-asc">Price low–high</option><option value="price-desc">Price high–low</option></>}
-          </select>
-          {viewMode !== '3d' && <button type="button" data-testid="dock-collapse" aria-label="Close product catalog" aria-expanded="true" aria-controls="desktop-catalog-products"
-            onClick={closeCatalog} title="Close product catalog"
-            className={`catalog-field flex h-10 shrink-0 items-center justify-center rounded-lg border px-3 text-xs ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
-            Close ×
-          </button>}
-        </div>}
-
+        {!collapsed && !details && <CatalogShelfHeader prefix="dock" house={viewMode === '3d'} home={viewMode === '3d' && categoryHome}
+          category={activeCategory} products={allProducts} browse={browse} query={query} sort={sort} searchRef={searchRef}
+          onFilter={(category, group) => { setActiveCategory(category); setBrowse(group); setCategoryHome(false); setQuery(''); }}
+          onSearch={value => { setQuery(value); setCategoryHome(false); }} onSort={setSort}
+          onBack={() => { setCategoryHome(true); setActiveCategory('all'); setBrowse({ mode: 'category', value: 'all' }); setQuery(''); }}
+          onClose={closeCatalog} />}
+        {viewMode === '3d' && categoryHome && !collapsed && !details && <CatalogHome prefix="dock" products={allProducts}
+          onCategory={category => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
         {/* Product strip — horizontally scrollable, one row of tiles. */}
         {!collapsed && !details && (viewMode !== '3d' || !categoryHome) && <div className="catalog-browser-products flex min-w-0 items-stretch gap-3">
           <div className="flex w-[76px] shrink-0 flex-col justify-center gap-1 border-r pr-2 text-[11px]" style={{ borderColor: DOCK_BORDER, color: CHROME_TEXT_2 }}>
@@ -385,7 +296,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                   // counts (dock tile + canvas = 2) are untouched.
                   const isOn = tool === 'floor' && floorMaterialId === floorMat.id;
                   return (
-                    <li key={p.id} className="shrink-0">
+                    <li key={original.id} className="catalog-product-tile shrink-0">
                       <div
                         role="button"
                         tabIndex={0}
@@ -398,14 +309,6 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                           e.preventDefault();
                           armFloor(floorMat.id);
                         }}
-                        onPointerEnter={(e) =>
-                          armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())
-                        }
-                        onPointerLeave={disarmHover}
-                        onFocus={(e) =>
-                          armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())
-                        }
-                        onBlur={disarmHover}
                         data-product-id={p.id}
                         data-category={p.category}
                         data-macro={macroOf(p)}
@@ -422,16 +325,13 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                         <DockThumb product={p} />
                         <FloorBadge />
                         <span className="mt-0.5 block w-full truncate text-center text-[11px] font-medium" aria-hidden="true">{p.name}</span>
-                        <span className="catalog-muted block w-full truncate text-center text-[11px] tabular-nums" aria-hidden="true">{catalogPrice(p)}</span>
-                        <CatalogAvailability product={p} />
                       </div>
-                      <button type="button" className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(p); setHover(null); setPendingProductId?.(null); }}>Details</button>
-                      <CatalogSwatches product={original} selectedSku={p.sku} products={allProducts} onSelect={value => setVariants(current => ({ ...current, [original.id]: value }))} />
+                      <button type="button" data-detail-id={original.id} className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(original); setPendingProductId?.(null); }}><span aria-hidden="true">ⓘ</span></button>
                     </li>
                   );
                 }
                 return (
-                  <li key={p.id} className="shrink-0">
+                  <li key={original.id} className="catalog-product-tile shrink-0">
                     <div
                       role="button"
                       tabIndex={0}
@@ -466,14 +366,6 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                         e.preventDefault();
                         toggleArm(p);
                       }}
-                      onPointerEnter={(e) =>
-                        armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())
-                      }
-                      onPointerLeave={disarmHover}
-                      onFocus={(e) =>
-                        armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())
-                      }
-                      onBlur={disarmHover}
                       data-product-id={p.id}
                       data-category={p.category}
                       data-macro={macroOf(p)}
@@ -492,80 +384,21 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                     >
                       <DockThumb product={p} />
                       <span className="mt-0.5 block w-full truncate text-center text-[11px] font-medium" aria-hidden="true">{p.name}</span>
-                      <span className="catalog-muted block w-full truncate text-center text-[11px] tabular-nums" aria-hidden="true">{catalogPrice(p)}</span>
-                      <CatalogAvailability product={p} />
                     </div>
-                    <button type="button" className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(p); setHover(null); setPendingProductId?.(null); }}>Details</button>
-                    <CatalogSwatches product={original} selectedSku={p.sku} products={allProducts} onSelect={value => setVariants(current => ({ ...current, [original.id]: value }))} />
+                    <button type="button" data-detail-id={original.id} className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(original); setPendingProductId?.(null); }}><span aria-hidden="true">ⓘ</span></button>
                   </li>
                 );
               })
             )}
           </ul>
         </div>}
-        {details && !collapsed && <MobileProductPopup product={details} embedded
-          onAdd={(id) => { setPendingProductId?.(id); setDetails(null); }}
-          onDragPlace={(id, x, y) => usePlacementIntentStore.getState().placeAt(id, x, y)} onClose={() => setDetails(null)} />}
+        {details && !collapsed && <MobileProductPopup product={variants[details.id] ?? details} embedded onDismiss={closeCatalog}
+          swatches={<CatalogSwatches product={details} selectedSku={(variants[details.id] ?? details).sku} products={allProducts}
+            onSelect={value => setVariants(current => ({ ...current, [details.id]: value }))} />}
+          onAdd={(id) => { setPendingProductId?.(id); setDetails(null); setCollapsed(true); }}
+          onDragPlace={(id, x, y) => usePlacementIntentStore.getState().placeAt(id, x, y)} onClose={backToProducts} />}
       </section>
 
-      {/* Sims-style floating detail card on hover. Carries the same testid
-          the P0-zeta e2e asserts on — the card moved from the sidebar to the
-          dock, it did not disappear. */}
-      {/* The hover detail card is suppressed while a drag is in flight - it
-          is a browsing affordance, and during a drag it is just clutter over
-          the plan the user is aiming at. */}
-      {/* Also hidden while a product is ARMED: the card used to stay open
-          after the arming click and swallowed the placement click on the
-          canvas beneath it (bottom-right corner drops never landed). */}
-      {viewMode !== '3d' && hover && !details && !dockDrag.dragging && !pendingProductId && (
-        <div
-          data-testid="product-hover-card"
-          className="hidden lg:block"
-          onPointerEnter={() => {
-            if (hoverTimer.current) clearTimeout(hoverTimer.current);
-          }}
-          onPointerLeave={disarmHover}
-        >
-          <DetailCard
-            anchorXPx={hover.anchorXPx}
-            anchorYPx={hover.anchorYPx}
-            canvasWidthPx={typeof window !== 'undefined' ? window.innerWidth : 1280}
-            canvasHeightPx={typeof window !== 'undefined' ? window.innerHeight : 720}
-            thumbUrl={catalogDetailImageUrl(hover.product)}
-            name={hover.product.name}
-            priceMur={Math.round(hover.product.price?.value ?? 0)}
-            priceLabel={catalogPrice(hover.product)}
-            description={
-              hover.product.notes?.trim()
-                ? `${hover.product.notes.trim()}\n${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`
-                : `${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`
-            }
-            actions={
-              floorMaterialForProduct(hover.product)
-                ? [
-                    {
-                      id: 'lay-floor',
-                      label: 'Lay this floor',
-                      onClick: () => armFloor(floorMaterialForProduct(hover.product)!.id),
-                    },
-                  ]
-                : setPendingProductId
-                  ? [
-                      {
-                        id: 'place',
-                        label: 'Place on floor',
-                        onClick: () => {
-                          setPendingProductId(hover.product.id);
-                          setHover(null);
-                        },
-                      },
-                    ]
-                  : []
-            }
-            onDismiss={() => setHover(null)}
-          />
-        </div>
-      )}
     </>
   );
 }

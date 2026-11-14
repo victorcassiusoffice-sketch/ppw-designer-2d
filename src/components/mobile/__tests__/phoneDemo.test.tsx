@@ -137,8 +137,9 @@ describe('SimsBottomToolbar — a furnished plan opens folded on a phone', () =>
     const minBtn = container.querySelector('[data-testid="sims-catalog-open"]') as HTMLButtonElement;
     expect(minBtn.getAttribute('aria-expanded')).toBe('false');
     act(() => minBtn.click());
-    const cardio = container.querySelector('[data-testid="sims-cat-cardio"]') as HTMLButtonElement;
-    act(() => cardio.click());
+    const filter = container.querySelector<HTMLSelectElement>('[data-testid="sims-filter"]')!;
+    act(() => { filter.value = 'category/cardio'; filter.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(container.querySelector('[data-testid="sims-thumb"]')?.getAttribute('data-macro')).toBe('cardio');
     expect(container.querySelector('[data-testid="sims-thumb-strip"]')).not.toBeNull();
   });
 
