@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { id, roles } from './contract';
+import { id, roles } from './contract.js';
 
 export const currencies = ['EUR', 'MUR', 'GBP', 'USD'] as const;
 export const categories = ['works', 'materials', 'people', 'travel', 'equipment', 'other'] as const;
