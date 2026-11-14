@@ -19,12 +19,10 @@ import {
 import { crossSiteWrite, studioAccess, requestHost } from './studioAccess.js';
 import { readAdminConfig, readAdminSession } from '../../server/adminAuth.js';
 import { readStudioToken } from '../../server/studioSession.js';
-import { buildLimiter, getClientIp } from './rateLimit.js';
+import { getClientIp } from './rateLimit.js';
 import type { MinReq, MinRes } from './sentry.js';
 const hash = (s: string) => createHash('sha256').update(s).digest('hex'),
   secret = () => randomBytes(32).toString('base64url');
-const joins = buildLimiter('pilot-join', 15, 600),
-  uploads = buildLimiter('pilot-upload', 40, 600);
 const tokenSchema = z.string().regex(/^[a-zA-Z0-9_-]{43}$/);
 function token(req: MinReq, slug: string) {
   const raw = String(req.headers.cookie ?? '');
@@ -123,8 +121,13 @@ const defaultDeps: Dependencies = {
   owner: ownerId,
   files: blob,
   limited: async (kind, req) => {
-    const v = await (kind === 'join' ? joins : uploads).check(getClientIp(req));
-    return !v.success || !!v.reason;
+    // Use the same durable Neon store as the private record. Preview isolation
+    // is checked before the counter can write, even for an unclaimed link.
+    return !(await hostedPilots().allowAttempt(
+      kind,
+      hash(getClientIp(req)),
+      kind === 'join' ? 15 : 40,
+    ));
   },
 };
 export async function handlePilots(
@@ -185,7 +188,12 @@ export async function handlePilots(
             rows.push({ slug: s, name: access.name, lane: access.lane, state: access.state });
         }
         if (!owner && !rows.length) return forbidden();
-        return ok({ owner: !!owner, pilots: [...new Map(rows.map((r) => [r.slug, r])).values()] });
+        const sites = owner ? await db.programme(owner) : [];
+        return ok({
+          owner: !!owner,
+          sites,
+          pilots: [...new Map(rows.map((r) => [r.slug, r])).values()],
+        });
       }
       if (!owner || method !== 'POST') return forbidden();
       const p = newPilot.parse(await body());

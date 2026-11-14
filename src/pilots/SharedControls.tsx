@@ -3,16 +3,28 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Field } from './ui';
 import { formValues, str } from './fields';
 import { blankPilot } from './example';
-import { uid, roles, type Pilot } from './contract';
+import PilotMap from './PilotMap';
+import { usePilots } from './store';
+import { uid, roles, type Site, type Pilot } from './contract';
 import { inviteMember, request, useRemote } from './remote';
 export function SharedList({ memberOnly = false }: { memberOnly?: boolean }) {
   const [list, setList] = useState<{
       owner: boolean;
+      sites?: { slug: string; name: string; payload: Site }[];
       pilots: Pick<Pilot, 'slug' | 'name' | 'lane' | 'state'>[];
     }>(),
     [message, setMessage] = useState('Opening shared pilots…'),
     [busy, setBusy] = useState(false);
   const navigate = useNavigate();
+  const local = usePilots((s) => s.pilots);
+  const pins = [
+    ...local.flatMap((p) => p.sites.map((payload) => ({ slug: p.slug, name: p.name, payload }))),
+    ...(list?.sites ?? []),
+  ].map(({ slug, name, payload }) => ({
+    ...payload,
+    id: slug + '/' + payload.id,
+    place: name + ' · ' + payload.place,
+  }));
   useEffect(() => {
     let live = true;
     request<NonNullable<typeof list>>('')
@@ -36,6 +48,18 @@ export function SharedList({ memberOnly = false }: { memberOnly?: boolean }) {
   }, [memberOnly]);
   return (
     <section>
+      {!memberOnly && (
+        <>
+          <h2>Programme map</h2>
+          <PilotMap
+            sites={pins}
+            onPick={(key) => {
+              const [slug, site] = key.split('/');
+              navigate('/pilots/' + slug + '#site-' + site);
+            }}
+          />
+        </>
+      )}
       <h2>Shared pilots</h2>
       <p role="status">{message}</p>
       {list?.owner && (

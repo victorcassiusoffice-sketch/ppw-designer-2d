@@ -1491,6 +1491,43 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [solids,terrainCuts]);
 
+  // A pilot picture uses the existing cut wall geometry (including window holes).
+  // Resolve private bytes at display time. Never put a photo in the plan or a demo.
+  useEffect(() => {
+    if(location.pathname!=='/designer')return;
+    const qs=new URLSearchParams(location.search), plan=qs.get('pilotPlan'), slug=qs.get('pilotRecord'), site=qs.get('pilotSite');
+    if(!plan || !slug || !site)return;
+    const eligible=wallsRef.current.filter(e=>e.solid.construction!=='glass' && !e.solid.renderDuplicateOf && e.solid.hit.kind==='edge');
+    const entry=eligible.find(e=>e.solid.pilotWallRoom)??eligible[0];
+    if(!entry)return;
+    let live=true,old='',busy=false,texture:THREE.Texture|undefined,bitmap:ImageBitmap|undefined;
+    function clear() {
+      if(!entry)return;
+      for(const mat of [entry.paint,entry.exterior])delete mat.userData.pilotPhoto;
+      applyWallLook(entry.paint,entry.solid,envRef.current);applyWallLook(entry.exterior,exteriorLook(entry.solid),envRef.current);
+      texture?.dispose();bitmap?.close();bitmap=undefined;texture=undefined;old='';requestRender();
+    }
+    async function sync() {
+      if(busy || !plan || !slug || !site || !entry)return;busy=true;
+      try {
+        const {wallSource}=await import('../../pilots/wallSource');
+        const next=await wallSource(plan,slug,site,old);
+        if(!live)return;
+        if(!next){if(old)clear();return;}
+        if(!next.bytes)return;
+        const image=await createImageBitmap(next.bytes,{imageOrientation:'flipY'});
+        if(!live){image.close();return;}
+        clear();bitmap=image;texture=new THREE.Texture(image);texture.colorSpace=THREE.SRGBColorSpace;
+        texture.repeat.set(1/entry.solid.lengthM,1/entry.solid.heightM);texture.needsUpdate=true;old=next.key;
+        for(const mat of [entry.paint,entry.exterior])mat.userData.pilotPhoto=texture;
+        applyWallLook(entry.paint,entry.solid,envRef.current);applyWallLook(entry.exterior,exteriorLook(entry.solid),envRef.current);requestRender();
+      }catch{if(live && old)clear();}finally{busy=false;}
+    }
+    void sync();const interval=window.setInterval(()=>{if(!document.hidden)void sync();},6000);
+    return ()=>{live=false;clearInterval(interval);if(old)clear();};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[solids,terrainCuts]);
+
   // Services are presentation geometry only. Rebuilding their small dedicated
   // group never moves the camera, changes a room footprint or enters the cart.
   useEffect(() => {
