@@ -368,6 +368,15 @@ export async function handlePilots(
         .parse(await body());
       return (await db.change(p, v.revision, v)) ? ok({ revision: v.revision + 1 }) : conflict();
     }
+    if (action === 'members' && key && method === 'POST' && isOwner) {
+      const v = z
+          .object({ revision })
+          .strict()
+          .parse(await body()),
+        code = secret();
+      const updated = await db.renew(p, v.revision, id.parse(key), hash(code));
+      return updated ? ok({ join: '/pilots/' + slug + '#join=' + code }) : conflict();
+    }
     if (action === 'members' && !key && method === 'POST' && isOwner) {
       const v = memberSchema
           .pick({ name: true, role: true, organisation: true })

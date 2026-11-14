@@ -98,7 +98,7 @@ export function pilotStore(query: Query) {
     },
     async join(slug: string, invite: string, cookie: string) {
       return one(
-        `WITH joined AS (UPDATE pilot_members m SET cookie_key_hash=$3,cookie_expires=now()+interval '30 days',invite_hash=NULL,invite_expires=NULL,state='active',last_seen=now() FROM pilots p WHERE m.pilot_id=p.id AND p.slug=$1 AND m.invite_hash=$2 AND m.invite_expires>now() AND m.state='invited' RETURNING m.pilot_id) UPDATE pilots SET revision=revision+1, updated=now() FROM joined WHERE pilots.id=joined.pilot_id RETURNING pilots.id`,
+        `WITH joined AS (UPDATE pilot_members m SET cookie_key_hash=$3,cookie_expires=now()+interval '30 days',invite_hash=NULL,invite_expires=NULL,state='active',last_seen=now() FROM pilots p WHERE m.pilot_id=p.id AND p.slug=$1 AND m.invite_hash=$2 AND m.invite_expires>now() AND m.state IN ('invited','active') RETURNING m.pilot_id) UPDATE pilots SET revision=revision+1, updated=now() FROM joined WHERE pilots.id=joined.pilot_id RETURNING pilots.id`,
         [slug, invite, cookie],
       );
     },
@@ -111,6 +111,13 @@ export function pilotStore(query: Query) {
       return one(
         `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND (SELECT count(*) FROM pilot_members WHERE pilot_id=$1)<150 RETURNING id,revision), added AS (INSERT INTO pilot_members(pilot_id,id,first_name,organisation,role,state,invite_hash,invite_expires) SELECT id,$3,$4,$5,$6,'invited',$7,now()+interval '7 days' FROM bump) SELECT revision FROM bump`,
         [p.id, rev, m.id, m.name, m.organisation, m.role, invite],
+      );
+    },
+    async renew(p: Access, rev: number, member: string, invite: string) {
+      return one(
+        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND EXISTS(SELECT 1 FROM pilot_members WHERE pilot_id=$1 AND id=$3 AND id<>'lead') RETURNING id,revision),
+        renewed AS (UPDATE pilot_members m SET invite_hash=$4,invite_expires=now()+interval '7 days' FROM bump WHERE m.pilot_id=bump.id AND m.id=$3 RETURNING m.id) SELECT revision FROM bump`,
+        [p.id, rev, member, invite],
       );
     },
     async change(p: Access, rev: number, values: { name: string; state: string; summary: string }) {

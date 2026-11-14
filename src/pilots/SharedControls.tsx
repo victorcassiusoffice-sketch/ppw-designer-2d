@@ -6,7 +6,7 @@ import { blankPilot } from './example';
 import PilotMap from './PilotMap';
 import { usePilots } from './store';
 import { uid, roles, type Site, type Pilot } from './contract';
-import { inviteMember, request, useRemote } from './remote';
+import { inviteMember, renewMember, request, useRemote } from './remote';
 export function SharedList({ memberOnly = false }: { memberOnly?: boolean }) {
   const [list, setList] = useState<{
       owner: boolean;
@@ -115,7 +115,8 @@ export function SharedList({ memberOnly = false }: { memberOnly?: boolean }) {
 }
 export function Invites({ slug }: { slug: string }) {
   const [url, setUrl] = useState(''),
-    busy = useRemote((s) => s.busy);
+    busy = useRemote((s) => s.busy),
+    members = useRemote((s) => s.doc?.pilot.members) ?? [];
   return (
     <>
       <details>
@@ -151,6 +152,36 @@ export function Invites({ slug }: { slug: string }) {
           </label>
           <button disabled={busy}>Make join link</button>
         </form>
+        {members.some((m) => m.id !== 'lead') && (
+          <form
+            className="pilot-form"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const member = String(new FormData(e.currentTarget).get('member'));
+              setUrl('');
+              try {
+                const r = await renewMember(slug, member);
+                setUrl(new URL(r.join, location.origin).href);
+              } catch {
+                /* save status is visible */
+              }
+            }}
+          >
+            <label>
+              Existing member
+              <select name="member">
+                {members
+                  .filter((m) => m.id !== 'lead')
+                  .map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} · {m.role}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <button disabled={busy}>Make a replacement link</button>
+          </form>
+        )}
         {url && (
           <div>
             <label>

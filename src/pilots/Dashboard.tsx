@@ -47,7 +47,7 @@ export default function MemberDashboard() {
     <main className="pilot pilot-dashboard">
       <header className="pilot-header">
         <OlbLockup />
-        <Link to="/pilots">My pilots</Link>
+        <Link to="/pilots/shared">My pilots</Link>
       </header>
       {!d ? (
         <p role="status">{msg}</p>
