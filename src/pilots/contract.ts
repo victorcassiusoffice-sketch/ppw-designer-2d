@@ -112,7 +112,13 @@ export const logSchema = z
   })
   .strict();
 export const stepSchema = z
-  .object({ id, title: short, date: day, state: z.enum(stepStates) })
+  .object({
+    id,
+    title: short,
+    date: day,
+    state: z.enum(stepStates),
+    note: z.string().trim().max(200).optional(),
+  })
   .strict();
 export const paperSchema = z
   .object({

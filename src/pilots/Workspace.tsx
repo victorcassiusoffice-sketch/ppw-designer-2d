@@ -339,6 +339,7 @@ export default function Workspace() {
               {p.lane} · {p.state}
             </small>
             <h1>{p.name}</h1>
+            {shared && !owner && <Link to={'/pilots/' + p.slug + '/me'}>My dashboard</Link>}
             <p>{p.summary}</p>
           </div>
           <nav aria-label="Pilot sections" data-expanded={more}>

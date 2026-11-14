@@ -233,3 +233,9 @@ export function inviteMember(
     request<{ join: string }>('/' + slug + '/members', 'POST', { ...value, revision: d.revision }),
   );
 }
+
+export function renewMember(slug: string, member: string) {
+  return save(slug, (d) =>
+    request<{ join: string }>('/' + slug + '/members/' + member, 'POST', { revision: d.revision }),
+  );
+}

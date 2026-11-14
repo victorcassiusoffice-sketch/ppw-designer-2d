@@ -100,7 +100,7 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
       }
     } catch (error) { return unavailable(destination, error, brand); }
   }
-  if (!isAccess || request.method === 'GET' || request.method === 'HEAD') return show();
+  if (!isAccess || request.method === 'GET' || request.method === 'HEAD') return show(destination==='/pilots'?'Ask the owner for your link.':'');
   if (request.method !== 'POST') return show('Enter the code below to open the studio.', 405, { Allow: 'GET, HEAD, POST' });
   // Prevent a third-party site silently submitting a shared code on a visitor's behalf.
   if (request.headers.get('origin') !== url.origin) return show('Please enter your code from this page.', 403);
