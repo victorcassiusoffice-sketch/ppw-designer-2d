@@ -13,6 +13,7 @@ import './brand/olb.css';
 
 // Pitch and Studio visitors load the designer only when they open it.
 // Keep Clerk (admin-only) and jsPDF (order-success only) route-scoped too.
+const PilotDashboard = lazy(()=>import('./pilots/Dashboard'));
 const PilotWorkspace = lazy(() => import('./pilots/Workspace'));
 const App = lazy(() => import('./App'));
 // Fetch explicit 3D visits in parallel with the app, not after its route,
@@ -147,6 +148,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/" element={oneLiveBuildHome ? <Navigate to="/home" replace /> : <PreviewShopRoute><PublicProductsPage /></PreviewShopRoute>} />
         <Route path="/home" element={oneLiveBuildHome ? <OlbHomePage /> : <Navigate to="/" replace />} />
         <Route path="/pilots" element={<PilotWorkspace />} />
+        <Route path="/pilots/:slug/me" element={<PilotDashboard />} />
         <Route path="/pilots/:slug" element={<PilotWorkspace />} />
         <Route path="/designer" element={<App />} />
         <Route path="/demo" element={<DemoDesignerPage />} />

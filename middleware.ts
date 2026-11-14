@@ -46,6 +46,9 @@ export default async function middleware(request: Request): Promise<Response> {
       ? async () => (await readAdminSession(request.headers.get('cookie'), signedInConfig, url.host, Date.now())) !== null
       : undefined,
   });
+  if(response?.status===200 && url.pathname==='/pilots' && request.method==='GET'){
+    return new Response(null,{status:303,headers:{Location:'/api/pilots/member-index','Cache-Control':'private, no-store',Vary:'Cookie'}});
+  }
   if (response) return response;
   // One Live Build hosts get the One Live Build shell (icons, card, data-brand="olb").
   // Same app bundle; files (/assets/…, /brand/…) are never rewritten.

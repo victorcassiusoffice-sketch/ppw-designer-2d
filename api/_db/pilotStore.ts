@@ -6,6 +6,8 @@ export type Access = {
   owner_id: string;
   revision: number;
   member_id: string | null;
+  first_name: string | null;
+  expires: string | null;
   role: string | null;
   name: string;
   lane: string;
@@ -37,6 +39,12 @@ export function pilotStore(query: Query) {
         [a.owner, a.member],
       );
     },
+    async dashboard(p: Access, member: string) {
+      return query(
+        "SELECT kind,payload,created FROM pilot_items WHERE pilot_id=$1 AND NOT hidden AND ((kind IN ('photo','note','reading','log') AND created_by=$2) OR kind='step' OR (kind='money' AND ((payload->>'type'='pay_row' AND payload->>'memberId'=$2) OR id='book-currency'))) ORDER BY created DESC,id DESC",
+        [p.id, member],
+      );
+    },
     async memberRole(p: Access, id: string) {
       return one('SELECT role FROM pilot_members WHERE pilot_id=$1 AND id=$2', [p.id, id]);
     },
@@ -54,7 +62,7 @@ export function pilotStore(query: Query) {
     },
     async access(slug: string, a: Actor) {
       return (await one(
-        `SELECT p.*,m.id AS member_id,m.role FROM pilots p LEFT JOIN pilot_members m ON ${membership} WHERE p.slug=$3 AND (p.owner_id=$1 OR m.id IS NOT NULL)`,
+        `SELECT p.*,m.id AS member_id,m.role,m.first_name,m.cookie_expires AS expires FROM pilots p LEFT JOIN pilot_members m ON ${membership} WHERE p.slug=$3 AND (p.owner_id=$1 OR m.id IS NOT NULL)`,
         [a.owner, a.member, slug],
       )) as Access | undefined;
     },

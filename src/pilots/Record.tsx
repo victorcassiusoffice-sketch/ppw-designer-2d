@@ -61,6 +61,22 @@ export default function Record({ p }: { p: Pilot }) {
                 ))}
               </select>
             </label>
+            <label>
+              Step note (name a role)
+              <input
+                maxLength={200}
+                disabled={!permissions(p).owner}
+                key={s.id + '-' + s.note}
+                defaultValue={s.note ?? ''}
+                onBlur={(e) => {
+                  const note = e.currentTarget.value.trim();
+                  if (note !== (s.note ?? ''))
+                    void update(p.slug, (q) => {
+                      q.steps[i].note = note;
+                    });
+                }}
+              />
+            </label>
           </li>
         ))}
       </ol>

@@ -150,6 +150,23 @@ export async function handlePilots(
     if (parts.length > 3 || (slug && !id.safeParse(slug).success) || slug === exampleSlug)
       return forbidden();
     const method = req.method;
+    // This redirect receives the existing API-scoped HttpOnly cookies. A studio
+    // visitor still sees the same door; only actual members reach their index.
+    if (slug === 'member-index' && !action && method === 'GET') {
+      const slugs = String(req.headers.cookie ?? '')
+        .split(';')
+        .map((c) => /^olb_pm_(shared-[a-f0-9-]{36})=/.exec(c.trim())?.[1])
+        .filter((s): s is string => !!s)
+        .slice(0, 100);
+      let dest = '/access?next=%2Fpilots';
+      for (const s of slugs)
+        if (await deps.db().access(s, { owner: '', member: token(req, s) })) {
+          dest = '/pilots/shared';
+          break;
+        }
+      res.setHeader('Location', dest);
+      return res.status(303).end();
+    }
     if (slug && action === 'join' && !key && method === 'POST') {
       if (await deps.limited('join', req)) return fail(429, 'Try again later.');
       const { invite } = z
@@ -208,6 +225,66 @@ export async function handlePilots(
     if (!p) return forbidden();
     const isOwner = !!owner && p.owner_id === owner,
       by = isOwner ? 'lead' : p.member_id!;
+    if (action === 'me' && !key && method === 'GET') {
+      // Even a studio owner must present this pilot's personal member cookie.
+      if (!member || !p.member_id || !p.role || !p.first_name || !p.expires) return forbidden();
+      const rows = await db.dashboard(p, p.member_id);
+      const steps = rows
+        .filter((r) => r.kind === 'step')
+        .reverse()
+        .map((r) => validators.step.parse(r.payload))
+        .filter((s) => s.state !== 'done');
+      const role = p.role.toLowerCase(),
+        next =
+          steps.find((s) =>
+            (' ' + (s.note ?? '').toLowerCase().replace(/[^a-z]+/g, ' ') + ' ').includes(
+              ' ' + role + ' ',
+            ),
+          ) ?? steps[0];
+      const activity = rows.flatMap((r) => {
+        if (r.kind === 'photo') {
+          const ph = validators.photo.parse(r.payload);
+          return [{ kind: 'photo', id: ph.id, date: ph.date, label: ph.caption || 'Wall photo' }];
+        }
+        if (r.kind === 'note') {
+          const n = validators.note.parse(r.payload);
+          return [{ kind: 'note', id: n.id, date: n.date, label: n.text }];
+        }
+        if (r.kind === 'reading') {
+          const n = validators.reading.parse(r.payload);
+          return [
+            { kind: 'reading', id: n.id, date: n.month, label: n.cover + '% · ' + n.condition },
+          ];
+        }
+        if (r.kind === 'log') {
+          const n = validators.log.parse(r.payload);
+          return [
+            {
+              kind: 'log',
+              id: n.id,
+              date: n.date,
+              label: n.type + ' · ' + n.quantity + ' ' + n.unit,
+            },
+          ];
+        }
+        return [];
+      });
+      const financial = rows.filter((r) => r.kind === 'money').map((r) => money.parse(r.payload));
+      const own = financial.find((r) => r.type === 'pay_row' && r.memberId === p.member_id),
+        unit = financial.find((r) => r.type === 'budget_line' && r.id === 'book-currency');
+      return ok({
+        pilot: p.name,
+        name: p.first_name,
+        role: p.role,
+        nearExpiry: Date.parse(p.expires) - Date.now() <= 5 * 86400000,
+        next: next ?? null,
+        activity,
+        pay:
+          own?.type === 'pay_row' && unit?.type === 'budget_line'
+            ? { agreed: own.agreed, currency: unit.currency, state: own.state, note: own.note }
+            : null,
+      });
+    }
     if (action === 'money' && !key) {
       if (!managesMoney(isOwner, p.role)) return forbidden();
       const rows = (await db.money(p)).map((r) => money.parse(r.payload));

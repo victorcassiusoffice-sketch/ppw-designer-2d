@@ -60,7 +60,7 @@ export function SharedList({ memberOnly = false }: { memberOnly?: boolean }) {
           />
         </>
       )}
-      <h2>Shared pilots</h2>
+      <h2>{memberOnly && !list?.owner ? 'My pilots' : 'Shared pilots'}</h2>
       <p role="status">{message}</p>
       {list?.owner && (
         <details>
@@ -98,7 +98,11 @@ export function SharedList({ memberOnly = false }: { memberOnly?: boolean }) {
         </details>
       )}
       {list?.pilots.map((p) => (
-        <Link className="pilot-list-card" to={'/pilots/' + p.slug} key={p.slug}>
+        <Link
+          className="pilot-list-card"
+          to={'/pilots/' + p.slug + (memberOnly && !list?.owner ? '/me' : '')}
+          key={p.slug}
+        >
           <small>
             {p.lane} · {p.state}
           </small>

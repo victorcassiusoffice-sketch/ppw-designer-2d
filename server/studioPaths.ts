@@ -18,7 +18,7 @@ export function opensWithoutStudioCode(pathname: string): boolean {
   if (pathname.startsWith('/fonts/')) return true;
   // Only the empty member shell passes the door. It requests its record with a pilot-bound cookie.
   if(pathname==='/pilots/shared')return true;
-  if (/^\/pilots\/shared-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/?$/.test(pathname)) return true;
+  if (/^\/pilots\/shared-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\/me)?\/?$/.test(pathname)) return true;
   if (pathname === '/demo' || pathname.startsWith('/demo/')) return true;
   if (pathname === '/embed' || pathname.startsWith('/embed/')) return true;
   if (pathname.startsWith('/pitch/')) return true;
