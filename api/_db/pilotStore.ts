@@ -18,6 +18,19 @@ const membership =
 export function pilotStore(query: Query) {
   const one = async (sql: string, args: unknown[]) => (await query(sql, args))[0];
   return {
+    async allowAttempt(kind: 'join' | 'photos', hashedIp: string, limit: number) {
+      // Existing expiring counters; only this namespace can be incremented.
+      // Fixed window from the first request; concurrent claims share one atomic count.
+      const result = await one(
+        `INSERT INTO public.studio_access_records AS r (record_key,record_value,expires_at)
+        VALUES ($1,'1',now()+interval '10 minutes') ON CONFLICT(record_key) DO UPDATE SET
+        record_value=CASE WHEN r.expires_at<=now() THEN '1' ELSE LEAST(r.record_value::int+1,100000)::text END,
+        expires_at=CASE WHEN r.expires_at<=now() THEN EXCLUDED.expires_at ELSE r.expires_at END RETURNING record_value`,
+        ['ppw:pilot-limit:' + kind + ':' + hashedIp],
+      );
+      const count = Number(result?.record_value);
+      return Number.isInteger(count) && count > 0 && count <= limit;
+    },
     async list(a: Actor) {
       return query(
         `SELECT p.slug,p.name,p.lane,p.state FROM pilots p WHERE p.owner_id=$1 OR EXISTS(SELECT 1 FROM pilot_members m WHERE ${membership}) ORDER BY p.updated DESC`,
