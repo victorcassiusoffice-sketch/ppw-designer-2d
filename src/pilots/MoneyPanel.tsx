@@ -1,3 +1,4 @@
+import {exportCsv} from './moneyCsv';
 import { useEffect, useState } from 'react';
 import type { Pilot } from './contract';
 import { uid } from './contract';
@@ -6,7 +7,6 @@ import {
   categories,
   currencies,
   display,
-  exportCsv,
   lineStates,
   minor,
   payStates,
