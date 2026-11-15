@@ -9,6 +9,15 @@ type Dashboard = {
   name: string;
   role: string;
   nearExpiry: boolean;
+  links?: {
+    id: string;
+    seat: string;
+    role: string;
+    kind: string;
+    madeBy: string;
+    madeAt: string;
+    firstUse: string | null;
+  }[];
   next: { title: string; note?: string; date: string } | null;
   activity: { kind: string; id: string; date: string; label: string }[];
   pay: { agreed: number; currency: string; state: string; note: string } | null;
@@ -58,6 +67,23 @@ export default function MemberDashboard() {
           </small>
           <h1>{d.name}’s dashboard</h1>
           <Link to={'/pilots/' + slug}>Open pilot record</Link>
+          {d.links && (
+            <details>
+              <summary>Lead and coordinator link log</summary>
+              {d.links.map((l) => (
+                <article key={l.id}>
+                  <h3>
+                    {l.role} · {l.kind}
+                  </h3>
+                  <p>Seat {l.seat}</p>
+                  <p>
+                    Issued by {l.madeBy} · {l.madeAt}
+                  </p>
+                  <p>First use {l.firstUse ?? 'Unclaimed'}</p>
+                </article>
+              ))}
+            </details>
+          )}
           {d.nearExpiry && <p role="status">Ask the owner for a new link.</p>}
           <section>
             <h2>Next step</h2>

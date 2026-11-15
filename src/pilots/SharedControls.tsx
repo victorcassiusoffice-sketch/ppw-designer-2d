@@ -1,3 +1,5 @@
+import { sections, levels, labels, levelFor, type Role, type Rules } from './access';
+import { saveRules, changeMember } from './remote';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Field } from './ui';
@@ -116,7 +118,7 @@ export function SharedList({ memberOnly = false }: { memberOnly?: boolean }) {
 export function Invites({ slug }: { slug: string }) {
   const [url, setUrl] = useState(''),
     busy = useRemote((s) => s.busy),
-    members = useRemote((s) => s.doc?.pilot.members) ?? [];
+    [role, setRole] = useState<Role>('tester');
   return (
     <>
       <details>
@@ -132,9 +134,11 @@ export function Invites({ slug }: { slug: string }) {
                 name: str(f, 'name'),
                 organisation: str(f, 'organisation'),
                 role: str(f, 'role'),
+                ...(role === 'checker' ? { endDate: str(f, 'endDate') } : {}),
               });
               setUrl(new URL(r.join, location.origin).href);
               form.reset();
+              setRole('tester');
             } catch {
               /* visible status in shared header */
             }
@@ -144,44 +148,26 @@ export function Invites({ slug }: { slug: string }) {
           <Field name="organisation" label="Organisation" />
           <label>
             Role
-            <select aria-label="Role" name="role" defaultValue="tester">
+            <select
+              aria-label="Role"
+              name="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value as Role)}
+            >
               {roles.map((x) => (
                 <option key={x}>{x}</option>
               ))}
             </select>
           </label>
+          <RoleWarning role={role} />
+          {role === 'checker' && (
+            <label>
+              End date
+              <input required type="date" name="endDate" />
+            </label>
+          )}
           <button disabled={busy}>Make join link</button>
         </form>
-        {members.some((m) => m.id !== 'lead') && (
-          <form
-            className="pilot-form"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const member = String(new FormData(e.currentTarget).get('member'));
-              setUrl('');
-              try {
-                const r = await renewMember(slug, member);
-                setUrl(new URL(r.join, location.origin).href);
-              } catch {
-                /* save status is visible */
-              }
-            }}
-          >
-            <label>
-              Existing member
-              <select name="member">
-                {members
-                  .filter((m) => m.id !== 'lead')
-                  .map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} · {m.role}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <button disabled={busy}>Make a replacement link</button>
-          </form>
-        )}
         {url && (
           <div>
             <label>
@@ -198,9 +184,136 @@ export function Invites({ slug }: { slug: string }) {
           </div>
         )}
       </details>
+      <RoleTable slug={slug} />
       <label>
         <input type="checkbox" disabled /> Public summary · private
       </label>
     </>
+  );
+}
+
+function RoleWarning({ role }: { role: Role }) {
+  if (role === 'lead' || role === 'coordinator')
+    return (
+      <p>
+        This role opens all of Money, pay and hours included. Give it only to the lead's own people,
+        never to the owner's company.
+      </p>
+    );
+  if (role === 'checker')
+    return (
+      <p>
+        A checker reads all of Money, pay and hours included, until its end date. Each read is
+        logged.
+      </p>
+    );
+  return null;
+}
+export function MemberLink({ slug, member }: { slug: string; member: Pilot['members'][number] }) {
+  const [url, setUrl] = useState(''),
+    [role, setRole] = useState(member.role);
+  const busy = useRemote((s) => s.busy);
+  async function show(action: () => Promise<{ join: string }>) {
+    setUrl('');
+    try {
+      setUrl(new URL((await action()).join, location.origin).href);
+    } catch {
+      /* shared save status */
+    }
+  }
+  return (
+    <div>
+      <button disabled={busy} onClick={() => void show(() => renewMember(slug, member.id))}>
+        New link
+      </button>
+      <details>
+        <summary>Change role</summary>
+        <form
+          className="pilot-form"
+          onSubmit={(e) => {
+            const f = formValues(e);
+            void show(() =>
+              changeMember(
+                slug,
+                member.id,
+                role,
+                role === 'checker' ? str(f, 'endDate') : undefined,
+              ),
+            );
+          }}
+        >
+          <label>
+            New role
+            <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
+              {roles.map((r) => (
+                <option key={r}>{r}</option>
+              ))}
+            </select>
+          </label>
+          <RoleWarning role={role} />
+          {role === 'checker' && (
+            <label>
+              End date
+              <input required name="endDate" type="date" />
+            </label>
+          )}
+          <button disabled={busy || role === member.role}>Save role and issue link</button>
+        </form>
+      </details>
+      {url && (
+        <label>
+          Send it by hand
+          <input
+            aria-label="Replacement address"
+            readOnly
+            value={url}
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          <button onClick={() => setUrl('')}>Dismiss address</button>
+        </label>
+      )}
+    </div>
+  );
+}
+function RoleTable({ slug }: { slug: string }) {
+  const rules = useRemote((s) => s.doc?.rules) ?? {},
+    busy = useRemote((s) => s.busy),
+    [role, setRole] = useState<Role>('tester');
+  return (
+    <details>
+      <summary>Section access</summary>
+      <div className="pilot-form">
+        <label>
+          Member role
+          <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
+            {roles.map((r) => (
+              <option key={r}>{r}</option>
+            ))}
+          </select>
+        </label>
+        {sections.map((k) => (
+          <label key={k}>
+            {labels[k]}
+            <select
+              aria-label={labels[k]}
+              disabled={busy}
+              value={levelFor(rules, false, role, k)}
+              onChange={(e) => {
+                const next: Rules = { ...rules, [role]: { ...rules[role], [k]: e.target.value } };
+                void saveRules(slug, next).catch(() => {});
+              }}
+            >
+              {levels
+                .filter(
+                  (l) => l !== 'add' || (role !== 'viewer' && role !== 'checker' && k !== 'team'),
+                )
+                .map((l) => (
+                  <option key={l}>{l}</option>
+                ))}
+            </select>
+          </label>
+        ))}
+      </div>
+    </details>
   );
 }

@@ -1,3 +1,6 @@
+import { pilotFiles } from './pilotFiles.js';
+import { rightsFor, ruleSchema, kindSection } from '../../src/pilots/access.js';
+import { day } from '../../src/pilots/contract.js';
 import { money, currency, managesMoney, type Budget } from '../../src/pilots/money.js';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { z } from 'zod';
@@ -50,17 +53,17 @@ async function ownerId(req: MinReq) {
 }
 const blobPath = (p: string, s: string, id: string) => 'pilots/' + p + '/' + s + '/' + id + '.jpg';
 type PhotoIo = {
-  save: (path: string, b: Buffer) => Promise<void>;
+  save: (path: string, b: Buffer, mime?: string) => Promise<void>;
   read: (path: string) => Promise<Buffer | null>;
   discard: (path: string) => Promise<void>;
 };
 const blob: PhotoIo = {
-  async save(path, b) {
+  async save(path, b, mime = 'image/jpeg') {
     await put(path, b, {
       access: 'private',
       allowOverwrite: false,
       addRandomSuffix: false,
-      contentType: 'image/jpeg',
+      contentType: mime,
     });
   },
   async read(path) {
@@ -115,12 +118,14 @@ type Dependencies = {
   db: () => ReturnType<typeof hostedPilots>;
   owner: (req: MinReq) => Promise<string>;
   files: PhotoIo;
+  evidenceQuota?: number;
   limited: (kind: 'join' | 'photos', req: MinReq) => Promise<boolean>;
 };
 const defaultDeps: Dependencies = {
   db: hostedPilots,
   owner: ownerId,
   files: blob,
+  evidenceQuota: 0,
   limited: async (kind, req) => {
     // Use the same durable Neon store as the private record. Preview isolation
     // is checked before the counter can write, even for an unclaimed link.
@@ -225,10 +230,37 @@ export async function handlePilots(
     if (!p) return forbidden();
     const isOwner = !!owner && p.owner_id === owner,
       by = isOwner ? 'lead' : p.member_id!;
+    const rights = rightsFor(p.role_rules, isOwner, p.role);
+    if (action === 'files')
+      return await pilotFiles(
+        db,
+        p,
+        isOwner,
+        by,
+        deps.files,
+        deps.evidenceQuota ?? 0,
+        method,
+        key,
+        body,
+        res,
+      );
+    if (action === 'rules' && !key && method === 'PUT' && isOwner) {
+      const v = z
+        .object({ revision, rules: ruleSchema })
+        .strict()
+        .parse(await body());
+      return (await db.rules(p, v.revision, v.rules)) ? ok({ saved: true }) : conflict();
+    }
+    if (!isOwner && ['viewer', 'checker'].includes(p.role ?? '') && method !== 'GET')
+      return forbidden();
     if (action === 'me' && !key && method === 'GET') {
       // Even a studio owner must present this pilot's personal member cookie.
       if (!member || !p.member_id || !p.role || !p.first_name || !p.expires) return forbidden();
-      const rows = await db.dashboard(p, p.member_id);
+      const personal = rightsFor(p.role_rules, false, p.role);
+      const rows = (await db.dashboard(p, p.member_id)).filter((row) => {
+        const section = kindSection[String(row.kind)];
+        return !section || personal[section] !== 'none';
+      });
       const steps = rows
         .filter((r) => r.kind === 'step')
         .reverse()
@@ -277,10 +309,11 @@ export async function handlePilots(
         name: p.first_name,
         role: p.role,
         nearExpiry: Date.parse(p.expires) - Date.now() <= 5 * 86400000,
+        ...(p.role === 'lead' ? { links: (await db.links(p)).map((r) => r.payload) } : {}),
         next: next ?? null,
         activity,
         pay:
-          own?.type === 'pay_row' && unit?.type === 'budget_line'
+          p.role !== 'checker' && own?.type === 'pay_row' && unit?.type === 'budget_line'
             ? { agreed: own.agreed, currency: unit.currency, state: own.state, note: own.note }
             : null,
       });
@@ -368,6 +401,25 @@ export async function handlePilots(
         .parse(await body());
       return (await db.change(p, v.revision, v)) ? ok({ revision: v.revision + 1 }) : conflict();
     }
+    if (action === 'members' && key && method === 'PATCH' && isOwner) {
+      const v = memberSchema
+        .pick({ role: true })
+        .extend({ revision, endDate: day.optional() })
+        .strict()
+        .refine((m) => (m.role === 'checker' ? !!m.endDate : !m.endDate))
+        .parse(await body());
+      const code = secret();
+      return (await db.changeRole(
+        p,
+        v.revision,
+        id.parse(key),
+        v.role,
+        v.endDate ?? null,
+        hash(code),
+      ))
+        ? ok({ join: '/pilots/' + slug + '#join=' + code })
+        : conflict();
+    }
     if (action === 'members' && key && method === 'POST' && isOwner) {
       const v = z
           .object({ revision })
@@ -380,7 +432,9 @@ export async function handlePilots(
     if (action === 'members' && !key && method === 'POST' && isOwner) {
       const v = memberSchema
           .pick({ name: true, role: true, organisation: true })
-          .extend({ revision })
+          .extend({ revision, endDate: day.optional() })
+          .strict()
+          .refine((m) => (m.role === 'checker' ? !!m.endDate : !m.endDate))
           .parse(await body()),
         code = secret();
       const result = await db.invite(p, v.revision, { ...v, id: randomUUID() }, hash(code));
@@ -389,7 +443,7 @@ export async function handlePilots(
         : conflict();
     }
     if (action === 'photos' && key && method === 'GET') {
-      if (!id.safeParse(key).success) return forbidden();
+      if (rights.notes === 'none' || !id.safeParse(key).success) return forbidden();
       const item = await db.item(p, key);
       if (!item || item.kind !== 'photo' || (item.hidden && !isOwner)) return forbidden();
       const ph = photoSchema.parse(item.payload),
@@ -403,6 +457,9 @@ export async function handlePilots(
     }
     if (!isOwner && p.role === 'viewer') return forbidden();
     if (action === 'photos' && !key && method === 'POST') {
+      if (rights.notes !== 'add') return forbidden();
+      if (deps.evidenceQuota === 0)
+        return fail(400, 'File storage is off. Add an outside link to the paper.');
       if (await deps.limited('photos', req)) return fail(429, 'Try again later.');
       const v = z
           .object({
@@ -432,7 +489,9 @@ export async function handlePilots(
     const v = itemWrite.parse(await body()),
       patch = method === 'PATCH';
     if (patch ? key !== v.id : !!key) return forbidden();
-    if (!isOwner && !['photo', 'note', 'reading', 'log'].includes(v.kind)) return forbidden();
+    const section = kindSection[v.kind];
+    if (!isOwner && (!section || rights[section] !== 'add' || v.kind === 'camera'))
+      return forbidden();
     const payload = validators[v.kind].parse(v.payload);
     const itemId = 'id' in payload ? payload.id : 'cam-' + payload.site;
     if (itemId !== v.id) return forbidden();
@@ -443,11 +502,12 @@ export async function handlePilots(
     )
       return forbidden();
     if (v.kind === 'photo') {
-      if (!patch || !isOwner || !existing) return forbidden();
+      if (!patch || !existing || (!isOwner && (v.hidden || photoSchema.parse(payload).hidden)))
+        return forbidden();
       const old = photoSchema.parse(existing.payload),
         next = photoSchema.parse(payload);
       if (next.id !== old.id || next.site !== old.site) return forbidden();
-      Object.assign(payload, old, { hidden: v.hidden ?? next.hidden });
+      Object.assign(payload, old, { caption: next.caption, hidden: v.hidden ?? next.hidden });
     }
     if ('site' in payload) {
       const site = await db.item(p, payload.site);
@@ -457,6 +517,7 @@ export async function handlePilots(
     if ('photo' in payload && payload.photo) {
       const ph = await db.item(p, payload.photo);
       if (
+        rights.notes === 'none' ||
         !ph ||
         ph.kind !== 'photo' ||
         ph.hidden ||
@@ -484,14 +545,25 @@ async function record(db: ReturnType<typeof hostedPilots>, p: Access, owner: boo
   const doc = await db.document(p, owner);
   const { items, revision: rev, ...rest } = doc;
   const value: Record<string, unknown> = { ...rest };
+  const rights = rightsFor(p.role_rules, owner, p.role);
+  if (rights.team === 'none') value.members = [];
   const editable: string[] = [];
   for (const [kind, key] of Object.entries(kindsToCollection)) {
     const group = (
       items as { kind: ItemKind; payload: Record<string, unknown>; author: string }[]
-    ).filter((i) => i.kind === kind);
-    value[key] = group.map((i) => i.payload);
+    ).filter(
+      (i) => i.kind === kind && (!kindSection[kind] || rights[kindSection[kind]!] !== 'none'),
+    );
+    value[key] = group.map((i) => {
+      if (kind === 'reading' && rights.notes === 'none') {
+        const { photo, ...rest } = i.payload;
+        return rest;
+      }
+      return i.payload;
+    });
     for (const i of group)
-      if (owner || i.author === by) editable.push(String(i.payload.id ?? 'cam-' + i.payload.site));
+      if (owner || (kindSection[kind] && rights[kindSection[kind]!] === 'add' && i.author === by))
+        editable.push(String(i.payload.id ?? 'cam-' + i.payload.site));
   }
   return {
     pilot: pilotSchema.parse(value),
@@ -500,5 +572,7 @@ async function record(db: ReturnType<typeof hostedPilots>, p: Access, owner: boo
     memberId: by,
     role: owner ? 'lead' : p.role,
     editable,
+    rights,
+    ...(owner ? { rules: p.role_rules } : {}),
   };
 }

@@ -16,6 +16,7 @@ mkdirSync(out, { recursive: true });
 const db = new PGlite(),
   blobs = new Map<string, Buffer>();
 await db.exec(readFileSync('api/_db/migrations/0033_pilots.sql', 'utf8'));
+await db.exec(readFileSync('api/_db/migrations/0034_pilot_access.sql', 'utf8'));
 const repository = pilotStore(
   async (text, params) => (await db.query<Record<string, unknown>>(text, params)).rows,
 );

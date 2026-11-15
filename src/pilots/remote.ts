@@ -1,3 +1,4 @@
+import { rightsSchema, ruleSchema, type Section, type Rules } from './access';
 import { create } from 'zustand';
 import { z } from 'zod';
 import { pilotSchema, type Pilot, type Photo } from './contract';
@@ -12,6 +13,8 @@ const parsed = z.object({
   memberId: z.string(),
   role: z.string(),
   editable: z.string().array(),
+  rights: rightsSchema,
+  rules: ruleSchema.optional(),
 });
 type Doc = z.infer<typeof parsed>;
 type State = {
@@ -24,15 +27,17 @@ type State = {
 };
 const fresh = { slug: '', busy: false, message: '', denied: false, offline: false };
 export const useRemote = create<State>(() => fresh);
-export function permissions(p: Pilot) {
+export function permissions(p: Pilot, section: Section = 'notes') {
   const d = useRemote.getState().doc;
   return isShared(p.slug)
     ? {
         owner: d?.pilot.slug === p.slug && d.owner,
-        write: d?.pilot.slug === p.slug && d.role !== 'viewer',
+        write: d?.pilot.slug === p.slug && d.rights[section] === 'add',
+        read: d?.pilot.slug === p.slug && d.rights[section] !== 'none',
+        edit: (id: string) => !!d && d.pilot.slug === p.slug && d.editable.includes(id),
         by: d?.memberId,
       }
-    : { owner: true, write: true, by: undefined };
+    : { owner: true, write: true, read: true, edit: (_id: string) => true, by: undefined };
 }
 class ReplyError extends Error {
   constructor(
@@ -62,7 +67,8 @@ export async function request<T>(path: string, method = 'GET', data?: unknown): 
             : res.status === 400
               ? 'Check the fields and try again.'
               : 'Shared pilot storage is unavailable. Try again.';
-    throw new ReplyError(res.status, message);
+    const detail = res.status === 400 ? await res.json().catch(() => null) : null;
+    throw new ReplyError(res.status, typeof detail?.error === 'string' ? detail.error : message);
   }
   return res.json();
 }
@@ -227,7 +233,7 @@ export async function uploadShared(slug: string, entries: [Photo, Blob][]) {
 }
 export function inviteMember(
   slug: string,
-  value: { role: string; name: string; organisation: string },
+  value: { role: string; name: string; organisation: string; endDate?: string },
 ) {
   return save(slug, (d) =>
     request<{ join: string }>('/' + slug + '/members', 'POST', { ...value, revision: d.revision }),
@@ -237,5 +243,29 @@ export function inviteMember(
 export function renewMember(slug: string, member: string) {
   return save(slug, (d) =>
     request<{ join: string }>('/' + slug + '/members/' + member, 'POST', { revision: d.revision }),
+  );
+}
+
+export function saveRules(slug: string, rules: Rules) {
+  return save(slug, (d) => request('/' + slug + '/rules', 'PUT', { revision: d.revision, rules }));
+}
+export function saveFile(slug: string, meta: unknown, data: string) {
+  return save(slug, (d) =>
+    request('/' + slug + '/files', 'POST', { revision: d.revision, file: meta, data }),
+  );
+}
+export function hideFile(slug: string, id: string) {
+  return save(slug, (d) =>
+    request('/' + slug + '/files/' + id, 'PATCH', { revision: d.revision, hidden: true }),
+  );
+}
+
+export function changeMember(slug: string, id: string, role: string, endDate?: string) {
+  return save(slug, (d) =>
+    request<{ join: string }>('/' + slug + '/members/' + id, 'PATCH', {
+      revision: d.revision,
+      role,
+      endDate,
+    }),
   );
 }
