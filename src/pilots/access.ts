@@ -79,6 +79,10 @@ export function levelFor(
   }
 }
 export const kindSection: Record<string, Section | undefined> = {
+  schedule: 'steps',
+  readingType: 'readings',
+  sample: 'readings',
+  baseline: 'log',
   step: 'steps',
   reading: 'readings',
   log: 'log',

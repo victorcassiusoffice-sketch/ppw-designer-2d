@@ -8,9 +8,17 @@ import {
   paperSchema,
   noteSchema,
   cameraSchema,
+  scheduleSchema,
+  readingTypeSchema,
+  sampleSchema,
+  baselineSchema,
   id,
 } from './contract.js';
 export const kindsToCollection = {
+  schedule: 'schedules',
+  readingType: 'readingTypes',
+  sample: 'samples',
+  baseline: 'baselines',
   site: 'sites',
   photo: 'photos',
   reading: 'readings',
@@ -22,6 +30,10 @@ export const kindsToCollection = {
 } as const;
 export type ItemKind = keyof typeof kindsToCollection;
 export const validators = {
+  schedule: scheduleSchema,
+  readingType: readingTypeSchema,
+  sample: sampleSchema,
+  baseline: baselineSchema,
   site: siteSchema,
   photo: photoSchema,
   reading: readingSchema,
@@ -35,7 +47,20 @@ export const revision = z.number().int().positive();
 export const itemWrite = z
   .object({
     revision,
-    kind: z.enum(['site', 'photo', 'reading', 'log', 'step', 'paper', 'note', 'camera']),
+    kind: z.enum([
+      'site',
+      'photo',
+      'reading',
+      'log',
+      'step',
+      'paper',
+      'note',
+      'camera',
+      'schedule',
+      'readingType',
+      'sample',
+      'baseline',
+    ]),
     id,
     hidden: z.boolean().optional(),
     payload: z.unknown(),

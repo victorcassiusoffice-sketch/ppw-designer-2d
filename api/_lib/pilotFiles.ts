@@ -58,12 +58,10 @@ export async function pilotFiles(
   if (!key && method === 'GET') {
     if (access === 'none' && !finance) return deny();
     const rows = await db.files(p);
-    return res
-      .status(200)
-      .json({
-        enabled: quota > 0,
-        files: rows.map((row) => evidenceMeta.parse(row.payload)).filter(visible),
-      });
+    return res.status(200).json({
+      enabled: quota > 0,
+      files: rows.map((row) => evidenceMeta.parse(row.payload)).filter(visible),
+    });
   }
   if (key) {
     if (!id.safeParse(key).success) return deny();
@@ -103,7 +101,7 @@ export async function pilotFiles(
   }
   if (
     method !== 'POST' ||
-    (!finance && access !== 'add') ||
+    (!finance && access === 'none') ||
     (!owner && ['viewer', 'checker'].includes(p.role ?? ''))
   )
     return deny();
@@ -128,7 +126,12 @@ export async function pilotFiles(
     v.file.source === 'money' ||
     proofKinds.some((k) => k === v.file.kind) ||
     link?.kind === 'money';
-  if (money ? !finance : access !== 'add') return deny();
+  const assignment =
+    link?.kind === 'paper' ? (link.payload as { ownerMember?: string; ownerRole?: string }) : null;
+  const assigned =
+    assignment &&
+    (assignment.ownerMember ? assignment.ownerMember === by : assignment.ownerRole === p.role);
+  if (money ? !finance : access !== 'add' && !assigned) return deny();
   if (
     link &&
     !money &&

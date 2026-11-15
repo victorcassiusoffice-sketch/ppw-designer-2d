@@ -1,3 +1,4 @@
+import { dueList, ownWork, validateSample, scheduleEnd } from '../../src/pilots/running.js';
 import { pilotFiles } from './pilotFiles.js';
 import { rightsFor, ruleSchema, kindSection } from '../../src/pilots/access.js';
 import { day } from '../../src/pilots/contract.js';
@@ -305,6 +306,12 @@ export async function handlePilots(
       const own = financial.find((r) => r.type === 'pay_row' && r.memberId === p.member_id),
         unit = financial.find((r) => r.type === 'budget_line' && r.id === 'book-currency');
       return ok({
+        ...ownWork(
+          (await record(db, p, false, p.member_id)).pilot,
+          p.role,
+          p.member_id,
+          new Date().toLocaleDateString('en-CA', { timeZone: 'Indian/Mauritius' }),
+        ),
         pilot: p.name,
         name: p.first_name,
         role: p.role,
@@ -393,7 +400,44 @@ export async function handlePilots(
         ? ok({ saved: true })
         : conflict();
     }
-    if (!action && method === 'GET') return ok(await record(db, p, isOwner, by));
+    if (!action && method === 'GET') {
+      const doc = await record(db, p, isOwner, by);
+      return ok({
+        ...doc,
+        ...(isOwner || p.role === 'lead'
+          ? {
+              due: dueList(
+                doc.pilot,
+                new Date().toLocaleDateString('en-CA', { timeZone: 'Indian/Mauritius' }),
+              ),
+            }
+          : {}),
+      });
+    }
+    if (action === 'history' && key && method === 'GET') {
+      const current = await db.item(p, id.parse(key)),
+        section = kindSection[String(current?.kind)];
+      if (
+        !current ||
+        current.hidden ||
+        !section ||
+        rights[section] === 'none' ||
+        !Object.prototype.hasOwnProperty.call(validators, String(current.kind))
+      )
+        return forbidden();
+      const full = await record(db, p, isOwner, by);
+      return ok({
+        entries: (await db.history(p, key)).map((r) => ({
+          at: r.created,
+          entry: safeEntry(
+            String(current.kind),
+            r.entry as Record<string, unknown>,
+            rights,
+            full.pilot.readingTypes ?? [],
+          ),
+        })),
+      });
+    }
     if (!action && method === 'PUT' && isOwner) {
       const v = header
         .pick({ name: true, state: true, summary: true })
@@ -490,15 +534,85 @@ export async function handlePilots(
       patch = method === 'PATCH';
     if (patch ? key !== v.id : !!key) return forbidden();
     const section = kindSection[v.kind];
-    if (!isOwner && (!section || rights[section] !== 'add' || v.kind === 'camera'))
+    const existing = await db.item(p, v.id);
+    const oldPaper =
+      v.kind === 'paper' && existing?.kind === 'paper'
+        ? validators.paper.parse(existing.payload)
+        : null;
+    const assignedPaper =
+      !!oldPaper &&
+      rights.papers !== 'none' &&
+      (oldPaper.ownerMember ? oldPaper.ownerMember === by : oldPaper.ownerRole === p.role);
+    if (!isOwner && ['camera', 'schedule', 'readingType', 'baseline'].includes(v.kind))
       return forbidden();
+    if (!isOwner && (!section || (rights[section] !== 'add' && !assignedPaper))) return forbidden();
     const payload = validators[v.kind].parse(v.payload);
     const itemId = 'id' in payload ? payload.id : 'cam-' + payload.site;
     if (itemId !== v.id) return forbidden();
-    const existing = await db.item(p, v.id);
+    if (Buffer.byteLength(JSON.stringify(payload)) > 12500)
+      return fail(400, 'Use fewer fields or shorter notes.');
+    if (v.kind === 'paper') {
+      const paper = validators.paper.parse(payload);
+      if (paper.ownerMember && (paper.ownerRole || !(await db.memberRole(p, paper.ownerMember))))
+        return forbidden();
+      if (
+        !isOwner &&
+        (paper.ownerRole !== oldPaper?.ownerRole || paper.ownerMember !== oldPaper?.ownerMember)
+      )
+        return forbidden();
+    }
+    if (v.kind === 'step') {
+      const step = validators.step.parse(payload);
+      if (step.startMonth && step.endMonth && step.startMonth > step.endMonth)
+        return fail(400, 'The end month must follow the start month.');
+    }
+    if (v.kind === 'schedule') {
+      const s = validators.schedule.parse(payload);
+      if (s.end !== scheduleEnd(s.start, s.months)) return fail(400, 'Check the end date.');
+    }
+    if (v.kind === 'readingType')
+      for (const t of validators.readingType.parse(payload).targets) {
+        const site = await db.item(p, t.site);
+        if (site?.kind !== 'site' || site.hidden) return forbidden();
+      }
+    if (v.kind === 'sample') {
+      const sample = validators.sample.parse(payload),
+        row = await db.item(p, sample.typeId);
+      if (row?.kind !== 'readingType' || row.hidden) return forbidden();
+      const t = validators.readingType.parse(row.payload);
+      if (!validateSample(sample, t)) return fail(400, 'Check the reading fields and range.');
+      for (const f of t.fields.filter((f) => f.kind === 'photo')) {
+        const photo = await db.item(p, String(sample.values[f.id]));
+        if (
+          rights.notes === 'none' ||
+          photo?.kind !== 'photo' ||
+          photo.hidden ||
+          photoSchema.parse(photo.payload).site !==
+            t.targets.find((x) => x.id === sample.targetId)?.site
+        )
+          return forbidden();
+      }
+    }
+    if (v.kind === 'log') {
+      const log = validators.log.parse(payload);
+      if (log.ticket) {
+        const file = await db.item(p, log.ticket);
+        const proof = file?.payload as { money?: boolean; kind?: string } | undefined;
+        if (
+          rights.papers === 'none' ||
+          file?.kind !== 'file' ||
+          file.hidden ||
+          proof?.money ||
+          proof?.kind !== 'ticket'
+        )
+          return forbidden();
+      }
+    }
     if (
       patch &&
-      (!existing || existing.kind !== v.kind || (!isOwner && existing.created_by !== by))
+      (!existing ||
+        existing.kind !== v.kind ||
+        (!isOwner && !assignedPaper && existing.created_by !== by))
     )
       return forbidden();
     if (v.kind === 'photo') {
@@ -521,7 +635,7 @@ export async function handlePilots(
         !ph ||
         ph.kind !== 'photo' ||
         ph.hidden ||
-        photoSchema.parse(ph.payload).site !== payload.site
+        ('site' in payload && photoSchema.parse(ph.payload).site !== payload.site)
       )
         return forbidden();
     }
@@ -534,12 +648,34 @@ export async function handlePilots(
       by,
       patch,
       v.hidden ?? ('hidden' in payload && payload.hidden),
+      false,
+      assignedPaper,
     );
     return result ? ok(result) : conflict();
   } catch (error) {
     if (error instanceof z.ZodError) return fail(400, 'Check the fields and try again.');
     return fail(503, 'Pilot storage is temporarily unavailable.');
   }
+}
+function safeEntry(
+  kind: string,
+  entry: Record<string, unknown>,
+  rights: ReturnType<typeof rightsFor>,
+  types: NonNullable<import('../../src/pilots/contract.js').Pilot['readingTypes']>,
+) {
+  const out = { ...entry };
+  if (rights.notes === 'none') {
+    delete out.photo;
+    if (kind === 'sample') {
+      const t = types.find((t) => t.id === entry.typeId),
+        values = { ...(entry.values as Record<string, unknown>) };
+      if (!t) return { ...out, values: {} };
+      for (const f of t.fields.filter((f) => f.kind === 'photo')) delete values[f.id];
+      out.values = values;
+    }
+  }
+  if (rights.papers === 'none') delete out.ticket;
+  return out;
 }
 async function record(db: ReturnType<typeof hostedPilots>, p: Access, owner: boolean, by: string) {
   const doc = await db.document(p, owner);
@@ -554,15 +690,23 @@ async function record(db: ReturnType<typeof hostedPilots>, p: Access, owner: boo
     ).filter(
       (i) => i.kind === kind && (!kindSection[kind] || rights[kindSection[kind]!] !== 'none'),
     );
-    value[key] = group.map((i) => {
-      if (kind === 'reading' && rights.notes === 'none') {
-        const { photo, ...rest } = i.payload;
-        return rest;
-      }
-      return i.payload;
-    });
+    const types =
+      kind === 'sample'
+        ? (items as { kind: string; payload: unknown }[])
+            .filter((r) => r.kind === 'readingType')
+            .map((r) => validators.readingType.parse(r.payload))
+        : [];
+    value[key] = group.map((i) => safeEntry(kind, i.payload, rights, types));
     for (const i of group)
-      if (owner || (kindSection[kind] && rights[kindSection[kind]!] === 'add' && i.author === by))
+      if (
+        owner ||
+        (kind === 'paper' &&
+          !['checker', 'viewer'].includes(p.role ?? '') &&
+          (i.payload.ownerMember
+            ? i.payload.ownerMember === by
+            : i.payload.ownerRole === p.role)) ||
+        (kindSection[kind] && rights[kindSection[kind]!] === 'add' && i.author === by)
+      )
         editable.push(String(i.payload.id ?? 'cam-' + i.payload.site));
   }
   return {

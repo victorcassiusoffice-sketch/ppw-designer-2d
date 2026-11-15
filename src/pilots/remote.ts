@@ -12,6 +12,18 @@ const parsed = z.object({
   revision: z.number().int().positive(),
   memberId: z.string(),
   role: z.string(),
+  due: z
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+        date: z.string(),
+        role: z.string().optional(),
+        member: z.string().optional(),
+        state: z.string(),
+      }),
+    )
+    .optional(),
   editable: z.string().array(),
   rights: rightsSchema,
   rules: ruleSchema.optional(),
@@ -183,8 +195,8 @@ export function editShared(slug: string, change: (p: Pilot) => void) {
         revision: d.revision,
       });
     for (const [kind, col] of Object.entries(kindsToCollection)) {
-      const a = before[col as (typeof kindsToCollection)[ItemKind]] as Item[],
-        b = next[col as (typeof kindsToCollection)[ItemKind]] as Item[];
+      const a = (before[col as (typeof kindsToCollection)[ItemKind]] ?? []) as Item[],
+        b = (next[col as (typeof kindsToCollection)[ItemKind]] ?? []) as Item[];
       const old = new Map(a.map((x) => [key(x), x])),
         after = new Map(b.map((x) => [key(x), x]));
       for (const item of b) {

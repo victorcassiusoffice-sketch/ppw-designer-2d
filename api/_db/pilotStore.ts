@@ -63,6 +63,12 @@ export function pilotStore(query: Query) {
         [p.id, id],
       ));
     },
+    async history(p: Access, id: string) {
+      return query(
+        "SELECT payload->'entry' AS entry,created FROM pilot_items WHERE pilot_id=$1 AND kind='history' AND payload->>'item'=$2 ORDER BY created DESC,id DESC",
+        [p.id, id],
+      );
+    },
     async currentRevision(p: Access) {
       return Number((await one('SELECT revision FROM pilots WHERE id=$1', [p.id]))?.revision);
     },
@@ -138,7 +144,7 @@ export function pilotStore(query: Query) {
     },
     async document(p: Access, owner: boolean) {
       const [d] = await query(
-        `SELECT p.name,p.slug,p.lane,p.state,p.summary,p.revision,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',m.id,'name',m.first_name,'organisation',m.organisation,'role',m.role,'state',m.state) ORDER BY m.created,m.id) FROM pilot_members m WHERE m.pilot_id=p.id),'[]') AS members,COALESCE((SELECT jsonb_agg(jsonb_build_object('kind',i.kind,'payload',i.payload,'author',i.created_by) ORDER BY i.created,i.id) FROM pilot_items i WHERE i.pilot_id=p.id AND i.kind<>'money' AND (NOT i.hidden OR ($2 AND i.kind='photo'))),'[]') AS items FROM pilots p WHERE p.id=$1`,
+        `SELECT p.name,p.slug,p.lane,p.state,p.summary,p.revision,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',m.id,'name',m.first_name,'organisation',m.organisation,'role',m.role,'state',m.state) ORDER BY m.created,m.id) FROM pilot_members m WHERE m.pilot_id=p.id),'[]') AS members,COALESCE((SELECT jsonb_agg(jsonb_build_object('kind',i.kind,'payload',i.payload,'author',i.created_by) ORDER BY i.created,i.id) FROM pilot_items i WHERE i.pilot_id=p.id AND i.kind NOT IN ('money','file','history') AND (NOT i.hidden OR ($2 AND i.kind='photo'))),'[]') AS items FROM pilots p WHERE p.id=$1`,
         [p.id, owner],
       );
       return d;
@@ -204,12 +210,13 @@ export function pilotStore(query: Query) {
       patch: boolean,
       hidden: boolean,
       manageMoney = false,
+      assignedPaper = false,
     ) {
       const edit = patch
         ? 'UPDATE pilot_items i SET payload=$5::jsonb,hidden=$7,updated=now() FROM bump WHERE i.pilot_id=bump.id AND i.id=$4 AND i.kind=$3 AND ($8 OR i.created_by=$6) RETURNING i.id'
-        : "INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by,hidden) SELECT id,$4,$3,$5::jsonb,$6,$7 FROM bump ON CONFLICT (pilot_id,id) DO UPDATE SET hidden=false,payload=EXCLUDED.payload,updated=now() WHERE pilot_items.hidden AND pilot_items.kind='camera' RETURNING id";
+        : "INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by,hidden) SELECT id,$4,$3,$5::jsonb,$6,$7 FROM bump ON CONFLICT (pilot_id,id) DO UPDATE SET hidden=false,payload=EXCLUDED.payload,updated=now() WHERE pilot_items.hidden AND pilot_items.kind=EXCLUDED.kind AND pilot_items.kind IN ('camera','schedule') RETURNING id";
       return one(
-        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND ${patch ? 'EXISTS(SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND id=$4 AND kind=$3 AND ($8 OR created_by=$6))' : "NOT EXISTS(SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND id=$4 AND NOT (kind='camera' AND $3='camera' AND hidden)) AND (SELECT count(*) FROM pilot_items WHERE pilot_id=$1 AND kind=$3 AND (NOT hidden OR kind='photo')) < CASE $3 WHEN 'site' THEN 150 WHEN 'photo' THEN 200 WHEN 'step' THEN 100 WHEN 'paper' THEN 200 WHEN 'camera' THEN 150 ELSE 3000 END"} RETURNING id,revision), edited AS (${edit}) SELECT revision FROM bump`,
+        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND ${patch ? 'EXISTS(SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND id=$4 AND kind=$3 AND ($8 OR created_by=$6))' : "NOT EXISTS(SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND id=$4 AND NOT (kind=$3 AND kind IN ('camera','schedule') AND hidden)) AND (SELECT count(*) FROM pilot_items WHERE pilot_id=$1 AND kind=$3 AND (NOT hidden OR kind='photo')) < CASE $3 WHEN 'site' THEN 150 WHEN 'photo' THEN 200 WHEN 'step' THEN 100 WHEN 'readingType' THEN 100 WHEN 'baseline' THEN 150 WHEN 'schedule' THEN 1 WHEN 'paper' THEN 200 WHEN 'camera' THEN 150 ELSE 3000 END"} RETURNING id,revision), edited AS (${edit}), logged AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by) SELECT $1,gen_random_uuid()::text,'history',jsonb_build_object('item',$4::text,'entry',$5::jsonb),$6 FROM edited WHERE $3 IN ('paper','step','reading','sample','log','note','schedule','readingType','baseline')) SELECT revision FROM bump`,
         [
           p.id,
           rev,
@@ -218,7 +225,13 @@ export function pilotStore(query: Query) {
           JSON.stringify(payload),
           by,
           hidden,
-          ...(patch ? [by === 'lead' || (kind === 'money' && manageMoney)] : []),
+          ...(patch
+            ? [
+                by === 'lead' ||
+                  (kind === 'money' && manageMoney) ||
+                  (kind === 'paper' && assignedPaper),
+              ]
+            : []),
         ],
       );
     },
