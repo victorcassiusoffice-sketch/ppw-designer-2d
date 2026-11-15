@@ -1,3 +1,5 @@
+import { MemberLink } from './SharedControls';
+import { EvidenceFiles } from './EvidenceFiles';
 import { useState } from 'react';
 import {
   damageKinds,
@@ -22,199 +24,213 @@ export default function Record({ p }: { p: Pilot }) {
   const rows = series(p.readings, site);
   return (
     <>
-      <h3>Six steps</h3>
-      <ol className="pilot-timeline">
-        {p.steps.map((s, i) => (
-          <li key={s.id}>
-            <strong>
-              {i + 1}. {s.title}
-            </strong>
-            <label>
-              Date
-              <input
-                type="date"
-                disabled={!permissions(p).owner}
-                aria-label={s.title + ' date'}
-                value={s.date}
-                onChange={(e) => {
-                  const v = day.safeParse(e.target.value);
-                  if (v.success)
-                    update(p.slug, (q) => {
-                      q.steps[i].date = v.data;
-                    });
-                }}
-              />
-            </label>
-            <label>
-              Step state
-              <select
-                disabled={!permissions(p).owner}
-                value={s.state}
-                onChange={(e) =>
-                  update(p.slug, (q) => {
-                    q.steps[i].state = stepStates[e.target.selectedIndex];
-                  })
-                }
-              >
-                {stepStates.map((x) => (
-                  <option key={x}>{x}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Step note (name a role)
-              <input
-                maxLength={200}
-                disabled={!permissions(p).owner}
-                key={s.id + '-' + s.note}
-                defaultValue={s.note ?? ''}
-                onBlur={(e) => {
-                  const note = e.currentTarget.value.trim();
-                  if (note !== (s.note ?? ''))
-                    void update(p.slug, (q) => {
-                      q.steps[i].note = note;
-                    });
-                }}
-              />
-            </label>
-          </li>
-        ))}
-      </ol>
-      <h3>Monthly cover</h3>
-      {p.sites.length > 0 ? (
+      {permissions(p, 'steps').read && (
         <>
-          <label>
-            Reading site
-            <select value={site} onChange={(e) => setSite(e.target.value)}>
-              {p.sites.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div aria-label="Cover by month" className="pilot-bars">
-            {rows.length ? (
-              rows.map((r) => (
-                <div key={r.id}>
-                  <time>{r.month}</time>
-                  <meter min="0" max="100" value={r.cover} />
-                  <b>{r.cover}%</b>
-                </div>
-              ))
-            ) : (
-              <p>Add the first monthly reading for this site.</p>
-            )}
-          </div>
-          {permissions(p).write && (
-            <form
-              className="pilot-form"
-              onSubmit={async (e) => {
-                const f = formValues(e);
-                const qId = () =>
-                  p.readings.find((r) => r.site === site && r.month === str(f, 'month'))?.id ??
-                  uid();
-                const rec = readingSchema.parse({
-                  id: qId(),
-                  site,
-                  month: str(f, 'month'),
-                  cover: Number(f.get('cover')),
-                  condition: str(f, 'condition'),
-                  damage: f.get('damage'),
-                  note: str(f, 'note'),
-                  photo: str(f, 'photo') || undefined,
-                });
-                const saved = await update(p.slug, (q) => {
-                  q.readings = q.readings.filter((r) => r.site !== site || r.month !== rec.month);
-                  q.readings.push(rec);
-                });
-                if (!saved) return;
-                setStatus('Reading saved for ' + rec.month);
-              }}
-            >
-              <Field label="Month" name="month" type="month" value={today().slice(0, 7)} />
+          <h3>Six steps</h3>
+          <ol className="pilot-timeline">
+            {p.steps.map((s, i) => (
+              <li key={s.id}>
+                <strong>
+                  {i + 1}. {s.title}
+                </strong>
+                <label>
+                  Date
+                  <input
+                    type="date"
+                    disabled={!permissions(p, 'steps').edit(s.id)}
+                    aria-label={s.title + ' date'}
+                    value={s.date}
+                    onChange={(e) => {
+                      const v = day.safeParse(e.target.value);
+                      if (v.success)
+                        update(p.slug, (q) => {
+                          q.steps[i].date = v.data;
+                        });
+                    }}
+                  />
+                </label>
+                <label>
+                  Step state
+                  <select
+                    disabled={!permissions(p, 'steps').edit(s.id)}
+                    value={s.state}
+                    onChange={(e) =>
+                      update(p.slug, (q) => {
+                        q.steps[i].state = stepStates[e.target.selectedIndex];
+                      })
+                    }
+                  >
+                    {stepStates.map((x) => (
+                      <option key={x}>{x}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Step note (name a role)
+                  <input
+                    maxLength={200}
+                    disabled={!permissions(p, 'steps').edit(s.id)}
+                    key={s.id + '-' + s.note}
+                    defaultValue={s.note ?? ''}
+                    onBlur={(e) => {
+                      const note = e.currentTarget.value.trim();
+                      if (note !== (s.note ?? ''))
+                        void update(p.slug, (q) => {
+                          q.steps[i].note = note;
+                        });
+                    }}
+                  />
+                </label>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+      {permissions(p, 'readings').read && (
+        <>
+          <h3>Monthly cover</h3>
+          {p.sites.length > 0 ? (
+            <>
               <label>
-                Cover (%)
-                <input type="number" name="cover" required min="0" max="100" step=".1" />
-              </label>
-              <Field label="Render condition" name="condition" />
-              <label>
-                Damage
-                <select name="damage">
-                  {damageKinds.map((x) => (
-                    <option key={x}>{x}</option>
+                Reading site
+                <select value={site} onChange={(e) => setSite(e.target.value)}>
+                  {p.sites.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
                   ))}
                 </select>
               </label>
+              <div aria-label="Cover by month" className="pilot-bars">
+                {rows.length ? (
+                  rows.map((r) => (
+                    <div key={r.id}>
+                      <time>{r.month}</time>
+                      <meter min="0" max="100" value={r.cover} />
+                      <b>{r.cover}%</b>
+                    </div>
+                  ))
+                ) : (
+                  <p>Add the first monthly reading for this site.</p>
+                )}
+              </div>
+              {permissions(p, 'readings').write && (
+                <form
+                  className="pilot-form"
+                  onSubmit={async (e) => {
+                    const f = formValues(e);
+                    const qId = () =>
+                      p.readings.find((r) => r.site === site && r.month === str(f, 'month'))?.id ??
+                      uid();
+                    const rec = readingSchema.parse({
+                      id: qId(),
+                      site,
+                      month: str(f, 'month'),
+                      cover: Number(f.get('cover')),
+                      condition: str(f, 'condition'),
+                      damage: f.get('damage'),
+                      note: str(f, 'note'),
+                      photo: str(f, 'photo') || undefined,
+                    });
+                    const saved = await update(p.slug, (q) => {
+                      q.readings = q.readings.filter(
+                        (r) => r.site !== site || r.month !== rec.month,
+                      );
+                      q.readings.push(rec);
+                    });
+                    if (!saved) return;
+                    setStatus('Reading saved for ' + rec.month);
+                  }}
+                >
+                  <Field label="Month" name="month" type="month" value={today().slice(0, 7)} />
+                  <label>
+                    Cover (%)
+                    <input type="number" name="cover" required min="0" max="100" step=".1" />
+                  </label>
+                  <Field label="Render condition" name="condition" />
+                  <label>
+                    Damage
+                    <select name="damage">
+                      {damageKinds.map((x) => (
+                        <option key={x}>{x}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Photo from the wall
+                    <select name="photo">
+                      <option value="">No photo</option>
+                      {p.photos
+                        .filter((x) => x.site === site && !x.hidden)
+                        .map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.date} · {x.caption || x.kind}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <Field name="note" label="Reading note" required={false} maxLength={2000} />
+                  <button>Save reading</button>
+                </form>
+              )}
+            </>
+          ) : (
+            <p>Add a site to record a reading.</p>
+          )}
+        </>
+      )}
+      {permissions(p, 'log').read && (
+        <>
+          <h3>Waste log</h3>
+          <div className="pilot-log" role="table" aria-label="Waste log">
+            {p.logs.map((row) => (
+              <div role="row" key={row.id}>
+                <time role="cell">{row.date}</time>
+                <b role="cell">{row.type}</b>
+                <span role="cell">
+                  {row.quantity} {row.unit}
+                </span>
+                <span role="cell">{row.destination}</span>
+              </div>
+            ))}
+          </div>
+          <p>
+            {totals(p.logs)
+              .map((r) => r.type + ' ' + Number(r.quantity.toFixed(3)) + ' ' + r.unit)
+              .join(' · ') || 'Add the first load below.'}
+          </p>
+          {permissions(p, 'log').write && (
+            <form
+              className="pilot-form"
+              onSubmit={async (e) => {
+                const form = e.currentTarget,
+                  f = formValues(e),
+                  rec = logSchema.parse({
+                    id: uid(),
+                    date: str(f, 'date'),
+                    type: str(f, 'type'),
+                    quantity: Number(f.get('quantity')),
+                    unit: str(f, 'unit'),
+                    destination: str(f, 'destination'),
+                  });
+                const saved = await update(p.slug, (q) => q.logs.push(rec));
+                if (!saved) return;
+                form.reset();
+                setStatus('Load added');
+              }}
+            >
+              <Field name="date" label="Load date" type="date" value={today()} />
+              <Field name="type" label="Material type" />
               <label>
-                Photo from the wall
-                <select name="photo">
-                  <option value="">No photo</option>
-                  {p.photos
-                    .filter((x) => x.site === site && !x.hidden)
-                    .map((x) => (
-                      <option key={x.id} value={x.id}>
-                        {x.date} · {x.caption || x.kind}
-                      </option>
-                    ))}
-                </select>
+                Quantity
+                <input type="number" required min="0" max="1000000000" step="any" name="quantity" />
               </label>
-              <Field name="note" label="Reading note" required={false} maxLength={2000} />
-              <button>Save reading</button>
+              <Field name="unit" label="Unit" value="t" />
+              <Field name="destination" label="Where it went" />
+              <button>Add load</button>
             </form>
           )}
         </>
-      ) : (
-        <p>Add a site to record a reading.</p>
-      )}
-      <h3>Waste log</h3>
-      <div className="pilot-log" role="table" aria-label="Waste log">
-        {p.logs.map((row) => (
-          <div role="row" key={row.id}>
-            <time role="cell">{row.date}</time>
-            <b role="cell">{row.type}</b>
-            <span role="cell">
-              {row.quantity} {row.unit}
-            </span>
-            <span role="cell">{row.destination}</span>
-          </div>
-        ))}
-      </div>
-      <p>
-        {totals(p.logs)
-          .map((r) => r.type + ' ' + Number(r.quantity.toFixed(3)) + ' ' + r.unit)
-          .join(' · ') || 'Add the first load below.'}
-      </p>
-      {permissions(p).write && (
-        <form
-          className="pilot-form"
-          onSubmit={async (e) => {
-            const form = e.currentTarget,
-              f = formValues(e),
-              rec = logSchema.parse({
-                id: uid(),
-                date: str(f, 'date'),
-                type: str(f, 'type'),
-                quantity: Number(f.get('quantity')),
-                unit: str(f, 'unit'),
-                destination: str(f, 'destination'),
-              });
-            const saved = await update(p.slug, (q) => q.logs.push(rec));
-            if (!saved) return;
-            form.reset();
-            setStatus('Load added');
-          }}
-        >
-          <Field name="date" label="Load date" type="date" value={today()} />
-          <Field name="type" label="Material type" />
-          <label>
-            Quantity
-            <input type="number" required min="0" max="1000000000" step="any" name="quantity" />
-          </label>
-          <Field name="unit" label="Unit" value="t" />
-          <Field name="destination" label="Where it went" />
-          <button>Add load</button>
-        </form>
       )}
       <p role="status">{status}</p>
     </>
@@ -231,6 +247,9 @@ export function Team({ p }: { p: Pilot }) {
             </small>
             <h3>{m.name}</h3>
             {m.organisation}
+            {isShared(p.slug) && permissions(p).owner && m.id !== 'lead' && (
+              <MemberLink slug={p.slug} member={m} />
+            )}
           </article>
         ))}
       </div>
@@ -325,12 +344,13 @@ export function Papers({ p }: { p: Pilot }) {
   return (
     <>
       <p>A tick here is a record, never a signature.</p>
+      {isShared(p.slug) && <EvidenceFiles p={p} />}
       {p.papers.map((x, i) => (
         <article key={x.id}>
           <label>
             {x.title}
             <select
-              disabled={!permissions(p).owner}
+              disabled={!permissions(p, 'papers').edit(x.id)}
               value={x.state}
               onChange={(e) =>
                 update(p.slug, (q) => {
@@ -351,7 +371,7 @@ export function Papers({ p }: { p: Pilot }) {
           {x.note && <p>{x.note}</p>}
         </article>
       ))}
-      {permissions(p).owner && (
+      {permissions(p, 'papers').write && (
         <form
           className="pilot-form"
           onSubmit={async (e) => {

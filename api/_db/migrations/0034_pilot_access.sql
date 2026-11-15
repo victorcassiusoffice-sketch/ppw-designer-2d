@@ -1,0 +1,3 @@
+ALTER TABLE pilots ADD COLUMN IF NOT EXISTS role_rules jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE pilot_members ADD COLUMN IF NOT EXISTS checker_until date DEFAULT NULL;
+ALTER TABLE pilot_members ADD COLUMN IF NOT EXISTS link_id uuid DEFAULT NULL;

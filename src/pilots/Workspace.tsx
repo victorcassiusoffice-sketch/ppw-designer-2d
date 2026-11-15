@@ -219,9 +219,18 @@ export default function Workspace() {
   }, [slug]);
   const p = shared ? doc?.pilot : pilots.find((x) => x.slug === slug);
   const owner = !shared || doc?.owner === true;
-  const availableSections = sections.filter(
-    (s) => s !== 'Money' || (shared && doc && managesMoney(owner, doc.role)),
-  );
+  const availableSections = sections.filter((s) => {
+    if (s === 'Money') return shared && doc && managesMoney(owner, doc.role);
+    if (!shared || !doc) return true;
+    if (s === 'Record')
+      return ['steps', 'log', 'readings'].some(
+        (k) => doc.rights[k as 'steps' | 'log' | 'readings'] !== 'none',
+      );
+    const k = (
+      { Team: 'team', Papers: 'papers', Wall: 'notes', Camera: 'notes', Notes: 'notes' } as const
+    )[s as 'Team' | 'Papers' | 'Wall' | 'Camera' | 'Notes'];
+    return !k || doc.rights[k] !== 'none';
+  });
   const [selected, setSelected] = useState(''),
     [section, setSection] = useState('Map'),
     [more, setMore] = useState(false),

@@ -19,6 +19,7 @@ export const roles = [
   'host',
   'coordinator',
   'viewer',
+  'checker',
 ] as const;
 export const damageKinds = ['none', 'salt', 'biological', 'mechanical'] as const;
 export const paperStates = ['needed', 'to sign', 'signed', 'filed'] as const;

@@ -1,3 +1,5 @@
+import type { Evidence } from '../../src/pilots/evidence.js';
+import type { Rules } from '../../src/pilots/access.js';
 import { neon } from '@neondatabase/serverless';
 export type Query = (sql: string, args: unknown[]) => Promise<Record<string, unknown>[]>;
 export type Access = {
@@ -5,6 +7,8 @@ export type Access = {
   slug: string;
   owner_id: string;
   revision: number;
+  role_rules: Rules;
+  link_id: string | null;
   member_id: string | null;
   first_name: string | null;
   expires: string | null;
@@ -16,7 +20,7 @@ export type Access = {
 };
 export type Actor = { owner: string; member: string };
 const membership =
-  "m.pilot_id=p.id AND m.cookie_key_hash=$2 AND m.state='active' AND m.cookie_expires>now()";
+  "m.pilot_id=p.id AND m.cookie_key_hash=$2 AND m.state='active' AND m.cookie_expires>now() AND (m.role<>'checker' OR m.checker_until >= (now() AT TIME ZONE 'Indian/Mauritius')::date)";
 export function pilotStore(query: Query) {
   const one = async (sql: string, args: unknown[]) => (await query(sql, args))[0];
   return {
@@ -45,12 +49,55 @@ export function pilotStore(query: Query) {
         [p.id, member],
       );
     },
+    async files(p: Access) {
+      return query(
+        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='file' AND NOT hidden ORDER BY created DESC",
+        [p.id],
+      );
+    },
+    async protectedProof(p: Access, id: string) {
+      return !!(await one(
+        `SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND
+        (payload->>'type' IN ('payment_row','approval','plan_version') OR payload->>'state' IN ('claimed','accepted')) AND
+        jsonb_path_exists(payload,'lax $.** ? (@ == $file)',jsonb_build_object('file',$2::text)) LIMIT 1`,
+        [p.id, id],
+      ));
+    },
+    async currentRevision(p: Access) {
+      return Number((await one('SELECT revision FROM pilots WHERE id=$1', [p.id]))?.revision);
+    },
+    async reserveFile(p: Access, rev: number, f: Evidence, by: string, quota: number) {
+      return one(
+        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND
+        (SELECT COALESCE(sum(CASE WHEN kind='photo' THEN COALESCE((payload->>'size')::int,400000) ELSE (payload->>'size')::int END),0) FROM pilot_items WHERE pilot_id=$1 AND kind IN ('photo','file')) + $3::int <= $4::int RETURNING id,revision),
+        reserved AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by,hidden) SELECT id,$5,'file',$6::jsonb,$7,true FROM bump) SELECT revision FROM bump`,
+        [p.id, rev, f.size, quota, f.id, JSON.stringify(f), by],
+      );
+    },
+    async publishFile(p: Access, id: string) {
+      return one(
+        `WITH done AS (UPDATE pilot_items SET hidden=false WHERE pilot_id=$1 AND id=$2 AND kind='file' AND hidden RETURNING pilot_id) UPDATE pilots SET revision=revision+1,updated=now() FROM done WHERE pilots.id=done.pilot_id RETURNING revision`,
+        [p.id, id],
+      );
+    },
+    async rules(p: Access, rev: number, rules: Rules) {
+      return one(
+        'UPDATE pilots SET role_rules=$3::jsonb,revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 RETURNING revision',
+        [p.id, rev, JSON.stringify(rules)],
+      );
+    },
+    async links(p: Access) {
+      return query(
+        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND payload->>'type'='link_log' ORDER BY created DESC",
+        [p.id],
+      );
+    },
     async memberRole(p: Access, id: string) {
       return one('SELECT role FROM pilot_members WHERE pilot_id=$1 AND id=$2', [p.id, id]);
     },
     async money(p: Access) {
       return query(
-        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden ORDER BY created,id",
+        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND payload->>'type' IN ('budget_line','pay_row') AND NOT hidden ORDER BY created,id",
         [p.id],
       );
     },
@@ -62,7 +109,7 @@ export function pilotStore(query: Query) {
     },
     async access(slug: string, a: Actor) {
       return (await one(
-        `SELECT p.*,m.id AS member_id,m.role,m.first_name,m.cookie_expires AS expires FROM pilots p LEFT JOIN pilot_members m ON ${membership} WHERE p.slug=$3 AND (p.owner_id=$1 OR m.id IS NOT NULL)`,
+        `SELECT p.*,m.id AS member_id,m.role,m.first_name,m.link_id,m.cookie_expires AS expires FROM pilots p LEFT JOIN pilot_members m ON ${membership} WHERE p.slug=$3 AND (p.owner_id=$1 OR m.id IS NOT NULL)`,
         [a.owner, a.member, slug],
       )) as Access | undefined;
     },
@@ -98,25 +145,40 @@ export function pilotStore(query: Query) {
     },
     async join(slug: string, invite: string, cookie: string) {
       return one(
-        `WITH joined AS (UPDATE pilot_members m SET cookie_key_hash=$3,cookie_expires=now()+interval '30 days',invite_hash=NULL,invite_expires=NULL,state='active',last_seen=now() FROM pilots p WHERE m.pilot_id=p.id AND p.slug=$1 AND m.invite_hash=$2 AND m.invite_expires>now() AND m.state IN ('invited','active') RETURNING m.pilot_id) UPDATE pilots SET revision=revision+1, updated=now() FROM joined WHERE pilots.id=joined.pilot_id RETURNING pilots.id`,
+        `WITH joined AS (UPDATE pilot_members m SET cookie_key_hash=$3,cookie_expires=now()+interval '30 days',invite_hash=NULL,invite_expires=NULL,state='active',last_seen=now() FROM pilots p WHERE m.pilot_id=p.id AND p.slug=$1 AND m.invite_hash=$2 AND m.invite_expires>now() AND (m.role<>'checker' OR m.checker_until >= (now() AT TIME ZONE 'Indian/Mauritius')::date) AND m.state IN ('invited','active') RETURNING m.pilot_id,m.link_id), used AS (UPDATE pilot_items i SET payload=jsonb_set(i.payload,'{firstUse}',to_jsonb(now())),updated=now() FROM joined j WHERE i.pilot_id=j.pilot_id AND i.id=j.link_id::text AND i.kind='money' AND i.payload->>'type'='link_log' AND i.payload->>'firstUse' IS NULL) UPDATE pilots SET revision=revision+1, updated=now() FROM joined WHERE pilots.id=joined.pilot_id RETURNING pilots.id`,
         [slug, invite, cookie],
       );
     },
     async invite(
       p: Access,
       rev: number,
-      m: { id: string; name: string; organisation: string; role: string },
+      m: { id: string; name: string; organisation: string; role: string; endDate?: string },
       invite: string,
     ) {
       return one(
-        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND (SELECT count(*) FROM pilot_members WHERE pilot_id=$1)<150 RETURNING id,revision), added AS (INSERT INTO pilot_members(pilot_id,id,first_name,organisation,role,state,invite_hash,invite_expires) SELECT id,$3,$4,$5,$6,'invited',$7,now()+interval '7 days' FROM bump) SELECT revision FROM bump`,
-        [p.id, rev, m.id, m.name, m.organisation, m.role, invite],
+        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND (SELECT count(*) FROM pilot_members WHERE pilot_id=$1)<150 RETURNING id,revision), added AS (INSERT INTO pilot_members(pilot_id,id,first_name,organisation,role,state,invite_hash,invite_expires,checker_until,link_id) SELECT id,$3,$4,$5,$6,'invited',$7,now()+interval '7 days',$8::date,gen_random_uuid() FROM bump RETURNING pilot_id,id,role,link_id), logged AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by) SELECT pilot_id,link_id::text,'money',jsonb_build_object('id',link_id::text,'type','link_log','version',1,'seat',id,'role',role,'kind','link','madeBy','owner','madeAt',now(),'firstUse',null),'lead' FROM added WHERE role IN ('lead','coordinator')) SELECT revision FROM bump`,
+        [p.id, rev, m.id, m.name, m.organisation, m.role, invite, m.endDate ?? null],
+      );
+    },
+    async changeRole(
+      p: Access,
+      rev: number,
+      id: string,
+      role: string,
+      endDate: string | null,
+      invite: string,
+    ) {
+      return one(
+        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND EXISTS(SELECT 1 FROM pilot_members WHERE pilot_id=$1 AND id=$3 AND id<>'lead' AND role<>$4) RETURNING id,revision),
+      changed AS (UPDATE pilot_members m SET role=$4,checker_until=$5::date,invite_hash=$6,invite_expires=now()+interval '7 days',cookie_key_hash=NULL,cookie_expires=NULL,link_id=gen_random_uuid() FROM bump WHERE m.pilot_id=bump.id AND m.id=$3 RETURNING m.*),
+      logged AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by) SELECT pilot_id,link_id::text,'money',jsonb_build_object('id',link_id::text,'type','link_log','version',1,'seat',id,'role',role,'kind','role change','madeBy','owner','madeAt',now(),'firstUse',null),'lead' FROM changed WHERE role IN ('lead','coordinator')) SELECT revision FROM bump`,
+        [p.id, rev, id, role, endDate, invite],
       );
     },
     async renew(p: Access, rev: number, member: string, invite: string) {
       return one(
         `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND EXISTS(SELECT 1 FROM pilot_members WHERE pilot_id=$1 AND id=$3 AND id<>'lead') RETURNING id,revision),
-        renewed AS (UPDATE pilot_members m SET invite_hash=$4,invite_expires=now()+interval '7 days' FROM bump WHERE m.pilot_id=bump.id AND m.id=$3 RETURNING m.id) SELECT revision FROM bump`,
+        renewed AS (UPDATE pilot_members m SET invite_hash=$4,invite_expires=now()+interval '7 days',cookie_key_hash=NULL,cookie_expires=NULL,link_id=gen_random_uuid() FROM bump WHERE m.pilot_id=bump.id AND m.id=$3 RETURNING m.pilot_id,m.id,m.role,m.link_id), logged AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by) SELECT pilot_id,link_id::text,'money',jsonb_build_object('id',link_id::text,'type','link_log','version',1,'seat',id,'role',role,'kind','replacement link','madeBy','owner','madeAt',now(),'firstUse',null),'lead' FROM renewed WHERE role IN ('lead','coordinator')) SELECT revision FROM bump`,
         [p.id, rev, member, invite],
       );
     },

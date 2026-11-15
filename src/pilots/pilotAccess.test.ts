@@ -2,7 +2,7 @@
 import { beforeAll, afterAll, it, expect } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import sharp from 'sharp';
 import { handlePilots } from '../../api/_lib/pilots';
 import { pilotStore } from '../../api/_db/pilotStore';
@@ -15,6 +15,7 @@ const db = new PGlite(),
   files = new Map<string, Buffer>();
 beforeAll(async () => {
   await db.exec(readFileSync('api/_db/migrations/0033_pilots.sql', 'utf8'));
+  await db.exec(readFileSync('api/_db/migrations/0034_pilot_access.sql', 'utf8'));
 }, 20000);
 afterAll(() => db.close());
 type Resp = {
@@ -25,6 +26,9 @@ type Resp = {
   photo: Photo;
   pilots: { slug: string }[];
   error: string;
+  file: { id: string; sha256: string };
+  files: { id: string }[];
+  memberId: string;
 };
 const call = async (
   parts: string[],
@@ -33,6 +37,7 @@ const call = async (
   cookie = '',
   data?: unknown,
   limit = false,
+  quota = 1500000,
 ) => {
   const res = {
     code: 0,
@@ -60,6 +65,7 @@ const call = async (
     async () => data,
     {
       db: () => store,
+      evidenceQuota: quota,
       owner: async () => owner,
       limited: async () => limit,
       files: {
@@ -229,3 +235,143 @@ it('keeps invitations, files, authorship and revisions scoped to a single pilot'
   );
   expect((await call([slug], 'GET', '', cookie)).code).toBe(403);
 }, 30000);
+
+it('enforces record and file rights across seats, requests, renewal and checker expiry', async () => {
+  const slug = await create('owner'),
+    other = await create('outside');
+  const make = (path: string[], method: string, data?: unknown) =>
+    call([slug, ...path], method, 'owner', '', data);
+  const rev = async () => (await make([], 'GET')).body.revision;
+  async function seat(role: string) {
+    const joined = await make(['members'], 'POST', {
+      revision: await rev(),
+      role,
+      name: 'Seat',
+      organisation: 'Trial',
+      ...(role === 'checker' ? { endDate: '2099-01-01' } : {}),
+    });
+    expect(joined.code).toBe(200);
+    const invite = joined.body.join.split('#join=')[1];
+    const signed = await call([slug, 'join'], 'POST', '', '', { invite });
+    expect(signed.code).toBe(200);
+    const cookie = signed.headers['Set-Cookie'].split(';')[0],
+      record = await call([slug], 'GET', '', cookie);
+    return { id: record.body.memberId, cookie };
+  }
+  const lead = await seat('lead'),
+    checker = await seat('checker'),
+    viewer = await seat('viewer'),
+    supplier = await seat('technology supplier'),
+    host = await seat('host');
+  const access = (who: typeof lead, path: string[], method = 'GET', data?: unknown) =>
+    call([slug, ...path], method, '', who.cookie, data);
+  const pdf = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF\n');
+  const upload = async (kind: string, body = pdf, extra = {}) =>
+    make(['files'], 'POST', {
+      revision: await rev(),
+      file: { kind, title: 'Trial evidence', ...extra },
+      data: body.toString('base64'),
+    });
+  const evidence = await upload('ticket');
+  expect(evidence.code).toBe(200);
+  const id = evidence.body.file.id,
+    proof = await upload('invoice'),
+    money = proof.body.file.id;
+  expect(evidence.body.file.sha256).toBe(createHash('sha256').update(pdf).digest('hex'));
+  const downloaded = await access(checker, ['files', id]);
+  expect(downloaded.jpeg).toEqual(pdf);
+  expect(downloaded.headers['X-Content-Type-Options']).toBe('nosniff');
+  expect(downloaded.headers['Content-Disposition']).toMatch(/^attachment/);
+  expect((await access(lead, ['files', money])).code).toBe(200);
+  for (const seat of [checker, host, supplier, viewer]) {
+    expect((await access(seat, ['files', money])).code).toBe(403);
+    expect(JSON.stringify((await access(seat, ['files'])).body)).not.toContain(money);
+  }
+  const papers = { id: 'paper-private', title: 'Confidential example', state: 'needed', note: '' };
+  expect(
+    (
+      await make(['items'], 'POST', {
+        revision: await rev(),
+        kind: 'paper',
+        id: papers.id,
+        payload: papers,
+      })
+    ).code,
+  ).toBe(200);
+  expect((await access(viewer, [])).body.pilot.papers).toEqual([]);
+  for (const path of [['items'], ['photos'], ['files'], ['members'], ['money']])
+    expect((await access(checker, path, 'POST', {})).code).toBe(403);
+  expect((await call([other], 'GET', '', checker.cookie)).code).toBe(403);
+  expect(
+    (await make(['rules'], 'PUT', { revision: await rev(), rules: { viewer: { money: 'read' } } }))
+      .code,
+  ).toBe(400);
+  expect(
+    (await make(['rules'], 'PUT', { revision: await rev(), rules: { checker: { notes: 'add' } } }))
+      .code,
+  ).toBe(400);
+  expect(
+    (
+      await make(['rules'], 'PUT', {
+        revision: await rev(),
+        rules: { host: { papers: 'none', team: 'none' } },
+      })
+    ).code,
+  ).toBe(200);
+  expect((await access(host, [])).body.pilot.members).toEqual([]);
+  expect((await access(host, ['files', id])).code).toBe(403);
+  expect((await upload('permit', Buffer.from('hello'))).code).toBe(400);
+  expect((await upload('permit', Buffer.alloc(1000001))).code).toBe(400);
+  const tinyQuota = await call(
+    [slug, 'files'],
+    'POST',
+    'owner',
+    '',
+    {
+      revision: await rev(),
+      file: { kind: 'other', title: 'Too much' },
+      data: pdf.toString('base64'),
+    },
+    false,
+    1,
+  );
+  expect(tinyQuota.code).toBe(400);
+  expect(tinyQuota.body.error).toContain('limit');
+  const image = await sharp({ create: { width: 10, height: 10, channels: 3, background: '#555' } })
+    .withMetadata({ density: 200 })
+    .jpeg()
+    .toBuffer();
+  const file = await upload('other', image);
+  expect(file.code).toBe(200);
+  const cleaned = await make(['files', file.body.file.id], 'GET');
+  expect((await sharp(cleaned.jpeg).metadata()).exif).toBeUndefined();
+  expect((await make(['files', id], 'PATCH', { revision: await rev(), hidden: true })).code).toBe(
+    200,
+  );
+  expect((await make(['files', id], 'GET')).code).toBe(403);
+  const note = { id: 'seat-note', text: 'Contribution', date: '2026-11-15', member: lead.id };
+  expect(
+    (
+      await access(lead, ['items'], 'POST', {
+        revision: await rev(),
+        kind: 'note',
+        id: note.id,
+        payload: note,
+      })
+    ).code,
+  ).toBe(200);
+  const renewed = await make(['members', lead.id], 'POST', { revision: await rev() });
+  expect((await access(lead, [])).code).toBe(403);
+  const j = await call([slug, 'join'], 'POST', '', '', {
+    invite: renewed.body.join.split('#join=')[1],
+  });
+  expect(
+    (await call([slug], 'GET', '', j.headers['Set-Cookie'].split(';')[0])).body.pilot.notes[0].id,
+  ).toBe(note.id);
+  await db.query(
+    'UPDATE pilot_members SET checker_until=current_date-1 WHERE pilot_id=(SELECT id FROM pilots WHERE slug=$1) AND id=$2',
+    [slug, checker.id],
+  );
+  for (const path of [[], ['me'], ['files'], ['files', id], ['files', money], ['money']])
+    expect((await access(checker, path)).code).toBe(403);
+});
