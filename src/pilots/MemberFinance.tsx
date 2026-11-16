@@ -1,10 +1,11 @@
+import MyHours from './MyHours';
 import { useEffect, useState } from 'react';
 import { request } from './remote';
 import { type Evidence, fileCap } from './evidence';
 import { minorDigits, major } from './ledger';
 import { uid, today } from './contract';
 type OwnRow = {
-  type: 'invoice' | 'cost_row' | 'transfer' | 'pay_row';
+  type: 'invoice' | 'cost_row' | 'transfer' | 'pay_row' | 'staff_month';
   id?: string;
   number?: string;
   date?: string;
@@ -17,13 +18,21 @@ type OwnRow = {
   credits?: string;
   state?: string;
   refusal?: string;
-  editable?: boolean;historyRef?:string;
+  editable?: boolean;
+  historyRef?: string;
   description?: string;
+  month?: string;
+  hours?: string;
+  totalHours?: string;
+  step?: string;
+  approved?: boolean;
+  timeSheet?: string;
   missing?: string[];
 };
 export type PersonalLedger = {
   marks?: { invoices: boolean; staff: boolean; partner: boolean };
   items?: OwnRow[];
+  steps?: { id: string; title: string }[];
   due?: { id: string; label: string }[];
   partnerBalance?: number;
   currency?: keyof typeof minorDigits;
@@ -65,7 +74,13 @@ export function MemberFinance({ slug, finance }: { slug: string; finance: Person
   }, [url, tick, finance]);
   const rows = record?.items ?? finance.items ?? [],
     marks = record?.marks ?? finance.marks;
-  const [history,setHistory]=useState<{ref:string;entries:{at:string;after:{state?:string;amount?:number;number?:string;description?:string}}[]}>();
+  const [history, setHistory] = useState<{
+    ref: string;
+    entries: {
+      at: string;
+      after: { state?: string; amount?: number; number?: string; description?: string };
+    }[];
+  }>();
   const refresh = () => bump((v) => v + 1);
   return (
     <section>
@@ -79,8 +94,19 @@ export function MemberFinance({ slug, finance }: { slug: string; finance: Person
           {major(finance.partnerBalance, minorDigits[finance.currency])} {finance.currency}
         </p>
       )}
+      {marks?.staff && record && (
+        <MyHours
+          url={url}
+          seat={record.memberId}
+          revision={record.revision}
+          enabled={enabled}
+          refresh={refresh}
+          steps={record.steps ?? []}
+          months={rows.filter((r) => r.type === 'staff_month')}
+        />
+      )}
       {rows
-        .filter((r) => r.type !== 'pay_row')
+        .filter((r) => r.type !== 'pay_row' && r.type !== 'staff_month')
         .map((r, i) => (
           <article key={r.id ?? i}>
             <h3>{r.number ?? r.description ?? r.type}</h3>
@@ -92,8 +118,26 @@ export function MemberFinance({ slug, finance }: { slug: string; finance: Person
             </p>
             {r.missing?.length ? <p>Missing {r.missing.join(', ')}</p> : null}
             {r.refusal && <p>{r.refusal}</p>}
-            {r.historyRef&&<button onClick={()=>void request<{entries:NonNullable<typeof history>['entries']}>(url+'/history/'+r.historyRef).then(d=>setHistory({ref:r.historyRef!,entries:d.entries})).catch(e=>setMsg(e.message))}>View history</button>}
-            {r.historyRef&&history?.ref===r.historyRef&&history.entries.map((entry,i)=><p key={i}>{entry.at} · {entry.after.number??entry.after.description} · {entry.after.state}</p>)}
+            {r.historyRef && (
+              <button
+                onClick={() =>
+                  void request<{ entries: NonNullable<typeof history>['entries'] }>(
+                    url + '/history/' + r.historyRef,
+                  )
+                    .then((d) => setHistory({ ref: r.historyRef!, entries: d.entries }))
+                    .catch((e) => setMsg(e.message))
+                }
+              >
+                View history
+              </button>
+            )}
+            {r.historyRef &&
+              history?.ref === r.historyRef &&
+              history.entries.map((entry, i) => (
+                <p key={i}>
+                  {entry.at} · {entry.after.number ?? entry.after.description} · {entry.after.state}
+                </p>
+              ))}
             {r.editable && <button onClick={() => setEdit(r)}>Correct invoice</button>}
           </article>
         ))}

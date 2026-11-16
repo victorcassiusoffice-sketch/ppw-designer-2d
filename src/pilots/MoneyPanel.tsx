@@ -1,3 +1,5 @@
+import { planValues, purchaseRisks } from './funder';
+import FunderPanel from './FunderPanel';
 import { useEffect, useState } from 'react';
 import { uid, type Pilot } from './contract';
 import { categories, currencies, display, minor, payStates, type Pay, type Budget } from './money';
@@ -183,16 +185,27 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
     ),
     heads = typed(rows, 'heading'),
     lines = typed(rows, 'budget_line');
+  const planned = planValues(rows).values;
   const sum = ledgerSummary(
       rows,
       code,
       old.reduce((s, l) => s + l.planned, 0),
       snapshots,
+      undefined,
+      planned,
     ),
     fmt = (n: number) => display(n, code);
   const ctx = { p, records, files: files.files, book: code, owner, seat, role };
+  const readOnly = !owner && role === 'checker';
+  const authorise = (kind: string, run: () => void) =>
+    void request(url + '/csv/' + kind)
+      .then(run)
+      .catch((e) => setError(e.message));
+  const download = (kind: string, name: string, get: () => string) =>
+    authorise(kind, () => csv(name, get()));
   const allowed = (k: string) =>
-    !['settings', 'member_marks', 'heading', 'rate_month'].includes(k) || owner;
+    !readOnly &&
+    (!['settings', 'member_marks', 'heading', 'rate_month', 'band_table'].includes(k) || owner);
   const add = (type: Ledger['type'], initial?: Raw) => {
     setEdit({ type, initial });
     setError('');
@@ -201,7 +214,7 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
     <div className="pilot-money">
       <p>
         Private to the owner, the lead and the coordinator. Members see only their own rows, on
-        their own page.
+        their own page. A checker reads it until its end date.
       </p>
       <p>Estimates and records only, not an approval.</p>
       {!typed(rows, 'settings').length && <p>Settings missing</p>}
@@ -213,33 +226,35 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
           </p>
         ))}
       </div>
-      <div className="pilot-form">
-        <label>
-          Money record
-          <select value={kind} onChange={(e) => setKind(e.target.value as Ledger['type'])}>
-            {Object.entries(typeLabels)
-              .filter(([k]) => allowed(k))
-              .map(([k, label]) => (
-                <option key={k} value={k}>
-                  {label}
-                </option>
-              ))}
-          </select>
-        </label>
-        <button
-          onClick={() =>
-            add(
-              kind,
-              kind === 'settings'
-                ? records.find((r) => r.type === 'settings') &&
-                    (data(records.find((r) => r.type === 'settings')!) as Raw)
-                : undefined,
-            )
-          }
-        >
-          Add or update {typeLabels[kind].toLowerCase()}
-        </button>
-      </div>
+      {!readOnly && (
+        <div className="pilot-form">
+          <label>
+            Money record
+            <select value={kind} onChange={(e) => setKind(e.target.value as Ledger['type'])}>
+              {Object.entries(typeLabels)
+                .filter(([k]) => allowed(k))
+                .map(([k, label]) => (
+                  <option key={k} value={k}>
+                    {label}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <button
+            onClick={() =>
+              add(
+                kind,
+                kind === 'settings'
+                  ? records.find((r) => r.type === 'settings') &&
+                      (data(records.find((r) => r.type === 'settings')!) as Raw)
+                  : undefined,
+              )
+            }
+          >
+            Add or update {typeLabels[kind].toLowerCase()}
+          </button>
+        </div>
+      )}
       {edit && (
         <LedgerEditor
           key={edit.type + '-' + (edit.initial?.id ?? 'new')}
@@ -258,7 +273,17 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
           }
         />
       )}
-      <ProofUpload slug={p.slug} enabled={files.enabled} after={() => bump((n) => n + 1)} />
+      {!readOnly && (
+        <ProofUpload slug={p.slug} enabled={files.enabled} after={() => bump((n) => n + 1)} />
+      )}
+      <FunderPanel
+        rows={rows}
+        book={code}
+        snap={snapshots}
+        p={p}
+        review={!readOnly}
+        download={download}
+      />
       {owner && (
         <details>
           <summary>Copy headings from another pilot</summary>
@@ -305,6 +330,7 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
           legacy.reduce((n, l) => n + l.planned, 0),
           snapshots,
           ids,
+          planned,
         );
         return (
           <details key={k}>
@@ -322,25 +348,27 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
                 <p>
                   Typed before S11 · committed {fmt(l.committed)} · spent {fmt(l.spent)}
                 </p>
-                <button
-                  onClick={() =>
-                    add('budget_line', {
-                      id: l.id,
-                      type: 'budget_line',
-                      version: 2,
-                      heading: l.category,
-                      label: l.label,
-                      note: l.note,
-                      kind: 'ordinary',
-                      units: '1',
-                      unitValue: l.planned,
-                      direct: false,
-                      flags: [],
-                    })
-                  }
-                >
-                  Convert line
-                </button>
+                {!readOnly && (
+                  <button
+                    onClick={() =>
+                      add('budget_line', {
+                        id: l.id,
+                        type: 'budget_line',
+                        version: 2,
+                        heading: l.category,
+                        label: l.label,
+                        note: l.note,
+                        kind: 'ordinary',
+                        units: '1',
+                        unitValue: l.planned,
+                        direct: false,
+                        flags: [],
+                      })
+                    }
+                  >
+                    Convert line
+                  </button>
+                )}
               </article>
             ))}
           </details>
@@ -381,13 +409,9 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
                 </dl>
                 {r.type === 'cost_row' && (
                   <p>
-                    {flagsFor(
-                      data(r) as RowCost,
-                      rows,
-                      code,
-                      p.schedules?.[0],
-                      snapshots[r.id],
-                    ).join(' · ') || 'Complete'}
+                    {flagsFor(data(r) as RowCost, rows, code, p.schedules?.[0], snapshots[r.id])
+                      .concat(purchaseRisks(data(r) as RowCost, rows, code))
+                      .join(' · ') || 'Complete'}
                   </p>
                 )}
                 {r.audit != null && (
@@ -402,7 +426,7 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
                     ))}
                   </details>
                 )}
-                {r.type === 'invoice' && r.state === 'received' && !r.costId && (
+                {!readOnly && r.type === 'invoice' && r.state === 'received' && !r.costId && (
                   <button
                     onClick={() =>
                       setEdit({
@@ -557,11 +581,19 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
       })}
       <details>
         <summary>Download CSVs</summary>
-        <button onClick={() => csv('cost-list', costCsv(rows, code, p.steps, snapshots))}>
+        <button
+          onClick={() =>
+            download('costs', 'cost-list', () => costCsv(rows, code, p.steps, snapshots))
+          }
+        >
           Download cost list
         </button>
         <button
-          onClick={() => csv('internal-cost-list', costCsv(rows, code, p.steps, snapshots, true))}
+          onClick={() =>
+            download('internal', 'internal-cost-list', () =>
+              costCsv(rows, code, p.steps, snapshots, true),
+            )
+          }
         >
           Download internal cost list
         </button>
@@ -573,23 +605,29 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
             ))}
           </select>
         </label>
-        <button onClick={() => csv('monthly-rates-' + foreign, rateCsv(rows, foreign))}>
+        <button
+          onClick={() =>
+            download('rates', 'monthly-rates-' + foreign, () => rateCsv(rows, foreign))
+          }
+        >
           Download monthly rates
         </button>
         <button
           onClick={() =>
-            exportCsv('pilot-team-pay', [
-              ['Member', 'Role', 'Paid from', 'Currency', 'Agreed', 'State', 'Note'],
-              ...pays.map((q) => [
-                p.members.find((m) => m.id === q.memberId)?.name ?? '',
-                q.role,
-                [...old, ...lines].find((l) => l.id === q.from)?.label ?? '',
-                code,
-                major(q.agreed, 2),
-                q.state,
-                q.note,
+            authorise('pay', () =>
+              exportCsv('pilot-team-pay', [
+                ['Member', 'Role', 'Paid from', 'Currency', 'Agreed', 'State', 'Note'],
+                ...pays.map((q) => [
+                  p.members.find((m) => m.id === q.memberId)?.name ?? '',
+                  q.role,
+                  [...old, ...lines].find((l) => l.id === q.from)?.label ?? '',
+                  code,
+                  major(q.agreed, 2),
+                  q.state,
+                  q.note,
+                ]),
               ]),
-            ])
+            )
           }
         >
           Download pay CSV
