@@ -521,7 +521,7 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
               mark?.invoices &&
               ['invoiced', 'paid'].includes(row.state) &&
               !typed(rows, 'invoice').some((r) => r.sender === m.id) && <p>Check: no invoice</p>}
-            {eligible && (owner || role === 'lead') && m.id !== seat && (
+            {eligible && (owner || role === 'lead' || role === 'coordinator') && m.id !== seat && (
               <form
                 className="pilot-form"
                 onSubmit={(e) => {

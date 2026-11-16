@@ -220,12 +220,12 @@ export async function validateFunder(d: Ledger, c: Context) {
     for (const r of d.receivers) spending(r.line);
   }
   if (d.type === 'source') {
-    if (!owner && !lead) deny();
+    if (!owner && !side) deny();
     if (!d.earmarked && d.lines.length) bad('Clear the lines for an unrestricted source.');
     for (const l of d.lines) spending(l);
     if (d.proofState !== 'none' && !d.file) bad('Attach the contribution proof.');
   }
-  if (d.type === 'cut' && !lead) deny();
+  if (d.type === 'cut' && !side) deny();
   if (d.type === 'forecast') {
     spending(d.line);
     if (

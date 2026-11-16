@@ -959,5 +959,9 @@ export function allowedPayInput(
   seatRole: string | null,
   m?: Row<'member_marks'>,
 ) {
-  return mayHoldPay(role, m) && member !== own && (owner || seatRole === 'lead');
+  return (
+    mayHoldPay(role, m) &&
+    member !== own &&
+    (owner || seatRole === 'lead' || seatRole === 'coordinator')
+  );
 }

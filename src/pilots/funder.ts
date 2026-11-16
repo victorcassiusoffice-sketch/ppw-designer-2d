@@ -86,7 +86,29 @@ export function buyingFlags(check: Row<'buying_check'>, rows: Ledger[]) {
   const failures: string[] = [];
   if (check.outcome !== 'passed') failures.push('Award pending or failed');
   if (check.ownerBids) {
-    if (check.consulted < 1) failures.push('Providers missing');
+    const linked = typed(rows, 'cost_row').filter((c) => c.buyingCheck === check.id);
+    if (!linked.length && check.consulted < 1) failures.push('Providers missing');
+    for (const cost of linked) {
+      const type =
+        cost.costType === 'equipment'
+          ? 'supply'
+          : cost.costType === 'travel'
+            ? 'service'
+            : cost.costType;
+      const bandTable = typed(rows, 'band_table').find((t) => t.purchaseType === type);
+      if (!bandTable) {
+        failures.push('Missing value band');
+        continue;
+      }
+      const value = cost.amount + (bandTable.includeTax ? cost.tax : 0);
+      const index = bandTable.edges.filter(
+        (e) => value > e.value || (value === e.value && !e.lower),
+      ).length;
+      const band = bandTable.bands[index];
+      if (!band || check.consulted < band.providers) failures.push('Too few providers');
+      if (band && check.procedure !== band.procedure)
+        failures.push('Procedure differs from the band');
+    }
     return failures;
   }
   if (!plan?.noObjection || !plan.approvalFile) failures.push('No approved procurement plan');

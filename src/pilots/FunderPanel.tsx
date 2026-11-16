@@ -218,12 +218,7 @@ export default function FunderPanel({
                       payment.label,
                       ['Request', 'Value'],
                       [
-                        [
-                          'Project total',
-                          money(
-                            s.plan - (s.adjustedMax === null ? 0 : planValues(rows).contingency),
-                          ),
-                        ],
+                        ['Project total', money(s.plan - planValues(rows).contingency)],
                         ['Maximum grant', money(settings?.maximumGrant)],
                         ['Received last period', money(last)],
                         ['Received in all', money(s.received)],
