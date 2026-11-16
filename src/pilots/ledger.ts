@@ -1,3 +1,4 @@
+import { funderSchemas } from './funderRecords.js';
 import { z } from 'zod';
 import { id, day } from './contract.js';
 import { currency, categories } from './money.js';
@@ -45,6 +46,9 @@ export const settings = z
     singleOfferReasons: short.array().max(30).optional(),
     purchaseLabels: short.array().max(80).optional(),
     receivers: short.array().max(80).optional(),
+    signedChange: id.optional(),
+    extensionReminderDays: z.number().int().min(0).max(3660).optional(),
+    profitIncludesGrant: z.boolean().optional(),
     noGlobal: z.boolean().default(false),
     flatOff: z.boolean().default(false),
     taxMayCount: z.boolean().default(false),
@@ -83,7 +87,7 @@ export const line = z
     heading: short,
     number: short,
     label: short,
-    kind: z.enum(['ordinary', 'staff']),
+    kind: z.enum(['ordinary', 'staff', 'flat rate', 'contingency']),
     costType: short,
     unit: short,
     units: decimal,
@@ -120,10 +124,39 @@ export const payment = z
   .object({
     ...base,
     type: z.literal('payment_row'),
-    receivedDate: day,
-    receivedAmount: amount,
-    accountsCurrency: code,
-    rate: positive,
+    kind: z.enum(['first payment', 'further payment', 'balance']).optional(),
+    expectedDate: day.optional(),
+    expectedAmount: amount.optional(),
+    askedDate: day.optional(),
+    askedAmount: amount.optional(),
+    requestReceived: day.optional(),
+    dedicatedAccountSent: day.optional(),
+    replyDate: day.optional(),
+    reply: text.optional(),
+    replyFile: id.optional(),
+    accountsAmount: amount.optional(),
+    confirmed: day.optional(),
+    stops: z
+      .array(
+        z
+          .object({
+            notice: day,
+            reason: short.optional(),
+            replyDue: day.optional(),
+            restart: day.optional(),
+          })
+          .strict(),
+      )
+      .max(30)
+      .optional(),
+    statement: text.optional(),
+    signer: short.optional(),
+    printDate: day.optional(),
+    attachments: short.array().max(30).optional(),
+    receivedDate: day.optional(),
+    receivedAmount: amount.optional(),
+    accountsCurrency: code.optional(),
+    rate: positive.optional(),
     bankNotice: id.optional(),
     label: short,
   })
@@ -133,7 +166,16 @@ export const cost = z
   .object({
     ...base,
     type: z.literal('cost_row'),
-    costType: z.enum(['service', 'supply', 'works', 'equipment', 'travel']),
+    costType: z.enum(['service', 'supply', 'works', 'equipment', 'travel', 'staff']),
+    buyingCheck: id.optional(),
+    noPurchase: text.optional(),
+    staffMonth: id.optional(),
+    gross: amount.optional(),
+    employerCharges: amount.optional(),
+    otherPay: amount.optional(),
+    netPay: amount.optional(),
+    normalPay: z.boolean().optional(),
+    reasonFile: id.optional(),
     vehicle: z.boolean(),
     line: id,
     whose: id,
@@ -194,8 +236,9 @@ export const transfer = z
   .object({
     ...base,
     type: z.literal('transfer'),
-    direction: z.literal('out'),
-    partner: id,
+    direction: z.enum(['out', 'in']),
+    partner: id.optional(),
+    source: id.optional(),
     date: day,
     amount,
     currency: code,
@@ -227,6 +270,7 @@ export const ledgerRow = z.discriminatedUnion('type', [
   invoice,
   transfer,
   entry,
+  ...funderSchemas,
 ]);
 export type Ledger = z.infer<typeof ledgerRow>;
 export type Row<T extends Ledger['type']> = Extract<Ledger, { type: T }>;
@@ -288,8 +332,8 @@ export function converted(
   let value: string | undefined;
   if (c.currency === account) {
     const candidates = typed(rows, 'payment_row')
-      .filter((r) => r.accountsCurrency === account && r.receivedDate <= c.date)
-      .sort((a, b) => b.receivedDate.localeCompare(a.receivedDate));
+      .filter((r) => r.accountsCurrency === account && !!r.receivedDate && r.receivedDate <= c.date)
+      .sort((a, b) => b.receivedDate!.localeCompare(a.receivedDate!));
     value = c.paymentRate
       ? candidates.find((v) => v.id === c.paymentRate)?.rate
       : candidates[0]?.rate;
@@ -302,13 +346,16 @@ export function converted(
     : undefined;
 }
 export function proofGaps(c: Row<'cost_row'>, rows: Ledger[]) {
-  const checklist = [
-    ['buying paper'],
-    ['contract', 'order'],
-    ['delivery note', 'report', 'attendance list', 'handover record'],
-    ['invoice', 'receipt'],
-    ['proof of payment'],
-  ];
+  const checklist =
+    c.costType === 'staff'
+      ? [['contract'], ['pay slip'], ['time sheet'], ['signed pay split']]
+      : [
+          ['buying paper'],
+          ['contract', 'order'],
+          ['delivery note', 'report', 'attendance list', 'handover record'],
+          ['invoice', 'receipt'],
+          ['proof of payment'],
+        ];
   if (c.vehicle)
     checklist.push(
       ...['distance covered', 'average consumption', 'fuel', 'upkeep costs'].map((k) => [k]),
@@ -464,6 +511,7 @@ export function ledgerSummary(
   legacyPlanned = 0,
   snapshots: Record<string, Snapshot> = {},
   scope?: Set<string>,
+  planned?: Map<string, number>,
 ) {
   const sums = {
     planned: legacyPlanned,
@@ -477,7 +525,7 @@ export function ledgerSummary(
     outside: 0,
   };
   for (const l of typed(rows, 'budget_line'))
-    if (!scope || scope.has(l.id)) sums.planned += lineTotal(l);
+    if (!scope || scope.has(l.id)) sums.planned += planned?.get(l.id) ?? lineTotal(l);
   for (const c of typed(rows, 'cost_row')) {
     if (scope && !scope.has(c.line)) continue;
     const current = valueOf(c, rows, book),

@@ -1,3 +1,7 @@
+import { advance } from '../../src/pilots/running.js';
+import { validateFunder, funderFiles } from './pilotFunder.js';
+import { funderSet } from '../../src/pilots/funder.js';
+import { readsMoney } from '../../src/pilots/money.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Access, hostedPilots } from '../_db/pilotStore.js';
@@ -126,6 +130,17 @@ function ownProjection(row: Stored) {
       state: row.state,
       missing: proofGaps(ledgerRow.parse(strip(row)) as Row<'cost_row'>, []),
     };
+  if (row.type === 'staff_month')
+    return {
+      type: row.type,
+      id: row.id,
+      month: row.month,
+      hours: row.hours,
+      totalHours: row.totalHours,
+      step: row.step,
+      timeSheet: row.timeSheet,
+      approved: row.approved,
+    };
   if (row.type === 'transfer')
     return {
       type: row.type,
@@ -148,18 +163,57 @@ function historyKey(p: Access, seat: string, id: string) {
 export async function managerDues(db: Db, p: Access) {
   const stored = (await db.ledger(p)).map((r) => r.payload as Stored),
     rows = dataRows(stored);
-  if (!typed(rows, 'settings').length) return [];
-  return rows.flatMap((r) => {
+  const settings = typed(rows, 'settings')[0];
+  if (!settings) return [];
+  const today = civil(settings.timeZone),
+    schedule = (await db.item(p, 'pilot-schedule'))?.payload as { end: string } | undefined;
+  const final = typed(rows, 'period').find((p) => p.final);
+  const due = rows.flatMap((r) => {
+    if (r.type === 'source' && !r.file && r.proofBy && r.proofBy <= today)
+      return [{ id: r.id, label: 'Contribution proof due' }];
+    if (r.type === 'staff_month' && !r.timeSheet)
+      return [{ id: r.id, label: 'Time sheet missing on a staff month' }];
+    if (
+      r.type === 'change_record' &&
+      !r.signedDate &&
+      settings.reminderDays !== undefined &&
+      advance(r.appliesFrom, -settings.reminderDays) <= today
+    )
+      return [{ id: r.id, label: 'Signed change request due' }];
     if (r.type === 'cost_row' && proofGaps(r, rows).length)
       return [{ id: r.id, label: 'Proof missing on a cost row' }];
     if (r.type === 'invoice' && !r.file && !['withdrawn', 'refused'].includes(r.state))
       return [{ id: r.id, label: 'File missing from an invoice' }];
     return [];
   });
+  if (final && today >= final.start)
+    for (const r of typed(rows, 'cost_row'))
+      if (
+        r.funding === 'in the budget' &&
+        ['committed', 'invoiced'].includes(r.state) &&
+        r.pendingDue &&
+        r.pendingDue < today &&
+        !r.proofs.some((f) => f.kind === 'proof of payment' && f.file)
+      )
+        due.push({ id: r.id, label: 'Pending payment proof due' });
+  if (
+    settings.extensionReminderDays !== undefined &&
+    schedule &&
+    advance(schedule.end, -settings.extensionReminderDays) <= today
+  )
+    due.push({ id: settings.id, label: 'Extension request due' });
+  return due;
 }
 export async function personalFinance(db: Db, p: Access, seat: string, role: string) {
   const m = await seatMarks(db, p, seat);
-  const rows = await db.ownFinance(p, seat, !!m?.invoices, !!m?.partner, mayHoldPay(role, m));
+  const rows = await db.ownFinance(
+    p,
+    seat,
+    !!m?.invoices,
+    !!m?.partner,
+    mayHoldPay(role, m),
+    !!m?.staff,
+  );
   const items = rows.flatMap((r) => {
     const row = r.payload as Stored,
       v = ownProjection(row);
@@ -210,10 +264,12 @@ export async function personalFinance(db: Db, p: Access, seat: string, role: str
         }, 0)
       : undefined;
   const due =
-    !configured || role === 'host' || role === 'viewer'
+    (!configured && !m?.staff) || role === 'host' || role === 'viewer'
       ? []
       : rows.flatMap((r) => {
           const row = r.payload as Stored;
+          if (row.type === 'staff_month' && m?.staff && !row.timeSheet)
+            return [{ id: row.id, label: 'Time sheet missing on a staff month' }];
           if (
             row.type === 'invoice' &&
             m?.invoices &&
@@ -237,6 +293,7 @@ export async function personalFinance(db: Db, p: Access, seat: string, role: str
       ? { marks: { invoices: m.invoices, staff: m.staff, partner: m.partner } }
       : {}),
     ...(items.length ? { items } : {}),
+    ...(m?.staff ? { steps: await db.hoursSteps(p) } : {}),
     ...(due.length ? { due } : {}),
     showPay: mayHoldPay(role, m),
   };
@@ -256,7 +313,7 @@ export async function financeHistory(db: Db, p: Access, owner: boolean, key: str
   if (!row || row.hidden || row.kind !== 'money') return null;
   const item = row.payload as Stored;
   if (['link_log', 'checker_log', 'change_log'].includes(item.type)) return null;
-  const manager = managesMoney(owner, p.role);
+  const manager = readsMoney(owner, p.role);
   if (!manager) {
     if (!p.member_id || p.role === 'checker') return null;
     const m = await seatMarks(db, p, p.member_id);
@@ -323,9 +380,9 @@ export async function saveLedger(
   )
     bad('Provenance is set by the server.');
   if (['link_log', 'change_log', 'checker_log'].includes(raw.type)) deny();
-  if (!manager && raw.type !== 'invoice') deny();
+  if ((!manager || memberForm) && !['invoice', 'staff_month'].includes(raw.type)) deny();
   const data = ledgerRow.parse(raw);
-  if (!manager && data.type === 'invoice') {
+  if ((!manager || memberForm) && data.type === 'invoice') {
     const m = await seatMarks(db, p, by);
     if (m?.partner) problem(403, 'partner, not a supplier');
     if (!m?.invoices) deny();
@@ -377,6 +434,24 @@ export async function saveLedger(
     return typed(rows, t).find((x) => x.id === id);
   }
   const setting = typed(rows, 'settings')[0];
+  const context = {
+    db,
+    p,
+    by,
+    owner,
+    lead,
+    side,
+    memberForm,
+    hide: v.hide,
+    rows,
+    old,
+    oldLines: all.some(
+      (r) => r.type === 'budget_line' && r.id !== 'book-currency' && r.version !== 2,
+    ),
+    bad,
+    deny,
+  };
+  const schedule = await validateFunder(data, context);
   if (v.createCost !== undefined) {
     if (data.type !== 'invoice' || !manager || data.costId || data.credits || !data.line) deny();
     const draft = ledgerRow.parse(v.createCost);
@@ -399,6 +474,7 @@ export async function saveLedger(
         (await db.item(p, draft.activity))?.kind !== 'step'
       )
         deny();
+      await validateFunder(draft, { ...context, old: undefined });
       if (draft.proofs.length) bad('Attach the cost proofs after linking.');
       save({ ...draft, state: 'invoiced' });
       rows.push(draft);
@@ -470,12 +546,13 @@ export async function saveLedger(
     )
       bad('Use one rate per month and foreign currency.');
   }
-  if (data.type === 'payment_row' && !side) deny();
   if (data.type === 'transfer') {
-    const m = await seatMarks(db, p, data.partner);
-    if (!m?.partner) bad('Choose a partner.');
+    if (data.direction === 'in') {
+      if (data.partner || !byType('source', data.source)) bad('Choose the contribution source.');
+    } else if (!data.partner || data.source || !(await seatMarks(db, p, data.partner))?.partner)
+      bad('Choose a partner.');
   }
-  const allowedFiles = filesOf(data).filter((f): f is string => !!f);
+  const allowedFiles = [...filesOf(data), ...funderFiles(data)].filter((f): f is string => !!f);
   for (const id of allowedFiles) {
     const row = await db.item(p, id);
     if (!row || row.kind !== 'file' || row.hidden) deny();
@@ -553,7 +630,7 @@ export async function saveLedger(
         if (inv) {
           if (inv.state !== 'approved') deny();
           save({ ...inv, state: 'paid', paymentDate: data.paymentDate });
-        } else if (data.documentKind !== 'receipt') deny();
+        } else if (data.documentKind !== 'receipt' && data.costType !== 'staff') deny();
         if (!data.paymentDate) bad('Enter the payment date.');
       } else deny();
     }
@@ -770,7 +847,7 @@ export async function saveLedger(
       bad('Use shorter notes or split the record.');
     changes.set(id, { id, payload: log, hidden: false });
   }
-  return await db.ledgerCommit(p, v.revision, [...changes.values()], by, fileIds);
+  return await db.ledgerCommit(p, v.revision, [...changes.values()], by, fileIds, schedule ?? null);
 }
 export async function copyHeadingTree(db: Db, p: Access, owner: boolean, body: unknown) {
   if (!owner) return null;
@@ -820,10 +897,10 @@ export async function ledgerRoute(
   const error = (status: number, message: string) => res.status(status).json({ error: message });
   try {
     if (
-      key ||
-      (!managesMoney(owner, p.role) && !memberForm) ||
-      (!owner && p.role === 'checker') ||
-      (memberForm && (!p.member_id || owner))
+      (key && key !== 'funder-set' && !key.startsWith('funder-set--')) ||
+      (!memberForm && !readsMoney(owner, p.role)) ||
+      (!owner && p.role === 'checker' && (method !== 'GET' || memberForm)) ||
+      (memberForm && (!p.member_id || owner || key))
     )
       deny();
     if (method === 'GET') {
@@ -833,13 +910,39 @@ export async function ledgerRoute(
         return res.status(200).json({ revision: p.revision, memberId: by, ...me });
       }
       const stored = (await db.ledger(p)).map((r) => r.payload as Stored);
+      if (!owner)
+        await db.checkerRead(
+          p,
+          key ?? 'ledger',
+          stored.map((r) => r.id),
+        );
+      const rows = dataRows(stored),
+        currency = bookCode.safeParse(stored.find((r) => r.id === 'book-currency')?.currency);
+      const reportPeriod = key?.startsWith('funder-set--')
+        ? key.slice('funder-set--'.length)
+        : undefined;
+      if (reportPeriod && !typed(rows, 'period').some((p) => p.id === reportPeriod)) deny();
+      if (key === 'funder-set' || reportPeriod)
+        return res.status(200).json({
+          set: currency.success
+            ? funderSet(
+                rows,
+                currency.data,
+                Object.fromEntries(
+                  stored.filter((r) => r.snapshot).map((r) => [r.id, r.snapshot!]),
+                ),
+                civil(typed(rows, 'settings')[0]?.timeZone),
+                reportPeriod,
+              )
+            : null,
+        });
       return res.status(200).json({
         revision: p.revision,
         rows: stored.filter((r) => r.id !== 'book-currency'),
         currency: stored.find((r) => r.id === 'book-currency')?.currency ?? null,
       });
     }
-    if (method !== 'POST') deny();
+    if (method !== 'POST' || key) deny();
     return (await saveLedger(db, p, owner, by, await body(), memberForm))
       ? res.status(200).json({ saved: true })
       : error(409, 'The pilot changed. Reload and try again.');
@@ -856,5 +959,9 @@ export function allowedPayInput(
   seatRole: string | null,
   m?: Row<'member_marks'>,
 ) {
-  return mayHoldPay(role, m) && member !== own && (owner || seatRole === 'lead');
+  return (
+    mayHoldPay(role, m) &&
+    member !== own &&
+    (owner || seatRole === 'lead' || seatRole === 'coordinator')
+  );
 }

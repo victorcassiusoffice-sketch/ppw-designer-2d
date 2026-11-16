@@ -283,7 +283,8 @@ it('enforces record and file rights across seats, requests, renewal and checker 
   expect(downloaded.headers['X-Content-Type-Options']).toBe('nosniff');
   expect(downloaded.headers['Content-Disposition']).toMatch(/^attachment/);
   expect((await access(lead, ['files', money])).code).toBe(200);
-  for (const seat of [checker, host, supplier, viewer]) {
+  expect((await access(checker, ['files', money])).code).toBe(200);
+  for (const seat of [host, supplier, viewer]) {
     expect((await access(seat, ['files', money])).code).toBe(403);
     expect(JSON.stringify((await access(seat, ['files'])).body)).not.toContain(money);
   }
@@ -541,7 +542,8 @@ it('keeps linked invoices, periods, pay, audit and file access within the acting
   const exposure = await api('Viewer', ['me']);
   expect(JSON.stringify(exposure.body)).not.toContain(cost.id);
   expect(JSON.stringify(exposure.body)).not.toContain('member_marks');
-  for (const n of ['Viewer', 'Checker', 'Partner', 'Supplier'])
+  expect((await api('Checker', ['ledger'])).code).toBe(200);
+  for (const n of ['Viewer', 'Partner', 'Supplier'])
     expect((await api(n, ['ledger'])).code).toBe(403);
   const pay = {
     id: 'pay-' + coordinator,

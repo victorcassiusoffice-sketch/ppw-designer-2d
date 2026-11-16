@@ -11,7 +11,7 @@ import {
 import { levelFor } from '../../src/pilots/access.js';
 import { id } from '../../src/pilots/contract.js';
 import { revision } from '../../src/pilots/sharedContract.js';
-import { managesMoney } from '../../src/pilots/money.js';
+import { managesMoney, readsMoney } from '../../src/pilots/money.js';
 import type { Access, hostedPilots } from '../_db/pilotStore.js';
 import type { MinRes } from './sentry.js';
 type IO = {
@@ -55,9 +55,10 @@ export async function pilotFiles(
   const access = levelFor(p.role_rules, owner, p.role, 'papers'),
     finance = managesMoney(owner, p.role);
   const marks = p.member_id && !owner ? await seatMarks(db, p, p.member_id) : undefined;
+  if (!owner && p.role === 'checker' && method !== 'GET') return deny();
   const visible = async (f: Evidence) =>
     f.money
-      ? finance ||
+      ? readsMoney(owner, p.role) ||
         (!!p.member_id &&
           !!marks &&
           (await db.moneyFileForSeat(
@@ -66,15 +67,30 @@ export async function pilotFiles(
             p.member_id,
             !!marks.invoices && f.addedBy === by,
             !!marks.partner,
+            !!marks.staff,
           )))
       : access !== 'none';
   const path = (f: Evidence) => 'pilots/' + p.id + '/evidence/' + f.id;
   if (!key && method === 'GET') {
-    if (access === 'none' && !finance && !marks?.partner && !marks?.invoices) return deny();
+    if (
+      access === 'none' &&
+      !readsMoney(owner, p.role) &&
+      !marks?.partner &&
+      !marks?.invoices &&
+      !marks?.staff
+    )
+      return deny();
     const rows = await db.files(p);
     const files = rows.map((r) => evidenceMeta.parse(r.payload));
     const readable = await Promise.all(files.map(visible));
-    return res.status(200).json({ enabled: quota > 0, files: files.filter((_, i) => readable[i]) });
+    const shown = files.filter((_, i) => readable[i]);
+    if (!owner)
+      await db.checkerRead(
+        p,
+        'files',
+        shown.map((f) => f.id),
+      );
+    return res.status(200).json({ enabled: quota > 0, files: shown });
   }
   if (key) {
     if (!id.safeParse(key).success) return deny();
@@ -83,6 +99,7 @@ export async function pilotFiles(
     const f = evidenceMeta.parse(row.payload);
     if (!(await visible(f))) return deny();
     if (method === 'GET') {
+      if (!owner) await db.checkerRead(p, 'file', [key]);
       const b = await files.read(path(f));
       if (!b) return fail(404, 'File unavailable.');
       res.setHeader('Content-Type', f.mime);
@@ -114,8 +131,8 @@ export async function pilotFiles(
   }
   if (
     method !== 'POST' ||
-    (!finance && !marks?.invoices && access === 'none') ||
-    (!owner && ['viewer', 'checker'].includes(p.role ?? ''))
+    (!finance && !marks?.invoices && !marks?.staff && access === 'none') ||
+    (!owner && (p.role === 'checker' || (p.role === 'viewer' && !marks?.staff)))
   )
     return deny();
   if (quota <= 0) return fail(400, 'File storage is off. Add an outside link to the paper.');
@@ -135,6 +152,14 @@ export async function pilotFiles(
       !['paper', 'log', 'event', 'report', 'money'].includes(String(link.kind)))
   )
     return deny();
+  if (link?.kind === 'money' && (link.payload as { kind?: string }).kind === 'flat rate')
+    return deny();
+  if (
+    !owner &&
+    p.role === 'viewer' &&
+    !(marks?.staff && v.file.source === 'money' && v.file.kind === 'time sheet')
+  )
+    return deny();
   const money =
     v.file.source === 'money' ||
     proofKinds.some((k) => k === v.file.kind) ||
@@ -148,11 +173,17 @@ export async function pilotFiles(
     money
       ? !finance &&
         !(
-          marks?.invoices &&
-          v.file.source === 'money' &&
-          (!link ||
-            ((link.payload as { type?: string; sender?: string }).type === 'invoice' &&
-              (link.payload as { sender?: string }).sender === by))
+          (marks?.staff &&
+            v.file.kind === 'time sheet' &&
+            v.file.source === 'money' &&
+            (!link ||
+              ((link.payload as { type?: string }).type === 'staff_month' &&
+                (link.payload as { memberId?: string }).memberId === by))) ||
+          (marks?.invoices &&
+            v.file.source === 'money' &&
+            (!link ||
+              ((link.payload as { type?: string; sender?: string }).type === 'invoice' &&
+                (link.payload as { sender?: string }).sender === by)))
         )
       : access !== 'add' && !assigned
   )

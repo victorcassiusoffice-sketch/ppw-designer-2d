@@ -17,6 +17,21 @@ type Context = {
   role: string;
 };
 export const typeLabels: Record<string, string> = {
+  plan_version: 'Signed plan',
+  move: 'Budget move',
+  contingency_use: 'Contingency use',
+  change_record: 'Contract change',
+  source: 'Contribution source',
+  cut: 'Recorded cut',
+  forecast: 'Next-period forecast',
+  band_table: 'Purchase value bands',
+  procurement_plan: 'Procurement plan',
+  buying_check: 'Buying check',
+  offer: 'Offer',
+  guarantee: 'Guarantee',
+  asset: 'Asset handover',
+  staff_month: 'Staff month',
+  wrong_sum: 'Amount to recover',
   settings: 'Ledger settings',
   member_marks: 'Member access',
   heading: 'Heading',
@@ -26,7 +41,7 @@ export const typeLabels: Record<string, string> = {
   payment_row: 'Funder payment',
   cost_row: 'Cost row',
   invoice: 'Invoice or credit note',
-  transfer: 'Transfer to a partner',
+  transfer: 'Transfer',
   row_entry: 'Funder result or late proof',
 };
 const labels: Record<string, string> = {
@@ -68,11 +83,39 @@ const labels: Record<string, string> = {
 };
 const words = (s: string) =>
   labels[s] ?? (s[0].toUpperCase() + s.slice(1)).replace(/([a-z])([A-Z])/g, '$1 $2');
-const fileFields = new Set(['file', 'delivery', 'integrity', 'bankNotice']);
+const fileFields = new Set([
+  'file',
+  'delivery',
+  'integrity',
+  'bankNotice',
+  'issuedFile',
+  'releaseFile',
+  'approvalFile',
+  'requestFile',
+  'reasonFile',
+  'reasonsFile',
+  'replyFile',
+  'committeeReport',
+  'tender',
+  'timeSheet',
+  'paySlip',
+]);
 const minorFields = new Set([
   'amount',
   'tax',
   'unitValue',
+  'value',
+  'gross',
+  'otherPay',
+  'netPay',
+  'employerCharges',
+  'calledAmount',
+  'askedAmount',
+  'accountsAmount',
+  'expectedAmount',
+  'promised',
+  'recovered',
+  'committeeFrom',
   'eligible',
   'receivedAmount',
   'maximumGrant',
@@ -95,7 +138,7 @@ function options(key: string, ctx: Context, values: Raw): { value: string; name:
     !(key === 'partner' && values.type === 'member_marks')
   )
     return ctx.p.members.map((m) => ({ value: m.id, name: m.name + ' · ' + m.role }));
-  if (key === 'activity') return map(ctx.p.steps, 'title');
+  if (key === 'activity' || key === 'step') return map(ctx.p.steps, 'title');
   if (key === 'heading' || key === 'parent')
     return [
       ...(key === 'heading' ? categories.map((v) => ({ value: v, name: v })) : []),
@@ -105,6 +148,19 @@ function options(key: string, ctx: Context, values: Raw): { value: string; name:
       ),
     ];
   const lookup: Record<string, [string, string]> = {
+    ...(values.type === 'transfer' && key === 'source'
+      ? { source: ['source', 'name'] as [string, string] }
+      : {}),
+    from: ['budget_line', 'label'],
+    to: ['budget_line', 'label'],
+    period: ['period', 'number'],
+    staffMonth: ['staff_month', 'month'],
+    buyingCheck: ['buying_check', 'procedure'],
+    check: ['buying_check', 'procedure'],
+    plan:
+      values.type === 'buying_check' ? ['procurement_plan', 'sent'] : ['plan_version', 'number'],
+    change: ['change_record', 'kind'],
+    signedChange: ['change_record', 'kind'],
     line: ['budget_line', 'label'],
     costId: ['cost_row', 'description1'],
     corrects: ['cost_row', 'description1'],
@@ -366,6 +422,99 @@ export function LedgerEditor({
                   ))}
               </select>
             </label>
+          );
+        }
+        if (n instanceof z.ZodArray && unwrap(n.element) instanceof z.ZodObject) {
+          const shape = (unwrap(n.element) as z.AnyZodObject).shape as Record<string, z.ZodTypeAny>,
+            items = (Array.isArray(v) ? v : []) as Raw[];
+          return (
+            <fieldset key={k}>
+              <legend>{label}</legend>
+              {items.map((item, i) => (
+                <fieldset key={i}>
+                  <legend>{i + 1}</legend>
+                  {Object.entries(shape).map(([field, schema]) => {
+                    const t = unwrap(schema),
+                      change = (val: unknown) =>
+                        set(
+                          k,
+                          items.map((row, j) => (i === j ? { ...row, [field]: val } : row)),
+                        ),
+                      list = options(field, ctx, values);
+                    return (
+                      <label key={field}>
+                        {words(field)}
+                        {t instanceof z.ZodBoolean ? (
+                          <input
+                            type="checkbox"
+                            checked={item[field] === true}
+                            onChange={(e) => change(e.target.checked)}
+                          />
+                        ) : list || t instanceof z.ZodEnum ? (
+                          <select
+                            value={String(item[field] ?? '')}
+                            onChange={(e) => change(e.target.value || undefined)}
+                          >
+                            <option value="">Choose</option>
+                            {(
+                              list ??
+                              (t as z.ZodEnum<[string, ...string[]]>).options.map((v) => ({
+                                name: v,
+                                value: v,
+                              }))
+                            ).map((o) => (
+                              <option key={o.value} value={o.value}>
+                                {o.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type={t instanceof z.ZodNumber ? 'number' : 'text'}
+                            defaultValue={String(item[field] ?? '')}
+                            onChange={(e) =>
+                              change(
+                                e.target.value === ''
+                                  ? undefined
+                                  : t instanceof z.ZodNumber
+                                    ? Number(e.target.value)
+                                    : e.target.value,
+                              )
+                            }
+                          />
+                        )}
+                      </label>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      set(
+                        k,
+                        items.filter((_, j) => i !== j),
+                      )
+                    }
+                  >
+                    Remove row
+                  </button>
+                </fieldset>
+              ))}
+              <button
+                type="button"
+                onClick={() =>
+                  set(k, [
+                    ...items,
+                    Object.fromEntries(
+                      Object.entries(shape)
+                        .filter(([, s]) => unwrap(s) instanceof z.ZodBoolean)
+                        .map(([f]) => [f, false]),
+                    ),
+                  ])
+                }
+              >
+                Add row
+              </button>
+            </fieldset>
           );
         }
         if (n instanceof z.ZodArray)
