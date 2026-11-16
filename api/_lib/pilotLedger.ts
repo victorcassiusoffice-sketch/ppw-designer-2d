@@ -430,6 +430,8 @@ export async function saveLedger(
         if (!node) bad('Choose a heading in this pilot.');
       }
     }
+    if (v.hide && typed(rows, 'budget_line').some((l) => l.heading === data.id))
+      bad('Move the lines first.');
     if (v.hide && nodes.some((h) => h.parent === data.id)) bad('Move the subheadings first.');
   }
   if (data.type === 'budget_line') {
@@ -493,6 +495,21 @@ export async function saveLedger(
       bad('Choose the lead or a partner.');
     const prev = old?.type === 'cost_row' ? old : undefined;
     if (prev && ['claimed', 'accepted'].includes(prev.state)) deny();
+    const approvedCost = typed(rows, 'invoice').some(
+      (i) => i.costId === data.id && i.state === 'approved',
+    );
+    if (
+      prev &&
+      approvedCost &&
+      (v.hide ||
+        changed(strip(prior!), data).some((k) =>
+          ['amount', 'tax', 'currency', 'line', 'thirdParty', 'funding'].includes(k),
+        ))
+    ) {
+      if (!lead) deny();
+      if (!v.reason) bad('Enter the change reason.');
+    }
+    if (!prev && data.amount < 0 && !data.corrects) bad('Name the claimed row being corrected.');
     if (data.ownerSupplies !== !!prev?.ownerSupplies && !lead) deny();
     if (
       data.tradeJob &&
@@ -556,6 +573,10 @@ export async function saveLedger(
     )
       deny();
     if (prev && (prev.state === 'refused' || prev.state === 'withdrawn')) deny();
+    if (prev?.costId && data.costId !== prev.costId) deny();
+    if (prev && prev.credits !== data.credits) deny();
+    if (prev?.state === 'paid' && data.state !== 'paid') deny();
+    if (prev?.state === 'approved' && !['approved', 'paid', 'refused'].includes(data.state)) deny();
     if (
       prev &&
       ['approved', 'paid'].includes(prev.state) &&
@@ -631,7 +652,7 @@ export async function saveLedger(
     if (data.state !== prev?.state && prev) {
       if (
         ['approved', 'paid', 'refused'].includes(data.state) &&
-        (!side || (linked?.ownerSupplies && !lead))
+        (!side || (linked?.ownerSupplies && !lead && data.state !== 'refused'))
       )
         deny();
       if (data.state === 'approved' && (!linked || prev.state !== 'received'))

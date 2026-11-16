@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { type Pilot } from './contract';
+import { uid, type Pilot } from './contract';
 import { categories, currencies, display, minor, payStates, type Pay, type Budget } from './money';
 import { exportCsv } from './moneyCsv';
 import { LedgerEditor, typeLabels } from './LedgerEditor';
@@ -108,7 +108,7 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
     }),
     [reload, bump] = useState(0),
     [error, setError] = useState(''),
-    [edit, setEdit] = useState<{ type: Ledger['type']; initial?: Raw }>(),
+    [edit, setEdit] = useState<{ type: Ledger['type']; initial?: Raw; invoice?: Raw }>(),
     [kind, setKind] = useState<Ledger['type']>('budget_line'),
     [foreign, setForeign] = useState('USD'),
     [history, setHistory] = useState<{ key: string; rows: Record<string, unknown>[] }>();
@@ -247,7 +247,15 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
           type={edit.type}
           initial={edit.initial}
           cancel={() => setEdit(undefined)}
-          submit={(row, reason) => write('/ledger', { row, reason })}
+          submit={(row, reason) =>
+            edit.invoice
+              ? write('/ledger', {
+                  row: { ...edit.invoice, line: row.line },
+                  reason,
+                  createCost: row,
+                })
+              : write('/ledger', { row, reason })
+          }
         />
       )}
       <ProofUpload slug={p.slug} enabled={files.enabled} after={() => bump((n) => n + 1)} />
@@ -394,6 +402,57 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
                     ))}
                   </details>
                 )}
+                {r.type === 'invoice' && r.state === 'received' && !r.costId && (
+                  <button
+                    onClick={() =>
+                      setEdit({
+                        type: 'cost_row',
+                        invoice: data(r) as Raw,
+                        initial: {
+                          id: uid(),
+                          type: 'cost_row',
+                          version: 2,
+                          currency: r.currency,
+                          amount: r.amount,
+                          tax: r.tax,
+                          documentKind: 'invoice',
+                          documentRef: r.number,
+                          documentDate: r.date,
+                          thirdParty:
+                            r.thirdParty ?? p.members.find((m) => m.id === r.sender)?.organisation,
+                          description1: '',
+                          description2: '',
+                          line: r.line ?? lines[0]?.id,
+                        },
+                      })
+                    }
+                  >
+                    Create linked cost row
+                  </button>
+                )}
+                {allowed(k) &&
+                  !['settings', 'member_marks', 'payment_row', 'row_entry'].includes(k) && (
+                    <details>
+                      <summary>Hide record</summary>
+                      <form
+                        className="pilot-form"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          void write('/ledger', {
+                            row: data(r),
+                            hide: true,
+                            reason: String(new FormData(e.currentTarget).get('reason') ?? ''),
+                          }).catch((e) => setError(e.message));
+                        }}
+                      >
+                        <label>
+                          Reason
+                          <input name="reason" maxLength={300} />
+                        </label>
+                        <button>Hide this record</button>
+                      </form>
+                    </details>
+                  )}
                 {allowed(k) && (
                   <button onClick={() => add(k as Ledger['type'], data(r) as Raw)}>
                     Edit record

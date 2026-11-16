@@ -512,6 +512,28 @@ export function flagsFor(
     flags.push('Rate changed after claim');
   if (!c.paymentDate && c.currency !== book) flags.push('Rate provisional');
   if (
+    c.state === 'paid' &&
+    c.paymentDate &&
+    typed(rows, 'period').some(
+      (p) => p.sent && p.start <= c.paymentDate! && p.end >= c.paymentDate!,
+    )
+  )
+    flags.push('Paid in a sent period');
+  const billed = typed(rows, 'invoice').filter(
+    (i) => i.costId === c.id && !['withdrawn', 'refused'].includes(i.state),
+  );
+  if (billed.length && billed.reduce((sum, r) => sum + r.amount, 0) !== c.amount)
+    flags.push('Invoice differs from commitment');
+  const funder = typed(rows, 'row_entry').find(
+    (e) => e.kind === 'funder result' && e.costId === c.id,
+  );
+  if (funder?.eligible === 0) flags.push('Not accepted');
+  else if (
+    funder?.eligible !== undefined &&
+    funder.eligible !== (snapshot?.converted ?? v.converted)
+  )
+    flags.push('Partly accepted');
+  if (
     c.paymentDate &&
     !typed(rows, 'period').some((p) => p.start <= c.paymentDate! && p.end >= c.paymentDate!)
   )
