@@ -1,7 +1,10 @@
+import { WorkPlan, ConfiguredReadings, Baselines, PilotDue, RecordHistory } from './RunningRecord';
+import { EvidencePicker } from './EvidenceFiles';
 import { MemberLink } from './SharedControls';
 import { EvidenceFiles } from './EvidenceFiles';
 import { useState } from 'react';
 import {
+  roles,
   damageKinds,
   day,
   logSchema,
@@ -24,7 +27,9 @@ export default function Record({ p }: { p: Pilot }) {
   const rows = series(p.readings, site);
   return (
     <>
-      {permissions(p, 'steps').read && (
+      {isShared(p.slug) && <PilotDue />}
+      {isShared(p.slug) && permissions(p, 'steps').read && <WorkPlan p={p} />}
+      {!isShared(p.slug) && permissions(p, 'steps').read && (
         <>
           <h3>Six steps</h3>
           <ol className="pilot-timeline">
@@ -88,6 +93,7 @@ export default function Record({ p }: { p: Pilot }) {
       )}
       {permissions(p, 'readings').read && (
         <>
+          {isShared(p.slug) && <ConfiguredReadings p={p} />}
           <h3>Monthly cover</h3>
           {p.sites.length > 0 ? (
             <>
@@ -182,6 +188,7 @@ export default function Record({ p }: { p: Pilot }) {
       {permissions(p, 'log').read && (
         <>
           <h3>Waste log</h3>
+          {isShared(p.slug) && <Baselines p={p} />}
           <div className="pilot-log" role="table" aria-label="Waste log">
             {p.logs.map((row) => (
               <div role="row" key={row.id}>
@@ -191,6 +198,18 @@ export default function Record({ p }: { p: Pilot }) {
                   {row.quantity} {row.unit}
                 </span>
                 <span role="cell">{row.destination}</span>
+                {row.photo && (
+                  <img
+                    loading="lazy"
+                    width="80"
+                    src={'/api/pilots/' + p.slug + '/photos/' + row.photo}
+                    alt="Log photo"
+                  />
+                )}
+                {row.ticket && (
+                  <a href={'/api/pilots/' + p.slug + '/files/' + row.ticket}>Download ticket</a>
+                )}
+                {isShared(p.slug) && <RecordHistory p={p} id={row.id} />}
               </div>
             ))}
           </div>
@@ -212,6 +231,8 @@ export default function Record({ p }: { p: Pilot }) {
                     quantity: Number(f.get('quantity')),
                     unit: str(f, 'unit'),
                     destination: str(f, 'destination'),
+                    photo: str(f, 'photo') || undefined,
+                    ticket: str(f, 'ticket') || undefined,
                   });
                 const saved = await update(p.slug, (q) => q.logs.push(rec));
                 if (!saved) return;
@@ -227,6 +248,24 @@ export default function Record({ p }: { p: Pilot }) {
               </label>
               <Field name="unit" label="Unit" value="t" />
               <Field name="destination" label="Where it went" />
+              {isShared(p.slug) && (
+                <>
+                  <label>
+                    Log photo
+                    <select name="photo">
+                      <option value="">No photo</option>
+                      {p.photos
+                        .filter((x) => !x.hidden)
+                        .map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.caption || x.date}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  {permissions(p, 'papers').read && <EvidencePicker p={p} />}
+                </>
+              )}
               <button>Add load</button>
             </form>
           )}
@@ -363,6 +402,79 @@ export function Papers({ p }: { p: Pilot }) {
               ))}
             </select>
           </label>
+          {x.due && (
+            <p>
+              Due {x.due} ·{' '}
+              {p.members.find((m) => m.id === x.ownerMember)?.name ?? x.ownerRole ?? 'lead'}
+            </p>
+          )}
+          {isShared(p.slug) && <RecordHistory p={p} id={x.id} />}
+          {isShared(p.slug) && permissions(p, 'papers').edit(x.id) && (
+            <details>
+              <summary>Edit paper</summary>
+              <form
+                className="pilot-form"
+                onSubmit={(e) => {
+                  const f = formValues(e);
+                  void update(p.slug, (q) => {
+                    const paper = q.papers.find((s) => s.id === x.id)!;
+                    paper.title = str(f, 'title');
+                    paper.note = str(f, 'note');
+                    paper.link = str(f, 'link') || undefined;
+                    paper.due = str(f, 'due') || undefined;
+                    if (permissions(p).owner) {
+                      const owner = str(f, 'owner');
+                      paper.ownerRole = owner.startsWith('r:')
+                        ? (owner.slice(2) as (typeof roles)[number])
+                        : undefined;
+                      paper.ownerMember = owner.startsWith('m:') ? owner.slice(2) : undefined;
+                    }
+                  });
+                }}
+              >
+                <Field name="title" label="Paper name" value={x.title} />
+                <Field name="due" label="Due date" type="date" value={x.due} required={false} />
+                <Field
+                  name="link"
+                  label="Outside link"
+                  type="url"
+                  value={x.link}
+                  required={false}
+                />
+                <Field
+                  name="note"
+                  label="Paper notes"
+                  value={x.note}
+                  required={false}
+                  maxLength={2000}
+                />
+                {permissions(p).owner && (
+                  <label>
+                    Assign to
+                    <select
+                      name="owner"
+                      defaultValue={
+                        x.ownerMember ? 'm:' + x.ownerMember : x.ownerRole ? 'r:' + x.ownerRole : ''
+                      }
+                    >
+                      <option value="">Unassigned</option>
+                      {roles.map((r) => (
+                        <option key={r} value={'r:' + r}>
+                          {r}
+                        </option>
+                      ))}
+                      {p.members.map((m) => (
+                        <option key={m.id} value={'m:' + m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                <button>Save paper</button>
+              </form>
+            </details>
+          )}
           {x.link && (
             <a href={x.link} rel="noreferrer" target="_blank">
               Open paper
@@ -382,6 +494,13 @@ export function Papers({ p }: { p: Pilot }) {
                 id: uid(),
                 title: str(f, 'title'),
                 state: 'needed',
+                due: str(f, 'due') || undefined,
+                ownerMember: str(f, 'owner').startsWith('m:')
+                  ? str(f, 'owner').slice(2)
+                  : undefined,
+                ownerRole: str(f, 'owner').startsWith('r:')
+                  ? (str(f, 'owner').slice(2) as (typeof roles)[number])
+                  : undefined,
                 link: str(f, 'link') || undefined,
                 note: str(f, 'note'),
               }),
@@ -391,6 +510,29 @@ export function Papers({ p }: { p: Pilot }) {
           }}
         >
           <Field name="title" label="Paper title" />
+          {isShared(p.slug) && (
+            <>
+              <Field name="due" type="date" label="Paper due date" required={false} />
+              {permissions(p).owner && (
+                <label>
+                  Paper owner
+                  <select name="owner">
+                    <option value="">Unassigned</option>
+                    {roles.map((r) => (
+                      <option key={r} value={'r:' + r}>
+                        {r}
+                      </option>
+                    ))}
+                    {p.members.map((m) => (
+                      <option key={m.id} value={'m:' + m.id}>
+                        {m.name} · {m.organisation}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </>
+          )}
           <label>
             Outside link
             <input name="link" type="url" pattern="https://.*" maxLength={1500} />

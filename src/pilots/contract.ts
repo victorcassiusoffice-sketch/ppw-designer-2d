@@ -23,7 +23,7 @@ export const roles = [
 ] as const;
 export const damageKinds = ['none', 'salt', 'biological', 'mechanical'] as const;
 export const paperStates = ['needed', 'to sign', 'signed', 'filed'] as const;
-export const stepStates = ['todo', 'doing', 'done'] as const;
+export const stepStates = ['todo', 'doing', 'done', 'late'] as const;
 const short = z.string().trim().min(1).max(160);
 export const id = z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/);
 export const day = z
@@ -110,6 +110,8 @@ export const logSchema = z
     quantity: z.number().finite().nonnegative().max(1e9),
     unit: short,
     destination: short,
+    photo: id.optional(),
+    ticket: id.optional(),
   })
   .strict();
 export const stepSchema = z
@@ -118,6 +120,14 @@ export const stepSchema = z
     title: short,
     date: day,
     state: z.enum(stepStates),
+    startMonth: z.number().int().min(1).max(600).optional(),
+    endMonth: z.number().int().min(1).max(600).optional(),
+    ownerRole: z.enum(roles).optional(),
+    order: z.number().finite().optional(),
+    tasks: z
+      .array(z.object({ id, name: short, role: z.enum(roles), state: z.enum(stepStates) }).strict())
+      .max(40)
+      .optional(),
     note: z.string().trim().max(200).optional(),
   })
   .strict();
@@ -126,6 +136,9 @@ export const paperSchema = z
     id,
     title: short,
     state: z.enum(paperStates),
+    due: day.optional(),
+    ownerRole: z.enum(roles).optional(),
+    ownerMember: id.optional(),
     link: z
       .string()
       .url()
@@ -139,6 +152,59 @@ export const noteSchema = z
   .object({ id, member: id, date: day, text: z.string().trim().min(1).max(2000) })
   .strict();
 export const cameraSchema = z.object({ site: id, address: stream }).strict();
+const interval = z.enum(['weekly', 'fortnightly', 'monthly', 'once']);
+export const scheduleSchema = z
+  .object({
+    id: z.literal('pilot-schedule'),
+    start: day,
+    months: z.number().int().min(1).max(600),
+    end: day,
+  })
+  .strict();
+const field = z
+  .object({
+    id,
+    name: short,
+    unit: z.string().max(60),
+    kind: z.enum(['number', 'choice', 'text', 'photo']),
+    low: z.number().finite().optional(),
+    high: z.number().finite().optional(),
+    choices: short.array().max(30).optional(),
+  })
+  .strict()
+  .refine(
+    (f) =>
+      (f.low === undefined || f.high === undefined || f.low <= f.high) &&
+      (f.kind !== 'choice' || !!f.choices?.length),
+  );
+const target = z.object({ id, site: id, name: short, role: z.enum(roles) }).strict();
+export const readingTypeSchema = z
+  .object({
+    id,
+    name: short,
+    fields: field.array().min(1).max(20),
+    targets: target.array().min(1).max(30),
+    rhythm: interval,
+    change: z.object({ date: day, rhythm: interval }).strict().optional(),
+  })
+  .strict()
+  .refine(
+    (t) =>
+      new Set(t.fields.map((f) => f.id)).size === t.fields.length &&
+      new Set(t.targets.map((f) => f.id)).size === t.targets.length,
+  );
+export const sampleSchema = z
+  .object({
+    id,
+    typeId: id,
+    targetId: id,
+    date: day,
+    values: z.record(id, z.union([z.number().finite(), z.string().max(500)])),
+  })
+  .strict();
+export const baselineSchema = z
+  .object({ id, type: short, unit: short, quantity: z.number().finite().min(0).max(1e9) })
+  .strict();
 export const pilotSchema = z
   .object({
     slug: id,
@@ -146,6 +212,10 @@ export const pilotSchema = z
     lane: short,
     state: z.enum(states),
     summary: z.string().max(500),
+    schedules: scheduleSchema.array().max(1).optional(),
+    readingTypes: readingTypeSchema.array().max(100).optional(),
+    samples: sampleSchema.array().max(3000).optional(),
+    baselines: baselineSchema.array().max(150).optional(),
     sites: siteSchema.array().max(150),
     members: memberSchema.array().max(150),
     photos: photoSchema.array().max(200),

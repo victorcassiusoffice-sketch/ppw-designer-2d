@@ -5,6 +5,8 @@ import { display } from './money';
 import { isShared, request } from './remote';
 import './pilot.css';
 type Dashboard = {
+  owned?: string[];
+  due?: { id: string; label: string; date: string; state: string }[];
   pilot: string;
   name: string;
   role: string;
@@ -85,6 +87,24 @@ export default function MemberDashboard() {
             </details>
           )}
           {d.nearExpiry && <p role="status">Ask the owner for a new link.</p>}
+          {!!d.owned?.length && (
+            <section>
+              <h2>Assigned to me</h2>
+              {d.owned.map((s, i) => (
+                <p key={i}>{s}</p>
+              ))}
+            </section>
+          )}
+          {!!d.due?.length && (
+            <section>
+              <h2>Due from me</h2>
+              {d.due.map((s) => (
+                <p key={s.id}>
+                  {s.label} · {s.date} · {s.state}
+                </p>
+              ))}
+            </section>
+          )}
           <section>
             <h2>Next step</h2>
             {d.next ? (

@@ -28,77 +28,87 @@ export function EvidenceFiles({ p }: { p: Pilot }) {
     <details>
       <summary>Files</summary>
       {list && !list.enabled && <p>File storage is off. Add an outside link to the paper.</p>}
-      {list?.enabled && access.write && (
-        <form
-          className="pilot-form"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget,
-              v = new FormData(form),
-              file = v.get('file');
-            if (!(file instanceof File)) return;
-            if (file.size > fileCap) {
-              setMessage('Choose a file of 1 MB or less.');
-              return;
-            }
-            try {
-              const data = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(String(reader.result).split(',')[1]);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-              });
-              await saveFile(
-                p.slug,
-                {
-                  title: v.get('title'),
-                  kind: v.get('kind'),
-                  linkedId: v.get('linkedId') || undefined,
-                },
-                data,
-              );
-              form.reset();
-              setMessage('File saved.');
-            } catch (err) {
-              setMessage(err instanceof Error ? err.message : 'Could not save the file.');
-            }
-          }}
-        >
-          <label>
-            File title
-            <input name="title" required maxLength={160} />
-          </label>
-          <label>
-            Kind
-            <select name="kind">
-              {[...recordKinds, ...(finance ? proofKinds : [])].map((k) => (
-                <option key={k}>{k}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Attach to
-            <select name="linkedId">
-              <option value="">Standalone file</option>
-              {p.papers.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.title}
-                </option>
-              ))}
-              {p.logs.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.date} · {x.type}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            PDF, JPEG or PNG
-            <input required type="file" name="file" accept="application/pdf,image/jpeg,image/png" />
-          </label>
-          <button>Save file</button>
-        </form>
-      )}
+      {list?.enabled &&
+        (access.write ||
+          (!['viewer', 'checker'].includes(doc?.role ?? '') &&
+            p.papers.some((x) =>
+              x.ownerMember ? x.ownerMember === doc?.memberId : x.ownerRole === doc?.role,
+            ))) && (
+          <form
+            className="pilot-form"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget,
+                v = new FormData(form),
+                file = v.get('file');
+              if (!(file instanceof File)) return;
+              if (file.size > fileCap) {
+                setMessage('Choose a file of 1 MB or less.');
+                return;
+              }
+              try {
+                const data = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(String(reader.result).split(',')[1]);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(file);
+                });
+                await saveFile(
+                  p.slug,
+                  {
+                    title: v.get('title'),
+                    kind: v.get('kind'),
+                    linkedId: v.get('linkedId') || undefined,
+                  },
+                  data,
+                );
+                form.reset();
+                setMessage('File saved.');
+              } catch (err) {
+                setMessage(err instanceof Error ? err.message : 'Could not save the file.');
+              }
+            }}
+          >
+            <label>
+              File title
+              <input name="title" required maxLength={160} />
+            </label>
+            <label>
+              Kind
+              <select name="kind">
+                {[...recordKinds, ...(finance ? proofKinds : [])].map((k) => (
+                  <option key={k}>{k}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Attach to
+              <select name="linkedId">
+                <option value="">Standalone file</option>
+                {p.papers.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.title}
+                  </option>
+                ))}
+                {p.logs.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.date} · {x.type}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              PDF, JPEG or PNG
+              <input
+                required
+                type="file"
+                name="file"
+                accept="application/pdf,image/jpeg,image/png"
+              />
+            </label>
+            <button>Save file</button>
+          </form>
+        )}
       {list?.files.map((f) => (
         <article key={f.id}>
           <h3>{f.title}</h3>
@@ -117,5 +127,34 @@ export function EvidenceFiles({ p }: { p: Pilot }) {
       ))}
       {message && <p role="status">{message}</p>}
     </details>
+  );
+}
+
+export function EvidencePicker({ p }: { p: Pilot }) {
+  const [files, set] = useState<Evidence[]>([]);
+  const rev = useRemote((s) => s.doc?.revision);
+  useEffect(() => {
+    let live = true;
+    void request<{ files: Evidence[] }>('/' + p.slug + '/files')
+      .then((r) => {
+        if (live) set(r.files.filter((f) => !f.money && f.kind === 'ticket'));
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [p.slug, rev]);
+  return (
+    <label>
+      Log ticket
+      <select name="ticket">
+        <option value="">No ticket</option>
+        {files.map((f) => (
+          <option key={f.id} value={f.id}>
+            {f.title}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

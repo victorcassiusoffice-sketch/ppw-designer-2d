@@ -407,7 +407,98 @@
   }
 }
 
-.pilot-save-status { position:fixed; z-index:3; bottom:0.4rem; left:50%; transform:translateX(-50%); width:max-content; max-width:calc(100% - 2rem); padding:.45rem .8rem; background:var(--paper); color:var(--ink); border:1px solid var(--rule); border-radius:8px; pointer-events:none;}
-@media print { .pilot-save-status {display:none} }
+.pilot-save-status {
+  position: fixed;
+  z-index: 3;
+  bottom: 0.4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  padding: 0.45rem 0.8rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  pointer-events: none;
+}
+@media print {
+  .pilot-save-status {
+    display: none;
+  }
+}
 
-.pilot-money article {padding:.75rem 0;border-bottom:1px solid currentColor;overflow-wrap:anywhere}.pilot-money-totals {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(10rem,100%),1fr));gap:.3rem}.pilot-money form {margin-block:1rem}.pilot-money input,.pilot-money select,.pilot-money textarea {max-width:100%;min-width:0}@media print {.s-money,.pilot-money {display:none!important}}
+.pilot-money article {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid currentColor;
+  overflow-wrap: anywhere;
+}
+.pilot-money-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+  gap: 0.3rem;
+}
+.pilot-money form {
+  margin-block: 1rem;
+}
+.pilot-money input,
+.pilot-money select,
+.pilot-money textarea {
+  max-width: 100%;
+  min-width: 0;
+}
+@media print {
+  .s-money,
+  .pilot-money {
+    display: none !important;
+  }
+}
+
+.pilot-works {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+.pilot-works li {
+  display: grid;
+  grid-template-columns: minmax(9rem, 2fr) 1fr repeat(3, auto);
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 0.6rem;
+}
+.pilot-month-bar {
+  grid-column: 1/-1;
+  height: 0.5rem;
+  background: #b5c6b44d;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.pilot-month-bar i {
+  display: block;
+  height: 100%;
+  background: #56846c;
+}
+.pilot-works p {
+  grid-column: 1/-1;
+}
+.pilot fieldset {
+  min-inline-size: 0;
+  max-width: 100%;
+}
+.pilot dd {
+  margin-inline-start: 0.5rem;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .pilot-works li {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pilot-works .pilot-month-bar {
+    display: none;
+  }
+}
