@@ -307,6 +307,7 @@ export interface ThreeStageHandle {
 export type ThreeEraseTarget = {kind:'item';instanceId:string}|{kind:'opening';openingId:string}|{kind:'wall';hit:WallHit}|{kind:'floor';roomId:string;point:{x:number;y:number}};
 
 export interface ThreeStageProps {
+  pilotWall?:{plan:string;slug:string;site:string};
   /** Idle selection only; paint, structural tools and removal keep walls pickable. */
   viewHoverEnabled?: boolean;
   /** Transient catalogue drag body; never part of the saved model or raycast. */
@@ -671,7 +672,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, terrainCuts, boundaryComponents, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
+  { solids, pilotWall, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, terrainCuts, boundaryComponents, foundation, foundationView = false, foundationBaseElevationM = 0, shade, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', canvasBackground, onFailed, onReady },
   ref,
 ): JSX.Element {
   const buildSkin = useBuildSkinStore(s => s.skin);
@@ -1494,8 +1495,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   // A pilot picture uses the existing cut wall geometry (including window holes).
   // Resolve private bytes at display time. Never put a photo in the plan or a demo.
   useEffect(() => {
-    if(location.pathname!=='/designer')return;
-    const qs=new URLSearchParams(location.search), plan=qs.get('pilotPlan'), slug=qs.get('pilotRecord'), site=qs.get('pilotSite');
+    if(!pilotWall&&location.pathname!=='/designer')return;
+    const qs=new URLSearchParams(location.search), plan=pilotWall?.plan??qs.get('pilotPlan'), slug=pilotWall?.slug??qs.get('pilotRecord'), site=pilotWall?.site??qs.get('pilotSite');
     if(!plan || !slug || !site)return;
     const eligible=wallsRef.current.filter(e=>e.solid.construction!=='glass' && !e.solid.renderDuplicateOf && e.solid.hit.kind==='edge');
     const entry=eligible.find(e=>e.solid.pilotWallRoom)??eligible[0];
@@ -1526,7 +1527,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     void sync();const interval=window.setInterval(()=>{if(!document.hidden)void sync();},6000);
     return ()=>{live=false;clearInterval(interval);if(old)clear();};
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[solids,terrainCuts]);
+  },[solids,terrainCuts,pilotWall?.plan,pilotWall?.slug,pilotWall?.site]);
 
   // Services are presentation geometry only. Rebuilding their small dedicated
   // group never moves the camera, changes a room footprint or enters the cart.

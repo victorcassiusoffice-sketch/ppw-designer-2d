@@ -1,3 +1,4 @@
+import {PilotTradeJobs} from './SiteVisitLinks';
 import { WorkPlan, ConfiguredReadings, Baselines, PilotDue, RecordHistory } from './RunningRecord';
 import { EvidencePicker } from './EvidenceFiles';
 import { MemberLink } from './SharedControls';
@@ -27,6 +28,7 @@ export default function Record({ p }: { p: Pilot }) {
   const rows = series(p.readings, site);
   return (
     <>
+      {isShared(p.slug)&&<PilotTradeJobs p={p}/>}
       {isShared(p.slug) && <PilotDue />}
       {isShared(p.slug) && permissions(p, 'steps').read && <WorkPlan p={p} />}
       {!isShared(p.slug) && permissions(p, 'steps').read && (

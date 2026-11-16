@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { AppPreferencesProvider } from './i18n/AppPreferences';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { bootstrapFx } from './store/currencyStore';
 import RouteFallback from './components/RouteFallback';
 import StudioPageGuard from './components/StudioPageGuard';
@@ -13,6 +13,8 @@ import './brand/olb.css';
 
 // Pitch and Studio visitors load the designer only when they open it.
 // Keep Clerk (admin-only) and jsPDF (order-success only) route-scoped too.
+const PilotVisit=lazy(()=>import('./pilots/PilotVisit'));
+function PilotEntry(){const visit=new URLSearchParams(useLocation().search).get('visit');return visit?<PilotVisit site={visit}/>:<PilotWorkspace/>;}
 const PilotDashboard = lazy(()=>import('./pilots/Dashboard'));
 const PilotWorkspace = lazy(() => import('./pilots/Workspace'));
 const App = lazy(() => import('./App'));
@@ -149,7 +151,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/home" element={oneLiveBuildHome ? <OlbHomePage /> : <Navigate to="/" replace />} />
         <Route path="/pilots" element={<PilotWorkspace />} />
         <Route path="/pilots/:slug/me" element={<PilotDashboard />} />
-        <Route path="/pilots/:slug" element={<PilotWorkspace />} />
+        <Route path="/pilots/:slug" element={<PilotEntry />} />
         <Route path="/designer" element={<App />} />
         <Route path="/demo" element={<DemoDesignerPage />} />
         <Route path="/embed/designer" element={<DemoDesignerPage />} />

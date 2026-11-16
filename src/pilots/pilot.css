@@ -502,3 +502,9 @@
     display: none;
   }
 }
+
+.pilot-visit { box-sizing: border-box; min-height: 100dvh; color: var(--olb-ink, #f2f0e9); background: var(--olb-bg, #151b1b); }
+.pilot-visit nav, .pilot-visit div:has(>button) { display:flex; flex-wrap:wrap; gap:6px; margin-block:8px; }
+.pilot-visit button, .pilot-visit>a { display:inline-flex; min-height:48px; min-width:48px; align-items:center; padding:0 14px; color:inherit; }
+.pilot-visit button { background:#273534; border:1px solid #63746d; border-radius:8px; }
+.pilot-visit button[aria-pressed=true] { background:#c3dfb6; color:#16231c; }

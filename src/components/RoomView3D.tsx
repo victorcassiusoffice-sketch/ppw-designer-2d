@@ -302,7 +302,7 @@ function openingsIncludingNeighbours(rooms: Room[]): Map<string, NonNullable<Sce
   return out;
 }
 
-function sceneFromProperty(property: Property, hover: WallHit | null, cam: OrbitCamera): SceneInput {
+export function sceneFromProperty(property: Property, hover: WallHit | null, cam: OrbitCamera): SceneInput {
   const level = activeLevelIdOf(property);
 
   const rooms = roomsOnLevel(property.rooms, level);

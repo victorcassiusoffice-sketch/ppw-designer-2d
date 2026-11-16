@@ -1,3 +1,4 @@
+import BuildJobLink from '../../pilots/BuildJobLink';
 import { useEffect, useState } from 'react';
 import { renderSVG } from '../../designer/link/qr';
 import type { Property } from '../../store/propertyStore';
@@ -402,6 +403,7 @@ export function PackageInspector({
           {latest.work.planView && <PlanPicture view={latest.work.planView} />}
         </section>
       )}
+      {!tradeMode && <BuildJobLink row={row}/>}
       <PackageDecisions row={row} hide={hide} />
       <h3>Package history</h3>
       <ol className="bd-history">

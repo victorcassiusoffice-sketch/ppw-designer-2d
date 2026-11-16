@@ -1,3 +1,4 @@
+import {SiteVisitLinks} from './SiteVisitLinks';
 import ReportsPanel from './ReportsPanel';
 import MoneyPanel from './MoneyPanel';
 import { readsMoney } from './money';
@@ -50,6 +51,7 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ block: 'start' });
 }
 function SiteCard({ p, s, selected }: { p: Pilot; s: Site; selected: boolean }) {
+  const sharedOwner=useRemote().doc?.owner===true;
   const photo = p.photos
     .filter((x) => !x.hidden && x.site === s.id)
     .sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -84,7 +86,8 @@ function SiteCard({ p, s, selected }: { p: Pilot; s: Site; selected: boolean }) 
           {s.photoWall && !siteFrames(p, s.id).length && (
             <small>Add a dated wall photo to see it on the build.</small>
           )}
-          {(['house', 'walk'] as const).map((view) => (
+          {isShared(p.slug)&&<SiteVisitLinks p={p} s={s} owner={sharedOwner}/>}
+          {(!isShared(p.slug)||sharedOwner)&&(['house', 'walk'] as const).map((view) => (
             <a
               key={view}
               href={planLink(s.plan!, view, p.slug, s.id)}
