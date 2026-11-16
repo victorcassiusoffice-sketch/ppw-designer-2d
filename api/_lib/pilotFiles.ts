@@ -122,7 +122,11 @@ export async function pilotFiles(
       (!owner && (row.created_by !== by || (f.money ? !finance : access !== 'add')))
     )
       return deny();
-    if (f.money && (await db.protectedProof(p, key))) return deny();
+    if (
+      (f.money && (await db.protectedProof(p, key))) ||
+      (f.source === 'report pack' && (await db.filedReport(p, key)))
+    )
+      return deny();
     const v = z
       .object({ revision, hidden: z.literal(true) })
       .strict()

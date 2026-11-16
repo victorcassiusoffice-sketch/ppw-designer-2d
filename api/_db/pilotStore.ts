@@ -56,6 +56,12 @@ export function pilotStore(query: Query) {
         [p.id],
       );
     },
+    async filedReport(p: Access, id: string) {
+      return !!(await one(
+        "SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND kind='report' AND payload->>'state'='sent' AND payload->>'file'=$2 LIMIT 1",
+        [p.id, id],
+      ));
+    },
     async protectedProof(p: Access, id: string) {
       return !!(await one(
         `SELECT 1 FROM pilot_items i WHERE i.pilot_id=$1 AND i.kind='money' AND
@@ -347,6 +353,7 @@ export function pilotStore(query: Query) {
       hidden: boolean,
       manageMoney = false,
       assignedPaper = false,
+      reportWriter = false,
     ) {
       const edit = patch
         ? 'UPDATE pilot_items i SET payload=$5::jsonb,hidden=$7,updated=now() FROM bump WHERE i.pilot_id=bump.id AND i.id=$4 AND i.kind=$3 AND ($8 OR i.created_by=$6) RETURNING i.id'
@@ -365,7 +372,8 @@ export function pilotStore(query: Query) {
             ? [
                 by === 'lead' ||
                   (kind === 'money' && manageMoney) ||
-                  (kind === 'paper' && assignedPaper),
+                  (kind === 'paper' && assignedPaper) ||
+                  (['event', 'indicator', 'report'].includes(kind) && reportWriter),
               ]
             : []),
         ],

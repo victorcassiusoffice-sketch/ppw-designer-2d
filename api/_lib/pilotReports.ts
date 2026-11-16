@@ -121,7 +121,11 @@ export async function pilotReports(
         'report-money',
         raw.map((r) => String(r.id)),
       );
-    return reply(200, { currency: book.data, set: set(pack.period) });
+    return reply(200, {
+      currency: book.data,
+      set: set(pack.period),
+      file: pack.state === 'sent' ? periods.find((p) => p.id === pack.period)?.file : undefined,
+    });
   }
   if (method === 'GET' && !key) {
     const list = await db.reportItems(p);
@@ -260,6 +264,8 @@ export async function pilotReports(
       by,
       !!prior,
       !!edit.hide,
+      false,
+      false,
       true,
     ))
       ? reply(200, { saved: true })
@@ -275,6 +281,8 @@ export async function pilotReports(
     by,
     !!prior,
     !!edit.hide,
+    false,
+    false,
     true,
   ))
     ? reply(200, { saved: true })

@@ -56,6 +56,10 @@ async function pdfStart(title: string) {
     y = (pdf as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 9;
   }
   function bars(data: { label: string; value: number }[]) {
+    if (data.length > 0 && data.length <= 20 && y + 6 * data.length > 270) {
+      pdf.addPage();
+      y = 18;
+    }
     const max = Math.max(1, ...data.map((i) => Math.abs(i.value)));
     for (const d of data.slice(-20)) {
       if (y > 270) {
@@ -171,10 +175,37 @@ export async function moneyPdf(p: Pilot, pack: ReportPack, unit: BookCurrency, s
       fmt(l.remaining),
     ]),
   );
+  heading('Variations and changes');
+  rows(
+    ['Line', 'Variation', 'Change vs signed', 'Explanation'],
+    set.lines
+      .filter((l) => l.kind !== 'contingency')
+      .map((l) => [
+        l.label,
+        l.variationPercent === null ? '—' : l.variationPercent + '%',
+        l.signedChangePercent === null ? '—' : l.signedChangePercent + '%',
+        [l.variationNote, l.variationPercentNote].filter(Boolean).join(' · '),
+      ]),
+  );
+  rows(
+    ['Heading', 'Signed plan', 'Authorised', 'Spent', 'Band'],
+    set.headings.map((h) => [h.name, fmt(h.signed), fmt(h.authorised), fmt(h.spent), h.band]),
+  );
+  if (set.uses.length)
+    rows(
+      ['Reserve approval', 'Before', 'Used', 'After'],
+      set.uses.map((u) => [u.approvalDate, fmt(u.before), fmt(u.amount), fmt(u.after)]),
+    );
   heading('Forecasts');
   rows(
-    ['Line', 'Forecast', 'Spent', 'Gap'],
-    set.lines.map((l) => [l.label, fmt(l.forecast), fmt(l.thisPeriod), fmt(l.forecastGap)]),
+    ['Line', 'Forecast', 'Spent', 'Gap', 'Explanation'],
+    set.lines.map((l) => [
+      l.label,
+      fmt(l.forecast),
+      fmt(l.thisPeriod),
+      fmt(l.forecastGap),
+      l.forecastNote,
+    ]),
   );
   heading('Funding');
   rows(

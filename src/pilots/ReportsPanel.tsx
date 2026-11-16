@@ -106,9 +106,16 @@ export default function ReportsPanel({
     'papers',
   ] as const;
   async function privatePdf(pack: ReportPack) {
-    const d = await request<{ currency: BookCurrency; set: ReturnType<typeof funderSet> }>(
-      base + '/report-money/' + pack.id,
-    );
+    const d = await request<{
+      currency: BookCurrency;
+      set: ReturnType<typeof funderSet>;
+      file?: string;
+    }>(base + '/report-money/' + pack.id);
+    if (pack.state === 'sent' && d.file) {
+      const r = await fetch('/api/pilots' + base + '/files/' + d.file, { cache: 'no-store' });
+      if (!r.ok) throw Error('Filed money pages unavailable.');
+      return r.blob();
+    }
     if (!d.set) throw Error('Set the pilot currency first.');
     return moneyPdf(p, pack, d.currency, d.set);
   }
