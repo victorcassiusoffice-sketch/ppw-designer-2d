@@ -1,4 +1,4 @@
-import { createHash,randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Access, hostedPilots } from '../_db/pilotStore.js';
 import { id } from '../../src/pilots/contract.js';
@@ -12,6 +12,7 @@ import {
   valueOf,
   converted,
   proofGaps,
+  fraction,
   lineTotal,
   type Ledger,
   type Row,
@@ -49,7 +50,7 @@ function changed(a: Record<string, unknown>, b: Record<string, unknown>) {
   return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((k) => !equal(a[k], b[k]));
 }
 const dataRows = (rows: Stored[]) =>
-  rows.filter((r) => r.version === 2).map((r) => ledgerRow.parse(strip(r)));
+  rows.filter((r) => r.version === 2 && r.type !== 'pay_row').map((r) => ledgerRow.parse(strip(r)));
 const civil = (tz = 'Indian/Mauritius') =>
   new Intl.DateTimeFormat('en-CA', {
     timeZone: tz,
@@ -136,16 +137,43 @@ function ownProjection(row: Stored) {
   if (row.type === 'pay_row') return { type: row.type, agreed: row.agreed, state: row.state };
   return null;
 }
-function historyKey(p:Access,seat:string,id:string){return 'own-'+createHash('sha256').update(p.id+'|'+seat+'|'+id).digest('hex');}
-export async function managerDues(db:Db,p:Access){
- const stored=(await db.ledger(p)).map(r=>r.payload as Stored),rows=dataRows(stored);if(!typed(rows,'settings').length)return [];
- return rows.flatMap(r=>{if(r.type==='cost_row'&&proofGaps(r,rows).length)return [{id:r.id,label:'Proof missing on a cost row'}];
- if(r.type==='invoice'&&!r.file&&!['withdrawn','refused'].includes(r.state))return [{id:r.id,label:'File missing from an invoice'}];return [];});
+function historyKey(p: Access, seat: string, id: string) {
+  return (
+    'own-' +
+    createHash('sha256')
+      .update(p.id + '|' + seat + '|' + id)
+      .digest('hex')
+  );
+}
+export async function managerDues(db: Db, p: Access) {
+  const stored = (await db.ledger(p)).map((r) => r.payload as Stored),
+    rows = dataRows(stored);
+  if (!typed(rows, 'settings').length) return [];
+  return rows.flatMap((r) => {
+    if (r.type === 'cost_row' && proofGaps(r, rows).length)
+      return [{ id: r.id, label: 'Proof missing on a cost row' }];
+    if (r.type === 'invoice' && !r.file && !['withdrawn', 'refused'].includes(r.state))
+      return [{ id: r.id, label: 'File missing from an invoice' }];
+    return [];
+  });
 }
 export async function personalFinance(db: Db, p: Access, seat: string, role: string) {
   const m = await seatMarks(db, p, seat);
   const rows = await db.ownFinance(p, seat, !!m?.invoices, !!m?.partner, mayHoldPay(role, m));
-  const items=rows.flatMap(r=>{const row=r.payload as Stored,v=ownProjection(row);return v?[{...v,...(['cost_row','invoice'].includes(row.type)?{historyRef:historyKey(p,seat,row.id)}:{})}]:[];});
+  const items = rows.flatMap((r) => {
+    const row = r.payload as Stored,
+      v = ownProjection(row);
+    return v
+      ? [
+          {
+            ...v,
+            ...(['cost_row', 'invoice'].includes(row.type)
+              ? { historyRef: historyKey(p, seat, row.id) }
+              : {}),
+          },
+        ]
+      : [];
+  });
   const basis =
     m?.partner || m?.invoices
       ? (await db.financeBasis(p, seat)).map((r) => r.payload as Stored)
@@ -214,11 +242,15 @@ export async function personalFinance(db: Db, p: Access, seat: string, role: str
   };
 }
 export async function financeHistory(db: Db, p: Access, owner: boolean, key: string) {
-  if(key.startsWith('own-')){
-    if(owner||!p.member_id||!p.role||p.role==='checker')return null;
-    const m=await seatMarks(db,p,p.member_id);
-    const records=await db.ownFinance(p,p.member_id,!!m?.invoices,!!m?.partner,false);
-    const match=records.map(r=>r.payload as Stored).find(r=>historyKey(p,p.member_id!,r.id)===key);if(!match)return null;key=match.id;
+  if (key.startsWith('own-')) {
+    if (owner || !p.member_id || !p.role || p.role === 'checker') return null;
+    const m = await seatMarks(db, p, p.member_id);
+    const records = await db.ownFinance(p, p.member_id, !!m?.invoices, !!m?.partner, false);
+    const match = records
+      .map((r) => r.payload as Stored)
+      .find((r) => historyKey(p, p.member_id!, r.id) === key);
+    if (!match) return null;
+    key = match.id;
   }
   const row = await db.item(p, key);
   if (!row || row.hidden || row.kind !== 'money') return null;
@@ -281,7 +313,6 @@ export async function saveLedger(
     [
       'typedBy',
       'approvedBy',
-      'paidBy',
       'markedPaidBy',
       'audit',
       'snapshot',
@@ -423,6 +454,8 @@ export async function saveLedger(
         all.some((r) => r.type === 'pay_row' && r.from === data.id))
     )
       bad('The line has linked records.');
+    if (BigInt(data.unitValue) * fraction(data.units).n > 1000000000000n * fraction(data.units).d)
+      bad('Check the line total.');
     if (!Number.isSafeInteger(lineTotal(data))) bad('Check the line total.');
   }
   if (data.type === 'rate') {
@@ -556,32 +589,36 @@ export async function saveLedger(
         data.amount >= 0
       )
         deny();
-      const credits = typed(rows, 'invoice').filter(
-        (i) =>
-          i.credits === original!.id &&
-          i.id !== data.id &&
-          !['refused', 'withdrawn'].includes(i.state),
-      );
-      if (original!.amount + data.amount + credits.reduce((sum, c) => sum + c.amount, 0) < 0)
-        bad('The credit exceeds the invoice.');
-      const billed = byType('cost_row', original!.costId);
-      if (billed && ['claimed', 'accepted'].includes(billed.state)) {
-        if (!side) deny();
-        const correction: Row<'cost_row'> = {
-          ...billed,
-          id: randomUUID(),
-          corrects: billed.id,
-          state: 'paid',
-          amount: data.amount,
-          tax: data.tax,
-          paymentDate: civil(setting?.timeZone),
-          documentDate: data.date,
-          documentRef: data.number,
-        };
-        save(correction);
-        data.costId = correction.id;
-        rows.push(correction);
-      } else data.costId = original!.costId;
+      if (original!.amount + data.amount < 0) bad('The credit exceeds this invoice.');
+      if (manager && (data.costId || data.line)) {
+        const credits = typed(rows, 'invoice').filter(
+          (i) =>
+            !!i.costId &&
+            i.credits === original!.id &&
+            i.id !== data.id &&
+            !['refused', 'withdrawn'].includes(i.state),
+        );
+        if (original!.amount + data.amount + credits.reduce((sum, c) => sum + c.amount, 0) < 0)
+          bad('The credit exceeds the invoice.');
+        const billed = byType('cost_row', original!.costId);
+        if (billed && ['claimed', 'accepted'].includes(billed.state)) {
+          if (!side) deny();
+          const correction: Row<'cost_row'> = {
+            ...billed,
+            id: randomUUID(),
+            corrects: billed.id,
+            state: 'paid',
+            amount: data.amount,
+            tax: data.tax,
+            paymentDate: civil(setting?.timeZone),
+            documentDate: data.date,
+            documentRef: data.number,
+          };
+          save(correction);
+          data.costId = correction.id;
+          rows.push(correction);
+        } else data.costId = original!.costId;
+      }
     } else if (data.amount < 0) bad('Name the invoice for this credit.');
     const linked = byType('cost_row', data.costId ?? prev?.costId);
     if (
@@ -631,6 +668,7 @@ export async function saveLedger(
       .concat(data)
       .sort((a, b) => a.start.localeCompare(b.start));
     if (
+      periods.some((r, i) => r.final && i !== periods.length - 1) ||
       periods.filter((r) => r.final).length > 1 ||
       new Set(periods.map((r) => r.number)).size !== periods.length
     )
@@ -643,6 +681,7 @@ export async function saveLedger(
     }
     if (data.sent) {
       if (!lead || v.hide) deny();
+      if (!data.file) bad('Attach the sent period file.');
       const costs = typed(rows, 'cost_row').filter(
         (c) =>
           c.funding === 'in the budget' &&
@@ -761,13 +800,11 @@ export async function ledgerRoute(
         return res.status(200).json({ revision: p.revision, memberId: by, ...me });
       }
       const stored = (await db.ledger(p)).map((r) => r.payload as Stored);
-      return res
-        .status(200)
-        .json({
-          revision: p.revision,
-          rows: stored.filter((r) => r.id !== 'book-currency'),
-          currency: stored.find((r) => r.id === 'book-currency')?.currency ?? null,
-        });
+      return res.status(200).json({
+        revision: p.revision,
+        rows: stored.filter((r) => r.id !== 'book-currency'),
+        currency: stored.find((r) => r.id === 'book-currency')?.currency ?? null,
+      });
     }
     if (method !== 'POST') deny();
     return (await saveLedger(db, p, owner, by, await body(), memberForm))

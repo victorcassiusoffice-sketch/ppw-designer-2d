@@ -171,7 +171,7 @@ export function pilotStore(query: Query) {
     },
     async money(p: Access) {
       return query(
-        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND payload->>'type' IN ('budget_line','pay_row') AND NOT (payload ? 'version') AND NOT hidden ORDER BY created,id",
+        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND (payload->>'type'='pay_row' OR (payload->>'type'='budget_line' AND NOT (payload ? 'version'))) AND NOT hidden ORDER BY created,id",
         [p.id],
       );
     },

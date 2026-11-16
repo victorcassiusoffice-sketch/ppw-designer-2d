@@ -173,7 +173,9 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
     );
   const code = book.currency,
     records = book.rows,
-    rows = records.filter((r) => r.version === 2).map((r) => ledgerRow.parse(data(r))),
+    rows = records
+      .filter((r) => r.version === 2 && r.type !== 'pay_row')
+      .map((r) => ledgerRow.parse(data(r))),
     old = records.filter((r) => r.type === 'budget_line' && r.version !== 2) as unknown as Budget[],
     pays = records.filter((r) => r.type === 'pay_row') as unknown as Pay[],
     snapshots = Object.fromEntries(
@@ -270,7 +272,14 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
           </form>
         </details>
       )}
-      {!!remote?.moneyDue?.length && <details><summary>Money due · {remote.moneyDue.length}</summary>{remote.moneyDue.map(d=><p key={d.id}>{d.label}</p>)}</details>}
+      {!!remote?.moneyDue?.length && (
+        <details>
+          <summary>Money due · {remote.moneyDue.length}</summary>
+          {remote.moneyDue.map((d) => (
+            <p key={d.id}>{d.label}</p>
+          ))}
+        </details>
+      )}
       <h3>Budget headings</h3>
       {(heads.length ? [...heads.map((h) => h.id), 'unplaced'] : [...categories]).map((k) => {
         const ids = new Set(
