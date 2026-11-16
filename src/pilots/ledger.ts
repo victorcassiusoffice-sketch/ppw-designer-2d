@@ -96,7 +96,7 @@ export const line = z
 export const rate = z
   .object({
     ...base,
-    type: z.literal('rate'),
+    type: z.literal('rate_month'),
     month,
     currency: code,
     rate: positive,
@@ -294,7 +294,7 @@ export function converted(
       ? candidates.find((v) => v.id === c.paymentRate)?.rate
       : candidates[0]?.rate;
   } else
-    value = typed(rows, 'rate').find(
+    value = typed(rows, 'rate_month').find(
       (r) => r.currency === c.currency && r.month === c.date.slice(0, 7),
     )?.rate;
   return value
@@ -389,7 +389,7 @@ export function ledgerCsv(rows: (string | number)[][]) {
 export function rateCsv(rows: Ledger[], code: string) {
   return ledgerCsv([
     ['month', 'rate', 'source'],
-    ...typed(rows, 'rate')
+    ...typed(rows, 'rate_month')
       .filter((r) => r.currency === code)
       .sort((a, b) => a.month.localeCompare(b.month))
       .map((r) => [r.month, r.rate, r.source]),

@@ -116,7 +116,7 @@ export function pilotStore(query: Query) {
     async financeBasis(p: Access, seat: string) {
       return query(
         `SELECT payload FROM pilot_items i WHERE i.pilot_id=$1 AND i.kind='money' AND NOT i.hidden AND
-       (i.id='book-currency' OR i.payload->>'type' IN ('rate','payment_row','settings') OR (i.payload->>'type'='row_entry' AND EXISTS(SELECT 1 FROM pilot_items c WHERE c.pilot_id=$1 AND c.id=i.payload->>'costId' AND c.kind='money' AND c.payload->>'whose'=$2)))`,
+       (i.id='book-currency' OR i.payload->>'type' IN ('rate_month','payment_row','settings') OR (i.payload->>'type'='row_entry' AND EXISTS(SELECT 1 FROM pilot_items c WHERE c.pilot_id=$1 AND c.id=i.payload->>'costId' AND c.kind='money' AND c.payload->>'whose'=$2)))`,
         [p.id, seat],
       );
     },

@@ -21,7 +21,7 @@ export const typeLabels: Record<string, string> = {
   member_marks: 'Member access',
   heading: 'Heading',
   budget_line: 'Budget line',
-  rate: 'Monthly rate',
+  rate_month: 'Monthly rate',
   period: 'Report period',
   payment_row: 'Funder payment',
   cost_row: 'Cost row',

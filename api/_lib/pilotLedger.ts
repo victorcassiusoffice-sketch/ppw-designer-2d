@@ -460,11 +460,11 @@ export async function saveLedger(
       bad('Check the line total.');
     if (!Number.isSafeInteger(lineTotal(data))) bad('Check the line total.');
   }
-  if (data.type === 'rate') {
+  if (data.type === 'rate_month') {
     if (!owner) deny();
     if (
       data.currency === code.data ||
-      typed(rows, 'rate').some(
+      typed(rows, 'rate_month').some(
         (r) => r.id !== data.id && r.month === data.month && r.currency === data.currency,
       )
     )

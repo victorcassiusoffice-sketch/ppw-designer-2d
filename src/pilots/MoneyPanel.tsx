@@ -192,7 +192,7 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
     fmt = (n: number) => display(n, code);
   const ctx = { p, records, files: files.files, book: code, owner, seat, role };
   const allowed = (k: string) =>
-    !['settings', 'member_marks', 'heading', 'rate'].includes(k) || owner;
+    !['settings', 'member_marks', 'heading', 'rate_month'].includes(k) || owner;
   const add = (type: Ledger['type'], initial?: Raw) => {
     setEdit({ type, initial });
     setError('');
