@@ -246,6 +246,14 @@ export async function handlePilots(
       by = isOwner ? 'lead' : p.member_id!;
     const rights = rightsFor(p.role_rules, isOwner, p.role);
     if (!isOwner && p.role === 'checker' && method !== 'GET') return forbidden();
+    if (
+      !isOwner &&
+      p.role === 'checker' &&
+      method === 'GET' &&
+      (!action || !['ledger', 'money', 'files', 'history', 'csv'].includes(action))
+    ) {
+      await db.checkerRead(p, action ?? 'record', key ? [key] : [p.slug]);
+    }
     if (action === 'checker-log' && !key && method === 'GET')
       return managesMoney(isOwner, p.role)
         ? ok({ entries: (await db.checkerLog(p)).map((r) => r.payload) })

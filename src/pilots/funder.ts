@@ -328,6 +328,16 @@ export function funderSet(
       variationPercent: l.kind === 'contingency' ? null : ratio(variation, planned),
       forecast: f,
       forecastGap: f - here,
+      variationNote: forecast?.variationNote ?? '',
+      variationPercentNote: forecast?.variationPercentNote ?? '',
+      forecastNote: forecast?.forecastNote ?? '',
+      signedChangePercent: signed === undefined ? null : ratio(planned - signed, signed),
+      uses: typed(rows, 'contingency_use')
+        .filter((u) => u.receivers.some((r) => r.line === l.id))
+        .map((u) => ({
+          date: u.approvalDate,
+          amount: u.receivers.filter((r) => r.line === l.id).reduce((s, r) => s + r.amount, 0),
+        })),
       claimed: scoped.filter((c) => c.state === 'claimed').reduce((s, c) => s + amount(c), 0),
       accepted: scoped.filter((c) => c.state === 'accepted').reduce((s, c) => s + amount(c), 0),
     };
@@ -353,7 +363,35 @@ export function funderSet(
           : exceeds(Math.abs(delta), signed, setting?.lowerBand)
             ? 'Notify the funder'
             : 'Within first band';
-    return { id: h.id, name: h.name, signed, delta, percent: ratio(delta, signed), band };
+    const summary = byLine.filter((l) => l.heading === h.id);
+    const sum = (
+      k:
+        | 'planned'
+        | 'authorised'
+        | 'spent'
+        | 'thisPeriod'
+        | 'before'
+        | 'remaining'
+        | 'claimed'
+        | 'accepted',
+    ) => summary.reduce((v, l) => v + (l[k] ?? 0), 0);
+    return {
+      id: h.id,
+      name: h.name,
+      signed,
+      delta,
+      percent: ratio(delta, signed),
+      band,
+      planned: sum('planned'),
+      authorised: sum('authorised'),
+      spent: sum('spent'),
+      thisPeriod: sum('thisPeriod'),
+      before: sum('before'),
+      remaining: sum('remaining'),
+      claimed: sum('claimed'),
+      accepted: sum('accepted'),
+      variationPercent: ratio(sum('remaining'), sum('planned')),
+    };
   });
   const spent = costs
     .filter(
@@ -383,7 +421,24 @@ export function funderSet(
   return {
     lines: byLine,
     headings,
-    uses: typed(rows, 'contingency_use'),
+    uses: typed(rows, 'contingency_use').map((u) => {
+      const reserve =
+        typed(rows, 'plan_version')
+          .find((p) => p.id === u.plan)
+          ?.lines?.find((l) => l.kind === 'contingency')?.total ?? 0;
+      const recorded = typed(rows, 'contingency_use')
+        .filter((x) => x.plan === u.plan)
+        .sort((a, b) => a.approvalDate.localeCompare(b.approvalDate) || a.id.localeCompare(b.id));
+      const before =
+        reserve -
+        recorded
+          .slice(
+            0,
+            recorded.findIndex((x) => x.id === u.id),
+          )
+          .reduce((s, x) => s + x.amount, 0);
+      return { ...u, before, after: before - u.amount };
+    }),
     flat,
     plan: plan.total,
     eligible,

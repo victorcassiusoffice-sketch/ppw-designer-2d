@@ -102,6 +102,9 @@ const forecast = z
     unit: short,
     units: decimal,
     unitValue: amount,
+    variationNote: note.optional(),
+    variationPercentNote: note.optional(),
+    forecastNote: note.optional(),
   })
   .strict();
 const purchase = z.enum(['service', 'supply', 'works']);

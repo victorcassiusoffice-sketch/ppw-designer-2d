@@ -897,7 +897,7 @@ export async function ledgerRoute(
   const error = (status: number, message: string) => res.status(status).json({ error: message });
   try {
     if (
-      (key && key !== 'funder-set') ||
+      (key && key !== 'funder-set' && !key.startsWith('funder-set--')) ||
       (!memberForm && !readsMoney(owner, p.role)) ||
       (!owner && p.role === 'checker' && (method !== 'GET' || memberForm)) ||
       (memberForm && (!p.member_id || owner || key))
@@ -918,21 +918,24 @@ export async function ledgerRoute(
         );
       const rows = dataRows(stored),
         currency = bookCode.safeParse(stored.find((r) => r.id === 'book-currency')?.currency);
-      if (key === 'funder-set')
-        return res
-          .status(200)
-          .json({
-            set: currency.success
-              ? funderSet(
-                  rows,
-                  currency.data,
-                  Object.fromEntries(
-                    stored.filter((r) => r.snapshot).map((r) => [r.id, r.snapshot!]),
-                  ),
-                  civil(typed(rows, 'settings')[0]?.timeZone),
-                )
-              : null,
-          });
+      const reportPeriod = key?.startsWith('funder-set--')
+        ? key.slice('funder-set--'.length)
+        : undefined;
+      if (reportPeriod && !typed(rows, 'period').some((p) => p.id === reportPeriod)) deny();
+      if (key === 'funder-set' || reportPeriod)
+        return res.status(200).json({
+          set: currency.success
+            ? funderSet(
+                rows,
+                currency.data,
+                Object.fromEntries(
+                  stored.filter((r) => r.snapshot).map((r) => [r.id, r.snapshot!]),
+                ),
+                civil(typed(rows, 'settings')[0]?.timeZone),
+                reportPeriod,
+              )
+            : null,
+        });
       return res.status(200).json({
         revision: p.revision,
         rows: stored.filter((r) => r.id !== 'book-currency'),
