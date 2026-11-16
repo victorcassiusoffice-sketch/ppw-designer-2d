@@ -347,6 +347,7 @@ export async function saveLedger(
   by: string,
   input: unknown,
   memberForm = false,
+  sentPack: { id: string; payload: unknown } | null = null,
 ) {
   const v = z
     .object({
@@ -847,7 +848,15 @@ export async function saveLedger(
       bad('Use shorter notes or split the record.');
     changes.set(id, { id, payload: log, hidden: false });
   }
-  return await db.ledgerCommit(p, v.revision, [...changes.values()], by, fileIds, schedule ?? null);
+  return await db.ledgerCommit(
+    p,
+    v.revision,
+    [...changes.values()],
+    by,
+    fileIds,
+    schedule ?? null,
+    sentPack,
+  );
 }
 export async function copyHeadingTree(db: Db, p: Access, owner: boolean, body: unknown) {
   if (!owner) return null;

@@ -69,7 +69,9 @@ export async function pilotFiles(
             !!marks.partner,
             !!marks.staff,
           )))
-      : access !== 'none';
+      : f.source === 'report pack'
+        ? readsMoney(owner, p.role) && levelFor(p.role_rules, owner, p.role, 'reports') !== 'none'
+        : access !== 'none';
   const path = (f: Evidence) => 'pilots/' + p.id + '/evidence/' + f.id;
   if (!key && method === 'GET') {
     if (
@@ -120,7 +122,11 @@ export async function pilotFiles(
       (!owner && (row.created_by !== by || (f.money ? !finance : access !== 'add')))
     )
       return deny();
-    if (f.money && (await db.protectedProof(p, key))) return deny();
+    if (
+      (f.money && (await db.protectedProof(p, key))) ||
+      (f.source === 'report pack' && (await db.filedReport(p, key)))
+    )
+      return deny();
     const v = z
       .object({ revision, hidden: z.literal(true) })
       .strict()
@@ -142,6 +148,13 @@ export async function pilotFiles(
     .parse(await body());
   if (v.data.length > 4 * Math.ceil(fileCap / 3))
     return fail(400, 'Choose a file of 1 MB or less.');
+  if (
+    v.file.source === 'report pack' &&
+    (!finance ||
+      levelFor(p.role_rules, owner, p.role, 'reports') !== 'add' ||
+      v.file.kind !== 'report')
+  )
+    return deny();
   const bytes = Buffer.from(v.data, 'base64');
   if (bytes.length > fileCap) return fail(400, 'Choose a file of 1 MB or less.');
   const link = v.file.linkedId ? await db.item(p, v.file.linkedId) : null;

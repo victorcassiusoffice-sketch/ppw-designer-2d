@@ -56,6 +56,12 @@ export function pilotStore(query: Query) {
         [p.id],
       );
     },
+    async filedReport(p: Access, id: string) {
+      return !!(await one(
+        "SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND kind='report' AND payload->>'state'='sent' AND payload->>'file'=$2 LIMIT 1",
+        [p.id, id],
+      ));
+    },
     async protectedProof(p: Access, id: string) {
       return !!(await one(
         `SELECT 1 FROM pilot_items i WHERE i.pilot_id=$1 AND i.kind='money' AND
@@ -156,6 +162,21 @@ export function pilotStore(query: Query) {
         [p.id, route, p.member_id, JSON.stringify(chunks)],
       );
     },
+    async reportItems(p: Access) {
+      return query(
+        "SELECT id,kind,payload FROM pilot_items WHERE pilot_id=$1 AND kind IN ('event','indicator','report') AND NOT hidden ORDER BY created,id",
+        [p.id],
+      );
+    },
+    async exportPage(p: Access, hidden: boolean, offset: number, checker: boolean) {
+      return query(
+        `SELECT id,kind,payload,hidden FROM pilot_items i WHERE pilot_id=$1 AND ($2 OR NOT hidden)
+      AND NOT(kind='money' AND (payload->>'type'='link_log' OR ($4 AND payload->>'type'='checker_log')))
+      AND NOT(kind='money' AND payload->>'type'='change_log' AND (payload->'after'->>'type'='link_log' OR (NOT $2 AND EXISTS(SELECT 1 FROM pilot_items hidden_row WHERE hidden_row.pilot_id=i.pilot_id AND hidden_row.id=i.payload->>'record' AND hidden_row.hidden))))
+      AND NOT(kind='history' AND NOT $2 AND EXISTS(SELECT 1 FROM pilot_items hidden_row WHERE hidden_row.pilot_id=i.pilot_id AND hidden_row.id=i.payload->>'item' AND hidden_row.hidden)) ORDER BY id LIMIT 60 OFFSET $3`,
+        [p.id, hidden, offset, checker],
+      );
+    },
     async checkerLog(p: Access) {
       return query(
         "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND payload->>'type'='checker_log' ORDER BY created DESC,id",
@@ -190,6 +211,7 @@ export function pilotStore(query: Query) {
       by: string,
       fileIds: string[] = [],
       schedule: { id: string; start: string; months: number; end: string } | null = null,
+      sentPack: { id: string; payload: unknown } | null = null,
     ) {
       return one(
         `WITH changes AS (SELECT * FROM jsonb_to_recordset($3::jsonb) AS v(id text,payload jsonb,hidden boolean)),
@@ -197,9 +219,19 @@ export function pilotStore(query: Query) {
         SELECT 1 FROM changes c JOIN pilot_items i ON i.pilot_id=$1 AND i.id=c.id WHERE i.kind<>'money'
       ) RETURNING id,revision), saved AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by,hidden)
         SELECT bump.id,c.id,'money',c.payload,$4,c.hidden FROM bump CROSS JOIN changes c ON CONFLICT(pilot_id,id) DO UPDATE SET payload=EXCLUDED.payload,hidden=EXCLUDED.hidden,updated=now()),
+      pack_update AS (UPDATE pilot_items i SET payload=$8::jsonb,updated=now() FROM bump WHERE i.pilot_id=bump.id AND i.id=$7 AND i.kind='report' AND NOT i.hidden),
       schedule_update AS (UPDATE pilot_items i SET payload=$6::jsonb,updated=now() FROM bump WHERE $6::jsonb IS NOT NULL AND i.pilot_id=bump.id AND i.id='pilot-schedule' AND i.kind='schedule'),
       marked AS (UPDATE pilot_items SET payload=jsonb_set(payload,'{money}','true'::jsonb),updated=now() FROM bump WHERE pilot_id=bump.id AND kind='file' AND pilot_items.id=ANY($5::text[])) SELECT revision FROM bump`,
-        [p.id, rev, JSON.stringify(rows), by, fileIds, schedule ? JSON.stringify(schedule) : null],
+        [
+          p.id,
+          rev,
+          JSON.stringify(rows),
+          by,
+          fileIds,
+          schedule ? JSON.stringify(schedule) : null,
+          sentPack?.id ?? null,
+          sentPack ? JSON.stringify(sentPack.payload) : null,
+        ],
       );
     },
     async memberRole(p: Access, id: string) {
@@ -321,6 +353,7 @@ export function pilotStore(query: Query) {
       hidden: boolean,
       manageMoney = false,
       assignedPaper = false,
+      reportWriter = false,
     ) {
       const edit = patch
         ? 'UPDATE pilot_items i SET payload=$5::jsonb,hidden=$7,updated=now() FROM bump WHERE i.pilot_id=bump.id AND i.id=$4 AND i.kind=$3 AND ($8 OR i.created_by=$6) RETURNING i.id'
@@ -339,7 +372,8 @@ export function pilotStore(query: Query) {
             ? [
                 by === 'lead' ||
                   (kind === 'money' && manageMoney) ||
-                  (kind === 'paper' && assignedPaper),
+                  (kind === 'paper' && assignedPaper) ||
+                  (['event', 'indicator', 'report'].includes(kind) && reportWriter),
               ]
             : []),
         ],
