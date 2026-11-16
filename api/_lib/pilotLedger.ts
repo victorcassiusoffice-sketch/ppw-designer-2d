@@ -610,17 +610,19 @@ export async function saveLedger(
         data.amount >= 0
       )
         deny();
-      if (original!.amount + data.amount < 0) bad('The credit exceeds this invoice.');
-      if (manager && (data.costId || data.line)) {
-        const credits = typed(rows, 'invoice').filter(
-          (i) =>
-            !!i.costId &&
-            i.credits === original!.id &&
-            i.id !== data.id &&
-            !['refused', 'withdrawn'].includes(i.state),
-        );
-        if (original!.amount + data.amount + credits.reduce((sum, c) => sum + c.amount, 0) < 0)
-          bad('The credit exceeds the invoice.');
+      const otherCredits = typed(rows, 'invoice').filter(
+        (i) =>
+          i.credits === original!.id &&
+          i.id !== data.id &&
+          !['refused', 'withdrawn'].includes(i.state),
+      );
+      if (
+        !v.hide &&
+        !['refused', 'withdrawn'].includes(data.state) &&
+        original!.amount + data.amount + otherCredits.reduce((sum, i) => sum + i.amount, 0) < 0
+      )
+        bad('The credit exceeds this invoice.');
+      if (manager && !prev?.costId && (data.costId || data.line)) {
         const billed = byType('cost_row', original!.costId);
         if (billed && ['claimed', 'accepted'].includes(billed.state)) {
           if (!side) deny();
@@ -648,6 +650,16 @@ export async function saveLedger(
     )
       deny();
     if (linked && ['claimed', 'accepted'].includes(linked.state)) deny();
+    if (
+      linked?.corrects &&
+      prev?.costId &&
+      (v.hide ||
+        data.amount !== prev.amount ||
+        data.tax !== prev.tax ||
+        data.state === 'withdrawn' ||
+        data.state === 'refused')
+    )
+      deny();
     if (data.line && !all.some((r) => r.id === data.line && r.type === 'budget_line')) deny();
     if (data.state !== prev?.state && prev) {
       if (
