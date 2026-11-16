@@ -1,3 +1,4 @@
+import { planValues } from './funder';
 import { useState } from 'react';
 import { funderSet, buyingFlags, paymentClock, moreCsv, exceeds, ratio } from './funder';
 import { typed, major, minorDigits, type BookCurrency, type Ledger, type Snapshot } from './ledger';
@@ -128,7 +129,11 @@ export default function FunderPanel({
               {money(l.remaining)}
             </p>
             <p>
-              Forecast {money(l.forecast)} · Variation {l.variationPercent ?? '—'}%
+              {l.variationNote} {l.variationPercentNote}
+            </p>
+            <p>
+              Forecast {money(l.forecast)} · Gap {money(l.forecastGap)} · Variation{' '}
+              {l.variationPercent ?? '—'}% · {l.forecastNote}
             </p>
           </article>
         ))}
@@ -213,7 +218,7 @@ export default function FunderPanel({
                       payment.label,
                       ['Request', 'Value'],
                       [
-                        ['Project total', money(s.plan)],
+                        ['Project total', money(s.plan - planValues(rows).contingency)],
                         ['Maximum grant', money(settings?.maximumGrant)],
                         ['Received last period', money(last)],
                         ['Received in all', money(s.received)],
