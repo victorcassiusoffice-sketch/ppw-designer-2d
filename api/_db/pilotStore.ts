@@ -19,8 +19,9 @@ export type Access = {
   summary: string;
 };
 export type Actor = { owner: string; member: string };
+const checkerDay = "(now() AT TIME ZONE COALESCE((SELECT payload->>'timeZone' FROM pilot_items WHERE pilot_id=p.id AND id='ledger-settings' AND kind='money' AND NOT hidden),'Indian/Mauritius'))::date";
 const membership =
-  "m.pilot_id=p.id AND m.cookie_key_hash=$2 AND m.state='active' AND m.cookie_expires>now() AND (m.role<>'checker' OR m.checker_until >= (now() AT TIME ZONE 'Indian/Mauritius')::date)";
+  `m.pilot_id=p.id AND m.cookie_key_hash=$2 AND m.state='active' AND m.cookie_expires>now() AND (m.role<>'checker' OR m.checker_until >= ${checkerDay})`;
 export function pilotStore(query: Query) {
   const one = async (sql: string, args: unknown[]) => (await query(sql, args))[0];
   return {
@@ -58,7 +59,7 @@ export function pilotStore(query: Query) {
     async protectedProof(p: Access, id: string) {
       return !!(await one(
         `SELECT 1 FROM pilot_items i WHERE i.pilot_id=$1 AND i.kind='money' AND
-        (i.payload->>'type' IN ('payment_row','approval','plan_version') OR i.payload->>'state' IN ('claimed','accepted') OR (
+        (i.payload->>'type' IN ('payment_row','approval','plan_version','cut','contingency_use','move','change_record') OR i.payload->>'state' IN ('claimed','accepted') OR (
           i.payload->>'type' IN ('invoice','row_entry') AND EXISTS(SELECT 1 FROM pilot_items c WHERE c.pilot_id=i.pilot_id AND c.id=i.payload->>'costId' AND c.kind='money' AND c.payload->>'state' IN ('claimed','accepted')))) AND
         jsonb_path_exists(i.payload,'lax $.** ? (@ == $file)',jsonb_build_object('file',$2::text)) LIMIT 1`,
         [p.id, id],
@@ -120,14 +121,25 @@ export function pilotStore(query: Query) {
         [p.id, seat],
       );
     },
-    async ownFinance(p: Access, seat: string, invoices: boolean, partner: boolean, pay: boolean) {
+    async ownFinance(p: Access, seat: string, invoices: boolean, partner: boolean, pay: boolean, staff = false) {
       return query(
         `SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden AND (
       ($3 AND payload->>'type'='invoice' AND payload->>'sender'=$2)
       OR ($4 AND ((payload->>'type'='cost_row' AND payload->>'whose'=$2 AND payload->>'costType'<>'staff') OR (payload->>'type'='transfer' AND payload->>'partner'=$2)))
-      OR ($5 AND payload->>'type'='pay_row' AND payload->>'memberId'=$2)) ORDER BY created,id`,
-        [p.id, seat, invoices, partner, pay],
+      OR ($5 AND payload->>'type'='pay_row' AND payload->>'memberId'=$2) OR ($6 AND payload->>'type'='staff_month' AND payload->>'memberId'=$2)) ORDER BY created,id`,
+        [p.id, seat, invoices, partner, pay,staff],
       );
+    },
+    async checkerRead(p:Access,route:string,records:string[]) {
+      if(p.role!=='checker'||!p.member_id)return;
+      // Chunk long lists so each append-only entry fits the existing item limit.
+      const chunks=Array.from({length:Math.max(1,Math.ceil(records.length/75))},(_,i)=>records.slice(i*75,(i+1)*75));
+      await query(`INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by)
+        SELECT $1,gen_random_uuid()::text,'money',jsonb_build_object('type','checker_log','route',$2::text,'records',chunk,'seat',$3::text,'at',now()),$3
+        FROM jsonb_array_elements($4::jsonb) chunk`,[p.id,route,p.member_id,JSON.stringify(chunks)]);
+    },
+    async checkerLog(p:Access) {
+      return query("SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND payload->>'type'='checker_log' ORDER BY created DESC,id",[p.id]);
     },
     async financeHistory(p: Access, id: string) {
       return query(
@@ -141,12 +153,13 @@ export function pilotStore(query: Query) {
       seat: string,
       invoices: boolean,
       partner: boolean,
+      staff=false,
     ) {
       return !!(await one(
         `SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden AND
       (($4 AND payload->>'type'='invoice' AND payload->>'sender'=$3 AND payload->>'state' NOT IN ('withdrawn','refused') AND $2::text IN (payload->>'file',payload->>'delivery',payload->>'integrity'))
-      OR ($5 AND payload->>'type'='cost_row' AND payload->>'whose'=$3 AND EXISTS(SELECT 1 FROM jsonb_array_elements(payload->'proofs') f WHERE f->>'file'=$2))) LIMIT 1`,
-        [p.id, id, seat, invoices, partner],
+      OR ($5 AND payload->>'type'='cost_row' AND payload->>'whose'=$3 AND EXISTS(SELECT 1 FROM jsonb_array_elements(payload->'proofs') f WHERE f->>'file'=$2)) OR ($6 AND payload->>'type'='staff_month' AND payload->>'memberId'=$3 AND payload->>'timeSheet'=$2)) LIMIT 1`,
+        [p.id, id, seat, invoices, partner,staff],
       ));
     },
     async ledgerCommit(
@@ -219,7 +232,7 @@ export function pilotStore(query: Query) {
     },
     async join(slug: string, invite: string, cookie: string) {
       return one(
-        `WITH joined AS (UPDATE pilot_members m SET cookie_key_hash=$3,cookie_expires=now()+interval '30 days',invite_hash=NULL,invite_expires=NULL,state='active',last_seen=now() FROM pilots p WHERE m.pilot_id=p.id AND p.slug=$1 AND m.invite_hash=$2 AND m.invite_expires>now() AND (m.role<>'checker' OR m.checker_until >= (now() AT TIME ZONE 'Indian/Mauritius')::date) AND m.state IN ('invited','active') RETURNING m.pilot_id,m.link_id), used AS (UPDATE pilot_items i SET payload=jsonb_set(i.payload,'{firstUse}',to_jsonb(now())),updated=now() FROM joined j WHERE i.pilot_id=j.pilot_id AND i.id=j.link_id::text AND i.kind='money' AND i.payload->>'type'='link_log' AND i.payload->>'firstUse' IS NULL) UPDATE pilots SET revision=revision+1, updated=now() FROM joined WHERE pilots.id=joined.pilot_id RETURNING pilots.id`,
+        `WITH joined AS (UPDATE pilot_members m SET cookie_key_hash=$3,cookie_expires=now()+interval '30 days',invite_hash=NULL,invite_expires=NULL,state='active',last_seen=now() FROM pilots p WHERE m.pilot_id=p.id AND p.slug=$1 AND m.invite_hash=$2 AND m.invite_expires>now() AND (m.role<>'checker' OR m.checker_until >= ${checkerDay}) AND m.state IN ('invited','active') RETURNING m.pilot_id,m.link_id), used AS (UPDATE pilot_items i SET payload=jsonb_set(i.payload,'{firstUse}',to_jsonb(now())),updated=now() FROM joined j WHERE i.pilot_id=j.pilot_id AND i.id=j.link_id::text AND i.kind='money' AND i.payload->>'type'='link_log' AND i.payload->>'firstUse' IS NULL) UPDATE pilots SET revision=revision+1, updated=now() FROM joined WHERE pilots.id=joined.pilot_id RETURNING pilots.id`,
         [slug, invite, cookie],
       );
     },
@@ -243,7 +256,7 @@ export function pilotStore(query: Query) {
       invite: string,
     ) {
       return one(
-        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND EXISTS(SELECT 1 FROM pilot_members WHERE pilot_id=$1 AND id=$3 AND id<>'lead' AND role<>$4) RETURNING id,revision),
+        `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND EXISTS(SELECT 1 FROM pilot_members WHERE pilot_id=$1 AND id=$3 AND id<>'lead' AND (role<>$4 OR (role='checker' AND checker_until IS DISTINCT FROM $5::date))) RETURNING id,revision),
       changed AS (UPDATE pilot_members m SET role=$4,checker_until=$5::date,invite_hash=$6,invite_expires=now()+interval '7 days',cookie_key_hash=NULL,cookie_expires=NULL,link_id=gen_random_uuid() FROM bump WHERE m.pilot_id=bump.id AND m.id=$3 RETURNING m.*),
       marks AS (SELECT i.pilot_id,i.id,i.payload AS before,i.payload || jsonb_build_object(
         'invoices',COALESCE((i.payload->>'invoices')::boolean,false) AND m.role IN ('technology supplier','tester','adviser'),

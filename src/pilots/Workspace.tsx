@@ -1,5 +1,5 @@
 import MoneyPanel from './MoneyPanel';
-import { managesMoney } from './money';
+import { readsMoney } from './money';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { OlbLockup } from '../brand/OlbLockup';
@@ -220,7 +220,7 @@ export default function Workspace() {
   const p = shared ? doc?.pilot : pilots.find((x) => x.slug === slug);
   const owner = !shared || doc?.owner === true;
   const availableSections = sections.filter((s) => {
-    if (s === 'Money') return shared && doc && managesMoney(owner, doc.role);
+    if (s === 'Money') return shared && doc && readsMoney(owner, doc.role);
     if (!shared || !doc) return true;
     if (s === 'Record')
       return ['steps', 'log', 'readings'].some(

@@ -11,7 +11,7 @@ import { dueList, ownWork, validateSample, scheduleEnd } from '../../src/pilots/
 import { pilotFiles } from './pilotFiles.js';
 import { rightsFor, ruleSchema, kindSection } from '../../src/pilots/access.js';
 import { day } from '../../src/pilots/contract.js';
-import { money, currency, managesMoney, type Budget } from '../../src/pilots/money.js';
+import { money, currency, managesMoney, readsMoney, type Budget } from '../../src/pilots/money.js';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { get, put, del } from '@vercel/blob';
@@ -245,6 +245,12 @@ export async function handlePilots(
     const isOwner = !!owner && p.owner_id === owner,
       by = isOwner ? 'lead' : p.member_id!;
     const rights = rightsFor(p.role_rules, isOwner, p.role);
+    if(!isOwner&&p.role==='checker'&&method!=='GET')return forbidden();
+    if(action==='checker-log'&&!key&&method==='GET')return managesMoney(isOwner,p.role)?ok({entries:(await db.checkerLog(p)).map(r=>r.payload)}):forbidden();
+    if(action==='csv'&&key&&method==='GET'){
+      if(!readsMoney(isOwner,p.role)||!['costs','internal','rates','pay','hours','pending','assets','sources'].includes(key))return forbidden();
+      if(!isOwner)await db.checkerRead(p,'csv/'+key,[]);return ok({allowed:true});
+    }
     if (action === 'copy-tree' && !key && method === 'POST' && isOwner)
       return (await copyHeadingTree(db, p, isOwner, await body()))
         ? ok({ saved: true })
@@ -349,8 +355,9 @@ export async function handlePilots(
       });
     }
     if (action === 'money' && !key) {
-      if (!managesMoney(isOwner, p.role)) return forbidden();
+      if (!(method==='GET'?readsMoney(isOwner,p.role):managesMoney(isOwner,p.role))) return forbidden();
       const rows = (await db.money(p)).map((r) => legacyMoney(r.payload));
+      if(!isOwner&&method==='GET')await db.checkerRead(p,'money',rows.map(r=>r.id));
       const setting = rows.find(
         (x): x is Budget => x.type === 'budget_line' && x.id === 'book-currency',
       );
@@ -497,7 +504,7 @@ export async function handlePilots(
       const target = await db.item(p, id.parse(key));
       if (target?.kind === 'money' || key.startsWith('own-')) {
         const entries = await financeHistory(db, p, isOwner, key);
-        return entries ? ok({ entries }) : forbidden();
+        if(entries&&!isOwner)await db.checkerRead(p,'history',[key]);return entries ? ok({ entries }) : forbidden();
       }
       const current = await db.item(p, id.parse(key)),
         section = kindSection[String(current?.kind)];

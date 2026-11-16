@@ -45,6 +45,7 @@ export type MoneyBook = {
 };
 export const managesMoney = (owner: boolean, role: string | null) =>
   owner || role === 'lead' || role === 'coordinator';
+export const readsMoney = (owner: boolean, role: string | null) => managesMoney(owner,role) || role === "checker";
 export function totals(rows: Budget[]) {
   return rows.reduce(
     (t, r) => ({
