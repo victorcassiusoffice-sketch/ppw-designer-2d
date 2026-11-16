@@ -1,3 +1,12 @@
+import {
+  managerDues,
+  copyHeadingTree,
+  ledgerRoute,
+  personalFinance,
+  financeHistory,
+  seatMarks,
+  allowedPayInput,
+} from './pilotLedger.js';
 import { dueList, ownWork, validateSample, scheduleEnd } from '../../src/pilots/running.js';
 import { pilotFiles } from './pilotFiles.js';
 import { rightsFor, ruleSchema, kindSection } from '../../src/pilots/access.js';
@@ -29,6 +38,10 @@ import type { MinReq, MinRes } from './sentry.js';
 const hash = (s: string) => createHash('sha256').update(s).digest('hex'),
   secret = () => randomBytes(32).toString('base64url');
 const tokenSchema = z.string().regex(/^[a-zA-Z0-9_-]{43}$/);
+function legacyMoney(payload: unknown) {
+  const { version, audit, ...row } = payload as Record<string, unknown>;
+  return money.parse(row);
+}
 function token(req: MinReq, slug: string) {
   const raw = String(req.headers.cookie ?? '');
   const val = raw
@@ -232,6 +245,12 @@ export async function handlePilots(
     const isOwner = !!owner && p.owner_id === owner,
       by = isOwner ? 'lead' : p.member_id!;
     const rights = rightsFor(p.role_rules, isOwner, p.role);
+    if (action === 'copy-tree' && !key && method === 'POST' && isOwner)
+      return (await copyHeadingTree(db, p, isOwner, await body()))
+        ? ok({ saved: true })
+        : forbidden();
+    if (action === 'ledger' || action === 'my-finance')
+      return await ledgerRoute(db, p, isOwner, by, action === 'my-finance', key, method, body, res);
     if (action === 'files')
       return await pilotFiles(
         db,
@@ -302,7 +321,8 @@ export async function handlePilots(
         }
         return [];
       });
-      const financial = rows.filter((r) => r.kind === 'money').map((r) => money.parse(r.payload));
+      const { showPay, ...personalMoney } = await personalFinance(db, p, p.member_id, p.role);
+      const financial = rows.filter((r) => r.kind === 'money').map((r) => legacyMoney(r.payload));
       const own = financial.find((r) => r.type === 'pay_row' && r.memberId === p.member_id),
         unit = financial.find((r) => r.type === 'budget_line' && r.id === 'book-currency');
       return ok({
@@ -316,18 +336,21 @@ export async function handlePilots(
         name: p.first_name,
         role: p.role,
         nearExpiry: Date.parse(p.expires) - Date.now() <= 5 * 86400000,
-        ...(p.role === 'lead' ? { links: (await db.links(p)).map((r) => r.payload) } : {}),
+        ...(Object.keys(personalMoney).length ? { finance: personalMoney } : {}),
+        ...(!isOwner && p.role === 'lead'
+          ? { links: (await db.links(p)).map((r) => r.payload) }
+          : {}),
         next: next ?? null,
         activity,
         pay:
-          p.role !== 'checker' && own?.type === 'pay_row' && unit?.type === 'budget_line'
-            ? { agreed: own.agreed, currency: unit.currency, state: own.state, note: own.note }
+          showPay && own?.type === 'pay_row' && unit?.type === 'budget_line'
+            ? { agreed: own.agreed, currency: unit.currency, state: own.state }
             : null,
       });
     }
     if (action === 'money' && !key) {
       if (!managesMoney(isOwner, p.role)) return forbidden();
-      const rows = (await db.money(p)).map((r) => money.parse(r.payload));
+      const rows = (await db.money(p)).map((r) => legacyMoney(r.payload));
       const setting = rows.find(
         (x): x is Budget => x.type === 'budget_line' && x.id === 'book-currency',
       );
@@ -339,6 +362,25 @@ export async function handlePilots(
         });
       if (method !== 'POST') return forbidden();
       const value = await body();
+      if (
+        typeof value === 'object' &&
+        value &&
+        'row' in value &&
+        typeof value.row === 'object' &&
+        value.row &&
+        'version' in value.row
+      )
+        return await ledgerRoute(
+          db,
+          p,
+          isOwner,
+          by,
+          false,
+          undefined,
+          'POST',
+          async () => value,
+          res,
+        );
       const select = z.object({ revision, currency }).strict().safeParse(value);
       if (select.success) {
         if (!isOwner || setting) return forbidden();
@@ -378,25 +420,61 @@ export async function handlePilots(
       if (
         row.id === 'book-currency' ||
         (prior &&
-          (prior.hidden || prior.kind !== 'money' || money.parse(prior.payload).type !== row.type))
+          (prior.hidden || prior.kind !== 'money' || legacyMoney(prior.payload).type !== row.type))
       )
         return forbidden();
-      if (row.type === 'budget_line') {
-        if (!row.id.startsWith('budget-') || row.currency !== setting.currency) return forbidden();
-        if (v.hide && rows.some((x) => x.type === 'pay_row' && x.from === row.id))
-          return fail(400, 'Reassign or hide linked pay rows first.');
-      } else {
-        const member = await db.memberRole(p, row.memberId);
+      if (row.type === 'budget_line') return fail(400, 'Save the line with units and a cost type.');
+      {
+        const member = await db.memberRole(p, row.memberId),
+          line = await db.item(p, row.from);
         if (
           !member ||
           member.role !== row.role ||
+          !allowedPayInput(
+            row.role,
+            row.memberId,
+            by,
+            isOwner,
+            p.role,
+            await seatMarks(db, p, row.memberId),
+          ) ||
           row.id !== 'pay-' + row.memberId ||
-          !rows.some((x) => x.type === 'budget_line' && x.id !== setting.id && x.id === row.from)
+          row.from === setting.id ||
+          line?.kind !== 'money' ||
+          line.hidden ||
+          (line?.payload as { type?: string } | undefined)?.type !== 'budget_line'
         )
           return forbidden();
       }
       if (v.hide && !prior) return forbidden();
-      return (await db.saveItem(p, v.revision, 'money', row.id, row, by, !!prior, !!v.hide, true))
+      const at = new Date().toISOString(),
+        stamp = { seat: isOwner ? 'owner' : by, link: isOwner ? null : p.link_id, at },
+        logId = randomUUID();
+      const pay = { ...row, version: 2, audit: { typedBy: stamp } };
+      return (await db.ledgerCommit(
+        p,
+        v.revision,
+        [
+          { id: row.id, payload: pay, hidden: !!v.hide },
+          {
+            id: logId,
+            hidden: false,
+            payload: {
+              id: logId,
+              type: 'change_log',
+              version: 2,
+              record: row.id,
+              at,
+              who: stamp,
+              before: prior?.payload ?? null,
+              after: pay,
+              reason: '',
+              fields: Object.keys(row),
+            },
+          },
+        ],
+        by,
+      ))
         ? ok({ saved: true })
         : conflict();
     }
@@ -404,6 +482,7 @@ export async function handlePilots(
       const doc = await record(db, p, isOwner, by);
       return ok({
         ...doc,
+        ...(managesMoney(isOwner, p.role) ? { moneyDue: await managerDues(db, p) } : {}),
         ...(isOwner || p.role === 'lead'
           ? {
               due: dueList(
@@ -415,6 +494,11 @@ export async function handlePilots(
       });
     }
     if (action === 'history' && key && method === 'GET') {
+      const target = await db.item(p, id.parse(key));
+      if (target?.kind === 'money' || key.startsWith('own-')) {
+        const entries = await financeHistory(db, p, isOwner, key);
+        return entries ? ok({ entries }) : forbidden();
+      }
       const current = await db.item(p, id.parse(key)),
         section = kindSection[String(current?.kind)];
       if (
@@ -530,7 +614,43 @@ export async function handlePilots(
       return ok({ revision: saved.revision, photo: ph });
     }
     if (action !== 'items' || !['POST', 'PATCH'].includes(method ?? '')) return forbidden();
-    const v = itemWrite.parse(await body()),
+    const itemBody = await body();
+    if (
+      typeof itemBody === 'object' &&
+      itemBody !== null &&
+      'kind' in itemBody &&
+      itemBody.kind === 'money'
+    ) {
+      const proposed = z
+        .object({
+          revision,
+          id,
+          kind: z.literal('money'),
+          payload: z.object({ id }).passthrough(),
+          hidden: z.boolean().optional(),
+          reason: z.string().max(300).optional(),
+        })
+        .strict()
+        .parse(itemBody);
+      if ((key && key !== proposed.id) || proposed.id !== proposed.payload.id) return forbidden();
+      return await ledgerRoute(
+        db,
+        p,
+        isOwner,
+        by,
+        false,
+        undefined,
+        'POST',
+        async () => ({
+          revision: proposed.revision,
+          row: proposed.payload,
+          hide: proposed.hidden,
+          reason: proposed.reason,
+        }),
+        res,
+      );
+    }
+    const v = itemWrite.parse(itemBody),
       patch = method === 'PATCH';
     if (patch ? key !== v.id : !!key) return forbidden();
     const section = kindSection[v.kind];

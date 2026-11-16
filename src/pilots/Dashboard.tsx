@@ -1,3 +1,4 @@
+import { MemberFinance, type PersonalLedger } from './MemberFinance';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { OlbLockup } from '../brand/OlbLockup';
@@ -5,6 +6,7 @@ import { display } from './money';
 import { isShared, request } from './remote';
 import './pilot.css';
 type Dashboard = {
+  finance?: PersonalLedger;
   owned?: string[];
   due?: { id: string; label: string; date: string; state: string }[];
   pilot: string;
@@ -86,6 +88,7 @@ export default function MemberDashboard() {
               ))}
             </details>
           )}
+          {d.finance && <MemberFinance slug={slug!} finance={d.finance} />}
           {d.nearExpiry && <p role="status">Ask the owner for a new link.</p>}
           {!!d.owned?.length && (
             <section>

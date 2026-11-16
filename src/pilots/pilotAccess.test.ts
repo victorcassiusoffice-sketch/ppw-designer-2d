@@ -375,3 +375,220 @@ it('enforces record and file rights across seats, requests, renewal and checker 
   for (const path of [[], ['me'], ['files'], ['files', id], ['files', money], ['money']])
     expect((await access(checker, path)).code).toBe(403);
 });
+
+it('keeps linked invoices, periods, pay, audit and file access within the acting seats', async () => {
+  const slug = await create('ledger-owner');
+  const callOwner = (path: string[], method = 'GET', body?: unknown) =>
+    call([slug, ...path], method, 'ledger-owner', '', body);
+  const rev = async () => (await callOwner([])).body.revision;
+  const seats = new Map<string, { id: string; cookie: string }>();
+  async function createSeat(name: string, role: string) {
+    const i = await callOwner(['members'], 'POST', {
+      revision: await rev(),
+      name,
+      role,
+      organisation: 'Trial',
+      ...(role === 'checker' ? { endDate: '2099-01-01' } : {}),
+    });
+    expect(i.code).toBe(200);
+    const join = await call([slug, 'join'], 'POST', '', '', {
+      invite: i.body.join.split('#join=')[1],
+    });
+    const cookie = join.headers['Set-Cookie'].split(';')[0],
+      id = (await call([slug], 'GET', '', cookie)).body.memberId;
+    seats.set(name, { id, cookie });
+    return id;
+  }
+  const lead = await createSeat('Lead', 'lead'),
+    supplier = await createSeat('Supplier', 'technology supplier'),
+    viewer = await createSeat('Viewer', 'viewer'),
+    partner = await createSeat('Partner', 'tester'),
+    coordinator = await createSeat('Coordinator', 'coordinator');
+  await createSeat('Checker', 'checker');
+  const api = (name: string, path: string[], method = 'GET', v?: unknown) =>
+    name === 'Owner'
+      ? callOwner(path, method, v)
+      : call([slug, ...path], method, '', seats.get(name)!.cookie, v);
+  const write = async (name: string, row: Record<string, unknown>, status = 200, extra = {}) => {
+    const r = await api(name, [name === 'Supplier' ? 'my-finance' : 'ledger'], 'POST', {
+      revision: await rev(),
+      row: { ...row, version: 2 },
+      ...extra,
+    });
+    expect(r.code, JSON.stringify(r.body)).toBe(status);
+  };
+  expect(
+    (await callOwner(['money'], 'POST', { revision: await rev(), currency: 'EUR' })).code,
+  ).toBe(200);
+  await write('Owner', {
+    id: 'ledger-settings',
+    type: 'settings',
+    timeZone: 'Indian/Mauritius',
+    accountsCurrency: 'USD',
+  });
+  for (const [user, inv, part] of [
+    [supplier, true, false],
+    [partner, false, true],
+  ] as const)
+    await write('Owner', {
+      type: 'member_marks',
+      id: 'marks-' + user,
+      memberId: user,
+      invoices: inv,
+      staff: false,
+      partner: part,
+    });
+  const line = {
+    type: 'budget_line',
+    id: 'budget-trial',
+    number: '4.1',
+    heading: 'works',
+    label: 'Restricted line',
+    kind: 'ordinary',
+    costType: 'supply',
+    unit: 'piece',
+    units: '2.5',
+    unitValue: 101,
+    direct: true,
+    flags: [],
+    note: '',
+  };
+  await write('Owner', line);
+  const activity = (await callOwner([])).body.pilot.steps[0].id;
+  const cost = {
+    id: 'cost-private',
+    type: 'cost_row',
+    costType: 'supply',
+    vehicle: false,
+    line: line.id,
+    whose: 'lead',
+    paidBy: 'lead',
+    thirdParty: 'Trial',
+    ownerSupplies: false,
+    description1: 'Material',
+    description2: 'Trial delivery',
+    documentKind: 'invoice',
+    documentRef: 'Trial reference',
+    documentDate: '2026-03-02',
+    accountingRef: 'Trial entry',
+    means: 'transfer',
+    activity,
+    amount: 250,
+    tax: 0,
+    taxNotRecoverable: false,
+    currency: 'EUR',
+    commitDate: '2026-03-01',
+    activityDate: '2026-03-02',
+    funding: 'in the budget',
+    finalReport: false,
+    note: 'Private note',
+    state: 'committed',
+    proofs: [],
+  };
+  await write('Owner', cost);
+  await write('Owner', { ...cost, ownerSupplies: true }, 403);
+  await write('Lead', { ...cost, ownerSupplies: true });
+  await write('Owner', { ...line, unitValue: 111 }, 403);
+  const inv = {
+    type: 'invoice',
+    id: 'invoice-trial',
+    number: 'Trial 1',
+    sender: supplier,
+    date: '2026-03-02',
+    amount: 200,
+    tax: 0,
+    currency: 'EUR',
+    state: 'received',
+  };
+  await write('Supplier', inv);
+  const assigned = { ...inv, line: line.id, costId: cost.id };
+  await write('Lead', assigned);
+  await write('Owner', { ...assigned, state: 'approved' }, 403);
+  await write('Coordinator', { ...assigned, state: 'approved' }, 403);
+  await write('Lead', { ...assigned, state: 'approved' });
+  await write('Lead', { ...assigned, state: 'paid', paymentDate: '2026-03-05' });
+  const hist = await api('Supplier', ['history', inv.id]);
+  expect(hist.code).toBe(200);
+  for (const word of [line.id, cost.id, 'Private note', 'Restricted line'])
+    expect(JSON.stringify(hist.body)).not.toContain(word);
+  const p = {
+    id: 'period-one',
+    type: 'period',
+    number: 1,
+    start: '2026-03-01',
+    end: '2026-03-31',
+    due: '2026-04-15',
+    final: true,
+  };
+  const reportFile = await api('Lead', ['files'], 'POST', {
+    revision: await rev(),
+    file: { title: 'Period copy', kind: 'report', source: 'money' },
+    data: Buffer.from('%PDF-1.4\n%%EOF').toString('base64'),
+  });
+  expect(reportFile.code).toBe(200);
+  await write('Owner', p);
+  await write('Coordinator', { ...p, sent: '2026-04-01', file: reportFile.body.file.id }, 403);
+  await write('Lead', { ...p, sent: '2026-04-01', file: reportFile.body.file.id });
+  await write('Owner', { ...cost, state: 'paid' }, 403);
+  await write('Lead', {
+    id: 'result-one',
+    type: 'row_entry',
+    kind: 'funder result',
+    costId: cost.id,
+    date: '2026-04-03',
+    eligible: 188,
+  });
+  const exposure = await api('Viewer', ['me']);
+  expect(JSON.stringify(exposure.body)).not.toContain(cost.id);
+  expect(JSON.stringify(exposure.body)).not.toContain('member_marks');
+  for (const n of ['Viewer', 'Checker', 'Partner', 'Supplier'])
+    expect((await api(n, ['ledger'])).code).toBe(403);
+  const pay = {
+    id: 'pay-' + coordinator,
+    type: 'pay_row',
+    memberId: coordinator,
+    role: 'coordinator',
+    from: line.id,
+    agreed: 250,
+    state: 'agreed',
+    note: '',
+  };
+  expect(
+    (await api('Coordinator', ['money'], 'POST', { revision: await rev(), row: pay })).code,
+  ).toBe(403);
+  expect((await api('Lead', ['money'], 'POST', { revision: await rev(), row: pay })).code).toBe(
+    200,
+  );
+  expect(
+    (
+      await api('Owner', ['money'], 'POST', {
+        revision: await rev(),
+        row: { ...pay, id: 'pay-' + viewer, memberId: viewer, role: 'viewer' },
+      })
+    ).code,
+  ).toBe(403);
+  expect((await api('Lead', ['me'])).body).toHaveProperty('links');
+  expect((await api('Owner', [])).body).not.toHaveProperty('links');
+  const pCost = { ...cost, id: 'partner-cost', whose: partner };
+  await write('Owner', pCost);
+  const own = await api('Partner', ['me']);
+  expect(JSON.stringify(own.body)).toContain('Material');
+  expect(JSON.stringify(own.body)).not.toContain(line.id);
+  const changed = await callOwner(['members', supplier], 'PATCH', {
+    revision: await rev(),
+    role: 'host',
+  });
+  expect(changed.code).toBe(200);
+  expect(
+    (await store.marks(
+      {
+        id: String(
+          (await db.query<{ id: string }>('select id from pilots where slug=$1', [slug])).rows[0]
+            .id,
+        ),
+      } as Parameters<typeof store.marks>[0],
+      supplier,
+    )) as { invoices: boolean },
+  ).toMatchObject({ invoices: false });
+  expect(lead).not.toBe(viewer);
+});

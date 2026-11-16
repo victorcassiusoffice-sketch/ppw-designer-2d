@@ -1,3 +1,4 @@
+import { seatMarks } from './pilotLedger.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {
@@ -53,22 +54,34 @@ export async function pilotFiles(
   const conflict = () => fail(409, 'The pilot changed. Reload and try again.');
   const access = levelFor(p.role_rules, owner, p.role, 'papers'),
     finance = managesMoney(owner, p.role);
-  const visible = (f: Evidence) => (f.money ? finance : access !== 'none');
+  const marks = p.member_id && !owner ? await seatMarks(db, p, p.member_id) : undefined;
+  const visible = async (f: Evidence) =>
+    f.money
+      ? finance ||
+        (!!p.member_id &&
+          !!marks &&
+          (await db.moneyFileForSeat(
+            p,
+            f.id,
+            p.member_id,
+            !!marks.invoices && f.addedBy === by,
+            !!marks.partner,
+          )))
+      : access !== 'none';
   const path = (f: Evidence) => 'pilots/' + p.id + '/evidence/' + f.id;
   if (!key && method === 'GET') {
-    if (access === 'none' && !finance) return deny();
+    if (access === 'none' && !finance && !marks?.partner && !marks?.invoices) return deny();
     const rows = await db.files(p);
-    return res.status(200).json({
-      enabled: quota > 0,
-      files: rows.map((row) => evidenceMeta.parse(row.payload)).filter(visible),
-    });
+    const files = rows.map((r) => evidenceMeta.parse(r.payload));
+    const readable = await Promise.all(files.map(visible));
+    return res.status(200).json({ enabled: quota > 0, files: files.filter((_, i) => readable[i]) });
   }
   if (key) {
     if (!id.safeParse(key).success) return deny();
     const row = await db.item(p, key);
     if (!row || row.kind !== 'file' || row.hidden) return deny();
     const f = evidenceMeta.parse(row.payload);
-    if (!visible(f)) return deny();
+    if (!(await visible(f))) return deny();
     if (method === 'GET') {
       const b = await files.read(path(f));
       if (!b) return fail(404, 'File unavailable.');
@@ -101,7 +114,7 @@ export async function pilotFiles(
   }
   if (
     method !== 'POST' ||
-    (!finance && access === 'none') ||
+    (!finance && !marks?.invoices && access === 'none') ||
     (!owner && ['viewer', 'checker'].includes(p.role ?? ''))
   )
     return deny();
@@ -131,7 +144,19 @@ export async function pilotFiles(
   const assigned =
     assignment &&
     (assignment.ownerMember ? assignment.ownerMember === by : assignment.ownerRole === p.role);
-  if (money ? !finance : access !== 'add' && !assigned) return deny();
+  if (
+    money
+      ? !finance &&
+        !(
+          marks?.invoices &&
+          v.file.source === 'money' &&
+          (!link ||
+            ((link.payload as { type?: string; sender?: string }).type === 'invoice' &&
+              (link.payload as { sender?: string }).sender === by))
+        )
+      : access !== 'add' && !assigned
+  )
+    return deny();
   if (
     link &&
     !money &&
