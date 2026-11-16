@@ -31,7 +31,7 @@ export const evidenceInput = z
   .object({
     title: z.string().trim().min(1).max(160),
     kind: fileKind,
-    source: z.enum(['record', 'money']).default('record'),
+    source: z.enum(['record', 'money', 'report pack']).default('record'),
     linkedId: id.optional(),
   })
   .strict();

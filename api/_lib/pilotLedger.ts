@@ -347,6 +347,7 @@ export async function saveLedger(
   by: string,
   input: unknown,
   memberForm = false,
+  sentPack: { id: string; payload: unknown } | null = null,
 ) {
   const v = z
     .object({
@@ -847,7 +848,15 @@ export async function saveLedger(
       bad('Use shorter notes or split the record.');
     changes.set(id, { id, payload: log, hidden: false });
   }
-  return await db.ledgerCommit(p, v.revision, [...changes.values()], by, fileIds, schedule ?? null);
+  return await db.ledgerCommit(
+    p,
+    v.revision,
+    [...changes.values()],
+    by,
+    fileIds,
+    schedule ?? null,
+    sentPack,
+  );
 }
 export async function copyHeadingTree(db: Db, p: Access, owner: boolean, body: unknown) {
   if (!owner) return null;
@@ -919,20 +928,18 @@ export async function ledgerRoute(
       const rows = dataRows(stored),
         currency = bookCode.safeParse(stored.find((r) => r.id === 'book-currency')?.currency);
       if (key === 'funder-set')
-        return res
-          .status(200)
-          .json({
-            set: currency.success
-              ? funderSet(
-                  rows,
-                  currency.data,
-                  Object.fromEntries(
-                    stored.filter((r) => r.snapshot).map((r) => [r.id, r.snapshot!]),
-                  ),
-                  civil(typed(rows, 'settings')[0]?.timeZone),
-                )
-              : null,
-          });
+        return res.status(200).json({
+          set: currency.success
+            ? funderSet(
+                rows,
+                currency.data,
+                Object.fromEntries(
+                  stored.filter((r) => r.snapshot).map((r) => [r.id, r.snapshot!]),
+                ),
+                civil(typed(rows, 'settings')[0]?.timeZone),
+              )
+            : null,
+        });
       return res.status(200).json({
         revision: p.revision,
         rows: stored.filter((r) => r.id !== 'book-currency'),

@@ -1,3 +1,4 @@
+import ReportsPanel from './ReportsPanel';
 import MoneyPanel from './MoneyPanel';
 import { readsMoney } from './money';
 import { useEffect, useState } from 'react';
@@ -34,6 +35,7 @@ const sections = [
   'Record',
   'Team',
   'Money',
+  'Reports',
   'Notes',
   'Papers',
   'Sheet',
@@ -220,6 +222,8 @@ export default function Workspace() {
   const p = shared ? doc?.pilot : pilots.find((x) => x.slug === slug);
   const owner = !shared || doc?.owner === true;
   const availableSections = sections.filter((s) => {
+    if (s === 'Reports')
+      return shared && doc && readsMoney(owner, doc.role) && doc.rights.reports !== 'none';
     if (s === 'Money') return shared && doc && readsMoney(owner, doc.role);
     if (!shared || !doc) return true;
     if (s === 'Record')
@@ -407,6 +411,13 @@ export default function Workspace() {
                   <Team p={p} />
                   {shared && owner && <Invites slug={p.slug} />}
                 </>
+              ) : name === 'Reports' ? (
+                <ReportsPanel
+                  p={p}
+                  role={doc?.role ?? ''}
+                  owner={owner}
+                  canWrite={doc?.rights.reports === 'add'}
+                />
               ) : name === 'Money' ? (
                 <MoneyPanel p={p} owner={owner} />
               ) : name === 'Notes' ? (

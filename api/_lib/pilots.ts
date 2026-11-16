@@ -1,3 +1,4 @@
+import { pilotReports } from './pilotReports.js';
 import {
   managerDues,
   copyHeadingTree,
@@ -246,6 +247,19 @@ export async function handlePilots(
       by = isOwner ? 'lead' : p.member_id!;
     const rights = rightsFor(p.role_rules, isOwner, p.role);
     if (!isOwner && p.role === 'checker' && method !== 'GET') return forbidden();
+    if (action && ['reports', 'report-money', 'export', 'export-file'].includes(action))
+      return await pilotReports(
+        db,
+        p,
+        isOwner,
+        by,
+        action,
+        key,
+        method,
+        body,
+        (path) => deps.files.read(path),
+        res,
+      );
     if (action === 'checker-log' && !key && method === 'GET')
       return managesMoney(isOwner, p.role)
         ? ok({ entries: (await db.checkerLog(p)).map((r) => r.payload) })
@@ -503,15 +517,26 @@ export async function handlePilots(
     }
     if (!action && method === 'GET') {
       const doc = await record(db, p, isOwner, by);
+      const date = new Date().toLocaleDateString('en-CA', { timeZone: 'Indian/Mauritius' });
+      const reportDue =
+        readsMoney(isOwner, p.role) && rights.reports !== 'none'
+          ? (await db.reportItems(p))
+              .filter((r) => r.kind === 'report')
+              .map((r) => r.payload as { id: string; state: string; due: string })
+              .filter((r) => r.state !== 'sent' && r.due <= date.slice(0, 7) + '-31')
+              .map((r) => ({
+                id: r.id,
+                label: 'Report pack due',
+                date: r.due,
+                state: r.due < date ? 'late' : r.due === date ? 'due today' : 'due soon',
+              }))
+          : [];
       return ok({
         ...doc,
         ...(managesMoney(isOwner, p.role) ? { moneyDue: await managerDues(db, p) } : {}),
         ...(isOwner || p.role === 'lead'
           ? {
-              due: dueList(
-                doc.pilot,
-                new Date().toLocaleDateString('en-CA', { timeZone: 'Indian/Mauritius' }),
-              ),
+              due: [...dueList(doc.pilot, date), ...reportDue],
             }
           : {}),
       });
