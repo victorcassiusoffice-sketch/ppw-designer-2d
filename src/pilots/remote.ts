@@ -7,7 +7,7 @@ import { kindsToCollection, type ItemKind } from './sharedContract';
 export const isShared = (slug?: string) =>
   !!slug && /^shared-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(slug);
 const parsed = z.object({
-  pilot: pilotSchema,
+  pilot: pilotSchema,moneyDue:z.array(z.object({id:z.string(),label:z.string()})).optional(),
   owner: z.boolean(),
   revision: z.number().int().positive(),
   memberId: z.string(),

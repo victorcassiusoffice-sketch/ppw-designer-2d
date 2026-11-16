@@ -57,9 +57,10 @@ export function pilotStore(query: Query) {
     },
     async protectedProof(p: Access, id: string) {
       return !!(await one(
-        `SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND
-        (payload->>'type' IN ('payment_row','approval','plan_version') OR payload->>'state' IN ('claimed','accepted')) AND
-        jsonb_path_exists(payload,'lax $.** ? (@ == $file)',jsonb_build_object('file',$2::text)) LIMIT 1`,
+        `SELECT 1 FROM pilot_items i WHERE i.pilot_id=$1 AND i.kind='money' AND
+        (i.payload->>'type' IN ('payment_row','approval','plan_version') OR i.payload->>'state' IN ('claimed','accepted') OR (
+          i.payload->>'type' IN ('invoice','row_entry') AND EXISTS(SELECT 1 FROM pilot_items c WHERE c.pilot_id=i.pilot_id AND c.id=i.payload->>'costId' AND c.kind='money' AND c.payload->>'state' IN ('claimed','accepted')))) AND
+        jsonb_path_exists(i.payload,'lax $.** ? (@ == $file)',jsonb_build_object('file',$2::text)) LIMIT 1`,
         [p.id, id],
       ));
     },
@@ -98,12 +99,79 @@ export function pilotStore(query: Query) {
         [p.id],
       );
     },
+    async ledger(p: Access) {
+      return query(
+        "SELECT payload,hidden FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden AND payload->>'type' NOT IN ('change_log','checker_log','link_log') ORDER BY created,id",
+        [p.id],
+      );
+    },
+    async marks(p: Access, seat: string) {
+      return (
+        await one(
+          "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden AND payload->>'type'='member_marks' AND payload->>'memberId'=$2",
+          [p.id, seat],
+        )
+      )?.payload;
+    },
+    async financeBasis(p: Access, seat: string) {
+      return query(
+        `SELECT payload FROM pilot_items i WHERE i.pilot_id=$1 AND i.kind='money' AND NOT i.hidden AND
+       (i.id='book-currency' OR i.payload->>'type' IN ('rate','payment_row','settings') OR (i.payload->>'type'='row_entry' AND EXISTS(SELECT 1 FROM pilot_items c WHERE c.pilot_id=$1 AND c.id=i.payload->>'costId' AND c.kind='money' AND c.payload->>'whose'=$2)))`,
+        [p.id, seat],
+      );
+    },
+    async ownFinance(p: Access, seat: string, invoices: boolean, partner: boolean, pay: boolean) {
+      return query(
+        `SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden AND (
+      ($3 AND payload->>'type'='invoice' AND payload->>'sender'=$2)
+      OR ($4 AND ((payload->>'type'='cost_row' AND payload->>'whose'=$2 AND payload->>'costType'<>'staff') OR (payload->>'type'='transfer' AND payload->>'partner'=$2)))
+      OR ($5 AND payload->>'type'='pay_row' AND payload->>'memberId'=$2)) ORDER BY created,id`,
+        [p.id, seat, invoices, partner, pay],
+      );
+    },
+    async financeHistory(p: Access, id: string) {
+      return query(
+        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden AND payload->>'type'='change_log' AND payload->>'record'=$2 ORDER BY created DESC",
+        [p.id, id],
+      );
+    },
+    async moneyFileForSeat(
+      p: Access,
+      id: string,
+      seat: string,
+      invoices: boolean,
+      partner: boolean,
+    ) {
+      return !!(await one(
+        `SELECT 1 FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND NOT hidden AND
+      (($4 AND payload->>'type'='invoice' AND payload->>'sender'=$3 AND payload->>'state' NOT IN ('withdrawn','refused') AND $2::text IN (payload->>'file',payload->>'delivery',payload->>'integrity'))
+      OR ($5 AND payload->>'type'='cost_row' AND payload->>'whose'=$3 AND EXISTS(SELECT 1 FROM jsonb_array_elements(payload->'proofs') f WHERE f->>'file'=$2))) LIMIT 1`,
+        [p.id, id, seat, invoices, partner],
+      ));
+    },
+    async ledgerCommit(
+      p: Access,
+      rev: number,
+      rows: { id: string; payload: unknown; hidden: boolean }[],
+      by: string,
+      fileIds: string[] = [],
+    ) {
+      return one(
+        `WITH changes AS (SELECT * FROM jsonb_to_recordset($3::jsonb) AS v(id text,payload jsonb,hidden boolean)),
+      bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND NOT EXISTS(
+        SELECT 1 FROM changes c JOIN pilot_items i ON i.pilot_id=$1 AND i.id=c.id WHERE i.kind<>'money'
+      ) RETURNING id,revision), saved AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by,hidden)
+        SELECT bump.id,c.id,'money',c.payload,$4,c.hidden FROM bump CROSS JOIN changes c ON CONFLICT(pilot_id,id) DO UPDATE SET payload=EXCLUDED.payload,hidden=EXCLUDED.hidden,updated=now()),
+      marked AS (UPDATE pilot_items SET payload=jsonb_set(payload,'{money}','true'::jsonb),updated=now() FROM bump WHERE pilot_id=bump.id AND kind='file' AND pilot_items.id=ANY($5::text[])) SELECT revision FROM bump`,
+        [p.id, rev, JSON.stringify(rows), by, fileIds],
+      );
+    },
     async memberRole(p: Access, id: string) {
       return one('SELECT role FROM pilot_members WHERE pilot_id=$1 AND id=$2', [p.id, id]);
     },
     async money(p: Access) {
       return query(
-        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND payload->>'type' IN ('budget_line','pay_row') AND NOT hidden ORDER BY created,id",
+        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='money' AND payload->>'type' IN ('budget_line','pay_row') AND NOT (payload ? 'version') AND NOT hidden ORDER BY created,id",
         [p.id],
       );
     },
@@ -177,6 +245,12 @@ export function pilotStore(query: Query) {
       return one(
         `WITH bump AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 AND EXISTS(SELECT 1 FROM pilot_members WHERE pilot_id=$1 AND id=$3 AND id<>'lead' AND role<>$4) RETURNING id,revision),
       changed AS (UPDATE pilot_members m SET role=$4,checker_until=$5::date,invite_hash=$6,invite_expires=now()+interval '7 days',cookie_key_hash=NULL,cookie_expires=NULL,link_id=gen_random_uuid() FROM bump WHERE m.pilot_id=bump.id AND m.id=$3 RETURNING m.*),
+      marks AS (SELECT i.pilot_id,i.id,i.payload AS before,i.payload || jsonb_build_object(
+        'invoices',COALESCE((i.payload->>'invoices')::boolean,false) AND m.role IN ('technology supplier','tester','adviser'),
+        'partner',COALESCE((i.payload->>'partner')::boolean,false) AND m.role IN ('technology supplier','tester','adviser','viewer','host'),
+        'staff',COALESCE((i.payload->>'staff')::boolean,false) AND m.role<>'checker') AS after FROM changed m JOIN pilot_items i ON i.pilot_id=m.pilot_id AND i.kind='money' AND i.payload->>'type'='member_marks' AND i.payload->>'memberId'=m.id),
+      cleared AS (UPDATE pilot_items i SET payload=m.after,updated=now() FROM marks m WHERE i.pilot_id=m.pilot_id AND i.id=m.id AND m.before<>m.after RETURNING m.*),
+      audited AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by) SELECT c.pilot_id,g.id,'money',jsonb_build_object('id',g.id,'type','change_log','version',2,'record',c.id,'at',now(),'who',jsonb_build_object('seat','owner','link',null,'at',now()),'fields',jsonb_build_array('invoices','partner','staff'),'before',c.before,'after',c.after,'reason','Role changed'),'lead' FROM cleared c CROSS JOIN LATERAL (SELECT gen_random_uuid()::text AS id) g),
       logged AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by) SELECT pilot_id,link_id::text,'money',jsonb_build_object('id',link_id::text,'type','link_log','version',1,'seat',id,'role',role,'kind','role change','madeBy','owner','madeAt',now(),'firstUse',null),'lead' FROM changed WHERE role IN ('lead','coordinator')) SELECT revision FROM bump`,
         [p.id, rev, id, role, endDate, invite],
       );
