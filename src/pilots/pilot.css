@@ -503,8 +503,36 @@
   }
 }
 
-.pilot-visit { box-sizing: border-box; min-height: 100dvh; color: var(--olb-ink, #f2f0e9); background: var(--olb-bg, #151b1b); }
-.pilot-visit nav, .pilot-visit div:has(>button) { display:flex; flex-wrap:wrap; gap:6px; margin-block:8px; }
-.pilot-visit button, .pilot-visit>a { display:inline-flex; min-height:48px; min-width:48px; align-items:center; padding:0 14px; color:inherit; }
-.pilot-visit button { background:#273534; border:1px solid #63746d; border-radius:8px; }
-.pilot-visit button[aria-pressed=true] { background:#c3dfb6; color:#16231c; }
+.pilot-visit {
+  box-sizing: border-box;
+  height: 100dvh;
+  max-width: 1280px;
+  margin: auto;
+  overflow-y: auto;
+  padding: clamp(8px, 2vw, 22px);
+  color: var(--ui-ink, #243d39);
+  background: var(--ui-bg, #f2f3eb);
+  font: 16px/1.4 system-ui, sans-serif;
+}
+.pilot-visit header, .pilot-visit nav, .pilot-visit-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block: 6px;
+}
+.pilot-visit header { justify-content: space-between; }
+.pilot-visit h1 { font-size: clamp(1.15rem, 4vw, 2rem); margin: 0; overflow-wrap: anywhere; }
+.pilot-visit button, .pilot-visit header a {
+  display: inline-flex;
+  min-height: 48px;
+  min-width: 48px;
+  justify-content: center;
+  align-items: center;
+  padding: 0 12px;
+  color: inherit;
+}
+.pilot-visit header a { text-decoration: underline; }
+.pilot-visit button { background: var(--ui-surface, #faf9f3); border: 1px solid var(--ui-line, #8da399); border-radius: 8px; }
+.pilot-visit button[aria-pressed=true] { background: #294e42; color: #fff; }
+.pilot-visit-scene { position: relative; width: 100%; height: clamp(240px, calc(100dvh - 210px), 740px); overflow: hidden; border-radius: 12px; }

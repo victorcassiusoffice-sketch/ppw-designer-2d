@@ -61,7 +61,12 @@ export default function BuildJobLink({ row }: { row: LinkPackage }) {
       >
         <label>
           Pilot
-          <select required value={pilot} onChange={(e) => choose(e.target.value)}>
+          <select
+            aria-label="Pilot"
+            required
+            value={pilot}
+            onChange={(e) => choose(e.target.value)}
+          >
             <option value="">Choose a pilot</option>
             {pilots.map((p) => (
               <option key={p.slug} value={p.slug}>
@@ -74,7 +79,7 @@ export default function BuildJobLink({ row }: { row: LinkPackage }) {
           <>
             <label>
               Site
-              <select required name="site">
+              <select aria-label="Site" required name="site">
                 {context.sites.map((x) => (
                   <option key={x.id} value={x.id}>
                     {x.name}
@@ -84,7 +89,7 @@ export default function BuildJobLink({ row }: { row: LinkPackage }) {
             </label>
             <label>
               Works-plan step
-              <select required name="step">
+              <select aria-label="Works-plan step" required name="step">
                 {context.steps.map((x) => (
                   <option key={x.id} value={x.id}>
                     {x.name}

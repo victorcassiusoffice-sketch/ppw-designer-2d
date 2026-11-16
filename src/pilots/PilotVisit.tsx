@@ -78,12 +78,11 @@ export default function PilotVisit({ site }: { site: string }) {
   const mode = (view: string) => setQuery({ visit: site, view }, { replace: true }),
     wall = data ? { slug, site, plan: data.property.id } : undefined;
   return (
-    <main
-      className="pilot-visit"
-      style={{ maxWidth: 1280, margin: 'auto', padding: 'clamp(8px,2vw,22px)' }}
-    >
-      <Link to={'/pilots/' + slug}>Back to pilot</Link>
-      <h1>{data?.site.name ?? 'Shared plan'}</h1>
+    <main className="pilot-visit">
+      <header>
+        <Link to={'/pilots/' + slug}>‹ Back to pilot</Link>
+        <h1>{data?.site.name ?? 'Shared plan'}</h1>
+      </header>
       {error ? (
         <p role="alert">{error}</p>
       ) : !data || !initial || !visit ? (
@@ -110,16 +109,7 @@ export default function PilotVisit({ site }: { site: string }) {
             </Suspense>
           ) : (
             <>
-              <div
-                ref={box}
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: 'clamp(280px,64dvh,740px)',
-                  overflow: 'hidden',
-                  borderRadius: 12,
-                }}
-              >
+              <div ref={box} className="pilot-visit-scene">
                 <ThreeStage
                   solids={visit.solids}
                   pilotWall={wall}
@@ -140,11 +130,23 @@ export default function PilotVisit({ site }: { site: string }) {
                   onFailed={() => say('This browser could not display the 3D plan.')}
                 />
               </div>
-              <div>
+              <div className="pilot-visit-tools" aria-label="House camera">
                 <button onClick={() => turn((a) => a - 0.35)}>Turn left</button>
                 <button onClick={() => turn((a) => a + 0.35)}>Turn right</button>
-                <button onClick={() => scale((z) => Math.max(0.3, z * 0.8))}>Zoom in</button>
-                <button onClick={() => scale((z) => Math.min(3, z * 1.25))}>Zoom out</button>
+                <button
+                  aria-label="Zoom in"
+                  title="Zoom in"
+                  onClick={() => scale((z) => Math.max(0.3, z * 0.8))}
+                >
+                  +
+                </button>
+                <button
+                  aria-label="Zoom out"
+                  title="Zoom out"
+                  onClick={() => scale((z) => Math.min(3, z * 1.25))}
+                >
+                  −
+                </button>
               </div>
             </>
           )}

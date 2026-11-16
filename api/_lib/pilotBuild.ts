@@ -79,6 +79,8 @@ export async function pilotBuild(
     if (method === 'GET') {
       const rows = await db.siteSnapshot(p, key);
       if (!rows.length) return deny();
+      const property = JSON.parse(rows.map((r) => String(r.part)).join(''));
+      if (!linked.plan || property.id !== linked.plan) return deny();
       if (!owner && p.role === 'checker')
         await db.checkerRead(
           p,
@@ -87,7 +89,7 @@ export async function pilotBuild(
         );
       return ok({
         site: { id: key, name: linked.name },
-        property: JSON.parse(rows.map((r) => String(r.part)).join('')),
+        property,
       });
     }
     if (!owner || method !== 'POST') return deny();
