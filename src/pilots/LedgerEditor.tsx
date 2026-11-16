@@ -7,6 +7,7 @@ import { recordKinds, proofKinds, type Evidence } from './evidence';
 
 type Raw = Record<string, unknown>;
 type Context = {
+  jobs?:{id:string;title:string}[];
   p: Pilot;
   records: Raw[];
   files: Evidence[];
@@ -132,6 +133,7 @@ function options(key: string, ctx: Context, values: Raw): { value: string; name:
   const map = (rows: Raw[], label: string) =>
     rows.map((r) => ({ value: String(r.id), name: String(r[label] ?? r.id) }));
   const records = ctx.records;
+  if(key==='tradeJob')return (ctx.jobs??[]).map(j=>({value:j.id,name:j.title}));
   if (fileFields.has(key)) return map(ctx.files as unknown as Raw[], 'title');
   if (
     ['memberId', 'sender', 'whose', 'partner'].includes(key) &&
@@ -290,7 +292,7 @@ export function LedgerEditor({
     [reason, setReason] = useState(''),
     [message, setMessage] = useState(''),
     [busy, setBusy] = useState(false);
-  const set = (key: string, value: unknown) => setValues((v) => ({ ...v, [key]: value }));
+  const set = (key: string, value: unknown) => setValues((v) => ({ ...v, [key]: value,...(key==='tradeJob'&&value&&!initial?.tradeJob?{funding:'outside the grant'}:{}) }));
   const personalFields = [
     'number',
     'date',

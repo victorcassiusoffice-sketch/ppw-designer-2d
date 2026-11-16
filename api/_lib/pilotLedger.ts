@@ -475,6 +475,11 @@ export async function saveLedger(
         (await db.item(p, draft.activity))?.kind !== 'step'
       )
         deny();
+      if (draft.tradeJob && !owner && p.role !== 'lead') deny();
+      if (draft.tradeJob) {
+        const job = await db.item(p, draft.tradeJob);
+        if (!job || job.hidden || job.kind !== 'trade_job') deny();
+      }
       await validateFunder(draft, { ...context, old: undefined });
       if (draft.proofs.length) bad('Attach the cost proofs after linking.');
       save({ ...draft, state: 'invoiced' });
@@ -562,6 +567,13 @@ export async function saveLedger(
     fileIds.push(id);
   }
   if (data.type === 'cost_row') {
+    if (data.tradeJob && !owner && p.role !== 'lead') deny();
+    if (data.tradeJob && !old) {
+      const job = await db.item(p, data.tradeJob);
+      if (!job || job.kind !== 'trade_job' || job.hidden)
+        bad('Choose an available pilot trade job.');
+    }
+    if (old?.type === 'cost_row' && old.tradeJob !== data.tradeJob) deny();
     if (
       !all.some(
         (r) => r.type === 'budget_line' && r.id === data.line && r.id !== 'book-currency',
@@ -592,7 +604,9 @@ export async function saveLedger(
     if (
       data.tradeJob &&
       ((!prev && data.funding !== 'outside the grant') ||
-        (prev && data.funding !== prev.funding && (!owner || prev.state !== 'committed')))
+        (prev &&
+          data.funding !== prev.funding &&
+          (!owner || !['committed', 'invoiced'].includes(prev.state) || approvedCost)))
     )
       deny();
     if (

@@ -1,3 +1,4 @@
+import { pilotBuild } from './pilotBuild.js';
 import { pilotReports } from './pilotReports.js';
 import {
   managerDues,
@@ -246,6 +247,8 @@ export async function handlePilots(
     const isOwner = !!owner && p.owner_id === owner,
       by = isOwner ? 'lead' : p.member_id!;
     const rights = rightsFor(p.role_rules, isOwner, p.role);
+    if (action && ['site-plan', 'site-wall', 'trade-jobs', 'build-context'].includes(action))
+      return await pilotBuild(db, p, isOwner, by, action, key, method, body, res);
     if (!isOwner && p.role === 'checker' && method !== 'GET') return forbidden();
     if (action && ['reports', 'report-money', 'export', 'export-file'].includes(action))
       return await pilotReports(
@@ -672,6 +675,13 @@ export async function handlePilots(
     }
     if (action !== 'items' || !['POST', 'PATCH'].includes(method ?? '')) return forbidden();
     const itemBody = await body();
+    if (
+      itemBody &&
+      typeof itemBody === 'object' &&
+      'kind' in itemBody &&
+      ['trade_job', 'visit_part'].includes(String(itemBody.kind))
+    )
+      return forbidden();
     if (
       typeof itemBody === 'object' &&
       itemBody !== null &&

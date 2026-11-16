@@ -44,10 +44,10 @@ function ControlsCopy({ touchFirst }: { touchFirst: boolean }): JSX.Element {
   return <>{touchFirst ? [touch, keyboard] : [keyboard, touch]}</>;
 }
 
-export default function WalkMode({ prepareVisit, onClose, initial, levels = [],live }: {
+export default function WalkMode({ prepareVisit, onClose, initial, levels = [],live,readOnlyProperty,pilotWall }: {
   prepareVisit: () => { property: Property; solids: SceneSolids; invalidStairs?: number };
   initial?: PlacementHint; levels?: Level[];
-  live?:LiveWalkView;
+  live?:LiveWalkView;readOnlyProperty?:Property;pilotWall?:{plan:string;slug:string;site:string};
   onClose: () => void;
 }): JSX.Element {
   const pref = useAppPreferences();
@@ -56,7 +56,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
   const [levelChosen, setLevelChosen] = useState(!!initial);
   const [fallback, setFallback] = useState(false);
   const topFloor = [...levels].reverse().find(l => !isRoofLevel(l));
-  const boundaryComponents=usePropertyStore(s=>s.property.boundaryComponents);
+  const boundaryComponents=usePropertyStore(s=>readOnlyProperty?readOnlyProperty.boundaryComponents:s.property.boundaryComponents);
   const host = useRef<HTMLElement>(null);
   const walkSlot=useRef<HTMLDivElement>(null);
   const [building,setBuilding]=useState(false);
@@ -91,7 +91,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
   const lastVisit = useRef<ReturnType<typeof prepareVisit> | null>(null);
   const currentVisit = useRef(visit); currentVisit.current=visit;
   const hasVisit=!!visit;
-  const liveProperty=usePropertyStore(s=>s.property);
+  const liveProperty=usePropertyStore(s=>readOnlyProperty??s.property);
   const [status, setStatus] = useState<WalkStatus | null>(null);
   const [size, setSize] = useState({ width: innerWidth, height: innerHeight });
   const [touchControls, setTouchControls] = useState(() => window.matchMedia?.('(pointer: coarse)').matches ?? false);
@@ -228,7 +228,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
   return createPortal(
     <section ref={host} className="world-walk" data-world-walk="true" role="dialog" aria-modal="true" aria-label="Walk mode"
       data-testid="world-walk" data-status={status ? JSON.stringify(status) : undefined}>
-      {started && visit && <div className="world-walk-scene" ref={walkSlot}>{!live&&<ThreeStage ref={stage} solids={visit.solids} terrainCuts={liveProperty.terrainCuts} boundaryComponents={boundaryComponents} camera={camera}
+      {started && visit && <div className="world-walk-scene" ref={walkSlot}>{!live&&<ThreeStage ref={stage} pilotWall={pilotWall} solids={visit.solids} terrainCuts={liveProperty.terrainCuts} boundaryComponents={boundaryComponents} camera={camera}
         width={size.width} height={size.height} hover={null} wallView="up" presentation="architectural"
         onReady={stageReady} onFailed={() => { runtime.current?.dispose(); runtime.current = null; setError('WebGL is unavailable. Exit to return to your design.'); }} />}</div>}
       <header className="world-walk-header"><div><strong>Walk mode</strong><span>Explore your design</span></div>
@@ -266,14 +266,14 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
           }} onPointerCancel={() => { lookPointer.current = null; }} />
         <CanvasDock workspace="walk"><div className="world-walk-toolbar">
           {live&&<button type="button" onClick={buildFromHere}>Build from here</button>}
-          <button type="button" aria-expanded={earthwork} onClick={()=>{if(document.pointerLockElement)document.exitPointerLock?.();setEarthwork(!earthwork)}}>Dig / fill</button>
+          {!readOnlyProperty&&<><button type="button" aria-expanded={earthwork} onClick={()=>{if(document.pointerLockElement)document.exitPointerLock?.();setEarthwork(!earthwork)}}>Dig / fill</button>
 
           <SharedBuildButton/>
           <BoundaryTools beforeOpen={()=>{if(document.pointerLockElement)document.exitPointerLock?.()}} view={{
             element:()=>host.current,
             ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,
             project:p=>runtime.current?.drawingProjection(p)??null,
-          }}/>
+          }}/></>}
           {levelPicker}
           <button type="button" data-testid="walk-cutaway" aria-pressed={!!status.cutaway} onClick={() => runtime.current?.toggleCutaway()}>{tx('Cutaway')}</button>
           <button type="button" data-testid="walk-overview" aria-pressed={!!status.overview} onClick={() => runtime.current?.toggleOverview()}>{tx('Whole build')}</button>
@@ -283,7 +283,7 @@ export default function WalkMode({ prepareVisit, onClose, initial, levels = [],l
           <button type="button" aria-expanded={help} onClick={() => { runtime.current?.clearInput(); setHelp(!help); }}>Controls</button>
         </div>
         </CanvasDock>
-          {earthwork&&<Suspense fallback={null}><EarthworkTool view={{element:()=>host.current,ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,project:p=>runtime.current?.drawingProjection(p)??null}} onClose={()=>setEarthwork(false)}/></Suspense>}
+          {!readOnlyProperty&&earthwork&&<Suspense fallback={null}><EarthworkTool view={{element:()=>host.current,ray:(x,y)=>runtime.current?.drawingRay(x,y)??null,project:p=>runtime.current?.drawingProjection(p)??null}} onClose={()=>setEarthwork(false)}/></Suspense>}
         {(fallback || status.notice || !!visit?.invalidStairs) && <div className="world-walk-notice" role="status">
           {fallback ? <>{tx('No clear standing surface on this level.')} {topFloor && <button type="button" onClick={() => chooseLevel(topFloor.id)}>{tx('Go to top floor')}</button>}</>
             : tx(status.notice || 'A stair no longer fits its floors. It is unavailable in this visit.')}

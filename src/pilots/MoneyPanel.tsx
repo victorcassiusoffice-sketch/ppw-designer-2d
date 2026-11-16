@@ -1,3 +1,4 @@
+import type {PilotJob} from './buildRecord';
 import { planValues, purchaseRisks } from './funder';
 import FunderPanel from './FunderPanel';
 import { useEffect, useState } from 'react';
@@ -103,6 +104,7 @@ export function ProofUpload({
 }
 export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
   const remote = useRemote((s) => s.doc),
+    [jobs,setJobs]=useState<PilotJob[]>([]),
     [book, setBook] = useState<Book>(),
     [files, setFiles] = useState<{ enabled: boolean; files: Evidence[] }>({
       enabled: false,
@@ -119,6 +121,7 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
     role = remote?.role ?? '';
   useEffect(() => {
     let live = true;
+    void request<{jobs:PilotJob[]}>(url+'/trade-jobs').then(d=>{if(live)setJobs(d.jobs);}).catch(()=>{});
     Promise.all([request<Book>(url + '/ledger'), request<typeof files>(url + '/files')])
       .then(([b, f]) => {
         if (live) {
@@ -195,7 +198,7 @@ export default function MoneyPanel({ p, owner }: { p: Pilot; owner: boolean }) {
       planned,
     ),
     fmt = (n: number) => display(n, code);
-  const ctx = { p, records, files: files.files, book: code, owner, seat, role };
+  const ctx = { p, jobs,records, files: files.files, book: code, owner, seat, role };
   const readOnly = !owner && role === 'checker';
   const authorise = (kind: string, run: () => void) =>
     void request(url + '/csv/' + kind)

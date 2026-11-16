@@ -162,6 +162,45 @@ export function pilotStore(query: Query) {
         [p.id, route, p.member_id, JSON.stringify(chunks)],
       );
     },
+    async latestWallPhoto(p: Access, site: string) {
+      return one(
+        "SELECT id FROM pilot_items WHERE pilot_id=$1 AND kind='photo' AND NOT hidden AND payload->>'site'=$2 AND payload->>'kind'='photo' ORDER BY payload->>'date' DESC,created DESC,id DESC LIMIT 1",
+        [p.id, site],
+      );
+    },
+    async buildChoices(p: Access, kind: 'site' | 'step') {
+      return query(
+        "SELECT id,COALESCE(payload->>'title',payload->>'name') AS name FROM pilot_items WHERE pilot_id=$1 AND kind=$2 AND NOT hidden ORDER BY created,id",
+        [p.id, kind],
+      );
+    },
+    async jobs(p: Access) {
+      return query(
+        "SELECT payload FROM pilot_items WHERE pilot_id=$1 AND kind='trade_job' AND NOT hidden ORDER BY created,id",
+        [p.id],
+      );
+    },
+    async siteSnapshot(p: Access, site: string) {
+      return query(
+        "SELECT id,payload->>'part' AS part FROM pilot_items WHERE pilot_id=$1 AND kind='visit_part' AND NOT hidden AND payload->>'site'=$2 ORDER BY (payload->>'order')::int",
+        [p.id, site],
+      );
+    },
+    async storeSnapshot(
+      p: Access,
+      rev: number,
+      site: string,
+      parts: { id: string; site: string; order: number; part: string }[],
+      by: string,
+    ) {
+      return one(
+        `WITH bumped AS (UPDATE pilots SET revision=revision+1,updated=now() WHERE id=$1 AND revision=$2 RETURNING id,revision),
+        retired AS (UPDATE pilot_items i SET hidden=true,updated=now() FROM bumped WHERE i.pilot_id=bumped.id AND i.kind='visit_part' AND i.payload->>'site'=$3 AND NOT i.hidden),
+        installed AS (INSERT INTO pilot_items(pilot_id,id,kind,payload,created_by) SELECT bumped.id,part->>'id','visit_part',part,$5 FROM bumped CROSS JOIN jsonb_array_elements($4::jsonb) part)
+        SELECT revision FROM bumped`,
+        [p.id, rev, site, JSON.stringify(parts), by],
+      );
+    },
     async reportItems(p: Access) {
       return query(
         "SELECT id,kind,payload FROM pilot_items WHERE pilot_id=$1 AND kind IN ('event','indicator','report') AND NOT hidden ORDER BY created,id",
@@ -280,7 +319,7 @@ export function pilotStore(query: Query) {
     },
     async document(p: Access, owner: boolean) {
       const [d] = await query(
-        `SELECT p.name,p.slug,p.lane,p.state,p.summary,p.revision,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',m.id,'name',m.first_name,'organisation',m.organisation,'role',m.role,'state',m.state) ORDER BY m.created,m.id) FROM pilot_members m WHERE m.pilot_id=p.id),'[]') AS members,COALESCE((SELECT jsonb_agg(jsonb_build_object('kind',i.kind,'payload',i.payload,'author',i.created_by) ORDER BY i.created,i.id) FROM pilot_items i WHERE i.pilot_id=p.id AND i.kind NOT IN ('money','file','history') AND (NOT i.hidden OR ($2 AND i.kind='photo'))),'[]') AS items FROM pilots p WHERE p.id=$1`,
+        `SELECT p.name,p.slug,p.lane,p.state,p.summary,p.revision,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',m.id,'name',m.first_name,'organisation',m.organisation,'role',m.role,'state',m.state) ORDER BY m.created,m.id) FROM pilot_members m WHERE m.pilot_id=p.id),'[]') AS members,COALESCE((SELECT jsonb_agg(jsonb_build_object('kind',i.kind,'payload',i.payload,'author',i.created_by) ORDER BY i.created,i.id) FROM pilot_items i WHERE i.pilot_id=p.id AND i.kind NOT IN ('money','file','history','event','indicator','report','visit_part','trade_job') AND (NOT i.hidden OR ($2 AND i.kind='photo'))),'[]') AS items FROM pilots p WHERE p.id=$1`,
         [p.id, owner],
       );
       return d;
