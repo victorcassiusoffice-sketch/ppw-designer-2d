@@ -340,7 +340,11 @@ export default function TankDemoCanvas({
                     <Text
                       x={polygonBounds(f.polygon).minX * scale + 8}
                       y={polygonBounds(f.polygon).minY * scale + 9}
-                      text={property.rooms.find((r) => r.id === f.roomId)?.name ?? ''}
+                      text={
+                        activeFloor === 'roof'
+                          ? ''
+                          : (property.rooms.find((r) => r.id === f.roomId)?.name ?? '')
+                      }
                       fontSize={11}
                       fill="#667368"
                     />
