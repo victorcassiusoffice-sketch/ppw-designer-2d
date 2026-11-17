@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { serviceRouteMesh } from '../serviceRouteMeshes';
+import { serviceRouteMesh, tankPortNozzleMesh } from '../serviceRouteMeshes';
+import { createServiceProductBody } from '../serviceProductPreview';
+import { serviceProductById } from '../../../data/serviceProducts';
 import type { ServiceRunPlacement } from '../../../designer/serviceScene';
 
 const route = (overrides: Partial<ServiceRunPlacement> = {}): ServiceRunPlacement => ({
@@ -72,6 +74,23 @@ describe('service route meshes preserve canonical coordination geometry', () => 
       dispose(root);
     },
   );
+  it('bridges the real rendered gap between a tapered shoulder and the measured pipe terminal', () => {
+    const tank = serviceProductById('resiglas-water-tank-2000-c')!;
+    const body = createServiceProductBody(tank);
+    body.updateMatrixWorld(true);
+    const terminal = tank.dimensionsMm.length / 2000, elevationM = tank.dimensionsMm.height / 1000 * .85;
+    const ray = new THREE.Raycaster(new THREE.Vector3(terminal + .2, elevationM, 0), new THREE.Vector3(-1, 0, 0));
+    const shell = ray.intersectObject(body, true)[0].point;
+    expect(shell.x).toBeLessThan(terminal - .01);
+    const root = tankPortNozzleMesh([{ levelId: 'roof', from: { x:0, y:0 }, terminal: {x:terminal, y:0}, elevationM }], 32);
+    const bounds = new THREE.Box3().setFromObject(root, true);
+    expect(bounds.min.x).toBeLessThan(shell.x);
+    expect(bounds.max.x).toBeCloseTo(terminal);
+    expect(bounds.containsPoint(shell)).toBe(true);
+    dispose(body);
+    dispose(root);
+  });
+
   it('skips zero-length duplicate segments without dropping legitimate nodes or changing the input', () => {
     const run = route({
         points: [
