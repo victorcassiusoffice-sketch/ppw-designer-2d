@@ -7,8 +7,8 @@ import type { ItemSolid } from '../../designer/roomSolids';
 
 describe('paired Mauritian services products', () => {
   it('publishes individually sourced SKUs without a second plan dimension table', () => {
-    expect(SERVICE_PRODUCTS).toHaveLength(10);
-    expect(new Set(SERVICE_PRODUCTS.map(product => product.sku)).size).toBe(10);
+    expect(SERVICE_PRODUCTS).toHaveLength(12);
+    expect(new Set(SERVICE_PRODUCTS.map(product => product.sku)).size).toBe(SERVICE_PRODUCTS.length);
     for (const definition of SERVICE_PRODUCT_DEFINITIONS) {
       const product = getProductById(definition.referenceProductId)!;
       if (definition.priceSnapshot) {
@@ -75,7 +75,7 @@ describe('paired Mauritian services products', () => {
   });
 
   it('preserves placement, ground elevation and rotation instead of moving the camera or model origin', () => {
-    const definition = SERVICE_PRODUCT_DEFINITIONS[0];
+    const definition = serviceProductById('resiglas-water-tank-1000-a')!;
     const size = serviceProductSizeM(definition);
     const item: ItemSolid = { key: 'tank', instanceId: 'tank-1', productId: definition.referenceProductId,
       x0: 2, x1: 3.05, y0: 4, y1: 5.6, z0: 3, z1: 4.085,

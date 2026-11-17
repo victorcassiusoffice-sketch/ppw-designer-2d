@@ -116,6 +116,8 @@ describe('macroOf', () => {
       'mrbricolage-mistral-70',
       'resiglas-water-tank-1000-a',
       'resiglas-water-tank-1000-c',
+      'resiglas-water-tank-2000-c',
+      'resiglas-water-tank-500-c',
     ]);
   });
 });
