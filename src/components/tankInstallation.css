@@ -1,0 +1,124 @@
+.tank-installation {
+  margin: 0;
+  min-width: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #c1cec8;
+  background: #eef2ed;
+  color: #233e38;
+}
+.tank-installation-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  background: #f7f8f3;
+  border-bottom: 1px solid #cbd5ce;
+}
+.tank-installation-bar > div {
+  display: flex;
+  gap: 4px;
+}
+.tank-installation-bar button {
+  min-height: 42px;
+  min-width: 42px;
+  padding: 2px 8px;
+  color: #204137;
+  background: white;
+  border: 1px solid #becac2;
+  border-radius: 6px;
+}
+.tank-installation-bar button[aria-pressed='true'] {
+  background: #254c41;
+  color: #fff;
+}
+.tank-installation-drawing {
+  height: clamp(330px, 56vh, 580px);
+  display: grid;
+  grid-template-columns: clamp(85px, 15%, 145px) minmax(0, 1fr);
+  background: #eef2ed;
+}
+.tank-installation-drawing canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  min-width: 0;
+}
+.tank-installation-labels {
+  position: relative;
+  border-right: 1px solid #cbd5ce;
+  margin-left: 12px;
+}
+.tank-installation-labels > div {
+  position: absolute;
+  transform: translateY(-50%);
+  left: 0;
+  right: 1px;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  line-height: 1.15;
+  color: #233e38;
+}
+.tank-installation-labels strong {
+  font-size: clamp(12px, 1vw, 16px);
+}
+.tank-installation-labels span {
+  font-size: clamp(12px, 1vw, 16px);
+  font-variant-numeric: tabular-nums;
+}
+.tank-installation-labels small,
+.tank-installation figcaption {
+  font-size: 11px;
+  color: #445e55;
+}
+.tank-installation figcaption {
+  margin: 0;
+  padding: 6px 12px;
+  text-align: left;
+  border-top: 1px solid #cbd5ce;
+}
+.tank-installation:fullscreen {
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #eef2ed;
+  border: 0;
+  border-radius: 0;
+}
+.tank-installation:fullscreen .tank-installation-drawing {
+  height: auto;
+  flex: 1;
+}
+.tank-installation-drawing.failed .tank-installation-labels > div {
+  position: static;
+  transform: none;
+  margin-top: 15px;
+}
+@media (max-width: 500px) {
+  .tank-installation-bar button {
+    min-height: 48px;
+  }
+  .tank-installation-labels {
+    margin-left: 6px;
+  }
+  .tank-installation-drawing {
+    height: 350px;
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+}
+
+.tank-example-launch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  max-width: 100%;
+}
+.tank-example-launch select {
+  min-width: 0;
+  max-width: 100%;
+}

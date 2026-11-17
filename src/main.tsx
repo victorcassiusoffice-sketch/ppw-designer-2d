@@ -17,7 +17,19 @@ const PilotVisit=lazy(()=>import('./pilots/PilotVisit'));
 function PilotEntry(){const visit=new URLSearchParams(useLocation().search).get('visit');return visit?<PilotVisit site={visit}/>:<PilotWorkspace/>;}
 const PilotDashboard = lazy(()=>import('./pilots/Dashboard'));
 const PilotWorkspace = lazy(() => import('./pilots/Workspace'));
-const App = lazy(() => import('./App'));
+const App = lazy(async () => {
+  const query = new URLSearchParams(window.location.search);
+  if (window.location.pathname === '/designer' && query.get('panel') === 'tanks' && query.get('pilotPlan')?.startsWith('water-tank-')) {
+    const { isTankExampleId, seedTankExample } = await import('./designer/tankExample');
+    const id = query.get('pilotPlan');
+    if (!isTankExampleId(id)) return import('./App');
+    seedTankExample(window.localStorage, id);
+    // The studio preferences can initialize the property store before this lazy route loads.
+    const { usePropertyStore } = await import('./store/propertyStore');
+    await usePropertyStore.persist.rehydrate();
+  }
+  return import('./App');
+});
 // Fetch explicit 3D visits in parallel with the app, not after its route,
 // designer and viewport have each loaded. React.lazy shares this promise.
 if (demoRoute(window.location.pathname, window.location.search)?.view === '3d'
@@ -55,6 +67,7 @@ const MerchantOnboardingPage = lazy(() => import('./pages/MerchantOnboardingPage
 const MerchantAddProductPage = lazy(() => import('./pages/MerchantAddProductPage'));
 const RequireMerchant = lazy(() => import('./components/RequireMerchant'));
 const MyDesignsPage = lazy(() => import('./pages/MyDesignsPage'));
+const TankDemoPage = lazy(() => import('./pages/TankDemoPage'));
 const DemoDesignerPage = lazy(() => import('./pages/DemoDesignerPage'));
 const DeveloperPitchPage = lazy(() => import('./pages/pitch/DeveloperPitchPage'));
 const ConstructionPitchPage = lazy(() => import('./pages/pitch/ConstructionPitchPage'));
@@ -77,7 +90,7 @@ const oneLiveBuildHome = currentBrand() === 'olb' && !isShopHost();
 
 // Fire-and-forget FX bootstrap - refreshes the live rate snapshot if
 // the cached one is stale.
-bootstrapFx();
+if (window.location.pathname !== '/demo/water-tanks') bootstrapFx();
 
 // VITE_TEST_HOOKS (preview only) — expose window.__designer for Playwright
 // device-emulation verification. __TEST_HOOKS__ is a build-time literal
@@ -154,6 +167,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/pilots/:slug" element={<PilotEntry />} />
         <Route path="/designer" element={<App />} />
         <Route path="/demo" element={<DemoDesignerPage />} />
+        <Route path="/demo/water-tanks" element={<TankDemoPage />} />
         <Route path="/embed/designer" element={<DemoDesignerPage />} />
         <Route path="/pitch/developers" element={<DeveloperPitchPage />} />
         <Route path="/pitch/construction" element={<ConstructionPitchPage />} />

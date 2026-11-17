@@ -4,11 +4,11 @@ import { DEFAULT_AZIMUTH_RAD, DEFAULT_FOV_RAD, type Bounds2, type OrbitCamera } 
  * A sphere wastes much of a landscape viewport and makes the model look tiny.
  * The elevated dollhouse angle reveals furniture behind internal walls.
  * Called only on first entry or the user's explicit Fit action. */
-export function fitArchitecturalCamera(bounds: Bounds2, heightM: number, aspect = 1.4): OrbitCamera {
+export function fitArchitecturalCamera(bounds: Bounds2, heightM: number, aspect = 1.4, orientation?: Pick<OrbitCamera, 'azimuthRad' | 'elevationRad'>): OrbitCamera {
   const h = Math.max(0.5, Number.isFinite(heightM) ? heightM : 2.7);
   const viewportAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 1.4;
-  const elevation = 46 * Math.PI / 180;
-  const azimuth = DEFAULT_AZIMUTH_RAD;
+  const elevation = orientation?.elevationRad ?? 46 * Math.PI / 180;
+  const azimuth = orientation?.azimuthRad ?? DEFAULT_AZIMUTH_RAD;
   const target = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2, z: 0 };
   const sinA = Math.sin(azimuth), cosA = Math.cos(azimuth), sinE = Math.sin(elevation), cosE = Math.cos(elevation);
   const tan = Math.tan(DEFAULT_FOV_RAD / 2);

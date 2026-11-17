@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { serviceRunLengthM } from './buildingServices.js';
+import { serviceRunLengthM, TANK_PORT_SIDES } from './buildingServices.js';
 
 export const ServiceSystemSchema = z.enum([
   'cold-water',
@@ -34,15 +34,27 @@ export const BuildingServicesSchema = z
                   .object({
                     x: position,
                     y: position,
-                    elevationM: elevation.optional(),
+                    elevationM: position.optional(),
                     junctionId: key.optional(),
                   })
                   .strict(),
               )
               .min(2)
               .max(500),
-            startElevationM: elevation,
-            endElevationM: elevation,
+            startElevationM: position,
+            endElevationM: position,
+            tankRoute: z
+              .object({
+                from: key,
+                to: key,
+                outletHeightM: z.number().finite().min(0).max(20).optional(),
+                inletHeightM: z.number().finite().min(0).max(20).optional(),
+                outletSide: z.enum(TANK_PORT_SIDES).optional(),
+                inletSide: z.enum(TANK_PORT_SIDES).optional(),
+                riser: z.object({ x: position, y: position }).strict().optional(),
+              })
+              .strict()
+              .optional(),
             startConnection: connection.optional(),
             endConnection: connection.optional(),
           })
@@ -122,6 +134,30 @@ export const BuildingServicesSchema = z
       });
     }
     services.runs.forEach((run, index) => {
+      if (run.tankRoute) {
+        if (
+          run.system !== 'cold-water' ||
+          run.tankRoute.from === run.tankRoute.to ||
+          run.startConnection ||
+          run.endConnection ||
+          run.points.some((p) => p.junctionId)
+        )
+          ctx.addIssue({
+            code: 'custom',
+            path: ['runs', index, 'tankRoute'],
+            message: 'Choose two distinct tanks for a cold-water route.',
+          });
+      } else if (
+        [run.startElevationM, run.endElevationM, ...run.points.map((p) => p.elevationM ?? 0)].some(
+          (m) => Math.abs(m) > 20,
+        )
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['runs', index, 'points'],
+          message: 'Ordinary pipe heights must be within 20 m of this floor.',
+        });
+      }
       if (serviceRunLengthM(run) < 0.01)
         ctx.addIssue({
           code: 'custom',

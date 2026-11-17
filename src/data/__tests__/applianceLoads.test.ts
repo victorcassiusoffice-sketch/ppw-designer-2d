@@ -182,6 +182,8 @@ describe('the whole seed, row by row (2026-09-20)', () => {
     // A water tank stores water, not power: explicit energy_role 'none', no row, 0 W.
     'duraco-water-tank-1000': [null, 0],
     // Passive plumbing/electrical housings have no pump, heater or connected load.
+    'resiglas-water-tank-500-c': [null, 0],
+    'resiglas-water-tank-2000-c': [null, 0],
     'resiglas-water-tank-1000-a': [null, 0],
     'resiglas-water-tank-1000-c': [null, 0],
     'espace-emilia-toilet-bowl': [null, 0],

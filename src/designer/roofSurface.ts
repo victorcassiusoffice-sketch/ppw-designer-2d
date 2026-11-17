@@ -92,6 +92,16 @@ export function roofMaximumHeight(surface: RoofSurface): number {
     + (surface.high - surface.low) * surface.slope * (surface.config.style === 'gable' ? 0.5 : 1);
 }
 
+/** Height of a level support plane above the entire item footprint. Roof height
+ * varies along one axis, so its extremal corners and a crossed ridge suffice. */
+export function roofHorizontalSupportElevationM(surface: RoofSurface, item: { x0:number; y0:number; x1:number; y1:number }): number {
+  const low = surface.axis === 'x' ? item.x0 : item.y0;
+  const high = surface.axis === 'x' ? item.x1 : item.y1;
+  if (surface.config.style === 'gable' && low <= surface.ridge && high >= surface.ridge)
+    return roofMaximumHeight(surface);
+  return Math.max(roofHeightAt(surface,{x:item.x0,y:item.y0}),roofHeightAt(surface,{x:item.x1,y:item.y1}));
+}
+
 /** The saved AABB remains a conservative plan footprint when a true-size body tilts. */
 export function roofItemMount(surface: RoofSurface, item: { x0: number; y0: number; x1: number; y1: number }): RoofItemMount {
   const centre = { x: (item.x0 + item.x1) / 2, y: (item.y0 + item.y1) / 2 };

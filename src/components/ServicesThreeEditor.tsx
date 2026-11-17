@@ -456,7 +456,7 @@ export default function ServicesThreeEditor(props: ServicesThreeEditorProps) {
         run.id === props.selectedId ? '#b77733' : colour,
         { id: run.id },
       );
-      if (run.id === props.selectedId || props.drawing)
+      if (!run.tankRoute && (run.id === props.selectedId || props.drawing))
         points.forEach((p, nodeIndex) =>
           marker(
             p,

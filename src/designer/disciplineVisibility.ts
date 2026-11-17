@@ -1,3 +1,5 @@
+import { tankCapacityLitres } from '../data/serviceProducts';
+
 /** Presentation only. Never filter the canonical project passed to calculations or exports. */
 export const DISCIPLINES = ['structure', 'furniture', 'foundation', 'plumbing', 'electrical', 'hvac', 'fire', 'security', 'landscape', 'solar'] as const;
 export type Discipline = typeof DISCIPLINES[number];
@@ -26,7 +28,7 @@ export function productDiscipline(product: { id?: string; category?: string } | 
   if (category === 'security' || category === 'data') return 'security';
   if (category === 'hvac' || category === 'ventilation' || category === 'air-conditioning') return 'hvac';
   if (category === 'fire') return 'fire';
-  if (category === 'plumbing' || /duraco.*tank|service-pipe|espace.*(?:toilet|sink|bidet)/.test(id)) return 'plumbing';
+  if (category === 'plumbing' || tankCapacityLitres(id) || /service-pipe|espace.*(?:toilet|sink|bidet)/.test(id)) return 'plumbing';
   if (category === 'plant' || category === 'outdoor') return 'landscape';
   if (category === 'flooring' || category === 'walls') return 'structure';
   return 'furniture';

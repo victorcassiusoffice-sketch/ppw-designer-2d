@@ -9,6 +9,7 @@ import { isRoofRoom, roomLevelId, GROUND_LEVEL_ID, ROOF_LEVEL_ID } from './level
 import { stairFootprint } from './building';
 import { gardenElementAt } from './garden';
 import { foundationElementBounds } from './foundation';
+import { tankRunOnFloor } from './serviceScene';
 import { serviceRunPoints3D } from './buildingServices';
 import { faceLoop } from './boundaryModel';
 import { sampleMeasuredPath, measuredPathFromVertices, isSimpleMeasuredPath } from './measuredPath';
@@ -79,15 +80,12 @@ export function surfaceTargets(
     )
       hits.push({ kind: 'fixture', id: f.id });
   }
-  for (const run of p.services?.runs ?? [])
-    if (
-      run.levelId === level &&
-      run.points.some(
-        (b, i) =>
-          i > 0 && segmentDistance(at, run.points[i - 1], b) <= tolerance + run.diameterMm / 2000,
-      )
-    )
+  for (const run of p.services?.runs ?? []) {
+    const local = run.tankRoute ? tankRunOnFloor(p, run, level) : run.levelId === level ? run : null;
+    if (local?.points.some((b, i) => i > 0 &&
+      segmentDistance(at, local.points[i - 1], b) <= tolerance + run.diameterMm / 2000))
       hits.push({ kind: 'run', id: run.id });
+  }
   for (const room of p.rooms.filter(
     (r) => roomLevelId(r) === level && pointInPolygon(at, r.polygon),
   )) {
@@ -283,7 +281,7 @@ export function sameSurfaceGroup(
         (p.services?.runs ?? [])
           .filter(
             (r) =>
-              r.levelId === level &&
+              (r.tankRoute ? tankRunOnFloor(p, r, level) : r.levelId === level) &&
               r.system === p.services?.runs.find((f) => f.id === t.id)?.system,
           )
           .map((r) => r.id),
@@ -340,7 +338,7 @@ export function bendAt(p: Property, t: SurfaceTarget, at: Vertex): Bend | null {
     }
     const w = p.walls?.find((w) => w.id === t.hit.wallId);
     if (w) points = [w.a, w.b];
-  } else if (t.kind === 'run') points = p.services?.runs.find((r) => r.id === t.id)?.points;
+  } else if (t.kind === 'run') points = p.services?.runs.find((r) => r.id === t.id && !r.tankRoute)?.points;
   else if (t.kind === 'roof') {
     points = p.rooms.find((r) => r.id === t.id)?.polygon;
     closed = true;
@@ -411,7 +409,7 @@ export function commitBend(edge: Bend, at: Vertex): boolean {
   }
   if (t.kind === 'run' && p.services) {
     const run = p.services.runs.find((r) => r.id === t.id);
-    if (!run || run.points.length + inside.length > 500) return false;
+    if (!run || run.tankRoute || run.points.length + inside.length > 500) return false;
     const old = serviceRunPoints3D(run),
       points = run.points.map((q, i) => ({ ...q, elevationM: old[i].elevationM }));
     const z = old[edge.index].elevationM,

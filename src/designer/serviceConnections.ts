@@ -156,7 +156,7 @@ export function connectServiceEndpoint(
   reference: ServiceConnection | null,
 ): BuildingServices | null {
   const run = services.runs.find((r) => r.id === runId);
-  if (!run || (reference && !linkedPort(run, reference, services))) return null;
+  if (!run || run.tankRoute || (reference && !linkedPort(run, reference, services))) return null;
   const next = { ...run, points: run.points.map((p) => ({ ...p })) };
   if (reference) delete next.points[endpoint === 'start' ? 0 : next.points.length - 1].junctionId;
   if (reference) next[`${endpoint}Connection`] = { ...reference };
@@ -234,6 +234,7 @@ export function connectServiceNodes(
   if (
     !a ||
     !b ||
+    a.tankRoute || b.tankRoute ||
     a.system !== b.system ||
     a.levelId !== b.levelId ||
     !a.points[source.nodeIndex] ||
@@ -302,7 +303,7 @@ export function moveServiceNode(
 ): BuildingServices | null {
   const run = services.runs.find((r) => r.id === runId),
     node = run?.points[nodeIndex];
-  if (!run || !node) return null;
+  if (!run || run.tankRoute || !node) return null;
   if (node.junctionId) {
     const junction = services.junctions?.find(
       (j) => j.id === node.junctionId && j.levelId === run.levelId && j.system === run.system,
