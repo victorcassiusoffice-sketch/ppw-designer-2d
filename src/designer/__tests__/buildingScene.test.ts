@@ -57,6 +57,16 @@ describe('assembled building solids', () => {
     expect(solids.floors.find((floor) => floor.levelId === 'first')?.holes).toHaveLength(1);
   });
 
+  it('shows a roof tank and its real base in whole-building view from a lower storey', () => {
+    const p = property();
+    p.rooms[2].placedItems[0].productId = 'resiglas-water-tank-2000-c';
+    const whole = buildingSolids(p, sceneForLevel, 'building', false);
+    const tank = whole.items.find(i => i.instanceId === 'roof-item');
+    expect(tank?.levelId).toBe('roof');
+    expect(tank?.floorElevationM).toBeCloseTo(7.36);
+    expect(buildingSolids(p, sceneForLevel, 'floor', false).items.some(i => i.instanceId === 'roof-item')).toBe(false);
+  });
+
   it('keeps coincident walls independent across floors and resolves neighbours only within a floor', () => {
     const p = property();
     expect(buildingSolids(p, sceneForLevel, 'building', false).walls.every((wall) => !wall.shared)).toBe(true);

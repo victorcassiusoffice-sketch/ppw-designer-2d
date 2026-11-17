@@ -43,6 +43,21 @@ const snapshot = (value: number, sourceUrl: string, observedAt = SERVICE_PRODUCT
  * A future merchant SKU must supply all three measured envelope dimensions before publishing a pair.
  */
 export const SERVICE_PRODUCT_DEFINITIONS: readonly ServiceProductDefinition[] = [
+  ...([
+    { capacity: 500, diameter: 885, height: 1077 },
+    { capacity: 2000, diameter: 1365, height: 1700 },
+  ] as const).map(({ capacity, diameter, height }): ServiceProductDefinition => {
+    const url = `https://resiglas.mu/product/water-tank-${capacity}l-c/`;
+    return {
+      referenceProductId: `resiglas-water-tank-${capacity}-c`, sku: `RESIGLAS-PE-${capacity}L-C`,
+      name: `Resiglas ${capacity.toLocaleString('en-GB')} L C polyethylene water tank`,
+      supplier: 'Resiglas', systems: ['cold-water'], shape: 'tank-round',
+      dimensionsMm: { length: diameter, width: diameter, height }, capacityLitres: capacity,
+      dimensionsBasis: 'published-envelope', dimensionSourceUrl: url, sourceCheckedAt: '2026-11-17',
+      placement: 'floor', outdoor: true,
+      notes: 'Polyethylene tank. The planning body follows the published overall dimensions. Confirm connection centres, support, fittings and the project price with the supplier.',
+    };
+  }),
   {
     referenceProductId: 'resiglas-water-tank-1000-a', sku: 'RESIGLAS-1000L-A',
     name: 'Resiglas 1,000 L A water tank', supplier: 'Resiglas', systems: ['cold-water'],
@@ -140,6 +155,13 @@ export const SERVICE_PRODUCT_DEFINITIONS: readonly ServiceProductDefinition[] = 
 
 export function serviceProductById(id: string | undefined): ServiceProductDefinition | undefined {
   return SERVICE_PRODUCT_DEFINITIONS.find(product => product.referenceProductId === id);
+}
+
+export function tankCapacityLitres(productId: string | undefined): number | undefined {
+  if (productId === 'duraco-water-tank-1000') return 1000;
+  const definition = serviceProductById(productId);
+  return definition?.shape === 'tank-round' || definition?.shape === 'tank-horizontal'
+    ? definition.capacityLitres : undefined;
 }
 
 /** Validated canonical conversion. No rendering layer may invent a second dimensional envelope. */

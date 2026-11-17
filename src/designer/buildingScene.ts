@@ -1,3 +1,4 @@
+import { tankCapacityLitres } from '../data/serviceProducts';
 import type { Property } from '../store/propertyStore';
 import { buildSolids, type SceneSolids } from './roomSolids';
 import type { SceneInput } from './roomView3d';
@@ -17,9 +18,8 @@ export function buildingSolids(
 ): SceneSolids {
   const active = activeLevelIdOf(property);
   const entries = buildingLevels(property);
-  // The House view carries every storey; roof products are visible only while
-  // Roof is selected. Hiding them changes presentation, never the saved layout
-  // or solar calculation. A roof-only floor view still shows its working slab.
+  // House carries every storey and its plumbing equipment. Rooftop PV products
+  // appear when Roof is selected; the roof-only floor view also shows its slab.
   const visible = entries.filter((entry) => view === 'building' || entry.level.id === active);
   const roofSlabVisible = showRoof || view !== 'building';
   const heightEntries = visible.filter((entry) => !isRoofLevel(entry.level) || roofSlabVisible);
@@ -71,7 +71,7 @@ export function buildingSolids(
       result.floors.push({ ...floor, elevationM, levelId: level.id, holes });
     }
     result.walls.push(...local.walls.map((w) => ({ ...w, elevationM, levelId: level.id })));
-    result.items.push(...local.items.filter(() => !isRoofLevel(level) || level.id === active).map((it) => {
+    result.items.push(...local.items.filter(it => !isRoofLevel(level) || level.id === active || tankCapacityLitres(it.productId)).map((it) => {
       const owner = isRoofLevel(level) && it.placement === 'roof'
         ? rooms.find((room) => isRoofRoom(room) && room.placedItems.some((item) => item.instanceId === it.instanceId)) : undefined;
       // With the covering hidden there is nothing to seat on: the panel lies on the storey top.

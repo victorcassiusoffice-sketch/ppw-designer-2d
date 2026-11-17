@@ -17,7 +17,19 @@ const PilotVisit=lazy(()=>import('./pilots/PilotVisit'));
 function PilotEntry(){const visit=new URLSearchParams(useLocation().search).get('visit');return visit?<PilotVisit site={visit}/>:<PilotWorkspace/>;}
 const PilotDashboard = lazy(()=>import('./pilots/Dashboard'));
 const PilotWorkspace = lazy(() => import('./pilots/Workspace'));
-const App = lazy(() => import('./App'));
+const App = lazy(async () => {
+  const query = new URLSearchParams(window.location.search);
+  if (window.location.pathname === '/designer' && query.get('panel') === 'tanks' && query.get('pilotPlan')?.startsWith('water-tank-')) {
+    const { isTankExampleId, seedTankExample } = await import('./designer/tankExample');
+    const id = query.get('pilotPlan');
+    if (!isTankExampleId(id)) return import('./App');
+    seedTankExample(window.localStorage, id);
+    // The studio preferences can initialize the property store before this lazy route loads.
+    const { usePropertyStore } = await import('./store/propertyStore');
+    await usePropertyStore.persist.rehydrate();
+  }
+  return import('./App');
+});
 // Fetch explicit 3D visits in parallel with the app, not after its route,
 // designer and viewport have each loaded. React.lazy shares this promise.
 if (demoRoute(window.location.pathname, window.location.search)?.view === '3d'

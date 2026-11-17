@@ -9,7 +9,7 @@ import {
 } from '../designer/workspaceNavigation';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { snapServicePoint, type ServiceAngleSnap } from '../designer/serviceRouteEditing';
-import { filterServicePresentation } from '../designer/serviceScene';
+import { filterServicePresentation, tankRunOnFloor } from '../designer/serviceScene';
 import { DisciplineVisibilityControls } from './DisciplineVisibilityControls';
 import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
 import {
@@ -19,6 +19,7 @@ import {
 } from '../designer/disciplineVisibility';
 import { BUILDING_EQUIPMENT, buildingEquipmentById } from '../data/buildingEquipmentCatalog';
 import type { ServiceEditorHit } from './ServicesThreeEditor';
+const TankWorkspace = lazy(() => import('./TankWorkspace'));
 const ServicesThreeEditor = lazy(() => import('./ServicesThreeEditor'));
 import { createPortal } from 'react-dom';
 import { nanoid } from 'nanoid';
@@ -86,11 +87,14 @@ export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
     [initialSelection, setInitialSelection] = useState<string | null>(null);
   const [initialSystem, setInitialSystem] = useState<ServiceSystem | undefined>();
   const [initialView, setInitialView] = useState<'plan' | '3d'>('plan');
+  const [tanksOpen, setTanksOpen] = useState(false);
+  const privateStudio = location.pathname === '/designer';
   const before = useRef(onBeforeOpen);
   before.current = onBeforeOpen;
   useEffect(() => {
     const query = new URLSearchParams(location.search);
-    let pendingRoute = query.get('panel') === 'services';
+    const tankRoute = privateStudio && query.get('panel') === 'tanks';
+    let pendingRoute = query.get('panel') === 'services' || tankRoute;
     const show = (event?: Event) => {
       const ui = useDesignerUIStore.getState();
       // Read the origin before the underlying building view is suspended for this workspace.
@@ -98,6 +102,7 @@ export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
       if (!event && pendingRoute && ['2d', '3d'].includes(query.get('view') ?? ''))
         ui.setViewMode(query.get('view') === '3d' ? '3d' : 'plan');
       setInitialView(useDesignerUIStore.getState().viewMode);
+      setTanksOpen(!event && pendingRoute && tankRoute);
       pendingRoute = false;
       beginWorkspaceNavigation('services');
       setInitialSelection(
@@ -159,6 +164,8 @@ export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
   return open
     ? createPortal(
         <ServicesWorkbench
+          tanksOpen={tanksOpen}
+          setTanksOpen={setTanksOpen}
           initialSelection={initialSelection}
           initialSystem={initialSystem}
           initialView={initialView}
@@ -177,11 +184,15 @@ type Tool = 'select' | 'pipe' | 'move' | ServiceFixtureKind;
 function ServicesWorkbench({
   onClose,
   initialSelection,
+  tanksOpen,
+  setTanksOpen,
   initialSystem,
   initialView,
 }: {
   onClose: () => void;
   initialSelection: string | null;
+  tanksOpen: boolean;
+  setTanksOpen: (open:boolean) => void;
   initialSystem?: ServiceSystem;
   initialView: 'plan' | '3d';
 }) {
@@ -232,12 +243,17 @@ function ServicesWorkbench({
   } | null>(null);
   const rooms = property.rooms.filter((r) => roomLevelId(r) === levelId);
   const walls = (property.walls ?? []).filter((w) => roomLevelId(w) === levelId);
-  const runs = services.runs.filter((r) => r.levelId === levelId),
-    fixtures = services.fixtures.filter((f) => f.levelId === levelId);
-  const selectedFixture = fixtures.find((f) => f.id === selected),
-    selectedRun = runs.find((r) => r.id === selected);
-  const displayServices = useMemo(() => filterServicePresentation(services, visible, parts), [services, visible, parts]);
-  const displayRuns = displayServices.runs.filter(run => run.levelId === levelId);
+  const floorNetwork = useMemo(() => ({
+    ...services,
+    runs: services.runs.flatMap(run => run.tankRoute
+      ? tankRunOnFloor(property, run, levelId) ?? []
+      : run.levelId === levelId ? [run] : []),
+  }), [property, services, levelId]);
+  const runs = floorNetwork.runs, fixtures = services.fixtures.filter(f => f.levelId === levelId);
+  const selectedFixture = fixtures.find(f => f.id === selected),
+    selectedRun = runs.find(r => r.id === selected);
+  const displayServices = useMemo(() => filterServicePresentation(floorNetwork, visible, parts), [floorNetwork, visible, parts]);
+  const displayRuns = displayServices.runs;
   const displayFixtures = displayServices.fixtures.filter(fixture => fixture.levelId === levelId);
   const material = SERVICE_MATERIALS.find((m) => m.id === (selectedRun?.materialId ?? materialId));
   const summaries = estimateServices(services),
@@ -318,6 +334,7 @@ function ServicesWorkbench({
     entryState.current.fit();
   }, [property.id, levelId]);
   useWorkspaceFocus(host, () => {
+    if (tanksOpen) { setTanksOpen(false); return; }
     if (host.current?.querySelector('.discipline-popover')) {
       const toggle = host.current.querySelector<HTMLButtonElement>('[data-testid="discipline-toggle"]');
       toggle?.click(); toggle?.focus();
@@ -608,6 +625,10 @@ function ServicesWorkbench({
     nodeIndex: number,
     point: { x: number; y: number; elevationM: number },
   ) {
+    if (services.runs.find(r => r.id === runId)?.tankRoute) {
+      setError('Edit the tank ports and riser in Water tanks.');
+      return;
+    }
     const next = moveServiceNode(services, runId, nodeIndex, point);
     if (next) save(next);
     else setError('Detach the unresolved junction before moving this node.');
@@ -621,7 +642,7 @@ function ServicesWorkbench({
     point: { x: number; y: number; elevationM: number },
   ) {
     const run = services.runs.find((r) => r.id === runId);
-    if (!run) return;
+    if (!run || run.tankRoute) return;
     if (nodeIndex === 0 || nodeIndex === run.points.length - 1) {
       const port = compatibleServicePorts(displayServices, run.levelId, run.system).find(
         (p) =>
@@ -733,8 +754,13 @@ function ServicesWorkbench({
       className="services-workspace"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="services-title"
+      aria-labelledby={tanksOpen ? "tank-workspace-title" : "services-title"}
     >
+      {tanksOpen ? (
+        <Suspense fallback={<p role="status">Opening water tanks…</p>}>
+          <TankWorkspace key={property.id} property={property} onBack={() => setTanksOpen(false)} onPlan={onClose}/>
+        </Suspense>
+      ) : <>
       <header className="services-header">
         <button onClick={onClose}>
           <StudioIcon name="close" size={18} /> Back
@@ -793,6 +819,7 @@ function ServicesWorkbench({
             ))}
           </select>
         </label>
+        {location.pathname === '/designer' && <button type="button" onClick={() => setTanksOpen(true)}>Water tanks</button>}
         <DisciplineVisibilityControls />
         {(Object.values(visible).some((v) => !v) || Object.values(parts).some((v) => !v)) && (
           <button onClick={() => useDisciplineVisibilityStore.getState().showAll()}>
@@ -1171,7 +1198,7 @@ function ServicesWorkbench({
                       cx={p.x}
                       cy={p.y}
                       r={selected === run.id || tool === 'pipe' ? '.09' : '.035'}
-                      data-service-node={i}
+                      data-service-node={run.tankRoute ? undefined : i}
                       fill={selected === run.id && selectedNode === i ? '#d79543' : colour}
                       stroke={p.junctionId ? '#fff' : undefined}
                       strokeWidth=".025"
@@ -1493,6 +1520,13 @@ function ServicesWorkbench({
                   <button onClick={remove}>Remove</button>
                 </div>
               </>
+            ) : selectedRun?.tankRoute ? (
+              <section className="services-connections">
+                <strong>Tank connection</strong>
+                <p>{estimate?.lengthM.toFixed(2)} m · {selectedRun.diameterMm} mm cold-water pipe</p>
+                <button onClick={() => setTanksOpen(true)}>Open water tanks</button>
+                <button onClick={remove}>Remove route</button>
+              </section>
             ) : (
               <>
                 {selectedRun && (
@@ -1844,10 +1878,7 @@ function ServicesWorkbench({
               <div>
                 <dt>Total route length</dt>
                 <dd>
-                  {summaries
-                    .filter((s) => s.levelId === levelId)
-                    .reduce((n, s) => n + s.lengthM, 0)
-                    .toFixed(2)}{' '}
+                  {estimateServices(floorNetwork).reduce((n, s) => n + s.lengthM, 0).toFixed(2)}{' '}
                   m
                 </dd>
               </div>
@@ -1877,6 +1908,7 @@ function ServicesWorkbench({
           </aside>
         )}
       </div>
+      </>}
     </div>
   );
 }

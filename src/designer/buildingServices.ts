@@ -44,7 +44,23 @@ export interface ServiceJunction {
   y: number;
   elevationM: number;
 }
+export const TANK_PORT_SIDES = ['east', 'south', 'west', 'north'] as const;
+export type TankPortSide = (typeof TANK_PORT_SIDES)[number];
+export interface TankRoute {
+  /** Both identities refer to placed catalogue items, not SKU or fixture IDs. */
+  from: string;
+  to: string;
+  /** Metres above the base of the respective tank. */
+  outletHeightM?: number;
+  inletHeightM?: number;
+  /** Side in the unrotated tank plan. East (+X) is the legacy default. */
+  outletSide?: TankPortSide;
+  inletSide?: TankPortSide;
+  /** Optional surveyed centre of the shared vertical pipe, in world plan metres. */
+  riser?: { x: number; y: number };
+}
 export interface ServiceRun {
+  tankRoute?: TankRoute;
   id: string;
   levelId: string;
   system: ServiceSystem;
@@ -124,6 +140,32 @@ function connection(value: unknown): ServiceConnection | undefined {
     : undefined;
 }
 
+function readTankRoute(value: unknown): TankRoute | undefined {
+  const route = record(value);
+  if (!route || !key(route.from) || !key(route.to) || route.from === route.to) return undefined;
+  if (
+    (route.outletHeightM !== undefined && !finite(route.outletHeightM, 0, 20)) ||
+    (route.inletHeightM !== undefined && !finite(route.inletHeightM, 0, 20))
+  )
+    return undefined;
+  const out: TankRoute = { from: route.from, to: route.to };
+  for (const field of ['outletSide', 'inletSide'] as const) {
+    if (route[field] === undefined) continue;
+    const side = TANK_PORT_SIDES.find((candidate) => candidate === route[field]);
+    if (!side) return undefined;
+    out[field] = side;
+  }
+  if (route.outletHeightM !== undefined) out.outletHeightM = route.outletHeightM as number;
+  if (route.inletHeightM !== undefined) out.inletHeightM = route.inletHeightM as number;
+  if (route.riser !== undefined) {
+    const shaft = record(route.riser);
+    if (!shaft || !finite(shaft.x, -10000, 10000) || !finite(shaft.y, -10000, 10000))
+      return undefined;
+    out.riser = { x: shaft.x, y: shaft.y };
+  }
+  return out;
+}
+
 /** Reject malformed entities individually; never silently turn unknown floors into ground routes. */
 export function normaliseBuildingServices(
   value: unknown,
@@ -138,14 +180,20 @@ export function normaliseBuildingServices(
   const runs: ServiceRun[] = [];
   for (const value of (Array.isArray(raw.runs) ? raw.runs : []).slice(0, 2000)) {
     const r = record(value);
+    const tankRoute = readTankRoute(r?.tankRoute);
+    // A bound vertical pipe uses elevations relative to its origin storey even
+    // when its destination sits many storeys away.
+    const elevationLimit = tankRoute ? 10000 : 20;
     if (
       !r ||
+      (r.tankRoute !== undefined &&
+        (!tankRoute || r.system !== 'cold-water' || r.startConnection || r.endConnection)) ||
       !identity(r) ||
       !SERVICE_SYSTEMS.some((s) => s.id === r.system) ||
       !key(r.materialId) ||
       !finite(r.diameterMm, 5, 1000) ||
-      !finite(r.startElevationM, -20, 20) ||
-      !finite(r.endElevationM, -20, 20) ||
+      !finite(r.startElevationM, -elevationLimit, elevationLimit) ||
+      !finite(r.endElevationM, -elevationLimit, elevationLimit) ||
       !Array.isArray(r.points) ||
       r.points.length < 2 ||
       r.points.length > 500
@@ -158,8 +206,8 @@ export function normaliseBuildingServices(
           !p ||
           !finite(p.x, -10000, 10000) ||
           !finite(p.y, -10000, 10000) ||
-          (p.elevationM !== undefined && !finite(p.elevationM, -20, 20)) ||
-          (p.junctionId !== undefined && !key(p.junctionId)),
+          (p.elevationM !== undefined && !finite(p.elevationM, -elevationLimit, elevationLimit)) ||
+          (p.junctionId !== undefined && (tankRoute || !key(p.junctionId))),
       )
     )
       continue;
@@ -178,6 +226,7 @@ export function normaliseBuildingServices(
         ...(p!.junctionId !== undefined ? { junctionId: p!.junctionId as string } : {}),
       })),
     };
+    if (tankRoute) run.tankRoute = tankRoute;
     if (connection(r.startConnection)) run.startConnection = connection(r.startConnection);
     if (connection(r.endConnection)) run.endConnection = connection(r.endConnection);
     if (

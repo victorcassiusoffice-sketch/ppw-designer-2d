@@ -2,6 +2,7 @@ import { normaliseCity, type CityModel } from '../designer/city';
 import { normaliseEco, normaliseEngineeringInputs, type EcoModel, type EngineeringInputs } from '../designer/eco';
 import { normaliseBuildingServices, serviceRunLengthM, type BuildingServices } from '../designer/buildingServices';
 import { resolveServiceConnections } from '../designer/serviceConnections';
+import { synchroniseTankRuns } from '../designer/tankNetwork';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
 import { validCuts, type TerrainCut } from '../designer/terrainCuts';
 import { validComponents, type BoundaryComponent } from '../designer/boundaryModel';
@@ -34,7 +35,7 @@ import { withMasonryThickness, inheritMasonryRoom } from '../designer/masonryDim
  * façade in `designStore.ts`; this store is the new source of truth.
  */
 
-import { create } from 'zustand';
+import { create, type StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
 import type { Polygon, RoomDims, Vertex } from '../lib/geometry';
@@ -802,9 +803,27 @@ function findRoomByInstanceId(property: Property, instanceId: string): Room | un
   return property.rooms.find((r) => r.placedItems.some((i) => i.instanceId === instanceId));
 }
 
+/** Update dependent tank pipe geometry in the same edit as a floor or tank.
+ * External writes (undo, shared builds, device restores) use the same boundary. */
+function bindTankRoutes(createState: StateCreator<PropertyState>): StateCreator<PropertyState> {
+  return (set, get, store) => {
+    const update: typeof set = (patch, replace) => set(state => {
+      const next = typeof patch === 'function' ? patch(state) : patch;
+      const previous = state.property;
+      if (!next.property || next.property === previous ||
+        (next.property.rooms === previous.rooms && next.property.levels === previous.levels &&
+         next.property.wallHeightM === previous.wallHeightM && next.property.services === previous.services)) return next;
+      const property = synchroniseTankRuns(next.property);
+      return property === next.property ? next : { ...next, property };
+    }, replace);
+    store.setState = update;
+    return createState(update, get, store);
+  };
+}
+
 export const usePropertyStore = create<PropertyState>()(
   persist(
-    (set, get) => ({
+    bindTankRoutes((set, get) => ({
       property: (PROPERTY_KEY === 'ppw_property_v2' ? tryHydrateFromLegacy() : null) ?? makeDefaultProperty(),
       selectedInstanceId: null,
       showGrid: true,
@@ -2166,7 +2185,7 @@ export const usePropertyStore = create<PropertyState>()(
           property: makeDefaultProperty(),
           selectedInstanceId: null,
         })),
-    }),
+    })),
     {
       name: PROPERTY_KEY,
       storage: createJSONStorage(() => localStorage),
@@ -2212,6 +2231,7 @@ export const usePropertyStore = create<PropertyState>()(
           const services = normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id)));
           merged.property = { ...merged.property, services: services ? resolveServiceConnections(services) : undefined };
         }
+        if (merged.property) merged.property = synchroniseTankRuns(merged.property);
         return merged;
       },
     },
@@ -2297,7 +2317,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   if (roof && levelsOf(out).some(isRoofLevel)) out.roof = roof;
   const garden = normaliseGarden(property.garden);
   if (garden) out.garden = garden;
-  return out;
+  return synchroniseTankRuns(out);
 }
 
 /** 1–3 whole coats, else undefined (= product default). */
