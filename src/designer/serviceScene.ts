@@ -17,7 +17,7 @@ export interface ServiceRunPlacement extends ServiceRun {
   tankNozzles?: TankPortNozzle[];
 }
 type ServiceProperty = Pick<Property, 'levels' | 'wallHeightM' | 'services'> &
-  Partial<Pick<Property, 'rooms'>>;
+  Partial<Pick<Property, 'rooms' | 'roof'>>;
 type Floor = ReturnType<typeof buildingLevels>[number];
 
 // Explicit floor elevations may leave a service void above a slab.

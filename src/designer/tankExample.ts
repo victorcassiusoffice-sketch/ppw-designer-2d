@@ -1,9 +1,11 @@
+import { TANK_HOUSE_EXAMPLE_ID, tankHouseExample } from './tankHouseExample';
 import type { Property, Room } from '../store/propertyStore';
 import { roofRoomIdFor } from './roof';
 import { createTankRun, type TankRoute } from './tankNetwork';
 
 export const TANK_EXAMPLE_ID = 'water-tank-example';
 export const tankExamples = {
+  [TANK_HOUSE_EXAMPLE_ID]: 'Two-storey home with connected tanks',
   [TANK_EXAMPLE_ID]: 'Three-level tank installation',
   'water-tank-ground': 'Single ground tank',
   'water-tank-bank': 'Linked ground-level pair',
@@ -41,6 +43,7 @@ function room(id: string, name: string, levelId: string, size: number, x: number
 }
 
 export function tankExample(id: TankExampleId = TANK_EXAMPLE_ID): Property {
+  if (id === TANK_HOUSE_EXAMPLE_ID) return tankHouseExample();
   const ground = room(
     'ground-plant-room',
     'Ground-floor plant room',

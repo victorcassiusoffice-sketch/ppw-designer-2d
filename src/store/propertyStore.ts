@@ -812,7 +812,8 @@ function bindTankRoutes(createState: StateCreator<PropertyState>): StateCreator<
       const previous = state.property;
       if (!next.property || next.property === previous ||
         (next.property.rooms === previous.rooms && next.property.levels === previous.levels &&
-         next.property.wallHeightM === previous.wallHeightM && next.property.services === previous.services)) return next;
+         next.property.wallHeightM === previous.wallHeightM && next.property.services === previous.services &&
+         next.property.roof === previous.roof)) return next;
       const property = synchroniseTankRuns(next.property);
       return property === next.property ? next : { ...next, property };
     }, replace);

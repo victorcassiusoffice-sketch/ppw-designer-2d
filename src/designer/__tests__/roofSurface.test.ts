@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRoofSurface, roofHeightAt, roofItemMount, roofMaximumHeight } from '../roofSurface';
+import { createRoofSurface, roofHeightAt, roofItemMount, roofMaximumHeight, roofHorizontalSupportElevationM } from '../roofSurface';
 import type { RoofConfig } from '../building';
 
 const polygon = [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 8 }, { x: 0, y: 8 }];
@@ -21,6 +21,16 @@ describe('shared roof surface', () => {
       expect(roofMaximumHeight(surface)).toBeCloseTo(roofHeightAt(surface,{x:surface.ridge,y:1}));
     }
   });
+  it('keeps a tank support horizontal above pitched corners and a ridge crossed by its footprint', () => {
+    const surface = createRoofSurface(polygon,6,config)!;
+    const oneSide = {x0:.3,y0:2,x1:1.7,y1:3.4};
+    expect(roofHorizontalSupportElevationM(surface,oneSide)).toBeCloseTo(roofHeightAt(surface,{x:1.7,y:2}));
+    const crossing = {x0:1.2,y0:2,x1:2.6,y1:3.4};
+    expect(roofHorizontalSupportElevationM(surface,crossing)).toBeCloseTo(roofMaximumHeight(surface));
+    const shed = createRoofSurface(polygon,6,{...config,style:'shed',thicknessM:.2})!;
+    expect(roofHorizontalSupportElevationM(shed,oneSide)).toBeCloseTo(roofHeightAt(shed,{x:1.7,y:2}));
+  });
+
   it('tilts opposite faces in opposite directions and raises a ridge-spanning rigid panel', () => {
     const surface = createRoofSurface(polygon, 6, config)!;
     expect(roofItemMount(surface, { x0: 0.2, x1: 1.8, y0: 1, y1: 2 }).slopeX).toBeGreaterThan(0);

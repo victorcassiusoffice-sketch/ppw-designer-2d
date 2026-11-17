@@ -2,8 +2,9 @@ import { getProductById } from '../data/products';
 import { tankCapacityLitres } from '../data/serviceProducts';
 import { rotatedFootprint } from '../lib/geometry';
 import type { Property } from '../store/propertyStore';
-import { buildingLevels } from './building';
-import { roomLevelId } from './levels';
+import { buildingLevels, roofConfigOf } from './building';
+import { createRoofSurface, roofHorizontalSupportElevationM } from './roofSurface';
+import { isRoofLevel, roomLevelId } from './levels';
 import {
   serviceRunLengthM,
   type ServiceRun,
@@ -12,7 +13,7 @@ import {
 } from './buildingServices';
 
 export type { TankPortSide, TankRoute } from './buildingServices';
-type TankProperty = Pick<Property, 'rooms' | 'levels' | 'wallHeightM'>;
+type TankProperty = Pick<Property, 'rooms' | 'levels' | 'wallHeightM' | 'roof'>;
 type PlanPoint = { x: number; y: number };
 type PipePoint = PlanPoint & { elevationM: number };
 
@@ -30,6 +31,8 @@ export interface PlacedTank {
   /** Plan centre. Heights are measured from the actual building floor datum. */
   x: number;
   y: number;
+  floorElevationM: number;
+  /** Bottom of the tank, including the actual roof covering beneath it. */
   baseElevationM: number;
   rotation: number;
 }
@@ -49,6 +52,17 @@ export function placedTanks(property: TankProperty): PlacedTank[] {
       const lengthM = dims.length / 100,
         widthM = dims.width / 100;
       const footprint = rotatedFootprint({ lengthM, widthM }, item.rotation);
+      const surface = isRoofLevel(level.level)
+        ? createRoofSurface(room.polygon, level.elevationM, roofConfigOf(property))
+        : null;
+      const baseElevationM = surface
+        ? roofHorizontalSupportElevationM(surface, {
+            x0: item.x,
+            y0: item.y,
+            x1: item.x + footprint.w,
+            y1: item.y + footprint.h,
+          })
+        : level.elevationM;
       tanks.push({
         instanceId: item.instanceId,
         productId: item.productId,
@@ -62,7 +76,8 @@ export function placedTanks(property: TankProperty): PlacedTank[] {
         heightM: dims.height / 100,
         x: item.x + footprint.w / 2,
         y: item.y + footprint.h / 2,
-        baseElevationM: level.elevationM,
+        floorElevationM: level.elevationM,
+        baseElevationM,
         rotation: item.rotation,
       });
     }
@@ -140,8 +155,8 @@ function makeRun(
   const inlet = route.inletHeightM ?? destination.heightM * 0.85;
   if (!(outlet >= 0 && outlet <= source.heightM && inlet >= 0 && inlet <= destination.heightM))
     return null;
-  const startElevationM = outlet,
-    endElevationM = destination.baseElevationM - source.baseElevationM + inlet;
+  const startElevationM = source.baseElevationM - source.floorElevationM + outlet,
+    endElevationM = destination.baseElevationM - source.floorElevationM + inlet;
   const shaft = route.riser ?? {
     x: Math.max(outsideEdge(source), outsideEdge(destination)) + 0.35,
     y: portPosition(source, route.outletSide).point.y,

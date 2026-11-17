@@ -63,7 +63,7 @@ describe('assembled building solids', () => {
     const whole = buildingSolids(p, sceneForLevel, 'building', false);
     const tank = whole.items.find(i => i.instanceId === 'roof-item');
     expect(tank?.levelId).toBe('roof');
-    expect(tank?.floorElevationM).toBeCloseTo(7.36);
+    expect(tank?.floorElevationM).toBeCloseTo(7.44);
     expect(buildingSolids(p, sceneForLevel, 'floor', false).items.some(i => i.instanceId === 'roof-item')).toBe(false);
   });
 

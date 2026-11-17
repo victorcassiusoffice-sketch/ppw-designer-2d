@@ -67,6 +67,7 @@ const MerchantOnboardingPage = lazy(() => import('./pages/MerchantOnboardingPage
 const MerchantAddProductPage = lazy(() => import('./pages/MerchantAddProductPage'));
 const RequireMerchant = lazy(() => import('./components/RequireMerchant'));
 const MyDesignsPage = lazy(() => import('./pages/MyDesignsPage'));
+const TankDemoPage = lazy(() => import('./pages/TankDemoPage'));
 const DemoDesignerPage = lazy(() => import('./pages/DemoDesignerPage'));
 const DeveloperPitchPage = lazy(() => import('./pages/pitch/DeveloperPitchPage'));
 const ConstructionPitchPage = lazy(() => import('./pages/pitch/ConstructionPitchPage'));
@@ -89,7 +90,7 @@ const oneLiveBuildHome = currentBrand() === 'olb' && !isShopHost();
 
 // Fire-and-forget FX bootstrap - refreshes the live rate snapshot if
 // the cached one is stale.
-bootstrapFx();
+if (window.location.pathname !== '/demo/water-tanks') bootstrapFx();
 
 // VITE_TEST_HOOKS (preview only) — expose window.__designer for Playwright
 // device-emulation verification. __TEST_HOOKS__ is a build-time literal
@@ -166,6 +167,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/pilots/:slug" element={<PilotEntry />} />
         <Route path="/designer" element={<App />} />
         <Route path="/demo" element={<DemoDesignerPage />} />
+        <Route path="/demo/water-tanks" element={<TankDemoPage />} />
         <Route path="/embed/designer" element={<DemoDesignerPage />} />
         <Route path="/pitch/developers" element={<DeveloperPitchPage />} />
         <Route path="/pitch/construction" element={<ConstructionPitchPage />} />

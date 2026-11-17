@@ -59,7 +59,7 @@ describe('measured tank connections', () => {
     expect(placedTanks(p).map((t) => [t.levelId, t.baseElevationM, t.capacityLitres])).toEqual([
       ['ground', 0, 1000],
       ['first', 3, 1000],
-      ['roof', 6, 1000],
+      ['roof', 6.08, 1000],
     ]);
     const run = createTankRun(p, 'pipe', {
       from: 'roof-tank',
@@ -74,9 +74,9 @@ describe('measured tank connections', () => {
       expect(p.x).toBeCloseTo(2.14, 10);
       expect(p.y).toBeCloseTo(1.57, 10);
     }
-    expect(run.points[0].elevationM).toBe(0.25);
+    expect(run.points[0].elevationM).toBeCloseTo(0.33);
     expect(run.points[3].elevationM).toBe(-5);
-    expect(serviceRunLengthM(run)).toBeCloseTo(0.86 + 5.25 + 0.86, 10);
+    expect(serviceRunLengthM(run)).toBeCloseTo(0.86 + 5.33 + 0.86, 10);
     p.services = { version: 1, runs: [run], fixtures: [] };
     expect(BuildingServicesSchema.safeParse(p.services).success).toBe(true);
     expect(normaliseBuildingServices(p.services)?.runs[0]).toEqual(run);

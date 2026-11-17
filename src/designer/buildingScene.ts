@@ -5,7 +5,7 @@ import type { SceneInput } from './roomView3d';
 import { GROUND_LEVEL_ID, activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, roomLevelId, roomsOnLevel } from './levels';
 import { buildingLevels, levelElevationM, normaliseBuildingStairs, roofConfigOf, stairFootprint, stairRiseM, type BuildingStair } from './building';
 import { stairFootprintInsideRoom, stairPlacementFits } from './stairPlacement';
-import { createRoofSurface, roofItemMount } from './roofSurface';
+import { createRoofSurface, roofHorizontalSupportElevationM, roofItemMount } from './roofSurface';
 
 export type BuildingView = 'building' | 'floor';
 
@@ -72,12 +72,14 @@ export function buildingSolids(
     }
     result.walls.push(...local.walls.map((w) => ({ ...w, elevationM, levelId: level.id })));
     result.items.push(...local.items.filter(it => !isRoofLevel(level) || level.id === active || tankCapacityLitres(it.productId)).map((it) => {
-      const owner = isRoofLevel(level) && it.placement === 'roof'
+      const tank = Boolean(tankCapacityLitres(it.productId));
+      const owner = isRoofLevel(level) && (it.placement === 'roof' || tank)
         ? rooms.find((room) => isRoofRoom(room) && room.placedItems.some((item) => item.instanceId === it.instanceId)) : undefined;
-      // With the covering hidden there is nothing to seat on: the panel lies on the storey top.
-      const surface = owner && showRoof ? createRoofSurface(owner.polygon, elevationM, roofConfigOf(property)) : null;
-      const mount = surface ? roofItemMount(surface, it) : undefined;
-      const base = mount?.elevationM ?? elevationM;
+      // Tank supports follow the physical covering even in a cutaway. PV presentation
+      // retains its existing option to sit on the exposed slab while the covering is hidden.
+      const surface = owner && (showRoof || tank) ? createRoofSurface(owner.polygon, elevationM, roofConfigOf(property)) : null;
+      const mount = surface && !tank ? roofItemMount(surface, it) : undefined;
+      const base = tank && surface ? roofHorizontalSupportElevationM(surface,it) : mount?.elevationM ?? elevationM;
       return { ...it, levelId: level.id, roofRoomId: owner?.id, roofMount: mount,
         floorElevationM: base, z0: it.z0 + base, z1: it.z1 + base,
         lightMountM: it.lightMountM === undefined ? undefined : it.lightMountM + base };
