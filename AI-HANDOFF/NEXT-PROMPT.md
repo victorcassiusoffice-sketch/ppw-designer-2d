@@ -1,6 +1,6 @@
 # Next prompt (rewritten at every commit)
 
-Written 2026-11-20 14:05 MU by Fable.
+Written 2026-11-20 14:13 MU by Fable.
 
 ## Where we are
 
@@ -13,9 +13,9 @@ Scan notes in `AI-HANDOFF/scan/`, one file per area:
 | `TOOLS-PLAN.md` (the 2D plan and the toolbar) | done, committed |
 | `CITY-SITE-ECO.md` (city sheet, site and land, eco) | done, committed |
 | `FORMAT.md` (the design format) | not committed yet |
-| `BUILD-3D-WALK.md` (3D build view, walk, geometry rules) | not committed yet |
-| `SERVICES-TRADES.md` (pipes, cables, trades, costing) | not committed yet |
-| `ROUTES-SERVER-TESTS.md` (routes, server, catalogue, tests, caps) | not committed yet |
+| `BUILD-3D-WALK.md` (3D build view, walk, geometry rules) | done, committed |
+| `SERVICES-TRADES.md` (pipes, cables, trades, costing) | done, committed |
+| `ROUTES-SERVER-TESTS.md` (routes, server, catalogue, tests, caps) | done, committed |
 
 Stage 1 so far: the rails are in both repos; the private game repo exists and is proven (see `PROGRESS.md`).
 

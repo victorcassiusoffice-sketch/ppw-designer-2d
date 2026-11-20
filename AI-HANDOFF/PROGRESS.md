@@ -8,6 +8,7 @@ One line per step: date and time MU, who, stage, what was done, commit, tests, n
 
 - 2026-11-20 13:47 MU, Fable, stage 1: the private game repo exists (`olb-game`, private, `main` at `1669b76`, `git ls-remote` equal to HEAD), with the same `AI-HANDOFF/` folder. Its work branch is `world/s11-unreal-front`.
 - 2026-11-20 14:05 MU, Fable, stage 0: scan notes for two of six areas are in `AI-HANDOFF/scan/` (`TOOLS-PLAN.md`: 191 items, 45 tools; `CITY-SITE-ECO.md`: 187 items, 36 tools). Read-only on the code; no tests run. Next: the other four notes, then `INVENTORY.md`.
+- 2026-11-20 14:13 MU, Fable, stage 0: three more scan notes committed (`BUILD-3D-WALK.md`: 119 items, 35 tools, 117 geometry rules; `SERVICES-TRADES.md`: 191 items, 31 tools; `ROUTES-SERVER-TESTS.md`: routes, server, catalogue, tests, caps). A few lines about who may call which route are kept in a private review note outside this public repo. Next: the design format note, then `INVENTORY.md`.
 
 ## Found, not fixed
 
@@ -20,6 +21,14 @@ Found by the stage 0 scan. Each is outside the files of stages 0 and 1, so it is
 - The garden and the plot's `world` payload have no server check, and the garden has no count cap (`api/_lib/designSnapshotValidation.ts:37-59`).
 - The city and the eco study load as nothing when one value is bad (all-or-nothing checks).
 - Rules that disagree, which a second front would have to copy: three default wall thicknesses (0.10, 0.12, 0.15 m); the turn step is 45 degrees on keys and 90 in the details panel; wall height is 2 to 4 m for a house and 2 to 8 m for a storey. Stage 2 picks one of each.
+- Read from code, not run: the admin approve and reject buttons post to a path the router does not route (`src/pages/admin/MerchantDetailPage.tsx:122,150` against `api/admin-router.ts:72-86`).
+- Three product category lists that do not match: 17 in the type (`src/data/products.schema.ts:29-62`), 10 in the import wizard (`src/lib/merchants/catalogImport.ts:7`), 8 in the add form (`src/pages/productForm.ts:2-11`).
+- The merchant dashboard shows 100 products at most (`src/pages/MerchantDashboardPage.tsx:103`).
+- The secrets-scan allow-list names a folder that does not exist (`.gitleaks.toml:19`).
+- The 12-function cap has no check in CI (`api/__tests__/paintCalcDispatch.test.ts:207-219`).
+- `src/designer/openingPlacement.ts` has one byte that is not valid UTF-8 at line 53.
+- Services: nothing checks that a network works. A run end joins a fixture port or a junction, and the only fault signals are warnings (`src/designer/serviceConnections.ts:109-115, 226-294`; `src/designer/projectReview.ts:441`). Trade rates are parsed by code that has no caller (`parseRateCard`). Stage 7 and stage 11, step 4, build on this.
+- Security review items found by the scan are listed in a private note outside this public repo, not here.
 
 ## Rollback deployments (one line per web merge)
 
