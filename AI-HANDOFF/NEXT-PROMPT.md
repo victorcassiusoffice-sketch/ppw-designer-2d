@@ -1,6 +1,6 @@
 # Next prompt (rewritten at every commit)
 
-Written 2026-11-22 03:28 MU by Fable.
+Written 2026-11-22 03:41 MU by Fable.
 
 ## Where we are
 
@@ -11,7 +11,7 @@ Stage 2 (world format) is under way on the branch `world/s02-world-format`, made
 | Stage 2, its seven steps | `PLAN.md`, "Stage 2 in steps" |
 | 2.1 Open a design file | BUILT and tested (`src/designer/designFile.ts`, `src/components/PlanImportWorkspace.tsx`; 9 new tests); a real file saved by the game was read whole. SEEN in a browser on a local server: a house the game saved is opened as a new plan |
 | 2.2 Save a design file | BUILT and tested (`saveDesign` in `src/components/ProjectWorkspace.tsx`; `designFileText`, `designFileName`; 2 new tests: saved and opened again, the same design). SEEN in a browser on a local server |
-| 2.3 One schema, with a version | THREE PARTS built and tested: a key this build does not know is kept, in the design and in each room (`src/designer/unknownKeys.ts`); the format version is read and a newer file says so; a section this build cannot read is kept aside under `unread` by ONE reader that both load lists use (`readSections` in `src/store/propertyStore.ts`). The whole suite passes. The rest is in "Continue", point 2 |
+| 2.3 One schema, with a version | THREE PARTS built and tested: a key this build does not know is kept, in the design and in each room (`src/designer/unknownKeys.ts`); the format version is read and a newer file says so; a section this build cannot read is kept aside under `unread` by ONE reader that both load lists use (`readSections` in `src/store/propertyStore.ts`). The whole suite passes. MIND: what the loading of a design uses must be declared ABOVE the store in `src/store/propertyStore.ts` or be a `function`; three commits of this branch (`324147d`, `5c21deb`, `773e8a1`) did not load a stored design at page start for that reason, repaired since, and `src/store/__tests__/startUpLoad.test.ts` holds it. The rest is in "Continue", point 2 |
 | 2.4 to 2.7 | not started |
 | The stage's PR | #83, a draft against `main`, stacked on #82 |
 | Stages 0 and 1 | DONE: `INVENTORY.md` (147 tool rows, 845 inventory lines, 240 caps), `scan/` (six notes, `make-inventory.py`, `_inventory-head.md`), the rails in both repos; PR #82 |

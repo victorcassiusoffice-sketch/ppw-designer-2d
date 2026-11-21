@@ -119,6 +119,84 @@ import {
   type Garden, type GardenFence, type GardenSurface,
 } from '../designer/garden';
 
+// ---- What the loading of a design needs, at the TOP of this module on purpose ----
+// The design in the browser's storage is loaded while the store is being made, further down this file, at the
+// moment the page starts. Everything that load uses must exist by then: a name declared below the store does
+// not, and the load then fails without a word and the page shows an empty design in place of the stored one
+// (`src/store/__tests__/startUpLoad.test.ts` holds this).
+
+/**
+ * The keys of a design that the loader reads, each cleaned in its own way. A key that is none of these is
+ * NOT dropped any more: it is carried through as it is (`keepUnknownKeys`), so a field written by a newer build,
+ * or by the desktop game, survives being opened and saved by this one. A design without `formatVersion` is
+ * version 1; the number is carried like any key this build does not know.
+ */
+const KNOWN_PROPERTY_KEYS: ReadonlySet<string> = new Set([
+  'id',
+  'name',
+  'activeRoomId',
+  'rooms',
+  'services',
+  'terrainCuts',
+  'boundaryComponents',
+  'foundation',
+  'shade',
+  'city',
+  'eco',
+  'engineering',
+  'materials',
+  'levels',
+  'activeLevelId',
+  'walls',
+  'site',
+  'wallHeightM',
+  'wallPaintCoats',
+  'wallPaintWastePct',
+  'wallPaintPrimer',
+  'stairs',
+  'roof',
+  'garden',
+  'unread',
+]);
+
+/** The same for a room. The last four are the rectangle fields of the first designs: read, migrated, never written. */
+const KNOWN_ROOM_KEYS: ReadonlySet<string> = new Set([
+  'removedWallEdges',
+  'id',
+  'name',
+  'polygon',
+  'placedItems',
+  'levelId',
+  'kind',
+  'openings',
+  'floorFinish',
+  'floorTiles',
+  'wallConstruction',
+  'wallPaint',
+  'wallCladding',
+  'vertices',
+  'lengthM',
+  'widthM',
+  'roomDimensions',
+]);
+
+/**
+ * The sections of a design that are read whole or not at all: each has a reader that answers nothing for a value
+ * it does not accept. In the order the loader has always written them.
+ */
+const SECTION_NAMES = [
+  'services',
+  'terrainCuts',
+  'boundaryComponents',
+  'foundation',
+  'shade',
+  'city',
+  'eco',
+  'engineering',
+] as const;
+type SectionName = (typeof SECTION_NAMES)[number];
+const NO_KEYS: ReadonlySet<string> = new Set();
+
 /**
  * One painted edge, tint validated. A tint with no valid hex is dropped, and
  * so is a tint on a line the catalogue marks white-only (Xtreme White, Heat
@@ -2227,56 +2305,7 @@ export const usePropertyStore = create<PropertyState>()(
   ),
 );
 
-/**
- * The keys of a design that this build reads below, each cleaned in its own way. A key that is none of these is
- * NOT dropped any more: it is carried through as it is (`keepUnknownKeys`), so a field written by a newer build,
- * or by the desktop game, survives being opened and saved by this one. A design without `formatVersion` is
- * version 1; the number is carried like any key this build does not know.
- */
-const KNOWN_PROPERTY_KEYS: ReadonlySet<string> = new Set([
-  'id',
-  'name',
-  'activeRoomId',
-  'rooms',
-  'services',
-  'terrainCuts',
-  'boundaryComponents',
-  'foundation',
-  'shade',
-  'city',
-  'eco',
-  'engineering',
-  'materials',
-  'levels',
-  'activeLevelId',
-  'walls',
-  'site',
-  'wallHeightM',
-  'wallPaintCoats',
-  'wallPaintWastePct',
-  'wallPaintPrimer',
-  'stairs',
-  'roof',
-  'garden',
-  'unread',
-]);
 
-/**
- * The sections of a design that are read whole or not at all: each has a reader that answers nothing for a value
- * it does not accept. In the order the loader has always written them.
- */
-const SECTION_NAMES = [
-  'services',
-  'terrainCuts',
-  'boundaryComponents',
-  'foundation',
-  'shade',
-  'city',
-  'eco',
-  'engineering',
-] as const;
-type SectionName = (typeof SECTION_NAMES)[number];
-const NO_KEYS: ReadonlySet<string> = new Set();
 
 function readSection(name: SectionName, value: unknown, levelIds: ReadonlySet<string>): unknown {
   switch (name) {
@@ -2327,26 +2356,6 @@ function readSections(
   return { read, unread };
 }
 
-/** The same for a room. The last four are the rectangle fields of the first designs: read, migrated, never written. */
-const KNOWN_ROOM_KEYS: ReadonlySet<string> = new Set([
-  'removedWallEdges',
-  'id',
-  'name',
-  'polygon',
-  'placedItems',
-  'levelId',
-  'kind',
-  'openings',
-  'floorFinish',
-  'floorTiles',
-  'wallConstruction',
-  'wallPaint',
-  'wallCladding',
-  'vertices',
-  'lengthM',
-  'widthM',
-  'roomDimensions',
-]);
 
 /**
  * Ensure a loaded property has at least one room and each room has a
