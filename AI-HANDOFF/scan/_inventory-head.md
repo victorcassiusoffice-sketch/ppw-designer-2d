@@ -61,9 +61,14 @@ On the web front:
 2. The rule for placing a new item lives inside the 2D plan component. It has to move into a plain module that every view, and the game, can call.
 3. Pipes, cables and fixtures are drawn in a separate workspace only. They need to be drawn in the plan, the 3D view and the walk.
 4. Dig and fill exists in the walk only, in 1 m cells that only go down, and the land has no heights. A height field comes with the map stage.
-5. Nothing checks that a pipe or a cable network works. Runs connect to ports and junctions; no code follows the network. The game adds that check (stage 11, step 4) and the web uses the same rule.
+5. Nothing checks that a pipe or a cable network works. Runs connect to ports and junctions; no code follows the network. The game added that check (stage 11, step 4): the rule is written out in `RULE-CONNECTED.md`, for the web to use the same.
 6. Lights, panels, tanks, batteries and boxes are plain placed items: they connect to nothing.
 7. A saved design has no version, and no sign-in a desktop program can hold. The product list and the table from product to 3D model are inside the web bundle, not served. Stage 2 adds these; until then the game loads a design from a file, or through a shared room (which has a revision check).
+8. One answer to where a wall's face is. The placing rule and the 3D walls disagree (5 cm inside the room line against 0 and 14 cm), so a thin thing on a wall can be drawn inside it. Found from the game, 21 Nov 2026: see `PROGRESS.md`.
+9. An edit that moves a whole building on its plot. Today every coordinate is absolute and nothing moves them together.
+10. A roof that is one surface. Today it is one slab per room, and a panel cannot lie across the line between two rooms.
+11. A place in the design for construction stages and for who does what. Today they live in one browser's storage.
+12. One function that says whether a design file is good, for any front to call. Today the checks are spread over the server, the load and each editor; the game calls five of them one by one.
 
 In the game: every tool, in the order of the stage 11 chapter (`PLAN.md` in the game repo). The rules it must copy exactly are in `scan/BUILD-3D-WALK.md`, section 4 (117 numbered geometry rules) and `scan/FORMAT.md`.
 
