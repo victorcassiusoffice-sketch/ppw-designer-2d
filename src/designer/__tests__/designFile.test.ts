@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   DESIGN_FILE_LIMITS,
+  DESIGN_FORMAT_VERSION,
   countUnknownProducts,
   designFileName,
+  designFormatVersion,
   designFileText,
   readDesignFile,
 } from '../designFile';
@@ -149,5 +151,14 @@ describe('a whole design as a file', () => {
     expect(designFileName('设计')).toBe('design.json');
     expect(designFileName(undefined)).toBe('design.json');
     expect(designFileName('a'.repeat(200))).toBe(`${'a'.repeat(60)}.json`);
+  });
+  it('reads the format version a design says it has; without one it is version 1', () => {
+    expect(DESIGN_FORMAT_VERSION).toBe(1);
+    expect(designFormatVersion(design())).toBe(1);
+    expect(designFormatVersion({ ...design(), formatVersion: 3 })).toBe(3);
+    for (const said of [0, -2, 1.5, '2', null, Number.NaN, {}])
+      expect(designFormatVersion({ ...design(), formatVersion: said }), String(said)).toBe(1);
+    expect(designFormatVersion(null)).toBe(1);
+    expect(designFormatVersion('text')).toBe(1);
   });
 });

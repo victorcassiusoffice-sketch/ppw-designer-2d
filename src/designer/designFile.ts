@@ -107,3 +107,15 @@ export function designFileName(name: unknown): string {
     .replace(/-+$/g, '');
   return `${plain || 'design'}.json`;
 }
+
+/**
+ * The version of the design format this build writes and fully reads. A design carries its number in
+ * `formatVersion`; a design without one is version 1 (every design made before the number existed).
+ */
+export const DESIGN_FORMAT_VERSION = 1;
+
+/** The format version a design says it has: a whole number of 1 or more, else 1. */
+export function designFormatVersion(property: unknown): number {
+  const said = isRecord(property) ? property.formatVersion : undefined;
+  return typeof said === 'number' && Number.isInteger(said) && said >= 1 ? said : 1;
+}

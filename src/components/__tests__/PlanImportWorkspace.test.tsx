@@ -238,6 +238,44 @@ describe('review-and-apply plan import', () => {
     );
     expect(usePropertyStore.getState().property.name).toBe('Existing measured house');
   });
+  it('says so when a design file is in a newer format, and keeps what it does not know', async () => {
+    open();
+    await file({
+      name: 'newer.json',
+      size: 900,
+      text: async () =>
+        JSON.stringify({
+          id: 'from-a-newer-build',
+          name: 'House in a newer format',
+          activeRoomId: 'r1',
+          formatVersion: 3,
+          costLines: [{ kind: 'labour', hours: 6 }],
+          rooms: [
+            {
+              id: 'r1',
+              name: 'Room',
+              polygon: [
+                { x: 0, y: 0 },
+                { x: 4, y: 0 },
+                { x: 4, y: 3 },
+                { x: 0, y: 3 },
+              ],
+              placedItems: [],
+            },
+          ],
+        }),
+    });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+      'written in a newer format (version 3; this app reads version 1)',
+    );
+    ack();
+    click('Add as a new plan →');
+    const property = usePropertyStore.getState().property as unknown as Record<string, unknown>;
+    expect(property.name).toBe('House in a newer format');
+    expect(property.formatVersion).toBe(3);
+    expect(property.costLines).toEqual([{ kind: 'labour', hours: 6 }]);
+  });
   it('refuses a design file too large to open, in words', async () => {
     open();
     const room = (i: number) => ({ id: `r${i}`, polygon: [], placedItems: [] });

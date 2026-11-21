@@ -13,7 +13,12 @@ import {
 } from '../designer/planImport';
 import { validateDesignDraft, type DesignCatalogProduct } from '../designer/aiDesignContract';
 import { designDraftToProperty } from '../designer/aiDesignProperty';
-import { countUnknownProducts, readDesignFile } from '../designer/designFile';
+import {
+  DESIGN_FORMAT_VERSION,
+  countUnknownProducts,
+  designFormatVersion,
+  readDesignFile,
+} from '../designer/designFile';
 import { getAllProducts } from '../data/products';
 import { useCatalogStore } from '../store/catalogStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
@@ -174,11 +179,17 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
       if (design) {
         const property = normaliseLoadedProperty(design.property as Property);
         const unknown = countUnknownProducts(property, new Set(catalog.map((p) => p.id)));
+        const version = designFormatVersion(design.property);
         setJsonReview(
           draftReview(property, [
             design.kind === 'handover'
               ? 'A project hand-over file: the design in it is opened, its tasks are not.'
               : 'A whole design file: it is opened as it was saved.',
+            ...(version > DESIGN_FORMAT_VERSION
+              ? [
+                  `This design was written in a newer format (version ${version}; this app reads version ${DESIGN_FORMAT_VERSION}). What this app does not know is kept in the design and not shown.`,
+                ]
+              : []),
             ...(unknown
               ? [
                   `${unknown} placed ${unknown === 1 ? 'thing names' : 'things name'} a product this catalogue does not have now. They stay in the design and are drawn when the catalogue has them.`,
