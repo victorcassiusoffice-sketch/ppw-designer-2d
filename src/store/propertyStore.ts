@@ -37,6 +37,7 @@ import { withMasonryThickness, inheritMasonryRoom } from '../designer/masonryDim
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
+import { keepUnknownKeys } from '../designer/unknownKeys';
 import type { Polygon, RoomDims, Vertex } from '../lib/geometry';
 import { rectToPolygon, pointInPolygon, isRectInsidePolygon, rotatedFootprint } from '../lib/geometry';
 // Attached multi-room (2026-08-26) — every room lives in ONE shared world
@@ -2219,6 +2220,60 @@ export const usePropertyStore = create<PropertyState>()(
 );
 
 /**
+ * The keys of a design that this build reads below, each cleaned in its own way. A key that is none of these is
+ * NOT dropped any more: it is carried through as it is (`keepUnknownKeys`), so a field written by a newer build,
+ * or by the desktop game, survives being opened and saved by this one. A design without `formatVersion` is
+ * version 1; the number is carried like any key this build does not know.
+ */
+const KNOWN_PROPERTY_KEYS: ReadonlySet<string> = new Set([
+  'id',
+  'name',
+  'activeRoomId',
+  'rooms',
+  'services',
+  'terrainCuts',
+  'boundaryComponents',
+  'foundation',
+  'shade',
+  'city',
+  'eco',
+  'engineering',
+  'materials',
+  'levels',
+  'activeLevelId',
+  'walls',
+  'site',
+  'wallHeightM',
+  'wallPaintCoats',
+  'wallPaintWastePct',
+  'wallPaintPrimer',
+  'stairs',
+  'roof',
+  'garden',
+]);
+
+/** The same for a room. The last four are the rectangle fields of the first designs: read, migrated, never written. */
+const KNOWN_ROOM_KEYS: ReadonlySet<string> = new Set([
+  'removedWallEdges',
+  'id',
+  'name',
+  'polygon',
+  'placedItems',
+  'levelId',
+  'kind',
+  'openings',
+  'floorFinish',
+  'floorTiles',
+  'wallConstruction',
+  'wallPaint',
+  'wallCladding',
+  'vertices',
+  'lengthM',
+  'widthM',
+  'roomDimensions',
+]);
+
+/**
  * Ensure a loaded property has at least one room and each room has a
  * polygon (migrate legacy `{lengthM, widthM}` shape if found).
  */
@@ -2297,6 +2352,8 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   if (roof && levelsOf(out).some(isRoofLevel)) out.roof = roof;
   const garden = normaliseGarden(property.garden);
   if (garden) out.garden = garden;
+  // What this build does not know is kept, not dropped.
+  keepUnknownKeys(property, KNOWN_PROPERTY_KEYS, out as unknown as Record<string, unknown>);
   return out;
 }
 
@@ -2480,7 +2537,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
   // Ground is canonicalised to ABSENT; an unknown `kind` is dropped.
   const levelId = canonicalLevelId(r.levelId);
   const kind = r.kind === 'outdoor' || r.kind === 'room' || r.kind === 'roof' ? r.kind : undefined;
-  return {
+  const room: Room = {
     ...(r.removedWallEdges?{removedWallEdges:remapRemovedEdges(r.removedWallEdges,canon.edgeMap)}:{}),
     id: r.id ?? nanoid(8),
     name: r.name ?? 'Room',
@@ -2559,6 +2616,9 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
         })()
       : {}),
   };
+  // What this build does not know about a room is kept, not dropped.
+  keepUnknownKeys(r, KNOWN_ROOM_KEYS, room as unknown as Record<string, unknown>);
+  return room;
 }
 
 function remapCladEdges(
