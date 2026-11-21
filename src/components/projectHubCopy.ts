@@ -336,6 +336,18 @@ const copy = {
     '任务记录已更改。请查看最新任务后重试。',
     'El registro cambió. Revise las tareas e inténtelo de nuevo.',
   ],
+  saveDesign: [
+    'Save the design as a file',
+    'Enregistrer le projet dans un fichier',
+    '将设计保存为文件',
+    'Guardar el diseño en un archivo',
+  ],
+  saveDesignNote: [
+    'The design alone, as one file. Plan import opens it again as a new plan, and so does the desktop game. Review your project names and notes before sharing it.',
+    'Le projet seul, en un fichier. L’import de plan le rouvre comme nouveau plan, le jeu de bureau aussi. Vérifiez noms et notes avant de le partager.',
+    '仅包含设计的单个文件。可通过“导入平面图”作为新方案重新打开，桌面游戏也可打开。分享前请检查项目名称和备注。',
+    'Solo el diseño, en un archivo. La importación de planos lo abre de nuevo como plano nuevo, y también el juego de escritorio. Revise nombres y notas antes de compartirlo.',
+  ],
   export: [
     'Export project review JSON',
     'Exporter la revue JSON',

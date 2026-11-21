@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { DESIGN_FILE_LIMITS, countUnknownProducts, readDesignFile } from '../designFile';
+import {
+  DESIGN_FILE_LIMITS,
+  countUnknownProducts,
+  designFileName,
+  designFileText,
+  readDesignFile,
+} from '../designFile';
+import { normaliseLoadedProperty, type Property } from '../../store/propertyStore';
 import { createGuidedDesign } from '../aiDesignContract';
 
 const square = [
@@ -103,5 +110,44 @@ describe('a whole design as a file', () => {
         new Set(['9']),
       ),
     ).toBe(2);
+  });
+  it('saves a design as a file that opens again as the same design', () => {
+    // A design with more in it than rooms: a storey over the ground, a thing of a merchant's product, a paint.
+    const saved = normaliseLoadedProperty({
+      id: 'round-trip',
+      name: 'Maison d’été 2',
+      activeRoomId: 'r1',
+      levels: [
+        { id: 'ground', name: 'Ground', index: 0 },
+        { id: 'upper', name: 'Upper', index: 1 },
+      ],
+      rooms: [
+        {
+          id: 'r1',
+          name: 'Living room',
+          polygon: square,
+          placedItems: [{ instanceId: 'thing00002', productId: 'm-903', x: 3, y: 1, rotation: 90 }],
+        },
+        { id: 'r2', name: 'Bedroom', polygon: square, placedItems: [], levelId: 'upper' },
+      ],
+    } as unknown as Property);
+    const text = designFileText(saved);
+    expect(text.endsWith('\n')).toBe(true);
+    const read = readDesignFile(JSON.parse(text));
+    expect(read?.kind).toBe('design');
+    // Opened again and cleaned as every opened design is, it is the design that was saved.
+    expect(normaliseLoadedProperty(read!.property as Property)).toEqual(saved);
+    // And nothing is in the file but the design.
+    expect(Object.keys(JSON.parse(text)).sort()).toEqual(Object.keys(saved).sort());
+  });
+
+  it('names the file after the design, in plain letters', () => {
+    expect(designFileName('Maison d’été 2')).toBe('maison-d-ete-2.json');
+    expect(designFileName('  My  House / plan #3  ')).toBe('my-house-plan-3.json');
+    expect(designFileName('../../etc/passwd')).toBe('etc-passwd.json');
+    expect(designFileName('')).toBe('design.json');
+    expect(designFileName('设计')).toBe('design.json');
+    expect(designFileName(undefined)).toBe('design.json');
+    expect(designFileName('a'.repeat(200))).toBe(`${'a'.repeat(60)}.json`);
   });
 });

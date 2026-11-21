@@ -83,3 +83,27 @@ export function countUnknownProducts(
       if (typeof item.productId !== 'string' || !knownIds.has(item.productId)) unknown++;
   return unknown;
 }
+
+/**
+ * A design as the text of a file: the design object itself and nothing round it, so that this app (the plan
+ * import) and the desktop game open it as it is.
+ */
+export function designFileText(property: unknown): string {
+  return `${JSON.stringify(property, null, 2)}\n`;
+}
+
+/**
+ * A file name for a design, from its name: letters and digits kept, everything else a dash, never empty.
+ * "Maison d'été 2" gives "maison-d-ete-2.json".
+ */
+export function designFileName(name: unknown): string {
+  const plain = (typeof name === 'string' ? name : '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+    .replace(/-+$/g, '');
+  return `${plain || 'design'}.json`;
+}

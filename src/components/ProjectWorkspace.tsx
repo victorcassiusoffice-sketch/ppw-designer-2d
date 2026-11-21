@@ -19,6 +19,7 @@ import {
   type DepartmentTask,
 } from '../designer/projectHub';
 import { reviewProject } from '../designer/projectReview';
+import { designFileName, designFileText } from '../designer/designFile';
 import { localizeProjectReviewFinding } from '../i18n/projectReview';
 import { emptyEco, type EcoTree, type GreenRoof } from '../designer/eco';
 import { EcoTreeSchema, GreenRoofSchema, EngineeringInputsSchema } from '../designer/ecoContract';
@@ -232,6 +233,17 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
     } catch {
       setMessage(c('invalid'));
     }
+  }
+  /** The design by itself, as a file that the plan import and the desktop game open. */
+  function saveDesign() {
+    const url = URL.createObjectURL(
+      new Blob([designFileText(property)], { type: 'application/json' }),
+    );
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = designFileName(property.name);
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async function importTasks(file?: File) {
     if (!file) return;
@@ -622,6 +634,12 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
                       }}
                     />
                   </label>
+                </div>
+                <p className="project-note">{c('saveDesignNote')}</p>
+                <div className="project-tool-links">
+                  <button className="project-primary" type="button" onClick={saveDesign}>
+                    {c('saveDesign')}
+                  </button>
                 </div>
               </article>
               <article className="project-card">
