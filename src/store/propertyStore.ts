@@ -382,6 +382,13 @@ export interface Property {
   wallPaintWastePct?: number;
   /** Bare / new plaster: quote one coat of the brand's primer under the paint. */
   wallPaintPrimer?: boolean;
+  /**
+   * Sections of the design that this build could NOT read (a section in a newer shape, or with a field this build
+   * does not know), kept as they were stored, by the section's name, so that opening and saving here does not
+   * lose them. NOTHING in the app reads them: they are not checked. The loader offers each to its reader again on
+   * every open, so a build that can read a section gets it back as the section.
+   */
+  unread?: Record<string, unknown>;
 }
 
 const pageLocation = (globalThis as {location?: {pathname:string; search:string}}).location;
@@ -2202,16 +2209,17 @@ export const usePropertyStore = create<PropertyState>()(
         const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
         if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
         if (merged.property?.materials !== undefined) merged.property = { ...merged.property, materials: normaliseMaterialsSettings(merged.property.materials) };
-        if (merged.property?.city !== undefined) merged.property = { ...merged.property, city: normaliseCity(merged.property.city) };
-        if (merged.property?.eco !== undefined) merged.property = { ...merged.property, eco: normaliseEco(merged.property.eco) };
-        if (merged.property?.engineering !== undefined) merged.property = { ...merged.property, engineering: normaliseEngineeringInputs(merged.property.engineering) };
-        if (merged.property?.terrainCuts !== undefined && !validCuts(merged.property.terrainCuts)) merged.property={...merged.property,terrainCuts:undefined};
-        if (merged.property?.boundaryComponents !== undefined && !validComponents(merged.property.boundaryComponents)) merged.property = { ...merged.property, boundaryComponents: undefined };
-        if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
-        if (merged.property?.shade !== undefined) merged.property = { ...merged.property, shade: normaliseShade(merged.property.shade) };
-        if (merged.property?.services !== undefined) {
-          const services = normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id)));
-          merged.property = { ...merged.property, services: services ? resolveServiceConnections(services) : undefined };
+        if (merged.property) {
+          // The sections that are read whole or not at all: by the same reader as the loader's, so that one a
+          // newer build wrote is kept aside here too, and not dropped on a reload.
+          const stored = merged.property as unknown as Record<string, unknown>;
+          const sections = readSections(stored, new Set(levelsOf(merged.property).map((l) => l.id)));
+          const next: Record<string, unknown> = { ...stored };
+          for (const name of SECTION_NAMES) if (name in next) next[name] = sections.read[name];
+          delete next.unread;
+          for (const name of SECTION_NAMES) if (!(name in next) && sections.read[name] !== undefined) next[name] = sections.read[name];
+          if (Object.keys(sections.unread).length > 0) next.unread = sections.unread;
+          merged.property = next as unknown as Property;
         }
         return merged;
       },
@@ -2250,7 +2258,74 @@ const KNOWN_PROPERTY_KEYS: ReadonlySet<string> = new Set([
   'stairs',
   'roof',
   'garden',
+  'unread',
 ]);
+
+/**
+ * The sections of a design that are read whole or not at all: each has a reader that answers nothing for a value
+ * it does not accept. In the order the loader has always written them.
+ */
+const SECTION_NAMES = [
+  'services',
+  'terrainCuts',
+  'boundaryComponents',
+  'foundation',
+  'shade',
+  'city',
+  'eco',
+  'engineering',
+] as const;
+type SectionName = (typeof SECTION_NAMES)[number];
+const NO_KEYS: ReadonlySet<string> = new Set();
+
+function readSection(name: SectionName, value: unknown, levelIds: ReadonlySet<string>): unknown {
+  switch (name) {
+    case 'services': {
+      const services = normaliseBuildingServices(value, levelIds);
+      return services ? resolveServiceConnections(services) : undefined;
+    }
+    case 'terrainCuts':
+      return validCuts(value) ? value : undefined;
+    case 'boundaryComponents':
+      return validComponents(value) ? value : undefined;
+    case 'foundation':
+      return normaliseFoundation(value);
+    case 'shade':
+      return normaliseShade(value);
+    case 'city':
+      return normaliseCity(value);
+    case 'eco':
+      return normaliseEco(value);
+    case 'engineering':
+      return normaliseEngineeringInputs(value);
+  }
+}
+
+/**
+ * Reads every section of a stored design. A section its reader accepts is `read`. A section its reader does NOT
+ * accept is not dropped any more: it goes into `unread`, as it was stored. What the design itself holds decides;
+ * only when it holds no such section is the one that was set aside earlier offered to the reader again.
+ */
+function readSections(
+  stored: Record<string, unknown>,
+  levelIds: ReadonlySet<string>,
+): { read: Record<string, unknown>; unread: Record<string, unknown> } {
+  const aside =
+    typeof stored.unread === 'object' && stored.unread !== null && !Array.isArray(stored.unread)
+      ? (stored.unread as Record<string, unknown>)
+      : {};
+  const read: Record<string, unknown> = {};
+  const unread: Record<string, unknown> = {};
+  for (const name of SECTION_NAMES) {
+    const value = stored[name] !== undefined ? stored[name] : aside[name];
+    if (value === undefined) continue;
+    const result = readSection(name, value, levelIds);
+    if (result !== undefined) read[name] = result;
+    // Plain JSON of a bounded size, as a copy; anything else cannot have come from a stored design.
+    else keepUnknownKeys({ [name]: value }, NO_KEYS, unread);
+  }
+  return { read, unread };
+}
 
 /** The same for a room. The last four are the rectangle fields of the first designs: read, migrated, never written. */
 const KNOWN_ROOM_KEYS: ReadonlySet<string> = new Set([
@@ -2307,17 +2382,10 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   };
   // Every field below is OPTIONAL and only written when it carries something,
   // so a property saved before the Sims world round-trips byte-identical.
-  if (property.services !== undefined) {
-    const services = normaliseBuildingServices(property.services, levelIds);
-    out.services = services ? resolveServiceConnections(services) : undefined;
-  }
-  if (validCuts(property.terrainCuts)) out.terrainCuts=property.terrainCuts;
-  if (validComponents(property.boundaryComponents)) out.boundaryComponents = property.boundaryComponents;
-  if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
-  if (property.shade !== undefined) out.shade = normaliseShade(property.shade);
-  if (property.city !== undefined) out.city = normaliseCity(property.city);
-  if (property.eco !== undefined) out.eco = normaliseEco(property.eco);
-  if (property.engineering !== undefined) out.engineering = normaliseEngineeringInputs(property.engineering);
+  // The sections that are read whole or not at all. One that cannot be read is kept aside, not dropped.
+  const sections = readSections(property as unknown as Record<string, unknown>, levelIds);
+  Object.assign(out, sections.read);
+  if (Object.keys(sections.unread).length > 0) out.unread = sections.unread;
   if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
