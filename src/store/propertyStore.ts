@@ -38,6 +38,16 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
 import { keepUnknownKeys } from '../designer/unknownKeys';
+import {
+  DESIGN_KEYS,
+  FREE_WALL_KEYS,
+  LEVEL_KEYS,
+  NO_KEYS,
+  ROOM_KEYS,
+  SECTION_NAMES,
+  SITE_KEYS,
+  type SectionName,
+} from '../designer/designFormat';
 import type { Polygon, RoomDims, Vertex } from '../lib/geometry';
 import { rectToPolygon, pointInPolygon, isRectInsidePolygon, rotatedFootprint } from '../lib/geometry';
 // Attached multi-room (2026-08-26) — every room lives in ONE shared world
@@ -119,83 +129,11 @@ import {
   type Garden, type GardenFence, type GardenSurface,
 } from '../designer/garden';
 
-// ---- What the loading of a design needs, at the TOP of this module on purpose ----
-// The design in the browser's storage is loaded while the store is being made, further down this file, at the
-// moment the page starts. Everything that load uses must exist by then: a name declared below the store does
-// not, and the load then fails without a word and the page shows an empty design in place of the stored one
-// (`src/store/__tests__/startUpLoad.test.ts` holds this).
-
-/**
- * The keys of a design that the loader reads, each cleaned in its own way. A key that is none of these is
- * NOT dropped any more: it is carried through as it is (`keepUnknownKeys`), so a field written by a newer build,
- * or by the desktop game, survives being opened and saved by this one. A design without `formatVersion` is
- * version 1; the number is carried like any key this build does not know.
- */
-const KNOWN_PROPERTY_KEYS: ReadonlySet<string> = new Set([
-  'id',
-  'name',
-  'activeRoomId',
-  'rooms',
-  'services',
-  'terrainCuts',
-  'boundaryComponents',
-  'foundation',
-  'shade',
-  'city',
-  'eco',
-  'engineering',
-  'materials',
-  'levels',
-  'activeLevelId',
-  'walls',
-  'site',
-  'wallHeightM',
-  'wallPaintCoats',
-  'wallPaintWastePct',
-  'wallPaintPrimer',
-  'stairs',
-  'roof',
-  'garden',
-  'unread',
-]);
-
-/** The same for a room. The last four are the rectangle fields of the first designs: read, migrated, never written. */
-const KNOWN_ROOM_KEYS: ReadonlySet<string> = new Set([
-  'removedWallEdges',
-  'id',
-  'name',
-  'polygon',
-  'placedItems',
-  'levelId',
-  'kind',
-  'openings',
-  'floorFinish',
-  'floorTiles',
-  'wallConstruction',
-  'wallPaint',
-  'wallCladding',
-  'vertices',
-  'lengthM',
-  'widthM',
-  'roomDimensions',
-]);
-
-/**
- * The sections of a design that are read whole or not at all: each has a reader that answers nothing for a value
- * it does not accept. In the order the loader has always written them.
- */
-const SECTION_NAMES = [
-  'services',
-  'terrainCuts',
-  'boundaryComponents',
-  'foundation',
-  'shade',
-  'city',
-  'eco',
-  'engineering',
-] as const;
-type SectionName = (typeof SECTION_NAMES)[number];
-const NO_KEYS: ReadonlySet<string> = new Set();
+// What the loading of a design uses must exist before the store below is made: the design in the browser's
+// storage is loaded while the store is being made, at the moment the page starts. So the names of the design's
+// parts are IMPORTED (`../designer/designFormat`), and whatever else that load uses is a `function`, never a
+// `const` further down this file: such a name does not exist yet, the load fails without a word, and the page
+// shows an empty design in place of the stored one (`src/store/__tests__/startUpLoad.test.ts` holds this).
 
 /**
  * One painted edge, tint validated. A tint with no valid hex is dropped, and
@@ -573,7 +511,10 @@ export function normaliseSite(site: unknown): Site | undefined {
       : { x: 0, y: 0 };
   // Preserve unknown saved data through early loads/writes without importing
   // Site implementation. It remains inert until validation after first paint.
-  return { widthM, depthM, originM, ...(s.world === undefined ? {} : { world: s.world }) };
+  const clean: Site = { widthM, depthM, originM, ...(s.world === undefined ? {} : { world: s.world }) };
+  // A field of the plot this build does not know is carried as it is.
+  keepUnknownKeys(s, SITE_KEYS, clean as unknown as Record<string, unknown>);
+  return clean;
 }
 
 /** Whether a light-emitting item is lit. Absent = on (see `PlacedItem.lightOn`). */
@@ -2430,7 +2371,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   const garden = normaliseGarden(property.garden);
   if (garden) out.garden = garden;
   // What this build does not know is kept, not dropped.
-  keepUnknownKeys(property, KNOWN_PROPERTY_KEYS, out as unknown as Record<string, unknown>);
+  keepUnknownKeys(property, DESIGN_KEYS, out as unknown as Record<string, unknown>);
   return out;
 }
 
@@ -2471,6 +2412,8 @@ export function normaliseLevels(levels: unknown): Level[] | undefined {
       if (height !== undefined) clean.heightM = height;
       if (elevation !== undefined) clean.elevationM = elevation;
     }
+    // A field of a storey this build does not know is carried as it is.
+    keepUnknownKeys(l, LEVEL_KEYS, clean as unknown as Record<string, unknown>);
     out.push(clean);
   }
   if (out.length === 0) return undefined;
@@ -2526,6 +2469,8 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
       clean.claddingId = claddingId;
       if ((w as { claddingFaces?: unknown }).claddingFaces === 2) clean.claddingFaces = 2;
     }
+    // A field of a wall this build does not know is carried as it is.
+    keepUnknownKeys(w, FREE_WALL_KEYS, clean as unknown as Record<string, unknown>);
     out.push(clean);
   }
   return out;
@@ -2694,7 +2639,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
       : {}),
   };
   // What this build does not know about a room is kept, not dropped.
-  keepUnknownKeys(r, KNOWN_ROOM_KEYS, room as unknown as Record<string, unknown>);
+  keepUnknownKeys(r, ROOM_KEYS, room as unknown as Record<string, unknown>);
   return room;
 }
 

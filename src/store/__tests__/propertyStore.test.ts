@@ -1263,11 +1263,14 @@ describe('normaliseLoadedProperty — Sims world fields round-trip', () => {
     expect(p.activeLevelId).toBe('one');
   });
 
-  it('keeps valid free walls (whitelisted fields only) and drops garbage + zero length', () => {
+  // World stage 2 (the design format): a field this build does not know is no longer dropped from a wall, it is
+  // carried as it is, so that a newer build's field survives being opened and saved here. What this build does
+  // read is still checked field by field, and a wall that fails is still dropped whole.
+  it('keeps valid free walls (their unknown fields carried) and drops garbage + zero length', () => {
     const p = normaliseLoadedProperty({
       ...base,
       walls: [
-        { id: 'w1', a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, thicknessM: 0.1, extra: 'dropped' },
+        { id: 'w1', a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, thicknessM: 0.1, extra: 'carried' },
         { id: 'w2', a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, thicknessM: 0.1, levelId: 'one' },
         { id: 'w2', a: { x: 9, y: 9 }, b: { x: 9, y: 0 }, thicknessM: 0.1 }, // dupe id
         { id: 'w3', a: { x: 1, y: 1 }, b: { x: 1, y: 1 }, thicknessM: 0.1 }, // zero length
@@ -1279,7 +1282,7 @@ describe('normaliseLoadedProperty — Sims world fields round-trip', () => {
       levels: [{ id: 'one', name: 'First floor', index: 1 }],
     });
     expect(p.walls).toEqual([
-      { id: 'w1', a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, thicknessM: 0.1 },
+      { id: 'w1', a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, thicknessM: 0.1, extra: 'carried' },
       { id: 'w2', a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, thicknessM: 0.1, levelId: 'one' },
       // stranded on a vanished level → ground (levelId dropped)
       { id: 'w5', a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, thicknessM: 0.1 },

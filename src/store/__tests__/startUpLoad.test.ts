@@ -33,6 +33,7 @@ const houseWithEverything = () => ({
   levels: [
     { id: 'ground', name: 'Ground floor', index: 0 },
     { id: 'first', name: 'First floor', index: 1 },
+    { id: 'roof', name: 'Roof', index: 2, kind: 'roof' },
   ],
   rooms: [
     {
@@ -45,7 +46,9 @@ const houseWithEverything = () => ({
     },
     { id: 'r2', name: 'Room above', polygon: square, placedItems: [], levelId: 'first' },
   ],
-  freeWalls: [{ id: 'w1', a: { x: 1, y: 1 }, b: { x: 4, y: 1 }, thicknessM: 0.1 }],
+  walls: [
+    { id: 'w1', a: { x: 1, y: 1 }, b: { x: 4, y: 1 }, thicknessM: 0.1, futureWallField: 'kept' },
+  ],
   site: { widthM: 30, depthM: 20, originM: { x: -5, y: -5 } },
   stairs: [
     {

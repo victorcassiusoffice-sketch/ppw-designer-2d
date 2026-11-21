@@ -4,6 +4,8 @@ import type { Property } from '../store/propertyStore';
 import { DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints.js';
 import { isRoofLevel, levelsOf, roofSourceLevelId, type Level } from './levels.js';
 import { isSimpleMeasuredPolygon } from './measuredPath.js';
+import { ROOF_KEYS, STAIR_KEYS } from './designFormat.js';
+import { keepUnknownKeys } from './unknownKeys.js';
 
 export const FLOOR_SLAB_THICKNESS_M = 0.18;
 export const MIN_LEVEL_HEIGHT_M = 2;
@@ -105,7 +107,7 @@ export function normaliseRoofConfig(value: unknown): RoofConfig | undefined {
   if (!['flat', 'gable', 'shed'].includes(raw.style as string)
     || !['felt','tile','metal','iron-sheet','concrete'].includes(raw.material as string)) return undefined;
   if(raw.thicknessM!==undefined && (typeof raw.thicknessM!=='number'||!Number.isFinite(raw.thicknessM)||raw.thicknessM<0.0003||raw.thicknessM>2))return undefined;
-  return {
+  const roof: RoofConfig = {
     style: raw.style as RoofConfig['style'], material: raw.material as RoofConfig['material'],
     pitchDeg: typeof raw.pitchDeg === 'number' && Number.isFinite(raw.pitchDeg)
       ? Math.max(5, Math.min(60, raw.pitchDeg)) : DEFAULT_ROOF_CONFIG.pitchDeg,
@@ -114,6 +116,9 @@ export function normaliseRoofConfig(value: unknown): RoofConfig | undefined {
     ...(raw.thicknessM!==undefined ? {thicknessM:raw.thicknessM as number} : {}),
     ...(outline ? { outline } : {}),
   };
+  // A field of the roof this build does not know is carried as it is.
+  keepUnknownKeys(raw, ROOF_KEYS, roof as unknown as Record<string, unknown>);
+  return roof;
 }
 
 export function stairRiseM(property: BuildingProperty, stair: Pick<BuildingStair, 'fromLevelId' | 'toLevelId'>): number {
@@ -155,6 +160,8 @@ export function normaliseBuildingStairs(value: unknown, property: BuildingProper
     const riseM = stairRiseM(property, stair);
     if (!Number.isFinite(riseM) || riseM <= 0) continue;
     seen.add(stair.id);
+    // A field of a stair this build does not know is carried as it is.
+    keepUnknownKeys(raw, STAIR_KEYS, stair as unknown as Record<string, unknown>);
     stairs.push(stair);
   }
   return stairs;
