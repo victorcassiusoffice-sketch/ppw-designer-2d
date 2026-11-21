@@ -1,31 +1,30 @@
 # Next prompt (rewritten at every commit)
 
-Written 2026-11-22 03:00 MU by Fable.
+Written 2026-11-22 03:08 MU by Fable.
 
 ## Where we are
 
-Stage 0 (the scan) and stage 1 (rails) are DONE: PR #82 is open and its four checks are green. It waits for the owner's merge word. Branch `world/s00-s01-scan-rails`, made from `main` at `d678c92`.
+Stage 2 (world format) is under way on the branch `world/s02-world-format`, made from `world/s00-s01-scan-rails` (stages 0 and 1, PR #82, open, waits for the owner's merge word). Stage 11 (the game) is seen in all seven steps in the game repo; its PR there waits for the owner's word too.
 
 | Piece | State |
 |---|---|
-| `AI-HANDOFF/INVENTORY.md` (the tool list to tick, the design format, everything else one line each) | done: 147 tool rows, 845 inventory lines, 240 caps |
-| `AI-HANDOFF/scan/` (six area notes, the script `make-inventory.py`, the hand-written top `_inventory-head.md`) | done |
-| Rails in both repos, the private game repo proven | done (see `PROGRESS.md`) |
-| PR #82 against `main`: "World stages 0 and 1: the scan and the hand-off rails" | open; Typecheck, Vitest, Secrets and Vercel green at 14:57 MU on `1876609` (a later docs commit runs them again) |
-| `AI-HANDOFF/RULE-CONNECTED.md`: when a pipe or a cable is connected, one rule for both fronts | new on 21 Nov, from the game (stage 11, step 4); the web is to copy it |
-| `AI-HANDOFF/RULE-ROLES.md`: the six roles of a shared house, one rule for both fronts | new on 22 Nov, from the game (stage 11, step 7); stage 8 is to copy it, or change it there first |
-| Findings from stage 11 for this repo | nine of 21 Nov and nine of 22 Nov, at the end of "Found, not fixed" in `PROGRESS.md` (two of 22 Nov are NEEDS: a model a second front can read, and a model for a merchant's own product); five points more in the inventory's "What is missing" (8 to 12) |
-| The test hand-off | PASSED 14:28 MU: a fresh chat with only the paste line found its place, wrote its line, pushed (`ffc2423`) and stopped |
+| Stage 2, its seven steps | `PLAN.md`, "Stage 2 in steps" |
+| 2.1 Open a design file | BUILT and tested (`src/designer/designFile.ts`, `src/components/PlanImportWorkspace.tsx`; 9 new tests); a real file saved by the game was read whole. Not yet seen in a browser |
+| 2.2 to 2.7 | not started |
+| Stages 0 and 1 | DONE: `INVENTORY.md` (147 tool rows, 845 inventory lines, 240 caps), `scan/` (six notes, `make-inventory.py`, `_inventory-head.md`), the rails in both repos; PR #82 |
+| Rules written for both fronts | `RULE-CONNECTED.md` (a pipe or a cable is connected), `RULE-ROLES.md` (the six roles of a shared house) |
+| Findings for this repo | `PROGRESS.md`, "Found, not fixed": from the scan, from stage 11 (21 and 22 Nov), from stage 2 |
 
-The PR adds files under `AI-HANDOFF/` and one two-line `.npmrc`. The `.npmrc` is the fix GPT made on its own branch (commit `7d15481`, brought in with `git cherry-pick -x`): without it `npm ci` fails on CI for every PR, because a dependency's install script downloads a file that is no longer there (404). No other code, test, config or page changed.
+PR #82 adds files under `AI-HANDOFF/` and one two-line `.npmrc` (without it `npm ci` fails on CI for every PR: a dependency's install script downloads a file that is gone). This branch is stacked on it, so its PR shows those files too until #82 is merged.
 
 ## Continue
 
-Read `PLAN.md` and `PROGRESS.md` in this folder first.
+Read `PLAN.md` (its last chapter: stage 2 in steps) and `PROGRESS.md` in this folder first.
 
-1. Stage 11 (the Unreal front) is SEEN in all seven steps in the game repo (22 Nov); its PR there waits for the owner's word. The building goes on HERE, with point 3.
-2. When the owner types `merge web 82`: merge PR #82 with a merge commit (never a squash), prove the live site still serves (a cache-busted read), write the rollback deployment in `PROGRESS.md`, and merge `main` forward into any open branch.
-3. The next web stage is 2 (world format): start it on a branch stacked on this one, `world/s02-world-format`, and open its PR against `main`. Read first what stage 11 found for this repo (`PROGRESS.md`, the nine findings of 21 Nov and the nine of 22 Nov; `INVENTORY.md`, "What is missing", points 8 to 12; `RULE-CONNECTED.md`): several of them are stage 2's to settle, and the two needs about models are stage 6's. A check that fails with `npm ci` and a 404 means the branch lacks the two-line `.npmrc` of this PR.
+1. Step 2.1, what is left: see it in a browser (the dialog "Plan import", a design file chosen, the review, "Add as a new plan"); a screenshot for the PR. Then step 2.2: a button that saves the design as a file by itself (the hand-over file's download is in `src/components/ProjectWorkspace.tsx:210-235`; the design object is `usePropertyStore.getState().property`), and a test that a design saved and opened again is the same after `normaliseLoadedProperty`.
+2. Step 2.3 is the heart of the stage: one schema with a version in place of the two hand-kept lists. Read `INVENTORY.md`, "Loading and saving" (lists A and B, field by field, and the eight ways a field is dropped today) before touching `src/store/propertyStore.ts`. Keep every existing test green at every commit; a key the schema does not know must survive.
+3. When the owner types `merge web 82`: merge PR #82 with a merge commit (never a squash), prove the live site still serves (a cache-busted read), write the rollback deployment in `PROGRESS.md`, and merge `main` forward into this branch.
+4. The laws of this repo hold at every step: the Konva lock, 12 server functions, tests green, no price on an open page, no company, person, price or site of ours in these files.
 
 To change the inventory: edit a note in `scan/` or the top in `scan/_inventory-head.md`, then run `python AI-HANDOFF/scan/make-inventory.py` from the repo root.
 

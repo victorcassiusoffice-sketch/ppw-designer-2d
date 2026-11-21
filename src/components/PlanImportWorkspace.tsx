@@ -13,6 +13,7 @@ import {
 } from '../designer/planImport';
 import { validateDesignDraft, type DesignCatalogProduct } from '../designer/aiDesignContract';
 import { designDraftToProperty } from '../designer/aiDesignProperty';
+import { countUnknownProducts, readDesignFile } from '../designer/designFile';
 import { getAllProducts } from '../data/products';
 import { useCatalogStore } from '../store/catalogStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
@@ -20,7 +21,7 @@ import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { useHistoryStore } from '../store/historyStore';
 import { applyPage, createPage, flushCurrentPage } from '../lib/pages';
 import { polygonArea } from '../lib/geometry';
-import type { Property } from '../store/propertyStore';
+import { normaliseLoadedProperty, type Property } from '../store/propertyStore';
 import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
 import './planImport.css';
 
@@ -167,6 +168,28 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
   function receive(name: string, text: string) {
     if (name.toLowerCase().endsWith('.json')) {
       const value: unknown = JSON.parse(text);
+      // A whole design (this app's own object, as the desktop game also saves it) or a project hand-over file:
+      // cleaned as every opened design is, shown for review, and added as a new plan beside the one on screen.
+      const design = readDesignFile(value);
+      if (design) {
+        const property = normaliseLoadedProperty(design.property as Property);
+        const unknown = countUnknownProducts(property, new Set(catalog.map((p) => p.id)));
+        setJsonReview(
+          draftReview(property, [
+            design.kind === 'handover'
+              ? 'A project hand-over file: the design in it is opened, its tasks are not.'
+              : 'A whole design file: it is opened as it was saved.',
+            ...(unknown
+              ? [
+                  `${unknown} placed ${unknown === 1 ? 'thing names' : 'things name'} a product this catalogue does not have now. They stay in the design and are drawn when the catalogue has them.`,
+                ]
+              : []),
+          ]),
+        );
+        setSource(null);
+        setFloor(0);
+        return;
+      }
       const validated = validateDesignDraft(
         value && typeof value === 'object' && 'draft' in value
           ? (value as { draft: unknown }).draft
@@ -307,7 +330,7 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
               and floors, then build on the result in 2D and 3D.
             </p>
             <label className="plan-import-file">
-              Choose DXF, SVG or draft JSON
+              Choose DXF, SVG, a design file or draft JSON
               <input
                 type="file"
                 accept=".dxf,.svg,.json"

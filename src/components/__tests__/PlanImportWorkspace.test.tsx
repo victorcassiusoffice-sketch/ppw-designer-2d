@@ -138,6 +138,117 @@ describe('review-and-apply plan import', () => {
     expect(document.querySelector('[role=alert]')?.textContent).toContain('Designer draft JSON');
     expect(document.querySelector('.plan-import-ack')).toBeNull();
   });
+  it('opens a whole design file as a new plan, keeps every placed thing and the plan on screen', async () => {
+    const previous = structuredClone(usePropertyStore.getState().property);
+    // A design as this app keeps it, and as the desktop game saves it: with a thing of a merchant's product,
+    // which this catalogue has not read from the server.
+    const design = {
+      id: 'saved-by-the-game',
+      name: 'House from the game',
+      activeRoomId: 'r1',
+      rooms: [
+        {
+          id: 'r1',
+          name: 'Living room',
+          polygon: [
+            { x: 0, y: 0 },
+            { x: 6, y: 0 },
+            { x: 6, y: 4 },
+            { x: 0, y: 4 },
+          ],
+          placedItems: [{ instanceId: 'thing00001', productId: 'm-903', x: 1, y: 1, rotation: 90 }],
+        },
+        {
+          id: 'r2',
+          name: 'Bedroom',
+          polygon: [
+            { x: 6, y: 0 },
+            { x: 10, y: 0 },
+            { x: 10, y: 4 },
+            { x: 6, y: 4 },
+          ],
+          placedItems: [],
+        },
+      ],
+    };
+    open();
+    await file({ name: 'house.json', size: 900, text: async () => JSON.stringify(design) });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    expect(document.querySelector('.plan-import-review-heading h2')?.textContent).toBe(
+      'House from the game',
+    );
+    const words = document.querySelector('[role=dialog]')?.textContent ?? '';
+    expect(words).toContain('A whole design file');
+    expect(words).toContain('1 placed thing names a product this catalogue does not have now');
+    ack();
+    click('Add as a new plan →');
+    const property = usePropertyStore.getState().property;
+    expect(property.name).toBe('House from the game');
+    expect(property.rooms.map((r) => r.id)).toEqual(['r1', 'r2']);
+    expect(property.rooms[1].polygon[1].x).toBe(10);
+    // The thing whose product is not known here is still in the design, as it was saved.
+    expect(property.rooms[0].placedItems).toEqual([
+      { instanceId: 'thing00001', productId: 'm-903', x: 1, y: 1, rotation: 90 },
+    ]);
+    expect(useHistoryStore.getState().past).toEqual([]);
+    const saved = useDesignsStore
+      .getState()
+      .list()
+      .find((p) => p.property.id === previous.id);
+    expect(saved).toBeDefined();
+    act(() => {
+      switchToPage(saved!.id);
+    });
+    expect(usePropertyStore.getState().property.name).toBe('Existing measured house');
+  });
+  it('opens the design inside a project hand-over file and says that its tasks are not opened', async () => {
+    open();
+    await file({
+      name: 'handover.json',
+      size: 900,
+      text: async () =>
+        JSON.stringify({
+          tasks: [{ id: 't1', title: 'Order the tiles' }],
+          snapshot: {
+            id: 'in-a-handover',
+            name: 'House in a hand-over',
+            activeRoomId: 'r1',
+            rooms: [
+              {
+                id: 'r1',
+                name: 'Room',
+                polygon: [
+                  { x: 0, y: 0 },
+                  { x: 4, y: 0 },
+                  { x: 4, y: 3 },
+                  { x: 0, y: 3 },
+                ],
+                placedItems: [],
+              },
+            ],
+          },
+        }),
+    });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    expect(document.querySelector('.plan-import-review-heading h2')?.textContent).toBe(
+      'House in a hand-over',
+    );
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+      'the design in it is opened, its tasks are not',
+    );
+    expect(usePropertyStore.getState().property.name).toBe('Existing measured house');
+  });
+  it('refuses a design file too large to open, in words', async () => {
+    open();
+    const room = (i: number) => ({ id: `r${i}`, polygon: [], placedItems: [] });
+    await file({
+      name: 'city.json',
+      size: 900,
+      text: async () => JSON.stringify({ rooms: Array.from({ length: 401 }, (_, i) => room(i)) }),
+    });
+    expect(document.querySelector('[role=alert]')?.textContent).toContain('more than 400 rooms');
+    expect(document.querySelector('.plan-import-ack')).toBeNull();
+  });
   it('does not let an older asynchronous upload replace the newer example', async () => {
     open();
     let resolve!: (text: string) => void;

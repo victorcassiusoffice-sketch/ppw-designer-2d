@@ -87,3 +87,17 @@ Rules:
 | `spend <what> <figure>` | the one paid step named |
 
 The chat stops with one line and the exact word for: a merge to `main`; spending money; dropping a tool; making any repo or page public that is not public now; deleting anything for good; changing a sign-in door, a payment path or a price; reading a website that is not a consenting company's own; a stage that needs hardware the owner does not have (stage 12).
+
+## Stage 2 in steps (written by the builder on 2026-11-22; the stage's line in the table above is the owner's)
+
+Stage 2 is too big for one sitting, so it is built in steps, each proven before the next, all on the branch `world/s02-world-format` and in ONE PR. A step is "seen" when its line in the last column is true and proven; the stage is done when all of them are.
+
+| Step | What | Seen when |
+|---|---|---|
+| 2.1 Open a design file | The plan import opens a whole design: this app's own design object as JSON, the design inside a project hand-over file, and what the desktop game saves (the same object). It is cleaned as every opened design is, reviewed, and added as a NEW plan; the plan on screen is kept. | A house saved by the game is opened in the web app |
+| 2.2 Save a design file | A button that downloads the design as a file by itself (today a design leaves the app only inside the hand-over file). | A design is saved to a file and opened again, the same |
+| 2.3 One schema, with a version | One schema of the whole design with a version number takes the place of the two hand-kept load lists (`propertyStore.ts`: the storage merge and `normaliseLoadedProperty`). A key the schema does not know is KEPT, not dropped. The findings of stages 0 and 11 that are about the format are settled here (`PROGRESS.md`). | A field this build does not know survives open and save |
+| 2.4 The new fields of version 2 | Walls as straight or arc segments with exact geometry (the drawing of arcs is stage 3); the plot with a map reference and a height field; products with company and model number; cost lines; members and roles (`RULE-ROLES.md`). Old designs open as before. | A version 1 design opens; a version 2 design keeps its new parts |
+| 2.5 3D out | Export glTF (3D) and STL (for a 3D printer) from the 3D view; 3D view sheets in the PDF. | A house is exported in 3D and opens in another program |
+| 2.6 Drawings and models in | DXF with arcs; IFC; glTF and OBJ. A new package is free and has a licence that allows it, or it waits for the owner's word. | A DXF and an IFC are imported |
+| 2.7 The game reads version 2 | The game repo: its reader and writer follow the one schema. | The game opens and saves a version 2 design |
