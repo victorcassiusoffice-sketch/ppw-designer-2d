@@ -1,6 +1,6 @@
 # Next prompt (rewritten at every commit)
 
-Written 2026-11-22 03:11 MU by Fable.
+Written 2026-11-22 03:13 MU by Fable.
 
 ## Where we are
 
@@ -9,8 +9,8 @@ Stage 2 (world format) is under way on the branch `world/s02-world-format`, made
 | Piece | State |
 |---|---|
 | Stage 2, its seven steps | `PLAN.md`, "Stage 2 in steps" |
-| 2.1 Open a design file | BUILT and tested (`src/designer/designFile.ts`, `src/components/PlanImportWorkspace.tsx`; 9 new tests); a real file saved by the game was read whole. Not yet seen in a browser |
-| 2.2 Save a design file | BUILT and tested (`saveDesign` in `src/components/ProjectWorkspace.tsx`; `designFileText`, `designFileName`; 2 new tests: saved and opened again, the same design). Not yet seen in a browser |
+| 2.1 Open a design file | BUILT and tested (`src/designer/designFile.ts`, `src/components/PlanImportWorkspace.tsx`; 9 new tests); a real file saved by the game was read whole. SEEN in a browser on a local server: a house the game saved is opened as a new plan |
+| 2.2 Save a design file | BUILT and tested (`saveDesign` in `src/components/ProjectWorkspace.tsx`; `designFileText`, `designFileName`; 2 new tests: saved and opened again, the same design). SEEN in a browser on a local server |
 | 2.3 to 2.7 | not started |
 | The stage's PR | #83, a draft against `main`, stacked on #82 |
 | Stages 0 and 1 | DONE: `INVENTORY.md` (147 tool rows, 845 inventory lines, 240 caps), `scan/` (six notes, `make-inventory.py`, `_inventory-head.md`), the rails in both repos; PR #82 |
@@ -23,7 +23,7 @@ PR #82 adds files under `AI-HANDOFF/` and one two-line `.npmrc` (without it `npm
 
 Read `PLAN.md` (its last chapter: stage 2 in steps) and `PROGRESS.md` in this folder first.
 
-1. Steps 2.1 and 2.2, what is left: see both in a browser (the project workspace, its hand-over card, "Save the design as a file"; then the dialog "Plan import", that file chosen, the review, "Add as a new plan"); a screenshot of each for PR #83. The designer sits behind the studio door on a preview: its code is the owner's and is never written down; a local `npm run dev` is the way to see it without the door, if the door is off there.
+1. Steps 2.1 and 2.2 are seen (tests, and a browser on a local server: `node_modules/.bin/vite --port 5199 --strictPort`, then a script with the repo's own browser test tool; the project workspace opens on the event `olb:open-project`, the plan import on `ppw:open-plan-import`). No screenshot of the designer goes into this repo or its PRs: its screen shows a basket total. Next is step 2.3.
 2. Step 2.3 is the heart of the stage: one schema with a version in place of the two hand-kept lists. Read `INVENTORY.md`, "Loading and saving" (lists A and B, field by field, and the eight ways a field is dropped today) before touching `src/store/propertyStore.ts`. Keep every existing test green at every commit; a key the schema does not know must survive.
 3. When the owner types `merge web 82`: merge PR #82 with a merge commit (never a squash), prove the live site still serves (a cache-busted read), write the rollback deployment in `PROGRESS.md`, and merge `main` forward into this branch.
 4. The laws of this repo hold at every step: the Konva lock, 12 server functions, tests green, no price on an open page, no company, person, price or site of ours in these files.
