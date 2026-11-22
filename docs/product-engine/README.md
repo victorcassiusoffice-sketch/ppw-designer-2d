@@ -88,6 +88,27 @@ The engine makes a body exactly the row's size, so the row has to be the maker's
 
 `npm run products:engine -- people --only nadia --dry-run` then `--yes --cap 2`; `--from-raw` finishes a person whose paid files are already in `models-raw/people/` at $0 (after a fix downstream of Fal); the run's `people.json` keeps the paid call's ids and spend and adds up across invocations. Each person is a made-up adult drawn from words (FLUX.1 [dev], A-pose, plain background, everyday clothes, no logos), never from a photo of anyone; Meshy rigs the body (walking and running come with the rig) and one animation call adds Idle; the three clips are merged into one GLB named idle / walk / run, textures to WebP, Draco, under the 1.5 MB character cap; the entry goes into `src/walk/characters.generated.json`, which `src/walk/characters.ts` spreads after the Kenney four (the fallback until the new ones pass). The cast and their real heights: `scripts/product-engine/lib/people.mjs`. Walk mode scales every body to 1.70 m (`WALK_HEIGHT_M`).
 
+## A body made in the service's own studio (added 22 November 2026)
+
+The owner has a plan with the photo-to-3D service itself, apart from the pay-per-call route above (the two do not share credits). A body made by hand in the service's own studio (its web page: one catalogue photo in, best quality, private) comes into the engine as a FILE and goes through everything a paid body goes through after its call. Nothing is sent and nothing is spent here.
+
+```
+npm run products:engine -- studio --run <name> --only <id> --file <full.glb> --low <light.glb> --phone <lighter.glb> --task <the studio's id of the model> --note "what was asked of the studio"
+```
+
+| File | What it is | What is made from it |
+|---|---|---|
+| `--file` | The full body as the studio hands it over (about 2 million triangles, pictures up to 8192 px) | The HIGH copy: at most 300,000 triangles, pictures up to 4096 px in their own format, plain meshes. For a strong machine and for the desktop game. It lies in `models-raw/high/<id>-high.glb`, outside `public/` and outside git, and is made again by `reprocess` |
+| `--low` | The same body as the studio's own light mesh (its retopology, quads, about 10,000 polygons = 20,000 triangles, the fine shape baked into its pictures) | The laptop copy |
+| `--phone` | The studio's lighter mesh still (about 2,500 polygons = 5,000 triangles) | The phone copy |
+
+Why three files: a cut of a hundred to one made here smears the pictures along every seam of the mesh (seen on the first body, 22 November: the laptop copy cut down from the full body had streaks of the wheel's red and white along the frame; the phone copy cut four to one from the light mesh the same). The studio makes a light mesh anew and bakes the pictures onto it, so the two served copies only have their pictures packed here. Without `--low` the copies are still cut down here, and the run says so.
+
+- The body lands as a CANDIDATE: `public/models/candidates/studio/`, shown in the app with `?bodies=studio`. `adopt --run <name> --tool studio` puts it into the catalogue (the plan picture and the catalogue picture are then made from the body) on the owner's word.
+- The run's record (`runs/<name>/run.json`) keeps the size and the SHA-256 of every file that came in, the studio's id of the model and the note, so a body can be fetched from the studio again. The files themselves are in `models-raw/runs/<name>/studio/`, never in git.
+- A copy that is over its byte limit has its pictures packed a step harder (quality 82, 76, 70, 62) until it fits; the run's record says which step.
+- The sheet's pictures of a studio run stay on the laptop (ignored by git): they go to the owner privately.
+
 ## Swapping in a maker's own model file
 
 A supplier's SketchUp GLB export goes through `npm run models:import-sketchup -- --in <file.glb> --product <id> --source "…" --licence "…"` (`docs/SKETCHUP-MODELS.md`); it is fitted the same way and takes precedence over a generated body. Run `gate --only <id>` afterwards to prove it.

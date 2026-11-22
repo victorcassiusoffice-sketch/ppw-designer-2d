@@ -1,0 +1,977 @@
+{
+  "run": "2026-11-22-studio",
+  "at": "2026-11-22T06:17:46.169Z",
+  "main": "unknown",
+  "mode": "candidates",
+  "prices_read_on": "2026-11-08",
+  "cap_usd": 0,
+  "bill_usd": 0,
+  "spent_usd": 0,
+  "tools": [
+    "studio"
+  ],
+  "skipped": [],
+  "results": [
+    {
+      "id": "k1-schwinn-700ic",
+      "tool": "studio",
+      "endpoint": "studio (a file brought in)",
+      "price": 0,
+      "views": null,
+      "generated_at": "2026-11-22T06:29:20.839Z",
+      "note": "H3.1 best quality, ultra mesh, 8K texture, PBR, one photo, private; light meshes: retopology, quads, Smart Mesh P1.0, 10,000 and 2,500 polygons",
+      "low": {
+        "bytes": 29770484,
+        "sha256": "7576283ad851d088e0f002df461f3cef8a3a3e8c632c20475601b5a6877028d4",
+        "triangles": 20071,
+        "phone": {
+          "bytes": 27621616,
+          "sha256": "bab0f023704145292854dce0ce050a69fbdf04164b77675901ebcf907cf5a02a",
+          "triangles": 5143
+        }
+      },
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "4e8851df-5d50-43fd-8dfd-a6c028b2c745",
+          "seconds": null,
+          "inference_s": null,
+          "rawBytes": 67333092,
+          "rawSha256": "e2505b10daac1b31969f8aa3a5e5d40f8df3b57e73fe05a187f1ef15adb80e9c",
+          "rawTriangles": 1919497,
+          "rawExtents": [
+            0.979034423828125,
+            0.9808654189109802,
+            0.4489898681640625
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "squaredDeg": 0,
+          "level": {
+            "pitchDeg": 0.03293733341191424,
+            "rollDeg": -0.11665367186338278,
+            "n": 1903
+          },
+          "shape": {
+            "pass": true,
+            "aspectError": 0.0005919003115264684,
+            "heightError": 0.0751967338383849,
+            "heightJudged": true,
+            "body": {
+              "long": 0.979034423828125,
+              "short": 0.4489898681640625,
+              "height": 0.9808654189109802
+            },
+            "tolerance": 0.15
+          }
+        }
+      ],
+      "servedUrl": "/models/candidates/studio/k1-schwinn-700ic.glb",
+      "phoneUrl": "/models/candidates/studio/k1-schwinn-700ic-phone.glb",
+      "copies": {
+        "served": {
+          "path": "public/models/candidates/studio/k1-schwinn-700ic.glb",
+          "bytes": 327756,
+          "triangles": 20000,
+          "rawBytes": 29770484,
+          "passes": [
+            {
+              "ratio": 0.9964625579193862,
+              "error": 0.001,
+              "triangles": 20000
+            }
+          ],
+          "quality": 76
+        },
+        "phone": {
+          "path": "public/models/candidates/studio/k1-schwinn-700ic-phone.glb",
+          "bytes": 119656,
+          "triangles": 4999,
+          "passes": [
+            {
+              "ratio": 0.9721952167995334,
+              "error": 0.02,
+              "triangles": 4999
+            }
+          ],
+          "quality": 82
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "art left: weak head signal, default kept",
+        "swapped": false
+      },
+      "up": "+y",
+      "bake": {
+        "up": "+y",
+        "bakeYaw": false,
+        "why": "the product is not flat; y stays up"
+      },
+      "squared": null,
+      "level": {
+        "pitchDeg": 0.11850044676593327,
+        "rollDeg": -0.17801770887490614,
+        "n": 749
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.003369058224858464,
+        "heightError": 0.07692313312583234,
+        "heightJudged": true,
+        "body": {
+          "long": 0.9789497256278992,
+          "short": 0.4502020478248596,
+          "height": 0.9789496660232544
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art-weak",
+        "detail": "art law: no clear head (|head| 0.14 < 0.15), symmetric body; confirm on the sheet",
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-schwinn-700ic",
+        "servedUrl": "/models/candidates/studio/k1-schwinn-700ic.glb",
+        "phoneUrl": "/models/candidates/studio/k1-schwinn-700ic-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 120,
+          "widthCm": 55.00000000000001,
+          "heightCm": 130,
+          "errCm": {
+            "length": 0,
+            "width": 7.105427357601002e-15,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20000,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4999,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 469,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.4109370835554371
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 0.3 %, height off by 7.7 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 120.0 × 55.0 × 130.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "stands level (base within 2°)",
+            "pass": true,
+            "detail": "base plane pitched 0.1°, rolled -0.2° (749 vertices)"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,000 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "320 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,999 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "117 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,999 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "41.1 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: no clear head (|head| 0.14 < 0.15), symmetric body; confirm on the sheet"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-schwinn-700ic/studio-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-schwinn-700ic/studio-catalogue.webp",
+        "eye": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-schwinn-700ic/studio-eye.webp",
+        "plan": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-schwinn-700ic/studio-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/studio/k1-schwinn-700ic.glb",
+        "phoneUrl": "/models/candidates/studio/k1-schwinn-700ic-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "2026-11-22-studio",
+          "tool": "studio",
+          "endpoint": "studio (a file brought in)",
+          "price_usd": 0,
+          "seconds": null,
+          "inference_s": null,
+          "request_id": "4e8851df-5d50-43fd-8dfd-a6c028b2c745",
+          "photo": "/products/photos/k1-schwinn-700ic.webp",
+          "generated_at": "2026-11-22T06:29:20.839Z",
+          "raw_bytes": 67333092,
+          "raw_triangles": 1919497,
+          "bytes": 327756,
+          "triangles": 20000,
+          "phone_bytes": 119656,
+          "phone_triangles": 4999,
+          "orient": {
+            "modelFront": "+z",
+            "why": "art left: weak head signal, default kept",
+            "head": {
+              "x": -0.146,
+              "z": -0.001
+            },
+            "swapped": false,
+            "up": "+y",
+            "bakeYaw": false,
+            "squaredDeg": 0,
+            "level": {
+              "pitchDeg": 0.12,
+              "rollDeg": -0.18
+            },
+            "upWhy": "the product is not flat; y stays up"
+          },
+          "gate": {
+            "pass": true,
+            "failed": []
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\2026-11-22-studio\\studio\\pictures\\k1-schwinn-700ic-plan.png",
+        "catalogue": "models-raw\\runs\\2026-11-22-studio\\studio\\pictures\\k1-schwinn-700ic-catalogue.png"
+      },
+      "high": {
+        "path": "models-raw/high/k1-schwinn-700ic-high.glb",
+        "bytes": 15112260,
+        "triangles": 299997,
+        "maxTexture": 4096
+      }
+    },
+    {
+      "id": "k1-proform-carbon-tl",
+      "tool": "studio",
+      "endpoint": "studio (a file brought in)",
+      "price": 0,
+      "views": null,
+      "generated_at": "2026-11-22T06:46:49.567Z",
+      "note": "H3.1 best quality, ultra mesh, 8K texture, PBR, one photo (640 px), private; light meshes: retopology, quads, Smart Mesh P1.0, 10,000 and 2,500 polygons",
+      "low": {
+        "bytes": 24598240,
+        "sha256": "6c56e2373c04545b964ee07fa4fd852817ff78e350a732781a39eb59dde9df02",
+        "triangles": 18306,
+        "phone": {
+          "bytes": 21008132,
+          "sha256": "f57baa71bda55f25c89b31a5b2f67ef3c5c36c0873c8cc37c0cbffd78b485ce9",
+          "triangles": 4759
+        }
+      },
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "request_id": "6d0d9cec-cf0e-4638-a33e-d8f037f519de",
+          "seconds": null,
+          "inference_s": null,
+          "rawBytes": 66773156,
+          "rawSha256": "e1c0b8085e5e42325d3aa6e4640564e01979f4aa9592001743f4badfb60a3446",
+          "rawTriangles": 1929830,
+          "rawExtents": [
+            0.922307559286693,
+            0.8041687607765198,
+            0.43398606954715746
+          ],
+          "up": "+y",
+          "photoFace": {
+            "sign": -1,
+            "why": "not flat"
+          },
+          "bakeYaw": false,
+          "squaredDeg": -16.650000000000002,
+          "level": {
+            "pitchDeg": -0.007925014952508292,
+            "rollDeg": 0.06352157178532071,
+            "n": 1913
+          },
+          "shape": {
+            "pass": true,
+            "aspectError": 0.00356706304691755,
+            "heightError": 0.08237046482159727,
+            "heightJudged": true,
+            "body": {
+              "long": 0.922307559286693,
+              "short": 0.43398606954715746,
+              "height": 0.8041687607765198
+            },
+            "tolerance": 0.15
+          }
+        }
+      ],
+      "servedUrl": "/models/candidates/studio/k1-proform-carbon-tl.glb",
+      "phoneUrl": "/models/candidates/studio/k1-proform-carbon-tl-phone.glb",
+      "copies": {
+        "served": {
+          "path": "public/models/candidates/studio/k1-proform-carbon-tl.glb",
+          "bytes": 263916,
+          "triangles": 18306,
+          "rawBytes": 24598020,
+          "passes": [
+            {
+              "ratio": 1,
+              "error": 0.001,
+              "triangles": 18306
+            }
+          ],
+          "quality": 82
+        },
+        "phone": {
+          "path": "public/models/candidates/studio/k1-proform-carbon-tl-phone.glb",
+          "bytes": 85236,
+          "triangles": 4759,
+          "passes": [
+            {
+              "ratio": 1,
+              "error": 0.02,
+              "triangles": 4759
+            }
+          ],
+          "quality": 82
+        }
+      },
+      "model": {
+        "modelFront": "+z",
+        "lengthAxis": "auto"
+      },
+      "orient": {
+        "modelFront": "+z",
+        "why": "art right: head (0.61, 0.00) → modelFront +z",
+        "swapped": false
+      },
+      "up": "+y",
+      "bake": {
+        "up": "+y",
+        "bakeYaw": false,
+        "why": "the product is not flat; y stays up"
+      },
+      "squared": {
+        "yaw": -0.29234264970905016,
+        "degrees": -16.75,
+        "areaBefore": 0.5902447337230612,
+        "areaAfter": 0.39998182791883735
+      },
+      "level": {
+        "pitchDeg": -0.0022416870867513405,
+        "rollDeg": 0.05531309659427502,
+        "n": 1193
+      },
+      "shape": {
+        "pass": true,
+        "aspectError": 0.0010961395612281279,
+        "heightError": 0.08680616856603851,
+        "heightJudged": true,
+        "body": {
+          "long": 0.9208413511461357,
+          "short": 0.43436562380804833,
+          "height": 0.8061807155609131
+        },
+        "tolerance": 0.15
+      },
+      "facing": {
+        "pass": true,
+        "kind": "art",
+        "detail": "art law: head lands on the art's right side (score 1.00) with modelFront +z",
+        "swapped": false
+      },
+      "measure": {
+        "id": "k1-proform-carbon-tl",
+        "servedUrl": "/models/candidates/studio/k1-proform-carbon-tl.glb",
+        "phoneUrl": "/models/candidates/studio/k1-proform-carbon-tl-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 180.00000000000003,
+          "widthCm": 85,
+          "heightCm": 145,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": -1.1102230246251565e-16,
+          "z": 0
+        },
+        "served": {
+          "triangles": 18306,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 4759,
+          "materials": 1,
+          "texturesTotal": 4,
+          "texturesLoaded": 4,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 484,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.8783412964876033
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 0.1 %, height off by 8.7 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 180.0 × 85.0 × 145.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "stands level (base within 2°)",
+            "pass": true,
+            "detail": "base plane pitched -0.0°, rolled 0.1° (1193 vertices)"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by -0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "4/4 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "18,306 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "258 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "4,759 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "83 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "4,759 triangles, 4/4 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "87.8 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront +z"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-proform-carbon-tl/studio-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-proform-carbon-tl/studio-catalogue.webp",
+        "eye": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-proform-carbon-tl/studio-eye.webp",
+        "plan": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-proform-carbon-tl/studio-plan.webp"
+      },
+      "entry": {
+        "url": "/models/candidates/studio/k1-proform-carbon-tl.glb",
+        "phoneUrl": "/models/candidates/studio/k1-proform-carbon-tl-phone.glb",
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "source": {
+          "engine": "scripts/product-engine",
+          "run": "2026-11-22-studio",
+          "tool": "studio",
+          "endpoint": "studio (a file brought in)",
+          "price_usd": 0,
+          "seconds": null,
+          "inference_s": null,
+          "request_id": "6d0d9cec-cf0e-4638-a33e-d8f037f519de",
+          "photo": "/products/photos/k1-proform-carbon-tl.webp",
+          "generated_at": "2026-11-22T06:46:49.567Z",
+          "raw_bytes": 66773156,
+          "raw_triangles": 1929830,
+          "bytes": 263916,
+          "triangles": 18306,
+          "phone_bytes": 85236,
+          "phone_triangles": 4759,
+          "orient": {
+            "modelFront": "+z",
+            "why": "art right: head (0.61, 0.00) → modelFront +z",
+            "head": {
+              "x": 0.612,
+              "z": 0.004
+            },
+            "swapped": false,
+            "up": "+y",
+            "bakeYaw": false,
+            "squaredDeg": -16.75,
+            "level": {
+              "pitchDeg": 0,
+              "rollDeg": 0.06
+            },
+            "upWhy": "the product is not flat; y stays up"
+          },
+          "gate": {
+            "pass": true,
+            "failed": []
+          }
+        }
+      },
+      "pictures": {
+        "plan": "models-raw\\runs\\2026-11-22-studio\\studio\\pictures\\k1-proform-carbon-tl-plan.png",
+        "catalogue": "models-raw\\runs\\2026-11-22-studio\\studio\\pictures\\k1-proform-carbon-tl-catalogue.png"
+      },
+      "high": {
+        "path": "models-raw/high/k1-proform-carbon-tl-high.glb",
+        "bytes": 14585160,
+        "triangles": 299992,
+        "maxTexture": 4096
+      }
+    }
+  ],
+  "olds": {
+    "k1-schwinn-700ic": {
+      "entry": {
+        "url": "/models/k1-schwinn-700ic.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "/products/photos/k1-schwinn-700ic.webp",
+          "generated_at": "2026-09-17T11:48:25.626Z",
+          "bytes": 197728,
+          "raw_bytes": 5809468,
+          "triangles": 20884,
+          "request_id": "01a0af2a-87ef-7ae2-b0c6-24dff0a138cb",
+          "seconds": 512,
+          "orient": {
+            "art": "left",
+            "head": {
+              "x": -0.451,
+              "z": 0.004
+            },
+            "set": "2026-09-17T12:09:53.224Z"
+          }
+        },
+        "modelFront": "+z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-schwinn-700ic-phone.glb"
+      },
+      "bytes": 197728,
+      "triangles": 20884,
+      "measure": {
+        "id": "k1-schwinn-700ic",
+        "servedUrl": "/models/k1-schwinn-700ic.glb",
+        "phoneUrl": "/models/k1-schwinn-700ic-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 120,
+          "widthCm": 55.00000000000001,
+          "heightCm": 130,
+          "errCm": {
+            "length": 0,
+            "width": 7.105427357601002e-15,
+            "height": 0
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 0,
+          "z": 0
+        },
+        "served": {
+          "triangles": 20884,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 5000,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 469,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.43589044176439234
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 0.2 %, height off by 6.0 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 120.0 × 55.0 × 130.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "stands level (base within 2°)",
+            "pass": true,
+            "detail": "base plane pitched -0.0°, rolled -0.0° (646 vertices)"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / 0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "20,884 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "193 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "5,000 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "74 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "5,000 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "43.6 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's left side (score 1.00) with modelFront +z"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-schwinn-700ic/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-schwinn-700ic/old-catalogue.webp",
+        "eye": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-schwinn-700ic/old-eye.webp",
+        "plan": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-schwinn-700ic/old-plan.webp"
+      }
+    },
+    "k1-proform-carbon-tl": {
+      "entry": {
+        "url": "/models/k1-proform-carbon-tl.glb",
+        "source": {
+          "model": "fal-ai/hunyuan3d-v21",
+          "photo": "/products/photos/k1-proform-carbon-tl.webp",
+          "generated_at": "2026-09-17T11:48:36.743Z",
+          "bytes": 138796,
+          "raw_bytes": 3859056,
+          "triangles": 24130,
+          "request_id": "01a0af2a-87e9-7700-9922-0be368978457",
+          "seconds": 523,
+          "orient": {
+            "art": "right",
+            "head": {
+              "x": 0.03,
+              "z": -0.761
+            },
+            "set": "2026-09-17T12:09:53.236Z"
+          }
+        },
+        "modelFront": "-z",
+        "lengthAxis": "auto",
+        "phoneUrl": "/models/k1-proform-carbon-tl-phone.glb"
+      },
+      "bytes": 138796,
+      "triangles": 24130,
+      "measure": {
+        "id": "k1-proform-carbon-tl",
+        "servedUrl": "/models/k1-proform-carbon-tl.glb",
+        "phoneUrl": "/models/k1-proform-carbon-tl-phone.glb",
+        "errors": [],
+        "envelope": {
+          "lengthCm": 179.99999999999997,
+          "widthCm": 85,
+          "heightCm": 145.00000000000003,
+          "errCm": {
+            "length": 2.842170943040401e-14,
+            "width": 0,
+            "height": 2.842170943040401e-14
+          }
+        },
+        "floorM": 0,
+        "pivotOffsetM": {
+          "x": 1.1102230246251565e-16,
+          "z": -1.1102230246251565e-16
+        },
+        "served": {
+          "triangles": 24130,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "phone": {
+          "ok": true,
+          "triangles": 6580,
+          "materials": 1,
+          "texturesTotal": 3,
+          "texturesLoaded": 3,
+          "baseColorMaps": 1
+        },
+        "plan": {
+          "width": 1024,
+          "height": 484,
+          "coverage": {
+            "x": 1,
+            "y": 1,
+            "opaqueFraction": 0.7646423844266529
+          }
+        }
+      },
+      "gate": {
+        "pass": true,
+        "checks": [
+          {
+            "name": "photo usable",
+            "pass": true,
+            "detail": "usable"
+          },
+          {
+            "name": "raw shape within 15 %",
+            "pass": true,
+            "detail": "footprint aspect off by 0.1 %, height off by 7.9 %"
+          },
+          {
+            "name": "envelope within 1 cm",
+            "pass": true,
+            "detail": "fitted 180.0 × 85.0 × 145.0 cm; worst error 0.00 cm"
+          },
+          {
+            "name": "stands on the floor",
+            "pass": true,
+            "detail": "base at 0.00 cm"
+          },
+          {
+            "name": "stands level (base within 2°)",
+            "pass": true,
+            "detail": "base plane pitched 0.0°, rolled 0.1° (775 vertices)"
+          },
+          {
+            "name": "centred pivot",
+            "pass": true,
+            "detail": "off by 0.00 / -0.00 cm"
+          },
+          {
+            "name": "textures load",
+            "pass": true,
+            "detail": "3/3 decoded, 1 colour map(s)"
+          },
+          {
+            "name": "laptop copy ≤ 25,000 triangles",
+            "pass": true,
+            "detail": "24,130 triangles"
+          },
+          {
+            "name": "laptop copy ≤ 350 KB",
+            "pass": true,
+            "detail": "136 KB"
+          },
+          {
+            "name": "phone copy ≤ 10,000 triangles",
+            "pass": true,
+            "detail": "6,580 triangles"
+          },
+          {
+            "name": "phone copy ≤ 150 KB",
+            "pass": true,
+            "detail": "55 KB"
+          },
+          {
+            "name": "phone copy loads",
+            "pass": true,
+            "detail": "6,580 triangles, 3/3 textures"
+          },
+          {
+            "name": "plan picture not empty",
+            "pass": true,
+            "detail": "76.5 % of the frame is product"
+          },
+          {
+            "name": "plan footprint within 2 %",
+            "pass": true,
+            "detail": "spans 100.0 % × 100.0 % of the L × W frame"
+          },
+          {
+            "name": "facing",
+            "pass": true,
+            "detail": "art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped"
+          }
+        ],
+        "failed": []
+      },
+      "evidence": {
+        "front": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-proform-carbon-tl/old-front.webp",
+        "catalogue": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-proform-carbon-tl/old-catalogue.webp",
+        "eye": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-proform-carbon-tl/old-eye.webp",
+        "plan": "docs/product-engine/runs/2026-11-22-studio/evidence/k1-proform-carbon-tl/old-plan.webp"
+      }
+    }
+  }
+}

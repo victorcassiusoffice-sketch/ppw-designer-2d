@@ -2,7 +2,8 @@ import { usePropertyStore, roomOpenings, type Property, type Room } from '../sto
 import { beginDrawTransaction, endDrawTransaction, isDrawTransactionActive } from '../store/historyStore';
 import { getProductById } from '../data/products';
 import { rotatedFootprint, pointInPolygon, type Vertex } from '../lib/geometry';
-import { collinearOverlap, pointAlongEdge, roomEdges, type RoomEdge } from './wallEdges';
+import { COLLINEAR_EPS_M, collinearOverlap, pointAlongEdge, roomEdges, type RoomEdge } from './wallEdges';
+import { cleanBulge } from './arcSegment';
 import { openingSpan } from './openings';
 import { roomLevelId } from './levels';
 import { tileAt, tileRect, runsToSet, setToRuns } from './floorTiles';
@@ -47,9 +48,23 @@ export function removeTargetMessage(target:RemoveBuildTarget|null):string {
   if(target.kind==='wall'&&target.hit.kind==='edge')return 'Remove this room wall · Undo restores it';
   return target.kind==='floor'?'Remove this floor finish; the room and structure stay.':`Remove this ${target.kind==='opening'?'door or window':target.kind==='wall'?'drawn wall':'object'} · Undo is available`;
 }
-/** Retain the room footprint. A shorter neighbour can expose just the middle of a longer wall. */
-function removeBoundarySpan(room:Room, selected:RoomEdge):Room {
-  const edges=roomEdges(room),overlaps=new Map(edges.flatMap(e=>{const span=collinearOverlap(e,selected);return span?[[e.index,{edge:e,span}] as const]:[]}));
+const near=(p:Vertex,q:Vertex)=>Math.hypot(p.x-q.x,p.y-q.y)<=COLLINEAR_EPS_M;
+/** The bulge of a room's edge when that edge is a curved wall (design format, version 2). */
+const edgeBulge=(room:Room,index:number)=>cleanBulge(room.wallArcs?.find(arc=>arc.edgeIndex===index)?.bulge);
+/** The stretch of `edge` that is the selected wall. Two straight walls: where they lie on one line, as before.
+ * A curved wall is one wall with another only as a WHOLE: the same two ends and the same arc (its sign turns
+ * with the way the edge runs). A straight wall on the line between a curved wall's ends is another wall. */
+function sameWallSpan(edge:RoomEdge,bulge:number|undefined,selected:RoomEdge,selectedBulge:number|undefined):{t0:number;t1:number}|null {
+  if(bulge===undefined&&selectedBulge===undefined)return collinearOverlap(edge,selected);
+  if(bulge===undefined||selectedBulge===undefined)return null;
+  const same=near(edge.a,selected.a)&&near(edge.b,selected.b)&&Math.abs(bulge-selectedBulge)<1e-9;
+  const turned=near(edge.a,selected.b)&&near(edge.b,selected.a)&&Math.abs(bulge+selectedBulge)<1e-9;
+  return same||turned?{t0:0,t1:edge.lengthM}:null;
+}
+/** Retain the room footprint. A shorter neighbour can expose just the middle of a longer wall.
+ * A curved wall is never cut: it goes as a whole and its outline keeps the curve, so the floor keeps its shape. */
+function removeBoundarySpan(room:Room, selected:RoomEdge, selectedBulge:number|undefined):Room {
+  const edges=roomEdges(room),overlaps=new Map(edges.flatMap(e=>{const span=sameWallSpan(e,edgeBulge(room,e.index),selected,selectedBulge);return span?[[e.index,{edge:e,span}] as const]:[]}));
   if(!overlaps.size)return room;
   const polygon:Vertex[]=[],removed:number[]=[];
   const spans=room.polygon.map((a,index)=>{
@@ -70,7 +85,11 @@ function removeBoundarySpan(room:Room, selected:RoomEdge):Room {
     const span=openingSpan(o),part=spans[o.edgeIndex]?.find(s=>!s.gone&&span.t0>=s.start-.001&&span.t1<=s.end+.001);
     return part?[{...o,edgeIndex:part.index,offsetM:o.offsetM-part.start}]:[];
   });
-  return {...room,polygon,removedWallEdges:removed,openings,wallPaint:finishes(room.wallPaint),wallConstruction:finishes(room.wallConstruction),wallCladding:finishes(room.wallCladding)};
+  // A curved edge was not cut (one span), so its arc goes with it to its new number in the outline.
+  const wallArcs=room.wallArcs?.flatMap(arc=>{const parts=spans[arc.edgeIndex];return parts?.length===1?[{...arc,edgeIndex:parts[0].index}]:[]});
+  const next:Room={...room,polygon,removedWallEdges:removed,openings,wallPaint:finishes(room.wallPaint),wallConstruction:finishes(room.wallConstruction),wallCladding:finishes(room.wallCladding)};
+  if(wallArcs?.length)next.wallArcs=wallArcs;else delete next.wallArcs;
+  return next;
 }
 /** One deliberate release, one existing history transaction. Never deletes a room. */
 export function removeBuildTarget(target:RemoveBuildTarget):{ok:boolean;message:string} {
@@ -78,9 +97,10 @@ export function removeBuildTarget(target:RemoveBuildTarget):{ok:boolean;message:
   if(target.kind==='wall'&&target.hit.kind==='edge'){
     const wall=target.hit,room=property.rooms.find(r=>r.id===wall.roomId),edge=room&&roomEdges(room).find(e=>e.index===wall.edgeIndex);
     if(!room||!edge)return {ok:false,message:'This wall is no longer available.'};
+    const bulge=edgeBulge(room,edge.index);
     const rooms=property.rooms.map(r=>{
       if(roomLevelId(r)!==roomLevelId(room)||r.kind==='outdoor'||r.kind==='roof')return r;
-      return removeBoundarySpan(r,edge);
+      return removeBoundarySpan(r,edge,bulge);
     });
     const owns=!isDrawTransactionActive();if(owns)beginDrawTransaction('Remove room wall');try{usePropertyStore.setState({property:{...property,rooms}})}finally{if(owns)endDrawTransaction()}
     return {ok:true,message:'Wall removed · Undo restores it.'};

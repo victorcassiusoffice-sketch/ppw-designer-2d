@@ -1,5 +1,7 @@
 import { CONSTRUCTION_BLOCK_PRESETS, CONSTRUCTION_SHEET_PRESETS } from '../../data/constructionMaterials.js';
 import type { MaterialsSettings, VolumeMix } from './types';
+import { MATERIALS_KEYS } from '../designFormat.js';
+import { keepUnknownKeys } from '../unknownKeys.js';
 
 /** Illustrative estimating allowances; they never encode a structural specification. */
 export function defaultMaterialsSettings(): MaterialsSettings {
@@ -43,7 +45,7 @@ export function normaliseMaterialsSettings(value?: unknown): MaterialsSettings {
   const v = record(value), wall = record(v.wall), concrete = record(v.concrete), plaster = record(v.plaster);
   const base = record(v.base), pillars = record(v.pillars), roof = record(v.roof);
   const rebar = record(roof.rebar), sheet = record(roof.sheet);
-  return {
+  const settings: MaterialsSettings = {
     version: 1, scope: v.scope === 'active' ? 'active' : 'all',
     ...(v.quotationTaxBasis === 'inclusive' || v.quotationTaxBasis === 'exclusive' ? { quotationTaxBasis: v.quotationTaxBasis } : {}),
     ...(v.unitRates !== undefined ? { unitRates: Object.fromEntries(Object.entries(record(v.unitRates)).slice(0, 200).flatMap(([id, raw]) => {
@@ -82,6 +84,9 @@ export function normaliseMaterialsSettings(value?: unknown): MaterialsSettings {
         trimStockLengthM: n(sheet.trimStockLengthM, d.roof.sheet.trimStockLengthM, 0.1, 30), trimLapM: n(sheet.trimLapM, d.roof.sheet.trimLapM, 0, 2),
         purlinSpacingM: n(sheet.purlinSpacingM, 0, 0, 10) } },
   };
+  // A field at the top level that this build does not know is carried as it is (plain JSON of a bounded size).
+  keepUnknownKeys(v, MATERIALS_KEYS, settings as unknown as Record<string, unknown>);
+  return settings;
 }
 
 export function applyBlockPreset(settings: MaterialsSettings, id: string): MaterialsSettings {

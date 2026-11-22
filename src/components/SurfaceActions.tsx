@@ -20,6 +20,7 @@ import { roofNormalThickness } from '../designer/roofSurface';
 import { validateStairPlacement } from '../designer/stairPlacement';
 import {
   bendAt,
+  bendRefusal,
   bendShape,
   commitBend,
   removeSurface,
@@ -158,9 +159,11 @@ export function SurfaceActions(props: Props) {
         label = result.ok ? 'Release to place stairs' : result.message;
       } else {
         const shape = bendShape(g.edge, at);
+        const refusal = bendRefusal(usePropertyStore.getState().property, g.edge);
         path = shape?.vertices ?? [];
-        valid = !!shape;
-        label = shape ? shape.lengthM.toFixed(3) + ' m along curve' : 'Adjust the bend';
+        valid = !!shape && !refusal;
+        label =
+          refusal ?? (shape ? shape.lengthM.toFixed(3) + ' m along curve' : 'Adjust the bend');
       }
       setPreview({
         points: path.map((p) => current.current.project(p)).filter((q): q is Vertex => !!q),
@@ -176,6 +179,7 @@ export function SurfaceActions(props: Props) {
         return;
       }
       let ok = false;
+      const refusal = g.kind === 'bend' ? bendRefusal(store.property, g.edge) : null;
       editHistory(g.kind === 'stair' ? 'Place stairs' : 'Pull curve', () => {
         ok =
           g.kind === 'bend'
@@ -189,7 +193,8 @@ export function SurfaceActions(props: Props) {
           ? ''
           : g.kind === 'stair'
             ? 'Stairs need clear landings on both floors.'
-            : 'Keep the outline clear and move any opening off the edge before bending it.',
+            : (refusal ??
+              'Keep the outline clear and move any opening off the edge before bending it.'),
       );
       close();
     }

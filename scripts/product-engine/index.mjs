@@ -10,6 +10,7 @@
  *   node scripts/product-engine/index.mjs run --tool all --only a,b,c --yes --cap 10 --run test-2026-11-08
  *   node scripts/product-engine/index.mjs reprocess --run test-2026-11-08 [--tool tripo] [--only a]   # $0: redo everything after the Fal call from the raw download
  *   node scripts/product-engine/index.mjs adopt --run test-2026-11-08 --tool tripo
+ *   node scripts/product-engine/index.mjs studio --run <name> --only <id> --file <download.glb> [--low <light.glb>] [--phone <lighter.glb>] [--task <id>] [--note "…"]   # $0 here: a body made in the service's own studio, brought in as a file
  *   node scripts/product-engine/index.mjs run --tool tripo --remake --yes --cap 12 --adopt   # the batch, straight to the catalogue
  *   node scripts/product-engine/index.mjs people --only nadia --dry-run | --yes
  *   node scripts/product-engine/index.mjs views --only <id> --front <url|file> --left <url|file> [--back …] [--right …] [--page <listing url>]   # $0: a listing's side shots, cleaned, on the row
@@ -26,12 +27,12 @@ import sharp from 'sharp';
 import { loadCatalogue, loadInputRows, photoUrlOf, publicPhotoUrl, readJson, readManifest, readThumbs, setRowFields, writeJson, writeManifest, writeThumbs } from './lib/catalog.mjs';
 import { VIEW_ORDER, cleanProductShot, multiviewPlan, multiviewUrls, viewFile, viewsOf } from './lib/views.mjs';
 import { auditAll } from './lib/photo.mjs';
-import { CANDIDATES_DIR, CATALOG_MODELS_DIR, CHARACTERS_JSON, COURTS_JSON, MODELS_DIR, PRODUCTS_JSON, PUBLIC_DIR, RAW_DIR, ROOT, SPEND_LOG, TOPDOWN_DIR, WALK_THUMBS_DIR, runDir } from './lib/paths.mjs';
+import { CANDIDATES_DIR, CATALOG_MODELS_DIR, CHARACTERS_JSON, COURTS_JSON, MODELS_DIR, PHOTO_BASE, PRODUCTS_JSON, PUBLIC_DIR, RAW_DIR, ROOT, SPEND_LOG, TOPDOWN_DIR, WALK_THUMBS_DIR, runDir } from './lib/paths.mjs';
 import { PERSON_TOOL, PICTURE_TOOL, PRICES_READ_ON, TOOLS, TOOL_KEYS, money } from './lib/prices.mjs';
 import * as fal from './lib/fal.mjs';
 import { bakeTransform, bakeYaw, baseTilt, catalogueIsFlat, detectUp, footprintYaw, frontAfterYaw, headDirection, levelCorrection, photoFaceSign, pitchedExtents, rawShapeCheck, readBody } from './lib/shape.mjs';
 import { ART_HEAD, headAgreesWithArt, pickModelFront, swappedFor } from './lib/orient.mjs';
-import { BUDGETS, makeCopies } from './lib/optimize.mjs';
+import { BUDGETS, makeCopies, makeHighCopy } from './lib/optimize.mjs';
 import { measureCharacter, measureProduct, openBrowser, renderHtml, startDevServer } from './lib/browser.mjs';
 import { GATE_LIMITS, evaluateGate, rerollWorth } from './lib/gate.mjs';
 import { gateSheetHtml, personSheetHtml, photoAuditHtml, productSheetHtml } from './lib/review.mjs';
@@ -78,7 +79,8 @@ async function saveEvidence(dir, name, dataUrl, { webp = true, quality = 82 } = 
   else fs.writeFileSync(file, buf);
   return path.relative(ROOT, file).split(path.sep).join('/');
 }
-const toDataUrl = (file, mime) => (file && fs.existsSync(file) ? `data:${mime ?? (file.endsWith('.png') ? 'image/png' : 'image/webp')};base64,${fs.readFileSync(file).toString('base64')}` : null);
+// A missing picture gives the folder itself as its path: only a FILE is read.
+const toDataUrl = (file, mime) => (file && fs.existsSync(file) && fs.statSync(file).isFile() ? `data:${mime ?? (file.endsWith('.png') ? 'image/png' : 'image/webp')};base64,${fs.readFileSync(file).toString('base64')}` : null);
 const strip = (measure) => (measure ? { ...measure, plan: measure.plan ? { width: measure.plan.width, height: measure.plan.height, coverage: measure.plan.coverage } : null, catalogue: undefined, front: undefined, eye: undefined } : null);
 
 // ---------------------------------------------------------------- shared pieces
@@ -132,6 +134,16 @@ function orientNewBody({ id, body, up, dims, frontEdge, defaultFront = '+z' }) {
   if (pick.weak) return { modelFront: defaultFront, why: `art ${art}: weak head signal, default kept`, head, swapped };
   return { modelFront: pick.front, why: `art ${art}: head (${head.x.toFixed(2)}, ${head.z.toFixed(2)}) → modelFront ${pick.front}`, head, swapped };
 }
+
+/**
+ * A body made in the photo-to-3D service's own studio (its web page, on the owner's plan there) and brought in
+ * as a file. It is not a call this engine pays for: it is not in TOOL_KEYS, `run` never uses it, and it costs
+ * nothing here. The studio's credits are counted by the studio.
+ */
+const STUDIO_TOOL = { key: 'studio', endpoint: 'studio (a file brought in)', label: "The service's own studio, a file brought in", price: 0 };
+const toolOf = (key) => TOOLS[key] ?? (key === STUDIO_TOOL.key ? STUDIO_TOOL : null);
+/** Where the high copies wait for a strong machine and for the desktop game: outside public/, never in git. */
+const HIGH_DIR = path.join(RAW_DIR, 'high');
 
 function findProduct(rows, id) {
   return rows.find((r) => r.id === id) ?? null;
@@ -341,6 +353,17 @@ async function cmdRun() {
   if (stop) log(`\n⛔ stopped: ${stop}`);
 
   // The old bodies, measured the same way, for the side-by-side.
+  const olds = await measureOlds({ rows, manifest, audits, b });
+
+  // Records: run.json, the candidates manifest (or the catalogue itself), the sheets, the summary.
+  const runRecord = { run: RUN_NAME, at: new Date().toISOString(), main: gitHead(), mode: adopt ? 'adopt' : 'candidates', prices_read_on: PRICES_READ_ON, cap_usd: CAP, bill_usd: bill, spent_usd: spentThisRun, tools: toolKeys, skipped: skipped.map((r) => ({ id: r.id, status: audits[r.id].status, why: audits[r.id].why || r.dimsProblem })), results, olds, stop };
+  await writeRunOutputs({ runRecord, rows, audits, cat, manifest, adopt, b });
+  log(`\nrun ${RUN_NAME}: ${money(spentThisRun)} spent of ${money(CAP)} · ${results.filter((r) => r.gate?.pass).length}/${results.length} gate passes → ${path.relative(ROOT, RUN_DIR)}/`);
+  return runRecord;
+}
+
+/** The bodies in use today, measured the same way as a new one, for the side-by-side on the sheet. */
+async function measureOlds({ rows, manifest, audits, b }) {
   const olds = {};
   for (const row of rows) {
     const entry = manifest[row.id];
@@ -357,12 +380,7 @@ async function cmdRun() {
       evidence: { front: await saveEvidence(evDir, 'old-front', measure.front), catalogue: await saveEvidence(evDir, 'old-catalogue', measure.catalogue), eye: await saveEvidence(evDir, 'old-eye', measure.eye), plan: await saveEvidence(evDir, 'old-plan', measure.plan?.png) },
     };
   }
-
-  // Records: run.json, the candidates manifest (or the catalogue itself), the sheets, the summary.
-  const runRecord = { run: RUN_NAME, at: new Date().toISOString(), main: gitHead(), mode: adopt ? 'adopt' : 'candidates', prices_read_on: PRICES_READ_ON, cap_usd: CAP, bill_usd: bill, spent_usd: spentThisRun, tools: toolKeys, skipped: skipped.map((r) => ({ id: r.id, status: audits[r.id].status, why: audits[r.id].why || r.dimsProblem })), results, olds, stop };
-  await writeRunOutputs({ runRecord, rows, audits, cat, manifest, adopt, b });
-  log(`\nrun ${RUN_NAME}: ${money(spentThisRun)} spent of ${money(CAP)} · ${results.filter((r) => r.gate?.pass).length}/${results.length} gate passes → ${path.relative(ROOT, RUN_DIR)}/`);
-  return runRecord;
+  return olds;
 }
 
 /**
@@ -408,8 +426,26 @@ async function rotatedView(body, yawRad) {
   return { ...body, prims: body.prims.map((p) => ({ ...p, world: mul(rot, p.world) })) };
 }
 
+/**
+ * A copy written a moment ago is not served at once: the dev server learns of a new file under public/ from its
+ * watcher, and until then it answers with the app's own page, which the measuring page cannot read as a model
+ * (seen 2026-11-22 on a busy laptop: a new product failed the gate with no body). Wait until the address gives a model.
+ */
+async function untilServed(url) {
+  if (!server || !url) return;
+  for (let attempt = 0; attempt < 60; attempt++) {
+    try {
+      const res = await fetch(`${server.base}${url}?served=${attempt}`);
+      const head = Buffer.from(await res.arrayBuffer()).subarray(0, 4).toString('latin1');
+      if (res.ok && head === 'glTF') return;
+    } catch { /* the server is not answering yet */ }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  log(`   ! ${url} is still not served as a model after 30 s; the measuring page will say so`);
+}
+
 /** Everything after the body exists: facing, the two copies, the measurement in the browser, the gate, the evidence, the manifest row. */
-async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, photoUrl }) {
+async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, photoUrl, phoneBodyFile = null }) {
   const dims = row.dimensions_cm;
   const { raw: body, up, detected: bake, squared, shape, level } = prep;
   const rawDir = path.dirname(bodyFile);
@@ -420,10 +456,13 @@ async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, 
   const phonePath = path.join(outDir, `${row.id}-phone.glb`);
   const servedUrl = `/${path.relative(PUBLIC_DIR, servedPath).split(path.sep).join('/')}`;
   const phoneUrl = `/${path.relative(PUBLIC_DIR, phonePath).split(path.sep).join('/')}`;
-  const copies = await makeCopies(bodyFile, servedPath, phonePath);
+  const copies = await makeCopies(bodyFile, servedPath, phonePath, { phoneRawPath: phoneBodyFile });
   const servedBody = await readBody(servedPath);
   const facing = facingFor({ id: row.id, body: servedBody, up, dims, frontEdge: row.front_edge, entry: model });
+  await untilServed(servedUrl);
+  await untilServed(phoneUrl);
   const measure = await serialMeasure(() => measureProduct(b.page, { product: { id: row.id, dimensions_cm: dims, front_edge: row.front_edge }, model, servedUrl, phoneUrl }));
+  if (measure.errors?.length) log(`   ! the measuring page: ${measure.errors.join(' · ')}`);
   const gate = evaluateGate({ photo: audit, shape, measure, copies: { served: copies.served, phone: copies.phone }, facing, level: level ?? undefined });
   const evDir = path.join(RUN_DIR, 'evidence', row.id);
   const evidence = {
@@ -446,10 +485,22 @@ async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, 
   return { ...result, servedUrl, phoneUrl, copies, model, orient: { ...orient, head: undefined }, up, bake, squared, level, shape, facing: { ...facing, head: undefined }, measure: strip(measure), gate, evidence, entry, pictures: { plan: path.relative(ROOT, path.join(picDir, `${row.id}-plan.png`)), catalogue: path.relative(ROOT, path.join(picDir, `${row.id}-catalogue.png`)) } };
 }
 
+/** What goes into a run's record: a path of this machine is written from the repo's root, never with the folders
+ * above it, and a served photo by its path, without the address of the server. */
+function forRecord(value) {
+  if (typeof value === 'string') {
+    if (value.startsWith(ROOT)) return path.relative(ROOT, value).split(path.sep).join('/');
+    return value.startsWith(`${PHOTO_BASE}/`) ? value.slice(PHOTO_BASE.length) : value;
+  }
+  if (Array.isArray(value)) return value.map(forRecord);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, forRecord(v)]));
+  return value;
+}
+
 /** run.json, the candidates manifest (or the catalogue), one sheet per product, SUMMARY.md. */
 async function writeRunOutputs({ runRecord, rows, audits, cat, manifest, adopt, b }) {
   const { results, olds } = runRecord;
-  writeJson(path.join(RUN_DIR, 'run.json'), runRecord);
+  writeJson(path.join(RUN_DIR, 'run.json'), forRecord(runRecord));
   if (adopt) adoptResults(results.filter((r) => r.gate?.pass), { cat, manifest });
   else {
     const candFile = path.join(ROOT, 'src', 'data', 'productModelCandidates.json');
@@ -463,7 +514,7 @@ async function writeRunOutputs({ runRecord, rows, audits, cat, manifest, adopt, 
     if (old) sheetRows.push({ label: 'today (September body)', note: `${old.entry.source?.model ?? ''}\n${Math.round(old.bytes / 1024)} KB · ${old.triangles.toLocaleString()} tris`, photo: audits[row.id].thumb, front: toDataUrl(path.join(ROOT, old.evidence.front ?? '')), catalogue: toDataUrl(path.join(ROOT, old.evidence.catalogue ?? '')), eye: toDataUrl(path.join(ROOT, old.evidence.eye ?? '')), plan: toDataUrl(path.join(ROOT, old.evidence.plan ?? '')), gate: old.gate });
     for (const r of results.filter((x) => x.id === row.id)) {
       const last = r.attempts?.[r.attempts.length - 1];
-      sheetRows.push({ label: `${TOOLS[r.tool].label}${r.views ? ` · ${r.views.length} views (${r.views.join(' + ')})` : ''}`, note: r.error ? `ERROR: ${r.error}` : `${money(r.price)} · ${last?.seconds ?? '?'} s (model ${last?.inference_s ? `${Math.round(last.inference_s)} s` : '?'})${r.attempts?.length > 1 ? ` · ${r.attempts.length} tries` : ''}\nraw ${last ? `${(last.rawBytes / 1048576).toFixed(1)} MB · ${last.rawTriangles.toLocaleString()} tris` : ''}\nserved ${r.copies ? `${Math.round(r.copies.served.bytes / 1024)} KB · ${r.copies.served.triangles.toLocaleString()} tris` : ''}\nphone ${r.copies ? `${Math.round(r.copies.phone.bytes / 1024)} KB · ${r.copies.phone.triangles.toLocaleString()} tris` : ''}\n${r.squared ? `turned ${r.squared.degrees.toFixed(1)}° to square the footprint\n` : ''}${r.level?.corrected ? `levelled from ${r.level.corrected.pitchDeg.toFixed(1)}° / ${r.level.corrected.rollDeg.toFixed(1)}°\n` : ''}${r.orient?.why ?? ''}`, photo: audits[row.id].thumb, front: toDataUrl(path.join(ROOT, r.evidence?.front ?? '')), catalogue: toDataUrl(path.join(ROOT, r.evidence?.catalogue ?? '')), eye: toDataUrl(path.join(ROOT, r.evidence?.eye ?? '')), plan: toDataUrl(path.join(ROOT, r.evidence?.plan ?? '')), gate: r.gate });
+      sheetRows.push({ label: `${toolOf(r.tool).label}${r.views ? ` · ${r.views.length} views (${r.views.join(' + ')})` : ''}`, note: r.error ? `ERROR: ${r.error}` : `${money(r.price)} · ${last?.seconds ?? '?'} s (model ${last?.inference_s ? `${Math.round(last.inference_s)} s` : '?'})${r.attempts?.length > 1 ? ` · ${r.attempts.length} tries` : ''}\nraw ${last ? `${(last.rawBytes / 1048576).toFixed(1)} MB · ${last.rawTriangles.toLocaleString()} tris` : ''}\nserved ${r.copies ? `${Math.round(r.copies.served.bytes / 1024)} KB · ${r.copies.served.triangles.toLocaleString()} tris` : ''}\nphone ${r.copies ? `${Math.round(r.copies.phone.bytes / 1024)} KB · ${r.copies.phone.triangles.toLocaleString()} tris` : ''}\n${r.squared ? `turned ${r.squared.degrees.toFixed(1)}° to square the footprint\n` : ''}${r.level?.corrected ? `levelled from ${r.level.corrected.pitchDeg.toFixed(1)}° / ${r.level.corrected.rollDeg.toFixed(1)}°\n` : ''}${r.orient?.why ?? ''}`, photo: audits[row.id].thumb, front: toDataUrl(path.join(ROOT, r.evidence?.front ?? '')), catalogue: toDataUrl(path.join(ROOT, r.evidence?.catalogue ?? '')), eye: toDataUrl(path.join(ROOT, r.evidence?.eye ?? '')), plan: toDataUrl(path.join(ROOT, r.evidence?.plan ?? '')), gate: r.gate });
     }
     await renderHtml(b, productSheetHtml({ title: `${row.name} (${row.id})`, subtitle: `run ${RUN_NAME} · every row is the same product fitted to its catalogue size by the app's own code; the eye-level picture is an engine render at the Walk camera height`, product: row, rows: sheetRows }), path.join(RUN_DIR, `sheet-${row.id}.png`), { width: 1700 });
   }
@@ -472,7 +523,7 @@ async function writeRunOutputs({ runRecord, rows, audits, cat, manifest, adopt, 
 
 // ---------------------------------------------------------------- reprocess ($0: the raw downloads, through the engine again)
 async function cmdReprocess() {
-  const toolKeys = args.tool === 'all' || !args.tool ? TOOL_KEYS : list('tool');
+  const toolKeys = args.tool === 'all' || !args.tool ? [...TOOL_KEYS, STUDIO_TOOL.key] : list('tool');
   const runFile = path.join(RUN_DIR, 'run.json');
   if (!fs.existsSync(runFile)) throw new Error(`no run.json in ${path.relative(ROOT, RUN_DIR)}`);
   const run = readJson(runFile);
@@ -489,7 +540,7 @@ async function cmdReprocess() {
   const done = [];
   for (const old of picked) {
     const row = findProduct(rows, old.id);
-    const tool = TOOLS[old.tool];
+    const tool = toolOf(old.tool);
     const rawDir = path.join(RAW_RUN_DIR, tool.key);
     const okAttempts = (old.attempts ?? []).filter((a) => a.ok);
     const attemptNo = args.attempt ? Number(args.attempt) : okAttempts.length ? okAttempts[okAttempts.length - 1].attempt : null;
@@ -503,7 +554,24 @@ async function cmdReprocess() {
       id: row.id, tool: tool.key, endpoint: old.endpoint ?? tool.endpoint, views: old.views ?? null, price: old.price ?? 0, generated_at: old.entry?.source?.generated_at, reprocessed_at: new Date().toISOString(), reprocessed_attempt: attemptNo,
       attempts: (old.attempts ?? []).map((a) => (a.attempt === attemptNo ? { ...a, up: prep.up, bakeYaw: prep.detected.bakeYaw, squaredDeg: prep.squared?.degrees ?? 0, level: prep.level, shape: prep.shape, rawExtents: prep.raw.extents } : a)),
     };
-    const fresh = await finishBody({ row, tool, bodyFile, prep, result, audit: audits[row.id], adopt: false, b, photoUrl: old.entry?.source?.photo ?? null });
+    // A body from the studio: its light mesh, when it came along, is what the two served copies are made from.
+    const lowDownloaded = path.join(rawDir, `${row.id}.a${attemptNo}.low.download.glb`);
+    let lowBody = null;
+    let lowPrep = null;
+    if (old.low && fs.existsSync(lowDownloaded)) {
+      lowBody = path.join(rawDir, `${row.id}.a${attemptNo}.low.glb`);
+      lowPrep = await prepareBody(lowDownloaded, lowBody, row.dimensions_cm);
+      result.low = old.low;
+    }
+    const phoneDownloaded = path.join(rawDir, `${row.id}.a${attemptNo}.phone.download.glb`);
+    let phoneBody = null;
+    if (old.low?.phone && fs.existsSync(phoneDownloaded)) {
+      phoneBody = path.join(rawDir, `${row.id}.a${attemptNo}.phone.glb`);
+      await prepareBody(phoneDownloaded, phoneBody, row.dimensions_cm);
+    }
+    const fresh = await finishBody({ row, tool, bodyFile: lowBody ?? bodyFile, prep: lowPrep ?? prep, result, audit: audits[row.id], adopt: false, b, photoUrl: old.entry?.source?.photo ?? null, phoneBodyFile: phoneBody });
+    // A body from the studio keeps its high copy in step with the engine it went through.
+    if (old.high) fresh.high = await highCopyOf(row.id, bodyFile);
     const i = run.results.findIndex((r) => r.id === old.id && r.tool === old.tool);
     run.results[i] = fresh;
     done.push(fresh);
@@ -527,6 +595,100 @@ function summaryMarkdown(run, rows) {
   }
   if (run.skipped.length) { lines.push('', '## Skipped (listed for Victor)', ''); for (const s of run.skipped) lines.push(`- ${s.id}: ${s.status}, ${s.why}`); }
   return `${lines.join('\n')}\n`;
+}
+
+// ---------------------------------------------------------------- studio ($0 here: a body made in the service's own studio, brought in as a file)
+/** The high copy of a body: for a strong machine and for the desktop game. Kept outside public/ and outside git. */
+async function highCopyOf(id, bodyFile) {
+  const out = path.join(ensureDir(HIGH_DIR), `${id}-high.glb`);
+  const made = await makeHighCopy(bodyFile, out);
+  log(`   high copy ${(made.bytes / 1048576).toFixed(1)} MB · ${made.triangles.toLocaleString()} tris · pictures up to ${made.maxTexture} px → ${path.relative(ROOT, out)}`);
+  return { path: path.relative(ROOT, out).split(path.sep).join('/'), bytes: made.bytes, triangles: made.triangles, maxTexture: made.maxTexture };
+}
+
+/**
+ * A body that was made by hand in the photo-to-3D service's own studio is brought in as a file and goes through
+ * everything a paid body goes through after its call: up, squared footprint, level base, shape check, the laptop
+ * and the phone copy, the measurement in the app's own code, the gate, the plan picture and the catalogue picture
+ * made from the body, the sheet. Nothing is sent anywhere and nothing is spent here. It lands as a candidate
+ * (`?bodies=studio` on any designer URL); `adopt --run <name> --tool studio` promotes it on the owner's word.
+ *
+ * `--file` is the full body (millions of triangles): the high copy is made from it. `--low` is the same body as the
+ * studio's own light mesh (its retopology: a clean mesh of about 20,000 triangles with the fine shape baked into
+ * its pictures): the laptop and the phone copy are made from that. Without `--low` the two copies are cut down
+ * from the full body here, and a cut of a hundred to one smears the pictures along every seam: look at the sheet.
+ * `--phone` is the studio's lighter mesh still (about 5,000 triangles) for the phone copy: a cut of four to one
+ * made here smears a light mesh's pictures too.
+ */
+async function cmdStudio() {
+  const id = typeof args.only === 'string' ? args.only : null;
+  const file = typeof args.file === 'string' ? path.resolve(args.file) : null;
+  const low = typeof args.low === 'string' ? path.resolve(args.low) : null;
+  if (!id || !file) throw new Error('studio --only <product id> --file <the downloaded .glb> [--low <the studio\'s light mesh .glb>] [--run <name>] [--task <the studio\'s id of the model>] [--note "what was asked of the studio"]');
+  if (!fs.existsSync(file)) throw new Error(`no file at ${file}`);
+  if (low && !fs.existsSync(low)) throw new Error(`no file at ${low}`);
+  const phone = typeof args.phone === 'string' ? path.resolve(args.phone) : null;
+  if (phone && !fs.existsSync(phone)) throw new Error(`no file at ${phone}`);
+  const cat = loadCatalogue();
+  const manifest = readManifest();
+  const pool = [...cat.all, ...(args.input ? loadInputRows(args.input) : [])];
+  const row = findProduct(pool, id) ?? (() => { throw new Error(`unknown product ${id}`); })();
+  if (!row.dimensions_cm) throw new Error(`${id} has no measured size: ${row.dimsProblem ?? 'dimensions_cm is missing'}`);
+  const audits = Object.fromEntries((await auditAll([row])).map((a) => [a.id, a]));
+  ensureDir(RUN_DIR);
+  const rawDir = ensureDir(path.join(RAW_RUN_DIR, STUDIO_TOOL.key));
+  const runFile = path.join(RUN_DIR, 'run.json');
+  const run = fs.existsSync(runFile) ? readJson(runFile) : { run: RUN_NAME, at: new Date().toISOString(), main: gitHead(), mode: 'candidates', prices_read_on: PRICES_READ_ON, cap_usd: 0, bill_usd: 0, spent_usd: 0, tools: [STUDIO_TOOL.key], skipped: [], results: [], olds: {} };
+  const before = run.results.find((r) => r.id === id && r.tool === STUDIO_TOOL.key);
+  // The same file brought in again is the same try (the engine was changed, or a light mesh came later): only
+  // another body of the product counts as a new try.
+  const sha256 = createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  const sameTry = (before?.attempts ?? []).find((a) => a.rawSha256 === sha256);
+  const attempt = sameTry ? sameTry.attempt : (before?.attempts ?? []).reduce((n, a) => Math.max(n, a.attempt), 0) + 1;
+  const downloaded = path.join(rawDir, `${id}.a${attempt}.download.glb`);
+  fs.copyFileSync(file, downloaded);
+  const bytes = fs.statSync(downloaded).size;
+  log(`\nstudio · run ${RUN_NAME} · ${id} · ${(bytes / 1048576).toFixed(1)} MB from ${file} · $0 here (the studio counts its own credits)`);
+  const b = await browser();
+  const bodyFile = path.join(rawDir, `${id}.a${attempt}.glb`);
+  const prep = await prepareBody(downloaded, bodyFile, row.dimensions_cm);
+  log(`   ${prep.raw.triangles.toLocaleString()} tris · shape ${prep.shape.pass ? 'ok' : `WRONG (aspect ${(prep.shape.aspectError * 100).toFixed(0)} %, height ${(prep.shape.heightError * 100).toFixed(0)} %)`} · up ${prep.up}${prep.detected.bakeYaw ? ' (quarter turn baked)' : ''}${prep.squared ? ` · turned ${prep.squared.degrees.toFixed(1)}° to square the footprint` : ''}${prep.level?.corrected ? ` · levelled ${prep.level.corrected.pitchDeg.toFixed(1)}° / ${prep.level.corrected.rollDeg.toFixed(1)}°` : ''}`);
+  // The studio's own light mesh, when it came along: the two served copies are made from it.
+  let lowBody = null;
+  let lowPrep = null;
+  let lowRecord = null;
+  if (low) {
+    const lowDownloaded = path.join(rawDir, `${id}.a${attempt}.low.download.glb`);
+    fs.copyFileSync(low, lowDownloaded);
+    lowBody = path.join(rawDir, `${id}.a${attempt}.low.glb`);
+    lowPrep = await prepareBody(lowDownloaded, lowBody, row.dimensions_cm);
+    lowRecord = { bytes: fs.statSync(lowDownloaded).size, sha256: createHash('sha256').update(fs.readFileSync(lowDownloaded)).digest('hex'), triangles: lowPrep.raw.triangles };
+    log(`   light mesh ${(lowRecord.bytes / 1048576).toFixed(1)} MB · ${lowPrep.raw.triangles.toLocaleString()} tris · shape ${lowPrep.shape.pass ? 'ok' : 'WRONG'} · up ${lowPrep.up}${lowPrep.squared ? ` · turned ${lowPrep.squared.degrees.toFixed(1)}°` : ''}: the laptop and the phone copy are made from it`);
+  } else log('   ! no --low: the laptop and the phone copy are cut down from the full body here; look at the sheet for smeared pictures');
+  let phoneBody = null;
+  if (phone) {
+    const phoneDownloaded = path.join(rawDir, `${id}.a${attempt}.phone.download.glb`);
+    fs.copyFileSync(phone, phoneDownloaded);
+    phoneBody = path.join(rawDir, `${id}.a${attempt}.phone.glb`);
+    const phonePrep = await prepareBody(phoneDownloaded, phoneBody, row.dimensions_cm);
+    lowRecord = { ...(lowRecord ?? {}), phone: { bytes: fs.statSync(phoneDownloaded).size, sha256: createHash('sha256').update(fs.readFileSync(phoneDownloaded)).digest('hex'), triangles: phonePrep.raw.triangles } };
+    log(`   lighter mesh ${(lowRecord.phone.bytes / 1048576).toFixed(1)} MB · ${phonePrep.raw.triangles.toLocaleString()} tris · up ${phonePrep.up}: the phone copy is made from it`);
+  }
+  const generatedAt = new Date().toISOString();
+  const result = {
+    id, tool: STUDIO_TOOL.key, endpoint: STUDIO_TOOL.endpoint, price: 0, views: null, generated_at: generatedAt, note: typeof args.note === 'string' ? args.note : undefined, low: lowRecord ?? undefined,
+    attempts: [...(before?.attempts ?? []).filter((a) => a.attempt !== attempt), { attempt, ok: true, request_id: typeof args.task === 'string' ? args.task : null, seconds: null, inference_s: null, rawBytes: bytes, rawSha256: sha256, rawTriangles: prep.raw.triangles, rawExtents: prep.raw.extents, up: prep.up, photoFace: prep.face, bakeYaw: prep.detected.bakeYaw, squaredDeg: prep.squared?.degrees ?? 0, level: prep.level, shape: prep.shape }],
+  };
+  const fresh = await finishBody({ row, tool: STUDIO_TOOL, bodyFile: lowBody ?? bodyFile, prep: lowPrep ?? prep, result, audit: audits[id], adopt: false, b, photoUrl: null, phoneBodyFile: phoneBody });
+  fresh.high = await highCopyOf(id, bodyFile);
+  run.results = [...run.results.filter((r) => !(r.id === id && r.tool === STUDIO_TOOL.key)), fresh];
+  if (!run.tools.includes(STUDIO_TOOL.key)) run.tools.push(STUDIO_TOOL.key);
+  const ids = [...new Set(run.results.map((r) => r.id))];
+  const rows = ids.map((x) => findProduct(pool, x)).filter(Boolean);
+  const allAudits = Object.fromEntries((await auditAll(rows)).map((a) => [a.id, a]));
+  run.olds = { ...run.olds, ...(await measureOlds({ rows: [row], manifest, audits, b })) };
+  await writeRunOutputs({ runRecord: run, rows, audits: allAudits, cat, manifest, adopt: false, b });
+  log(`\nstudio ${RUN_NAME}: ${id} ${fresh.gate.pass ? 'passes the gate' : `FAILS the gate: ${fresh.gate.failed.join(' · ')}`} → ${path.relative(ROOT, RUN_DIR)}/sheet-${id}.png · see it in the app with ?bodies=studio`);
 }
 
 // ---------------------------------------------------------------- adopt (promote candidates into the catalogue)
@@ -602,7 +764,7 @@ function removeCandidates(ids) {
 
 async function cmdAdopt() {
   const toolKey = args.tool;
-  if (!TOOLS[toolKey]) throw new Error(`--tool one of ${TOOL_KEYS.join(', ')}`);
+  if (!toolOf(toolKey)) throw new Error(`--tool one of ${[...TOOL_KEYS, STUDIO_TOOL.key].join(', ')}`);
   const run = readJson(path.join(RUN_DIR, 'run.json'));
   const only = list('only');
   const picked = run.results.filter((r) => r.tool === toolKey && r.entry && (!only || only.includes(r.id)) && (r.gate?.pass || flag('force')));
@@ -784,6 +946,7 @@ try {
   else if (command === 'run') await cmdRun();
   else if (command === 'views') await cmdViews();
   else if (command === 'reprocess') await cmdReprocess();
+  else if (command === 'studio') await cmdStudio();
   else if (command === 'adopt') await cmdAdopt();
   else if (command === 'people') await cmdPeople();
   else if (command === 'resume') await cmdResume();

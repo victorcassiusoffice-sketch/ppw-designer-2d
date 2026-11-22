@@ -87,7 +87,12 @@ declare module 'jspdf' {
     setLineJoin(join: 'miter' | 'round' | 'bevel' | 0 | 1 | 2): jsPDF;
     getTextWidth(text: string): number;
     addImage(
-      imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array,
+      imageData:
+        | string
+        | HTMLImageElement
+        | HTMLCanvasElement
+        | Uint8Array
+        | { data: Uint8ClampedArray; width: number; height: number },
       format: string,
       x: number,
       y: number,

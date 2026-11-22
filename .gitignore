@@ -105,3 +105,6 @@ models-raw/
 /docs/product-engine/runs/refine-2026-11-08/**/*.webp
 /docs/product-engine/runs/test-2026-11-08/**/*.png
 /docs/product-engine/runs/test-2026-11-08/**/*.webp
+# The pictures of a run that brings in bodies from the service's own studio go to the owner privately.
+/docs/product-engine/runs/*-studio/**/*.png
+/docs/product-engine/runs/*-studio/**/*.webp

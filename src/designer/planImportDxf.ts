@@ -1,4 +1,5 @@
 import type { PlanImportShape, PlanImportSource, PlanUnit } from './planImport';
+import { cleanBulge } from './arcSegment';
 
 type Pair = { code: number; value: string };
 const number = (pairs: Pair[], code: number, fallback = 0): number => {
@@ -10,7 +11,17 @@ const number = (pairs: Pair[], code: number, fallback = 0): number => {
 };
 const UNITS: Record<number, PlanUnit> = { 1: 'in', 2: 'ft', 4: 'mm', 5: 'cm', 6: 'm' };
 
-/** ASCII DXF model-space XY entities only. Bulges/blocks/3D curves are never flattened silently. */
+/**
+ * A drawing's bulge as this format's bulge. The reader turns the drawing's y over (a drawing has y upward, the
+ * plan downward), and an arc seen in a mirror turns the other way: the sign changes. A value that is no bulge
+ * (nought, not a number, a turn of nearly a full circle) is a straight segment.
+ */
+const planBulge = (value: number): number => cleanBulge(-value) ?? 0;
+
+/**
+ * ASCII DXF model-space XY entities only. A polyline's bulges, an ARC and a CIRCLE come in as true arcs
+ * (`./arcSegment`); blocks, splines and 3D curves are never flattened silently: they are skipped, and counted.
+ */
 export function parsePlanDxf(text: string): PlanImportSource {
   if (text.includes('\0') || text.startsWith('AutoCAD Binary DXF'))
     throw new Error('Use ASCII DXF, not binary DXF.');
@@ -35,7 +46,12 @@ export function parsePlanDxf(text: string): PlanImportSource {
   let suggestedUnit: PlanUnit | undefined,
     section = '',
     polyline: { pairs: Pair[]; vertices: Pair[][] } | null = null;
-  const push = (entity: Pair[], points: { x: number; y: number }[], closed: boolean) => {
+  const push = (
+    entity: Pair[],
+    points: { x: number; y: number }[],
+    closed: boolean,
+    bulges?: number[],
+  ) => {
     if (number(entity, 67) !== 0 || entity.some((p) => p.code === 410 && p.value !== 'Model')) {
       skip('paper-space entities');
       return;
@@ -47,6 +63,8 @@ export function parsePlanDxf(text: string): PlanImportSource {
       layer: entity.find((p) => p.code === 8)?.value.slice(0, 120) || '0',
       points,
       closed,
+      // One number for each point: the curve of the segment that leaves it. Left out when all are straight.
+      ...(bulges && bulges.some((b) => b !== 0) ? { bulges } : {}),
     });
   };
   const supportedPlane = (entity: Pair[]) =>
@@ -57,15 +75,16 @@ export function parsePlanDxf(text: string): PlanImportSource {
     if (
       flags & (2 | 4 | 8 | 16 | 64) ||
       !supportedPlane(polyline.pairs) ||
-      polyline.vertices.some((v) => number(v, 42) !== 0 || number(v, 30) !== 0) ||
+      polyline.vertices.some((v) => number(v, 30) !== 0) ||
       number(polyline.pairs, 30) !== 0
     )
-      skip('curved or 3D polylines');
+      skip('curve-fitted or 3D polylines');
     else
       push(
         polyline.pairs,
         polyline.vertices.map((v) => ({ x: number(v, 10, NaN), y: -number(v, 20, NaN) })),
         (flags & 1) !== 0,
+        polyline.vertices.map((v) => planBulge(number(v, 42))),
       );
     polyline = null;
   };
@@ -127,29 +146,56 @@ export function parsePlanDxf(text: string): PlanImportSource {
         false,
       );
     } else if (type === 'LWPOLYLINE') {
-      if (
-        !supportedPlane(entity) ||
-        number(entity, 38) !== 0 ||
-        entity.some((p) => p.code === 42 && Number(p.value) !== 0)
-      ) {
-        skip('curved or elevated polylines');
+      if (!supportedPlane(entity) || number(entity, 38) !== 0) {
+        skip('elevated polylines');
         continue;
       }
       const points: { x: number; y: number }[] = [];
+      const bulges: number[] = [];
       for (let j = 0; j < entity.length; j++)
         if (entity[j].code === 10) {
           const x = Number(entity[j].value);
           let y = NaN;
-          for (let k = j + 1; k < entity.length && entity[k].code !== 10; k++)
-            if (entity[k].code === 20) {
-              y = -Number(entity[k].value);
-              break;
-            }
+          let bulge = 0;
+          for (let k = j + 1; k < entity.length && entity[k].code !== 10; k++) {
+            if (entity[k].code === 20 && Number.isNaN(y)) y = -Number(entity[k].value);
+            else if (entity[k].code === 42) bulge = Number(entity[k].value);
+          }
           points.push({ x, y });
+          bulges.push(planBulge(bulge));
         }
       if (number(entity, 90, points.length) !== points.length)
         throw new Error('DXF polyline vertex count does not match its data.');
-      push(entity, points, (number(entity, 70) & 1) !== 0);
+      push(entity, points, (number(entity, 70) & 1) !== 0, bulges);
+    } else if (type === 'ARC' || type === 'CIRCLE') {
+      const radius = number(entity, 40, NaN);
+      if (!supportedPlane(entity) || number(entity, 30) !== 0 || !(radius > 0)) {
+        skip(type === 'ARC' ? '3D arcs' : '3D circles');
+        continue;
+      }
+      const cx = number(entity, 10, NaN);
+      const cy = number(entity, 20, NaN);
+      // A point of the circle at an angle of the drawing (degrees, counter-clockwise, y upward), on the plan.
+      const at = (degrees: number) => ({
+        x: cx + radius * Math.cos((degrees * Math.PI) / 180),
+        y: -(cy + radius * Math.sin((degrees * Math.PI) / 180)),
+      });
+      if (type === 'CIRCLE') {
+        // Four quarter arcs: an outline of four corners, which every later check can take.
+        const quarter = planBulge(Math.tan(Math.PI / 8));
+        push(entity, [at(0), at(90), at(180), at(270)], true, [quarter, quarter, quarter, quarter]);
+        continue;
+      }
+      const start = number(entity, 50);
+      const end = number(entity, 51);
+      const turn = (((end - start) % 360) + 360) % 360 || 360;
+      // The drawing runs counter-clockwise from the start angle to the end angle.
+      const bulge = planBulge(Math.tan((turn * Math.PI) / 720));
+      if (bulge === 0) {
+        skip('arcs of a full turn or of no turn');
+        continue;
+      }
+      push(entity, [at(start), at(end)], false, [bulge, 0]);
     } else skip(type);
   }
   finishPolyline();
@@ -160,7 +206,7 @@ export function parsePlanDxf(text: string): PlanImportSource {
     suggestedUnit,
     warnings: [...skipped].map(
       ([type, count]) =>
-        `${count} ${type} skipped. Export straight XY room outlines or wall centre lines; explode blocks before export.`,
+        `${count} ${type} skipped. Export XY room outlines or wall centre lines as lines, polylines, arcs or circles; explode blocks before export.`,
     ),
   };
 }

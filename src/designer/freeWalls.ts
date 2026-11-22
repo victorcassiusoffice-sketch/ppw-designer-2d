@@ -27,6 +27,12 @@ export interface FreeWall {
   /** Endpoints in world metres. */
   a: Vertex;
   b: Vertex;
+  /**
+   * Design format, version 2: a curved wall. The wall is the circular arc from `a` to `b` with this bulge
+   * (`./arcSegment`); absent means straight. Carried and checked today; drawn and measured as its chord until
+   * the curved-wall tool is built.
+   */
+  bulge?: number;
   thicknessM: number;
   /** Absent means ground — same rule as `Room.levelId`. */
   levelId?: string;

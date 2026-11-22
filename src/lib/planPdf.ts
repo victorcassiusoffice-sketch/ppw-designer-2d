@@ -111,6 +111,19 @@ export interface OrderPdfInput {
     name: string;
     rooms: PdfRoom[];
   };
+  /** 3D view sheets, put after the pages of the rooms when given. */
+  viewSheets?: PdfViewSheet[];
+}
+
+/** One sheet with a 3D view of the house: a picture drawn by `view3dSheet`, or the same as a PNG data address. */
+export interface PdfViewSheet {
+  title: string;
+  /** One line under the picture: what is drawn, and how. */
+  note?: string;
+  image: string | { data: Uint8ClampedArray; width: number; height: number };
+  /** The size of the picture in its own points: its shape on the sheet. */
+  widthPx: number;
+  heightPx: number;
 }
 
 // =====================================================================
@@ -953,6 +966,44 @@ function drawSummaryPage(doc: jsPDF, input: OrderPdfInput): void {
 }
 
 // =====================================================================
+// 3D view sheets
+// =====================================================================
+
+function drawViewSheetPage(doc: jsPDF, sheet: PdfViewSheet): void {
+  drawHeader(doc, sheet.title);
+  const top = 40;
+  const boxW = A4_W - 2 * MARGIN;
+  const boxH = A4_H - top - 34;
+  const ratio = Math.min(boxW / sheet.widthPx, boxH / sheet.heightPx);
+  const w = sheet.widthPx * ratio;
+  const h = sheet.heightPx * ratio;
+  const x = (A4_W - w) / 2;
+  if (typeof sheet.image === 'string') doc.addImage(sheet.image, 'PNG', x, top, w, h);
+  else doc.addImage(sheet.image, 'RGBA', x, top, w, h);
+  doc.setDrawColor(...PPW_STONE);
+  doc.setLineWidth(0.2);
+  doc.rect(x, top, w, h, 'S');
+  if (sheet.note) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...PPW_SLATE);
+    doc.text(sheet.note, MARGIN, top + h + 7, { maxWidth: boxW });
+  }
+  drawFooter(doc);
+}
+
+/** A PDF of 3D view sheets alone, for the designer: no order, no customer, no price. */
+export function generateViewsPdf(sheets: readonly PdfViewSheet[]): Blob {
+  // Packed: a sheet's picture is large flat areas of one colour, which pack to a small part of their size.
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+  sheets.forEach((sheet, i) => {
+    if (i > 0) doc.addPage();
+    drawViewSheetPage(doc, sheet);
+  });
+  return doc.output('blob');
+}
+
+// =====================================================================
 // Public entry point
 // =====================================================================
 
@@ -963,6 +1014,10 @@ export function generatePlanPdf(input: OrderPdfInput): Blob {
     doc.addPage();
     drawRoomPage(doc, room, i, input.currency);
   });
+  for (const sheet of input.viewSheets ?? []) {
+    doc.addPage();
+    drawViewSheetPage(doc, sheet);
+  }
   doc.addPage();
   drawSummaryPage(doc, input);
   return doc.output('blob');

@@ -1,6 +1,17 @@
 /** Ground-level landscaping; optional sourced paving remains part of its surface. */
 import { pointInPolygon, type Polygon, type Vertex } from '../lib/geometry';
 import { isSimpleMeasuredPolygon } from './measuredPath';
+import { GARDEN_FENCE_KEYS, GARDEN_KEYS, GARDEN_POOL_KEYS, GARDEN_SURFACE_KEYS } from './designFormat';
+import { keepUnknownKeys } from './unknownKeys';
+
+/**
+ * A field of a garden entry this build does not know is carried as it is. A `function`, not a `const`: the
+ * garden of the design in the browser's storage is read while the store is being made.
+ */
+function carry<T extends object>(raw: unknown, known: ReadonlySet<string>, clean: T): T {
+  keepUnknownKeys(raw, known, clean as unknown as Record<string, unknown>);
+  return clean;
+}
 
 export const GARDEN_SURFACES = {
   lawn: { label: 'Lawn', hex: '#70934f' },
@@ -114,14 +125,14 @@ export function normaliseGardenSurface(value: unknown): GardenSurface | null {
   const pool = v.kind === 'pool' ? normaliseGardenPool(v.pool ?? DEFAULT_GARDEN_POOL) : undefined;
   // Pool takeoffs currently describe a rectangular, flat-bottom basin only.
   if (v.kind === 'pool' && (!pool || v.outline)) return null;
-  return {
+  return carry<GardenSurface>(value, GARDEN_SURFACE_KEYS, {
     id: v.id, kind: v.kind, x: v.x, y: v.y, widthM: v.widthM, depthM: v.depthM, elevationM: v.elevationM,
     ...(typeof v.pavingProductId === 'string' && idValid(v.pavingProductId.trim()) ? { pavingProductId: v.pavingProductId.trim() } : {}),
     ...(v.outline ? { outline: v.outline.map(p => ({ ...p })) } : {}),
     ...(v.thicknessM !== undefined ? { thicknessM: v.thicknessM } : {}),
     ...(v.subBaseDepthM !== undefined ? { subBaseDepthM: v.subBaseDepthM } : {}),
     ...(pool ? { pool } : {}),
-  };
+  });
 }
 
 export function normaliseGardenPool(value: unknown): GardenPool | null {
@@ -130,9 +141,9 @@ export function normaliseGardenPool(value: unknown): GardenPool | null {
   if (!finite(v.shellDepthM, 0.2, 10) || !finite(v.waterDepthM, 0, v.shellDepthM)
     || !finite(v.wallThicknessM, 0.01, 2) || !finite(v.baseThicknessM, 0.01, 2)
     || !finite(v.excavationMarginM, 0, 5) || !['excavation', 'shell', 'filled'].includes(v.stage)) return null;
-  return { shellDepthM: v.shellDepthM, waterDepthM: v.waterDepthM, wallThicknessM: v.wallThicknessM,
+  return carry<GardenPool>(value, GARDEN_POOL_KEYS, { shellDepthM: v.shellDepthM, waterDepthM: v.waterDepthM, wallThicknessM: v.wallThicknessM,
     baseThicknessM: v.baseThicknessM, excavationMarginM: v.excavationMarginM, stage: v.stage,
-    ...(idValid(v.productReferenceId) ? { productReferenceId: v.productReferenceId } : {}) };
+    ...(idValid(v.productReferenceId) ? { productReferenceId: v.productReferenceId } : {}) });
 }
 
 /** Moving/resizing an outline uses the same affine mapping as its visible bounds. */
@@ -154,7 +165,7 @@ export function normaliseGardenFence(value: unknown): GardenFence | null {
   if (!idValid(v.id) || !Object.hasOwnProperty.call(FENCE_MATERIALS, v.material)
     || !pointValid(v.a) || !pointValid(v.b) || !finite(v.heightM, 0.3, 3)
     || !finite(fenceLengthM(v), 0.2, 1000)) return null;
-  return { id: v.id, a: { x: v.a.x, y: v.a.y }, b: { x: v.b.x, y: v.b.y }, heightM: v.heightM, material: v.material };
+  return carry<GardenFence>(value, GARDEN_FENCE_KEYS, { id: v.id, a: { x: v.a.x, y: v.a.y }, b: { x: v.b.x, y: v.b.y }, heightM: v.heightM, material: v.material });
 }
 
 export function normaliseGarden(value: unknown): Garden | undefined {
@@ -172,7 +183,10 @@ export function normaliseGarden(value: unknown): Garden | undefined {
   }
   const surfaces = validUnique(raw.surfaces, normaliseGardenSurface);
   const fences = validUnique(raw.fences, normaliseGardenFence);
-  return surfaces.length || fences.length ? { surfaces, fences } : undefined;
+  // A part of the garden this build does not know is carried as it is, and keeps the garden in the design.
+  const garden: Garden = { surfaces, fences };
+  const carried = keepUnknownKeys(value, GARDEN_KEYS, garden as unknown as Record<string, unknown>);
+  return surfaces.length || fences.length || carried.length ? garden : undefined;
 }
 
 export function normaliseGardenMetadata<T extends { garden?: Garden }>(property: T): T {

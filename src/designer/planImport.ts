@@ -5,6 +5,8 @@ import type { FreeWall } from './freeWalls';
 import { syncRoofRooms } from './roof';
 import { parsePlanDxf } from './planImportDxf';
 import { parsePlanSvg } from './planImportSvg';
+import { parsePlanIfc } from './planImportIfc';
+import { cleanBulge, type WallArc } from './arcSegment';
 
 export const PLAN_IMPORT_LIMITS = {
   bytes: 2_000_000,
@@ -28,14 +30,21 @@ export interface PlanImportShape {
   layer: string;
   points: Vertex[];
   closed: boolean;
+  /**
+   * The curve of each segment, one number for each point: the bulge (`./arcSegment`) of the segment that leaves
+   * that point, 0 for a straight one. Absent when the whole shape is straight.
+   */
+  bulges?: number[];
 }
 export interface PlanImportSource {
-  format: 'dxf' | 'svg';
+  format: 'dxf' | 'svg' | 'ifc' | 'model';
   name: string;
   shapes: PlanImportShape[];
   warnings: string[];
   suggestedUnit?: PlanUnit;
   metresPerUnit?: number;
+  /** A file that knows its own storeys (IFC, a 3D file of this app) says what each layer is and on which floor. */
+  suggestedLayers?: PlanImportLayer[];
 }
 export interface PlanImportLayer {
   name: string;
@@ -65,14 +74,22 @@ export function parsePlanFile(name: string, text: string): PlanImportSource {
     throw new Error('Use a plan export smaller than 2 MB.');
   const extension = name.split('.').pop()?.toLowerCase();
   const source =
-    extension === 'dxf' ? parsePlanDxf(text) : extension === 'svg' ? parsePlanSvg(text) : null;
+    extension === 'dxf'
+      ? parsePlanDxf(text)
+      : extension === 'svg'
+        ? parsePlanSvg(text)
+        : extension === 'ifc'
+          ? parsePlanIfc(text)
+          : null;
   if (!source)
     throw new Error(
-      'Export a 2D plan as ASCII DXF or SVG. Native DWG, RVT, SKP, IFC, PDFs and photos are not converted here.',
+      'Export a 2D plan as ASCII DXF or SVG, or the building as IFC. Native DWG, RVT, SKP, PDFs and photos are not converted here.',
     );
   if (!source.shapes.length)
     throw new Error(
-      'No supported plan geometry found. Export room outlines or straight wall centre lines, with blocks exploded.',
+      source.format === 'ifc'
+        ? 'No space and no wall could be read from this IFC file. Export the building with its spaces (rooms) and walls.'
+        : 'No supported plan geometry found. Export room outlines or straight wall centre lines, with blocks exploded.',
     );
   if (
     source.shapes.length > PLAN_IMPORT_LIMITS.shapes ||
@@ -99,6 +116,7 @@ export function parsePlanFile(name: string, text: string): PlanImportSource {
 
 /** Auto-suggestions are always exposed for review; annotation layers stay off. */
 export function suggestPlanLayers(source: PlanImportSource): PlanImportLayer[] {
+  if (source.suggestedLayers) return source.suggestedLayers.map((layer) => ({ ...layer }));
   return [...new Set(source.shapes.map((s) => s.layer))].map((name) => {
     const annotation =
       /furn|door|window|glaz|dim|annot|text|hatch|grid|symbol|sheet|border|title|elect|plumb|sanit/i.test(
@@ -165,6 +183,43 @@ function cleanPoints(input: Vertex[], closed: boolean): Vertex[] {
     }
   }
   return points;
+}
+/**
+ * The same cleaning for a shape with curves: a point that repeats goes, and with it the segment of no length;
+ * a point on the straight line between its neighbours goes only when both its segments are straight. Each curve
+ * stays with the segment it belongs to.
+ */
+function cleanCurved(input: Vertex[], curves: number[], closed: boolean) {
+  const points: Vertex[] = [];
+  const bulges: number[] = [];
+  input.forEach((p, i) => {
+    if (points.length && distance(p, points[points.length - 1]) <= EPS) {
+      // The segment between the two is no segment; the kept point now starts the next one.
+      bulges[bulges.length - 1] = curves[i] ?? 0;
+      return;
+    }
+    points.push(p);
+    bulges.push(curves[i] ?? 0);
+  });
+  if (closed && points.length > 1 && distance(points[0], points[points.length - 1]) < EPS) {
+    points.pop();
+    bulges.pop();
+  }
+  let changed = true;
+  while (changed && points.length > (closed ? 3 : 2)) {
+    changed = false;
+    for (let i = closed ? 0 : 1; i < (closed ? points.length : points.length - 1); i++) {
+      const before = (i - 1 + points.length) % points.length;
+      if (bulges[before] !== 0 || bulges[i] !== 0) continue;
+      if (onSegment(points[before], points[(i + 1) % points.length], points[i])) {
+        points.splice(i, 1);
+        bulges.splice(i, 1);
+        changed = true;
+        break;
+      }
+    }
+  }
+  return { points, bulges };
 }
 function validateBoundary(points: Vertex[]): void {
   if (points.length < 3 || points.length > 200 || polygonArea(points) < 0.05)
@@ -347,27 +402,44 @@ export function reviewPlanImport(
   const floorId = (floor: number) => (floor === 0 ? 'ground' : `import-floor-${floor}`);
   const seenWalls = new Set<string>();
   const pointKey = (p: Vertex) => `${p.x.toFixed(6)},${p.y.toFixed(6)}`;
+  let curvedSegments = 0;
   for (const layer of selected) {
     const shapes = source.shapes
       .filter((s) => s.layer === layer.name)
-      .map((s) => ({
-        ...s,
-        points: cleanPoints(
-          s.points.map((p) => ({ x: (p.x - minX) * scale, y: (p.y - minY) * scale })),
-          s.closed,
-        ),
-      }));
+      .map((s) => {
+        const moved = s.points.map((p) => ({ x: (p.x - minX) * scale, y: (p.y - minY) * scale }));
+        // A curve is one number tied to its two ends: moving and scaling the drawing leave it as it is.
+        const curved = s.bulges?.some((b) => cleanBulge(b) !== undefined);
+        if (!curved) return { ...s, points: cleanPoints(moved, s.closed), bulges: undefined };
+        return {
+          ...s,
+          ...cleanCurved(
+            moved,
+            s.bulges!.map((b) => cleanBulge(b) ?? 0),
+            s.closed,
+          ),
+        };
+      });
     if (layer.role === 'rooms') {
-      const traced = closedLineLoops(shapes.filter((s) => !s.closed));
+      const open = shapes.filter((s) => !s.closed);
+      const openCurves = open.reduce(
+        (n, s) => n + (s.bulges?.filter((b) => b !== 0).length ?? 0),
+        0,
+      );
+      if (openCurves)
+        warnings.push(
+          `${layer.name}: ${openCurves} curved segments of open lines were traced as straight lines. Draw a room as one closed polyline to keep its curves.`,
+        );
+      const traced = closedLineLoops(open);
       if (traced.unclosed)
         warnings.push(
           `${layer.name}: ${traced.unclosed} open or branched segments were not converted into rooms. Assign the layer as walls to retain open runs.`,
         );
-      const polygons = [
-        ...shapes.filter((s) => s.closed).map((s) => s.points),
-        ...traced.loops.map((p) => cleanPoints(p, true)),
+      const outlines = [
+        ...shapes.filter((s) => s.closed).map((s) => ({ polygon: s.points, bulges: s.bulges })),
+        ...traced.loops.map((p) => ({ polygon: cleanPoints(p, true), bulges: undefined })),
       ];
-      for (const polygon of polygons) {
+      for (const { polygon, bulges } of outlines) {
         if (rooms.length >= PLAN_IMPORT_LIMITS.rooms)
           throw new Error('Use fewer than 150 room outlines per import.');
         validateBoundary(polygon);
@@ -387,6 +459,14 @@ export function reviewPlanImport(
           polygon,
           placedItems: [],
           openings: [],
+          ...(() => {
+            // Format version 2: the curved edges of the outline. Edge i runs from point i to the next.
+            const wallArcs: WallArc[] = (bulges ?? []).flatMap((bulge, edgeIndex) =>
+              bulge !== 0 ? [{ edgeIndex, bulge }] : [],
+            );
+            curvedSegments += wallArcs.length;
+            return wallArcs.length ? { wallArcs } : {};
+          })(),
         });
       }
     } else
@@ -396,13 +476,17 @@ export function reviewPlanImport(
           const a = points[i - 1],
             b = points[i];
           if (!a || !b || distance(a, b) < 0.01) continue;
-          const key = `${layer.floor}:${[pointKey(a), pointKey(b)].sort().join('|')}`;
+          const bulge = shape.bulges?.[i - 1] ?? 0;
+          // Two arcs on the same two ends are two walls; two straight lines there are one.
+          const key = `${layer.floor}:${[pointKey(a), pointKey(b)].sort().join('|')}:${bulge === 0 ? '' : pointKey(a) + bulge}`;
           if (seenWalls.has(key)) continue;
           seenWalls.add(key);
+          if (bulge !== 0) curvedSegments++;
           walls.push({
             id: `import-${stamp}-wall-${walls.length}`,
             a,
             b,
+            ...(bulge !== 0 ? { bulge } : {}),
             levelId: floorId(layer.floor),
             thicknessM: thickness,
           });
@@ -413,6 +497,7 @@ export function reviewPlanImport(
   for (let i = walls.length - 1; i >= 0; i--) {
     const wall = walls[i];
     if (
+      wall.bulge === undefined &&
       rooms.some(
         (room) =>
           room.levelId === wall.levelId &&
@@ -469,6 +554,10 @@ export function reviewPlanImport(
       originM: { x: -2, y: -2 },
     },
   });
+  if (curvedSegments)
+    warnings.push(
+      `${curvedSegments} curved ${curvedSegments === 1 ? 'segment is' : 'segments are'} kept as ${curvedSegments === 1 ? 'a true arc' : 'true arcs'}. This app shows and measures ${curvedSegments === 1 ? 'it' : 'them'} straight until it can draw curved walls; the 3D files draw ${curvedSegments === 1 ? 'it' : 'them'} curved.`,
+    );
   warnings.push(
     'Room outlines become editable walls and floors. Add doors, windows, stairs, products and services in the designer; export symbols are not recognised automatically.',
   );
