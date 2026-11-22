@@ -15,6 +15,7 @@ import {
   type ApiLead,
 } from '../designsApi';
 import type { Property } from '../../store/propertyStore';
+import { getAllProducts } from '../../data/products';
 
 type FetchInit = RequestInit | undefined;
 type FetchInput = string | URL | Request;
@@ -182,5 +183,52 @@ describe('designsApi.submitLead', () => {
     await expect(
       submitLead({ customerEmail: 'a@b.co' }),
     ).rejects.toThrow(/no lead payload/);
+  });
+});
+
+describe('a design that is saved to the server (world stage 2: the design format)', () => {
+  const product = getAllProducts().find((p) => p.sku && p.supplier)!;
+  const furnished: Property = {
+    ...sampleProperty,
+    rooms: [
+      {
+        ...sampleProperty.rooms[0],
+        placedItems: [{ instanceId: 'i1', productId: product.id, x: 1, y: 1, rotation: 0 }],
+      },
+    ],
+  };
+  const reply = () => jsonResponse({ design: { id: 1 } }, 201);
+
+  it('carries its products in use and its format version, on a first save and on an update', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    stubFetch((_input, init) => {
+      bodies.push(JSON.parse((init?.body as string) ?? '{}'));
+      return reply();
+    });
+    await saveDesignToApi({ customerEmail: 'a@b.co', name: 'House', property: furnished });
+    await updateDesignToApi(7, { name: 'House', property: furnished });
+    expect(bodies).toHaveLength(2);
+    for (const body of bodies) {
+      const sent = body.property as Record<string, unknown>;
+      expect(sent.formatVersion).toBe(2);
+      const [entry] = sent.products as Record<string, unknown>[];
+      expect(entry.id).toBe(product.id);
+      expect(entry.modelNumber).toBe(product.sku.trim());
+      expect(JSON.stringify(sent.products)).not.toMatch(/price|amount|currency/i);
+      expect(body.name).toBe('House');
+    }
+    // The design in the app is as it was.
+    expect('products' in furnished).toBe(false);
+    expect('formatVersion' in furnished).toBe(false);
+  });
+
+  it('a design with nothing placed is sent as it is', async () => {
+    let sent: unknown;
+    stubFetch((_input, init) => {
+      sent = JSON.parse((init?.body as string) ?? '{}').property;
+      return reply();
+    });
+    await saveDesignToApi({ customerEmail: 'a@b.co', name: 'Empty', property: sampleProperty });
+    expect(sent).toEqual(sampleProperty);
   });
 });

@@ -213,6 +213,11 @@ export interface CanonicalRoomGeometry {
    * disagree about which wall is which.
    */
   edgeMap: number[];
+  /**
+   * True when the outline was turned round (step 2 below): every edge then runs the other way. What is stored
+   * with a direction along an edge, a curved wall's bulge, changes its sign with it.
+   */
+  reversed: boolean;
 }
 
 /**
@@ -254,7 +259,7 @@ export function canonicaliseRoomGeometry(
   openings: readonly Opening[] = [],
 ): CanonicalRoomGeometry {
   const n = polygon.length;
-  if (n < 3) return { polygon, openings: [...openings], changed: false, edgeMap: polygon.map((_, i) => i) };
+  if (n < 3) return { polygon, openings: [...openings], changed: false, edgeMap: polygon.map((_, i) => i), reversed: false };
 
   // -- 1. dedupe, tracking where each OLD vertex index lands ----------------
   const eps = DUPLICATE_VERTEX_EPS_M;
@@ -295,7 +300,7 @@ export function canonicaliseRoomGeometry(
   }
   if (kept.length < 3) {
     // Degenerate after cleanup — nothing can host an opening.
-    return { polygon: kept, openings: [], changed: true, edgeMap: new Array(n).fill(-1) };
+    return { polygon: kept, openings: [], changed: true, edgeMap: new Array(n).fill(-1), reversed: false };
   }
 
   const validIndex = (o: Opening, len: number) =>
@@ -316,8 +321,8 @@ export function canonicaliseRoomGeometry(
   const ccw = signedPolygonAreaM2(kept) < 0;
   if (!ccw) {
     return deduped
-      ? { polygon: kept, openings: outOpenings, changed: true, edgeMap: edgeMapDeduped }
-      : { polygon, openings: [...openings], changed: false, edgeMap: edgeMapDeduped };
+      ? { polygon: kept, openings: outOpenings, changed: true, edgeMap: edgeMapDeduped, reversed: false }
+      : { polygon, openings: [...openings], changed: false, edgeMap: edgeMapDeduped, reversed: false };
   }
 
   const m = kept.length;
@@ -342,6 +347,7 @@ export function canonicaliseRoomGeometry(
     openings: outOpenings,
     changed: true,
     edgeMap: edgeMapDeduped.map((idx) => (idx < 0 ? -1 : m - 1 - idx)),
+    reversed: true,
   };
 }
 

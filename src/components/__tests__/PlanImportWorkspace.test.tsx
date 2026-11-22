@@ -23,7 +23,12 @@ const click = (text: string) => {
 const open = () => act(() => window.dispatchEvent(new Event('ppw:open-plan-import')));
 const ack = () =>
   act(() => document.querySelector<HTMLInputElement>('.plan-import-ack input')!.click());
-async function file(value: { name: string; size: number; text: () => Promise<string> }) {
+async function file(value: {
+  name: string;
+  size: number;
+  text: () => Promise<string>;
+  arrayBuffer?: () => Promise<ArrayBuffer>;
+}) {
   const input = document.querySelector<HTMLInputElement>('input[type=file]')!;
   Object.defineProperty(input, 'files', { value: [value], configurable: true });
   await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })));
@@ -136,6 +141,266 @@ describe('review-and-apply plan import', () => {
       text: async () => JSON.stringify({ rooms: [], id: 'unvalidated' }),
     });
     expect(document.querySelector('[role=alert]')?.textContent).toContain('Designer draft JSON');
+    expect(document.querySelector('.plan-import-ack')).toBeNull();
+  });
+  it('opens a whole design file as a new plan, keeps every placed thing and the plan on screen', async () => {
+    const previous = structuredClone(usePropertyStore.getState().property);
+    // A design as this app keeps it, and as the desktop game saves it: with a thing of a merchant's product,
+    // which this catalogue has not read from the server.
+    const design = {
+      id: 'saved-by-the-game',
+      name: 'House from the game',
+      activeRoomId: 'r1',
+      rooms: [
+        {
+          id: 'r1',
+          name: 'Living room',
+          polygon: [
+            { x: 0, y: 0 },
+            { x: 6, y: 0 },
+            { x: 6, y: 4 },
+            { x: 0, y: 4 },
+          ],
+          placedItems: [{ instanceId: 'thing00001', productId: 'm-903', x: 1, y: 1, rotation: 90 }],
+        },
+        {
+          id: 'r2',
+          name: 'Bedroom',
+          polygon: [
+            { x: 6, y: 0 },
+            { x: 10, y: 0 },
+            { x: 10, y: 4 },
+            { x: 6, y: 4 },
+          ],
+          placedItems: [],
+        },
+      ],
+    };
+    open();
+    await file({ name: 'house.json', size: 900, text: async () => JSON.stringify(design) });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    expect(document.querySelector('.plan-import-review-heading h2')?.textContent).toBe(
+      'House from the game',
+    );
+    const words = document.querySelector('[role=dialog]')?.textContent ?? '';
+    expect(words).toContain('A whole design file');
+    expect(words).toContain('1 placed thing names a product this catalogue does not have now');
+    ack();
+    click('Add as a new plan →');
+    const property = usePropertyStore.getState().property;
+    expect(property.name).toBe('House from the game');
+    expect(property.rooms.map((r) => r.id)).toEqual(['r1', 'r2']);
+    expect(property.rooms[1].polygon[1].x).toBe(10);
+    // The thing whose product is not known here is still in the design, as it was saved.
+    expect(property.rooms[0].placedItems).toEqual([
+      { instanceId: 'thing00001', productId: 'm-903', x: 1, y: 1, rotation: 90 },
+    ]);
+    expect(useHistoryStore.getState().past).toEqual([]);
+    const saved = useDesignsStore
+      .getState()
+      .list()
+      .find((p) => p.property.id === previous.id);
+    expect(saved).toBeDefined();
+    act(() => {
+      switchToPage(saved!.id);
+    });
+    expect(usePropertyStore.getState().property.name).toBe('Existing measured house');
+  });
+  it('opens the design inside a project hand-over file and says that its tasks are not opened', async () => {
+    open();
+    await file({
+      name: 'handover.json',
+      size: 900,
+      text: async () =>
+        JSON.stringify({
+          tasks: [{ id: 't1', title: 'Order the tiles' }],
+          snapshot: {
+            id: 'in-a-handover',
+            name: 'House in a hand-over',
+            activeRoomId: 'r1',
+            rooms: [
+              {
+                id: 'r1',
+                name: 'Room',
+                polygon: [
+                  { x: 0, y: 0 },
+                  { x: 4, y: 0 },
+                  { x: 4, y: 3 },
+                  { x: 0, y: 3 },
+                ],
+                placedItems: [],
+              },
+            ],
+          },
+        }),
+    });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    expect(document.querySelector('.plan-import-review-heading h2')?.textContent).toBe(
+      'House in a hand-over',
+    );
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+      'the design in it is opened, its tasks are not',
+    );
+    expect(usePropertyStore.getState().property.name).toBe('Existing measured house');
+  });
+  it('says so when a design file is in a newer format, and keeps what it does not know', async () => {
+    open();
+    await file({
+      name: 'newer.json',
+      size: 900,
+      text: async () =>
+        JSON.stringify({
+          id: 'from-a-newer-build',
+          name: 'House in a newer format',
+          activeRoomId: 'r1',
+          formatVersion: 3,
+          futureDesignField: [{ kind: 'made up', hours: 6 }],
+          rooms: [
+            {
+              id: 'r1',
+              name: 'Room',
+              polygon: [
+                { x: 0, y: 0 },
+                { x: 4, y: 0 },
+                { x: 4, y: 3 },
+                { x: 0, y: 3 },
+              ],
+              placedItems: [],
+            },
+          ],
+        }),
+    });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+      'written in a newer format (version 3; this app reads version 2)',
+    );
+    ack();
+    click('Add as a new plan →');
+    const property = usePropertyStore.getState().property as unknown as Record<string, unknown>;
+    expect(property.name).toBe('House in a newer format');
+    expect(property.formatVersion).toBe(3);
+    expect(property.futureDesignField).toEqual([{ kind: 'made up', hours: 6 }]);
+  });
+  it('says in words what a design holds that this app keeps and does not show yet', async () => {
+    open();
+    await file({
+      name: 'curved.json',
+      size: 900,
+      text: async () =>
+        JSON.stringify({
+          id: 'with-a-curved-wall',
+          name: 'House with a curved wall',
+          activeRoomId: 'r1',
+          formatVersion: 2,
+          walls: [{ id: 'w1', a: { x: 1, y: 1 }, b: { x: 3, y: 1 }, thicknessM: 0.1, bulge: 0.5 }],
+          members: [{ id: 'm1', role: 'owner' }],
+          rooms: [
+            {
+              id: 'r1',
+              name: 'Room',
+              polygon: [
+                { x: 0, y: 0 },
+                { x: 4, y: 0 },
+                { x: 4, y: 3 },
+                { x: 0, y: 3 },
+              ],
+              placedItems: [],
+            },
+          ],
+        }),
+    });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    const review = document.querySelector('[role=dialog]')?.textContent ?? '';
+    expect(review).toContain('1 curved wall is kept');
+    expect(review).toContain('1 member is named');
+    expect(review).not.toContain('written in a newer format');
+    ack();
+    click('Add as a new plan →');
+    const property = usePropertyStore.getState().property as unknown as Record<string, unknown>;
+    expect((property.walls as Record<string, unknown>[])[0].bulge).toBe(0.5);
+    expect(property.members).toEqual([{ id: 'm1', role: 'owner' }]);
+    expect(property.formatVersion).toBe(2);
+  });
+  it('a building file keeps the floors it names itself, whatever its storeys are called', async () => {
+    // Two storeys whose names say nothing of a floor to a reader of English: the upper one holds one wall.
+    const ifc = `ISO-10303-21;
+HEADER;
+FILE_SCHEMA(('IFC2X3'));
+ENDSEC;
+DATA;
+#1=IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);
+#3=IFCUNITASSIGNMENT((#1));
+#10=IFCCARTESIANPOINT((0.,0.,0.));
+#13=IFCAXIS2PLACEMENT3D(#10,$,$);
+#14=IFCLOCALPLACEMENT($,#13);
+#20=IFCBUILDINGSTOREY('1',$,'EG',$,$,#14,$,$,.ELEMENT.,0.);
+#21=IFCBUILDINGSTOREY('2',$,'OG',$,$,#14,$,$,.ELEMENT.,3.);
+#30=IFCCARTESIANPOINT((0.,0.));
+#31=IFCCARTESIANPOINT((6.,0.));
+#32=IFCCARTESIANPOINT((6.,4.));
+#33=IFCCARTESIANPOINT((0.,4.));
+#34=IFCPOLYLINE((#30,#31,#32,#33));
+#35=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,$,#34);
+#36=IFCEXTRUDEDAREASOLID(#35,#13,$,2.7);
+#37=IFCSHAPEREPRESENTATION($,'Body','SweptSolid',(#36));
+#38=IFCPRODUCTDEFINITIONSHAPE($,$,(#37));
+#39=IFCSPACE('3',$,'Raum',$,$,#14,#38,$,.ELEMENT.,$,$);
+#40=IFCRELAGGREGATES('4',$,$,$,#20,(#39));
+#60=IFCCARTESIANPOINT((1.,1.));
+#61=IFCCARTESIANPOINT((5.,1.));
+#62=IFCPOLYLINE((#60,#61));
+#63=IFCSHAPEREPRESENTATION($,'Axis','Curve2D',(#62));
+#64=IFCPRODUCTDEFINITIONSHAPE($,$,(#63));
+#68=IFCWALLSTANDARDCASE('5',$,'Wand',$,$,#14,#64,$);
+#70=IFCRELCONTAINEDINSPATIALSTRUCTURE('6',$,$,$,(#68),#21);
+ENDSEC;
+END-ISO-10303-21;
+`;
+    open();
+    await file({ name: 'haus.ifc', size: ifc.length, text: async () => ifc });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    ack();
+    click('Add as a new plan →');
+    const property = usePropertyStore.getState().property;
+    expect(property.rooms.filter((r) => r.polygon.length >= 3 && !r.levelId)).toHaveLength(1);
+    expect(property.walls).toHaveLength(1);
+    expect(property.walls![0].levelId).toBe('import-floor-1');
+  });
+
+  it('a 3D model comes in as its outline seen from above', async () => {
+    const obj =
+      'v 0 0 0\nv 6 0 0\nv 6 0 4\nv 0 0 4\nv 0 3 0\nv 6 3 0\nv 6 3 4\nv 0 3 4\n' +
+      'f 1 2 3 4\nf 5 8 7 6\nf 1 5 6 2\nf 2 6 7 3\nf 3 7 8 4\nf 4 8 5 1\n';
+    const bytes = new TextEncoder().encode(obj);
+    open();
+    await file({
+      name: 'block.obj',
+      size: bytes.length,
+      text: async () => obj,
+      arrayBuffer: async () => bytes.buffer.slice(0) as ArrayBuffer,
+    });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+      'Its outline seen from above becomes one room',
+    );
+    ack();
+    click('Add as a new plan →');
+    const room = usePropertyStore.getState().property.rooms.find((r) => r.polygon.length >= 3)!;
+    const xs = room.polygon.map((p) => p.x);
+    const ys = room.polygon.map((p) => p.y);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(6, 1);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(4, 1);
+  });
+
+  it('refuses a design file too large to open, in words', async () => {
+    open();
+    const room = (i: number) => ({ id: `r${i}`, polygon: [], placedItems: [] });
+    await file({
+      name: 'city.json',
+      size: 900,
+      text: async () => JSON.stringify({ rooms: Array.from({ length: 401 }, (_, i) => room(i)) }),
+    });
+    expect(document.querySelector('[role=alert]')?.textContent).toContain('more than 400 rooms');
     expect(document.querySelector('.plan-import-ack')).toBeNull();
   });
   it('does not let an older asynchronous upload replace the newer example', async () => {

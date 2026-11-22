@@ -19,6 +19,9 @@ import {
   type DepartmentTask,
 } from '../designer/projectHub';
 import { reviewProject } from '../designer/projectReview';
+import { designFileName, designFileText } from '../designer/designFile';
+import { exportedDesign } from '../lib/designExport';
+import { houseModelFile, houseViewsPdf } from '../lib/exportHouse3d';
 import { localizeProjectReviewFinding } from '../i18n/projectReview';
 import { emptyEco, type EcoTree, type GreenRoof } from '../designer/eco';
 import { EcoTreeSchema, GreenRoofSchema, EngineeringInputsSchema } from '../designer/ecoContract';
@@ -217,7 +220,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
         projectId: property.id,
         fingerprint,
         register,
-        snapshot: property,
+        snapshot: exportedDesign(property),
         engineVersions: ENGINE_REGISTRY,
         review: report,
       };
@@ -231,6 +234,61 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
       setMessage(c('invalid'));
+    }
+  }
+  /** The design by itself, as a file that the plan import and the desktop game open. */
+  function saveDesign() {
+    const url = URL.createObjectURL(
+      new Blob([designFileText(exportedDesign(property))], { type: 'application/json' }),
+    );
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = designFileName(property.name);
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  async function saveModel(format: 'glb' | 'stl') {
+    try {
+      const file = await houseModelFile(property, format);
+      const url = URL.createObjectURL(new Blob([file.bytes as BlobPart], { type: file.mime }));
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = file.fileName;
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const metres = (n: number) => String(Math.round(n * 100) / 100);
+      setMessage(
+        [
+          c('modelSaved')
+            .replace('{parts}', String(file.parts))
+            .replace('{triangles}', String(file.triangles))
+            .replace('{x}', metres(file.sizeM.x))
+            .replace('{y}', metres(file.sizeM.y))
+            .replace('{z}', metres(file.sizeM.z)),
+          ...file.notes,
+        ].join(' '),
+      );
+    } catch {
+      setMessage(c('modelFailed'));
+    }
+  }
+  async function saveViews() {
+    try {
+      const file = await houseViewsPdf(property, {
+        fromSouthWest: c('viewsFromSouthWest'),
+        fromNorthEast: c('viewsFromNorthEast'),
+        storey: c('viewsStorey'),
+        note: c('viewsNote'),
+      });
+      const url = URL.createObjectURL(file.blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = file.fileName;
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setMessage(c('viewsSaved').replace('{sheets}', String(file.sheets)));
+    } catch {
+      setMessage(c('modelFailed'));
     }
   }
   async function importTasks(file?: File) {
@@ -622,6 +680,24 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
                       }}
                     />
                   </label>
+                </div>
+                <p className="project-note">{c('saveDesignNote')}</p>
+                <div className="project-tool-links">
+                  <button className="project-primary" type="button" onClick={saveDesign}>
+                    {c('saveDesign')}
+                  </button>
+                </div>
+                <p className="project-note">{c('saveModelNote')}</p>
+                <div className="project-tool-links">
+                  <button className="project-primary" type="button" onClick={() => void saveModel('glb')}>
+                    {c('saveModel')}
+                  </button>
+                  <button className="project-primary" type="button" onClick={() => void saveModel('stl')}>
+                    {c('savePrint')}
+                  </button>
+                  <button className="project-primary" type="button" onClick={() => void saveViews()}>
+                    {c('saveViews')}
+                  </button>
                 </div>
               </article>
               <article className="project-card">

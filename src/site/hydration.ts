@@ -6,6 +6,8 @@ import { projectSiteForCanvas } from './planAdapter';
 // JSON cannot carry frozen objects. Only canonical, detached copies are frozen
 // for the plan overlay; a persisted or newly imported extension starts inert.
 const accepted = new WeakSet<object>();
+// A plot on the map this build could not verify: checked once, not again on every change of the design.
+const refused = new WeakSet<object>();
 const warnings = new Map<string, string>();
 const planProjection = (site: Site | null) => {
   const world = site?.world;
@@ -45,23 +47,47 @@ export function hydrateCurrentSite(): void {
   installCanvasSiteAdapter(planProjection);
   const { property } = usePropertyStore.getState();
   const raw = property.site?.world;
-  if (raw === undefined || (raw !== null && typeof raw === 'object' && accepted.has(raw))) return;
+  if (raw === undefined) {
+    // A plot on the map that was kept aside, because a build could not verify it, is offered to this build again.
+    const aside = property.unread?.siteWorld;
+    if (!property.site || aside === null || typeof aside !== 'object' || refused.has(aside)) return;
+    const world = validateWorld(aside);
+    if (!world) {
+      refused.add(aside);
+      return;
+    }
+    const next = { ...property, site: { ...property.site, world } };
+    const unread = { ...property.unread };
+    delete unread.siteWorld;
+    if (Object.keys(unread).length > 0) next.unread = unread;
+    else delete next.unread;
+    warnings.delete(property.id);
+    usePropertyStore.setState({ property: next });
+    return;
+  }
+  if (raw !== null && typeof raw === 'object' && accepted.has(raw)) return;
   const clean = normaliseHydratedSite(property.site);
-  let site: Site | undefined;
+  const next = { ...property };
   if (clean) {
-    site = clean;
+    next.site = clean;
     warnings.delete(property.id);
   } else {
     // Remove only the failed extension after validation; retain the legacy plot.
     const legacy = { ...property.site };
     delete legacy.world;
-    site = normaliseSite(legacy);
+    next.site = normaliseSite(legacy);
+    // The plot on the map is not dropped any more: it is kept aside as it was stored, under `unread.siteWorld`,
+    // shown nowhere and used by nothing, and a build that can verify it gets it back.
+    if (raw !== null && typeof raw === 'object') {
+      refused.add(raw);
+      next.unread = { ...property.unread, siteWorld: raw };
+    }
     warnings.set(
       property.id,
       'Saved Site data could not be verified. Its geographic figures were withheld; the legacy plot is retained.',
     );
   }
-  usePropertyStore.setState({ property: { ...property, site } });
+  usePropertyStore.setState({ property: next });
 }
 
 /** Handles later imports, setSite calls and persist rehydration without an update loop. */

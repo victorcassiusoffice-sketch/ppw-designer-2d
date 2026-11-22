@@ -50,7 +50,7 @@ describe('deferred canonical Site hydration', () => {
     expect(Object.isFrozen(validated)).toBe(true);
     expect(usePropertyStore.getState().property.rooms).toBe(roomsBeforeHydration);
   });
-  it('withholds malformed saved geometry until validation, then drops only the failed extension', () => {
+  it('withholds malformed saved geometry until validation, then takes only the failed extension out of the plot (it is kept aside under unread)', () => {
     const bad = sampleSite();
     bad.polygon[0].x += 1000;
     usePropertyStore.getState().setSite(envelope(bad));
@@ -64,6 +64,7 @@ describe('deferred canonical Site hydration', () => {
     });
     expect(siteHydrationWarning()).toContain('could not be verified');
     expect(normaliseHydratedSite(envelope(bad))).toBeUndefined();
+    expect((usePropertyStore.getState().property.unread ?? {}).siteWorld).toEqual(bad);
   });
   it('validates later imports and rehydration without losing their source data', async () => {
     stop = startSiteHydration();

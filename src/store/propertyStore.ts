@@ -37,6 +37,32 @@ import { withMasonryThickness, inheritMasonryRoom } from '../designer/masonryDim
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
+import { ASIDE_VALUE_LIMIT, keepUnknownKeys } from '../designer/unknownKeys';
+import { cleanBulge, cleanWallArcs, type WallArc } from '../designer/arcSegment';
+import {
+  cleanCostLines,
+  cleanDesignProducts,
+  cleanMembers,
+  versionToWrite,
+  type CostLine,
+  type DesignMember,
+  type DesignProduct,
+} from '../designer/formatV2';
+import {
+  CARRIED_ASIDE_NAMES,
+  DESIGN_KEYS,
+  FLOOR_FINISH_KEYS,
+  FLOOR_ZONE_KEYS,
+  FREE_WALL_KEYS,
+  LEVEL_KEYS,
+  NO_KEYS,
+  ROOM_KEYS,
+  SECTION_NAMES,
+  SITE_KEYS,
+  WALL_CLADDING_KEYS,
+  WALL_PAINT_KEYS,
+  type SectionName,
+} from '../designer/designFormat';
 import type { Polygon, RoomDims, Vertex } from '../lib/geometry';
 import { rectToPolygon, pointInPolygon, isRectInsidePolygon, rotatedFootprint } from '../lib/geometry';
 // Attached multi-room (2026-08-26) — every room lives in ONE shared world
@@ -118,6 +144,12 @@ import {
   type Garden, type GardenFence, type GardenSurface,
 } from '../designer/garden';
 
+// What the loading of a design uses must exist before the store below is made: the design in the browser's
+// storage is loaded while the store is being made, at the moment the page starts. So the names of the design's
+// parts are IMPORTED (`../designer/designFormat`), and whatever else that load uses is a `function`, never a
+// `const` further down this file: such a name does not exist yet, the load fails without a word, and the page
+// shows an empty design in place of the stored one (`src/store/__tests__/startUpLoad.test.ts` holds this).
+
 /**
  * One painted edge, tint validated. A tint with no valid hex is dropped, and
  * so is a tint on a line the catalogue marks white-only (Xtreme White, Heat
@@ -143,6 +175,14 @@ function paintedEdge(edgeIndex: number, paintId: string, colour?: PaintColourCho
  * on the same world wall. Before this, a reshape or a CCW seed could leave
  * paint on the wrong wall.
  */
+/**
+ * Carries into a cleaned entry what this build does not know of the stored one. A `function`, not a `const`: it
+ * is used while the design in the browser's storage is loaded, as the store is being made.
+ */
+function carried<T extends object>(raw: unknown, known: ReadonlySet<string>, clean: T): T {
+  keepUnknownKeys(raw, known, clean as unknown as Record<string, unknown>);
+  return clean;
+}
 function remapRemovedEdges(raw:unknown,edgeMap:readonly number[]):number[]|undefined{
   if(!Array.isArray(raw)||!raw.length)return undefined;
   const result=[...new Set(raw.filter(i=>Number.isInteger(i)&&i>=0&&i<edgeMap.length).map(i=>edgeMap[i]).filter(i=>i>=0))];
@@ -325,6 +365,12 @@ export interface Room {
    * drawn room beneath; read through `isRoofRoom(room)`.
    */
   kind?: 'room' | 'outdoor' | 'roof';
+  /**
+   * Design format, version 2: the curved edges of the outline. Sparse: a straight edge is absent. The corners
+   * stay the ends of each arc (`../designer/arcSegment`). Carried and checked today, and kept on the same wall
+   * when the outline is cleaned; drawn and measured as straight edges until the curved-wall tool is built.
+   */
+  wallArcs?: WallArc[];
 }
 
 /** A roof outline edit must preserve the whole scaled object footprint. */
@@ -381,6 +427,24 @@ export interface Property {
   wallPaintWastePct?: number;
   /** Bare / new plaster: quote one coat of the brand's primer under the paint. */
   wallPaintPrimer?: boolean;
+  /**
+   * Sections of the design that this build could NOT read (a section in a newer shape, or with a field this build
+   * does not know), kept as they were stored, by the section's name, so that opening and saving here does not
+   * lose them. NOTHING in the app reads them: they are not checked. The loader offers each to its reader again on
+   * every open, so a build that can read a section gets it back as the section.
+   */
+  unread?: Record<string, unknown>;
+  /**
+   * Design format, version 2 (`../designer/formatV2`). The number is written only into a design that holds a
+   * version 2 part; a design without one is version 1.
+   */
+  formatVersion?: number;
+  /** The products in use, each with its company, model number and true size. Made new when a design leaves the app. */
+  products?: DesignProduct[];
+  /** What a job needs, as products and as labour. No money: a rate is looked up on the server. */
+  costLines?: CostLine[];
+  /** Who works on the design and in which role. It names people; the server decides who may change a design. */
+  members?: DesignMember[];
 }
 
 const pageLocation = (globalThis as {location?: {pathname:string; search:string}}).location;
@@ -487,7 +551,10 @@ export function normaliseSite(site: unknown): Site | undefined {
       : { x: 0, y: 0 };
   // Preserve unknown saved data through early loads/writes without importing
   // Site implementation. It remains inert until validation after first paint.
-  return { widthM, depthM, originM, ...(s.world === undefined ? {} : { world: s.world }) };
+  const clean: Site = { widthM, depthM, originM, ...(s.world === undefined ? {} : { world: s.world }) };
+  // A field of the plot this build does not know is carried as it is.
+  keepUnknownKeys(s, SITE_KEYS, clean as unknown as Record<string, unknown>);
+  return clean;
 }
 
 /** Whether a light-emitting item is lit. Absent = on (see `PlacedItem.lightOn`). */
@@ -937,6 +1004,7 @@ export const usePropertyStore = create<PropertyState>()(
               return inheritMasonryRoom({
                 ...r,
                 polygon: canon.polygon,
+                wallArcs: cleanWallArcs(r.wallArcs, canon.polygon.length, canon.edgeMap, canon.reversed),
                 removedWallEdges:remapRemovedEdges(r.removedWallEdges,canon.edgeMap),
                 openings: pruneOpenings(canon.openings, canon.polygon),
                 floorTiles: decodeFloorZones(r.floorTiles, canon.polygon),
@@ -2201,22 +2269,78 @@ export const usePropertyStore = create<PropertyState>()(
         const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
         if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
         if (merged.property?.materials !== undefined) merged.property = { ...merged.property, materials: normaliseMaterialsSettings(merged.property.materials) };
-        if (merged.property?.city !== undefined) merged.property = { ...merged.property, city: normaliseCity(merged.property.city) };
-        if (merged.property?.eco !== undefined) merged.property = { ...merged.property, eco: normaliseEco(merged.property.eco) };
-        if (merged.property?.engineering !== undefined) merged.property = { ...merged.property, engineering: normaliseEngineeringInputs(merged.property.engineering) };
-        if (merged.property?.terrainCuts !== undefined && !validCuts(merged.property.terrainCuts)) merged.property={...merged.property,terrainCuts:undefined};
-        if (merged.property?.boundaryComponents !== undefined && !validComponents(merged.property.boundaryComponents)) merged.property = { ...merged.property, boundaryComponents: undefined };
-        if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
-        if (merged.property?.shade !== undefined) merged.property = { ...merged.property, shade: normaliseShade(merged.property.shade) };
-        if (merged.property?.services !== undefined) {
-          const services = normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id)));
-          merged.property = { ...merged.property, services: services ? resolveServiceConnections(services) : undefined };
+        if (merged.property) {
+          // The sections that are read whole or not at all: by the same reader as the loader's, so that one a
+          // newer build wrote is kept aside here too, and not dropped on a reload.
+          const stored = merged.property as unknown as Record<string, unknown>;
+          const sections = readSections(stored, new Set(levelsOf(merged.property).map((l) => l.id)));
+          const next: Record<string, unknown> = { ...stored };
+          for (const name of SECTION_NAMES) if (name in next) next[name] = sections.read[name];
+          delete next.unread;
+          for (const name of SECTION_NAMES) if (!(name in next) && sections.read[name] !== undefined) next[name] = sections.read[name];
+          if (Object.keys(sections.unread).length > 0) next.unread = sections.unread;
+          merged.property = next as unknown as Property;
         }
         return merged;
       },
     },
   ),
 );
+
+
+
+function readSection(name: SectionName, value: unknown, levelIds: ReadonlySet<string>): unknown {
+  switch (name) {
+    case 'services': {
+      const services = normaliseBuildingServices(value, levelIds);
+      return services ? resolveServiceConnections(services) : undefined;
+    }
+    case 'terrainCuts':
+      return validCuts(value) ? value : undefined;
+    case 'boundaryComponents':
+      return validComponents(value) ? value : undefined;
+    case 'foundation':
+      return normaliseFoundation(value);
+    case 'shade':
+      return normaliseShade(value);
+    case 'city':
+      return normaliseCity(value);
+    case 'eco':
+      return normaliseEco(value);
+    case 'engineering':
+      return normaliseEngineeringInputs(value);
+  }
+}
+
+/**
+ * Reads every section of a stored design. A section its reader accepts is `read`. A section its reader does NOT
+ * accept is not dropped any more: it goes into `unread`, as it was stored. What the design itself holds decides;
+ * only when it holds no such section is the one that was set aside earlier offered to the reader again.
+ */
+function readSections(
+  stored: Record<string, unknown>,
+  levelIds: ReadonlySet<string>,
+): { read: Record<string, unknown>; unread: Record<string, unknown> } {
+  const aside =
+    typeof stored.unread === 'object' && stored.unread !== null && !Array.isArray(stored.unread)
+      ? (stored.unread as Record<string, unknown>)
+      : {};
+  const read: Record<string, unknown> = {};
+  const unread: Record<string, unknown> = {};
+  for (const name of SECTION_NAMES) {
+    const value = stored[name] !== undefined ? stored[name] : aside[name];
+    if (value === undefined) continue;
+    const result = readSection(name, value, levelIds);
+    if (result !== undefined) read[name] = result;
+    // Plain JSON of a bounded size, as a copy; anything else cannot have come from a stored design.
+    else keepUnknownKeys({ [name]: value }, NO_KEYS, unread, ASIDE_VALUE_LIMIT);
+  }
+  // What another reader keeps aside is carried: the loader does not read it.
+  for (const name of CARRIED_ASIDE_NAMES)
+    if (aside[name] !== undefined) keepUnknownKeys({ [name]: aside[name] }, NO_KEYS, unread, ASIDE_VALUE_LIMIT);
+  return { read, unread };
+}
+
 
 /**
  * Ensure a loaded property has at least one room and each room has a
@@ -2252,18 +2376,11 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   };
   // Every field below is OPTIONAL and only written when it carries something,
   // so a property saved before the Sims world round-trips byte-identical.
-  if (property.services !== undefined) {
-    const services = normaliseBuildingServices(property.services, levelIds);
-    out.services = services ? resolveServiceConnections(services) : undefined;
-  }
-  if (validCuts(property.terrainCuts)) out.terrainCuts=property.terrainCuts;
-  if (validComponents(property.boundaryComponents)) out.boundaryComponents = property.boundaryComponents;
-  if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
-  if (property.shade !== undefined) out.shade = normaliseShade(property.shade);
-  if (property.city !== undefined) out.city = normaliseCity(property.city);
-  if (property.eco !== undefined) out.eco = normaliseEco(property.eco);
-  if (property.engineering !== undefined) out.engineering = normaliseEngineeringInputs(property.engineering);
   if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
+  // The sections that are read whole or not at all. One that cannot be read is kept aside, not dropped.
+  const sections = readSections(property as unknown as Record<string, unknown>, levelIds);
+  Object.assign(out, sections.read);
+  if (Object.keys(sections.unread).length > 0) out.unread = sections.unread;
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
   const roomLevel = roomLevelId(activeRoom);
@@ -2297,6 +2414,19 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   if (roof && levelsOf(out).some(isRoofLevel)) out.roof = roof;
   const garden = normaliseGarden(property.garden);
   if (garden) out.garden = garden;
+  // What this build does not know is kept, not dropped.
+  // Format version 2: the products in use, the cost lines and the members, each checked entry by entry.
+  const stored = property as unknown as Record<string, unknown>;
+  const products = cleanDesignProducts(stored.products);
+  if (products) out.products = products;
+  const costLines = cleanCostLines(stored.costLines);
+  if (costLines) out.costLines = costLines;
+  const members = cleanMembers(stored.members);
+  if (members) out.members = members;
+  // The number: what the design needs, never less than what it said. A version 1 design carries none.
+  const version = versionToWrite({ ...out, formatVersion: stored.formatVersion });
+  if (version !== undefined) out.formatVersion = version;
+  keepUnknownKeys(property, DESIGN_KEYS, out as unknown as Record<string, unknown>);
   return out;
 }
 
@@ -2337,6 +2467,8 @@ export function normaliseLevels(levels: unknown): Level[] | undefined {
       if (height !== undefined) clean.heightM = height;
       if (elevation !== undefined) clean.elevationM = elevation;
     }
+    // A field of a storey this build does not know is carried as it is.
+    keepUnknownKeys(l, LEVEL_KEYS, clean as unknown as Record<string, unknown>);
     out.push(clean);
   }
   if (out.length === 0) return undefined;
@@ -2365,6 +2497,9 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
       thicknessM: w.thicknessM,
     };
     if (w.levelId) clean.levelId = w.levelId;
+    // Format version 2: a curved wall. A bulge out of range leaves the wall straight; the wall is kept.
+    const bulge = cleanBulge((w as { bulge?: unknown }).bulge);
+    if (bulge !== undefined) clean.bulge = bulge;
     // Wall paint (2026-09-02): whitelist trap — carry the paint or it
     // vanishes on the first save/load round trip. The tint (2026-09-14)
     // rides with it under the same rule; a tint with no paint is dropped.
@@ -2392,6 +2527,8 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
       clean.claddingId = claddingId;
       if ((w as { claddingFaces?: unknown }).claddingFaces === 2) clean.claddingFaces = 2;
     }
+    // A field of a wall this build does not know is carried as it is.
+    keepUnknownKeys(w, FREE_WALL_KEYS, clean as unknown as Record<string, unknown>);
     out.push(clean);
   }
   return out;
@@ -2419,6 +2556,7 @@ interface RawRoom {
   floorTiles?: FloorZone[];
   levelId?: unknown;
   kind?: unknown;
+  wallArcs?: unknown;
 }
 
 interface RawProperty {
@@ -2480,7 +2618,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
   // Ground is canonicalised to ABSENT; an unknown `kind` is dropped.
   const levelId = canonicalLevelId(r.levelId);
   const kind = r.kind === 'outdoor' || r.kind === 'room' || r.kind === 'roof' ? r.kind : undefined;
-  return {
+  const room: Room = {
     ...(r.removedWallEdges?{removedWallEdges:remapRemovedEdges(r.removedWallEdges,canon.edgeMap)}:{}),
     id: r.id ?? nanoid(8),
     name: r.name ?? 'Room',
@@ -2500,7 +2638,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     // disappears on the first save/load round trip.
     floorFinish:
       r.floorFinish && typeof r.floorFinish.materialId === 'string'
-        ? { materialId: r.floorFinish.materialId }
+        ? carried(r.floorFinish, FLOOR_FINISH_KEYS, { materialId: r.floorFinish.materialId })
         : null,
     // Same whitelist trap again: omit this and a painted floor silently
     // vanishes on the first save/load round trip. Validated field by field
@@ -2509,6 +2647,11 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     // calculator. Pruned against the CLEANED polygon.
     floorTiles: decodeFloorZones(r.floorTiles, clean),
     wallConstruction: remapConstruction(r.wallConstruction, canon.edgeMap, clean),
+    // Format version 2: the curved edges, checked, and carried across the clean-up of the outline above.
+    ...(() => {
+      const wallArcs = cleanWallArcs(r.wallArcs, clean.length, canon.edgeMap, canon.reversed);
+      return wallArcs ? { wallArcs } : {};
+    })(),
     // Wall paint (2026-09-02): whitelist + prune — entries must point at an
     // edge that still exists on the CLEANED polygon, exactly like openings.
     // The tint (2026-09-14) is whitelisted field by field too: a bad hex
@@ -2527,13 +2670,13 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
                 e.paintId.length > 0,
             )
             .map((e) =>
-              sidePaint(paintedEdge(
+              carried(e, WALL_PAINT_KEYS, sidePaint(paintedEdge(
                 e.edgeIndex,
                 e.paintId,
                 typeof e.colourHex === 'string'
                   ? { hex: e.colourHex, name: typeof e.colourName === 'string' ? e.colourName : undefined }
                   : null,
-              ), paintSide(e)),
+              ), paintSide(e))),
             );
           // Remap against the RAW polygon (a CCW seed reverses), then prune
           // to the CLEANED one — the same order the openings take.
@@ -2553,12 +2696,15 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
                 typeof e.productId === 'string' &&
                 !!findCladdingProduct(e.productId),
             )
-            .map((e) => ({ edgeIndex: e.edgeIndex, productId: e.productId }));
+            .map((e) => carried(e, WALL_CLADDING_KEYS, { edgeIndex: e.edgeIndex, productId: e.productId }));
           const clad = remapCladEdges(typed, canon.edgeMap, clean);
           return clad ? { wallCladding: clad } : {};
         })()
       : {}),
   };
+  // What this build does not know about a room is kept, not dropped.
+  keepUnknownKeys(r, ROOM_KEYS, room as unknown as Record<string, unknown>);
+  return room;
 }
 
 function remapCladEdges(
@@ -2577,7 +2723,7 @@ function remapCladEdges(
     const idx = edgeMap[e.edgeIndex];
     if (idx < 0 || idx >= m || seen.has(idx)) continue;
     seen.add(idx);
-    out.push({ edgeIndex: idx, productId: e.productId });
+    out.push({ ...e, edgeIndex: idx, productId: e.productId });
   }
   return out.length > 0 ? out : undefined;
 }
@@ -2608,7 +2754,7 @@ export function decodeFloorZones(
       },
       polygon,
     );
-    if (pruned.runs.length > 0) out.push(pruned);
+    if (pruned.runs.length > 0) out.push(carried(z, FLOOR_ZONE_KEYS, pruned));
   }
   return out.length > 0 ? out : undefined;
 }
@@ -2717,6 +2863,10 @@ export function canonicalisePropertyWinding(property: Property): Property {
     const wallCladding = remapCladEdges(room.wallCladding, canon.edgeMap, canon.polygon);
     if (wallCladding) next.wallCladding = wallCladding;
     else delete next.wallCladding;
+    // A curved edge stays on its wall, bowing to the same side.
+    const wallArcs = cleanWallArcs(room.wallArcs, canon.polygon.length, canon.edgeMap, canon.reversed);
+    if (wallArcs) next.wallArcs = wallArcs;
+    else delete next.wallArcs;
     return next;
   });
   return touched ? { ...property, rooms } : property;

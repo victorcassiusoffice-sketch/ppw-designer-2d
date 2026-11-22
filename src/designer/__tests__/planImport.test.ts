@@ -15,8 +15,9 @@ const dxf = (entities: string, unit = 4) =>
   `0\nSECTION\n2\nHEADER\n9\n$INSUNITS\n70\n${unit}\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n${entities}0\nENDSEC\n0\nEOF\n`;
 const line = (x1: number, y1: number, x2: number, y2: number, layer = 'Walls') =>
   `0\nLINE\n8\n${layer}\n10\n${x1}\n20\n${y1}\n11\n${x2}\n21\n${y2}\n`;
-const poly = (vertices: number[][], layer = 'Rooms', extra = '') =>
-  `0\nLWPOLYLINE\n8\n${layer}\n90\n${vertices.length}\n70\n1\n${extra}${vertices.map(([x, y]) => `10\n${x}\n20\n${y}\n`).join('')}`;
+/** `afterFirst` is written after the first vertex: where a drawing puts that vertex's bulge (group 42). */
+const poly = (vertices: number[][], layer = 'Rooms', extra = '', afterFirst = '') =>
+  `0\nLWPOLYLINE\n8\n${layer}\n90\n${vertices.length}\n70\n1\n${extra}${vertices.map(([x, y], i) => `10\n${x}\n20\n${y}\n${i === 0 ? afterFirst : ''}`).join('')}`;
 const svg = (body: string, attrs = '') =>
   `<svg xmlns="http://www.w3.org/2000/svg" ${attrs}>${body}</svg>`;
 function options(source: PlanImportSource): PlanImportOptions {
@@ -119,7 +120,9 @@ describe('measured CAD plan import', () => {
     expect(reviewPlanImport(source, options(source)).areaM2).toBe(20);
     expect(source.warnings.join(' ')).toContain('INSERT skipped');
   });
-  it('reports curved, elevated, non-XY and paper-space geometry instead of distorting it', () => {
+  // World stage 2, step 6: a curved polyline is no longer skipped. It comes in with its curve, as a true arc
+  // (`planImportArcs.test.ts`). What cannot be read faithfully is still skipped and counted.
+  it('reports elevated, non-XY and paper-space geometry instead of distorting it, and keeps a curve', () => {
     const source = parsePlanFile(
       'unsupported.dxf',
       dxf(
@@ -131,6 +134,7 @@ describe('measured CAD plan import', () => {
               [1, 1],
             ],
             'Rooms',
+            '',
             '42\n.2\n',
           ) +
           poly(
@@ -155,9 +159,11 @@ describe('measured CAD plan import', () => {
           '67\n1\n',
       ),
     );
-    expect(source.shapes).toHaveLength(1);
+    expect(source.shapes).toHaveLength(2);
+    // The drawing's y is turned over on the way in, so the curve's sign is turned too.
+    expect(source.shapes[1].bulges).toEqual([-0.2, 0, 0]);
     expect(source.warnings.join(' ')).toContain('paper-space');
-    expect(source.warnings.join(' ')).toContain('curved or elevated');
+    expect(source.warnings.join(' ')).toContain('elevated polylines');
   });
   it('rejects binary, incomplete and non-finite DXF data', () => {
     expect(() => parsePlanFile('bad.dxf', 'AutoCAD Binary DXF\0')).toThrow(/ASCII/);
@@ -349,8 +355,10 @@ describe('reviewed property construction', () => {
     ).toThrow(/Assign a floor/);
   });
   it('fails honestly for unsupported native software formats and oversized exports', () => {
-    for (const extension of ['dwg', 'rvt', 'skp', 'ifc', 'pdf', 'png'])
+    for (const extension of ['dwg', 'rvt', 'skp', 'pdf', 'png'])
       expect(() => parsePlanFile(`plan.${extension}`, 'x')).toThrow(/Export a 2D plan/);
+    // World stage 2, step 6: an IFC building file is read now (`planImportIfc.test.ts`); what is no IFC is refused.
+    expect(() => parsePlanFile('plan.ifc', 'x')).toThrow(/not an IFC file/);
     expect(() => parsePlanFile('large.svg', 'x'.repeat(2_000_001))).toThrow(/2 MB/);
   });
 });

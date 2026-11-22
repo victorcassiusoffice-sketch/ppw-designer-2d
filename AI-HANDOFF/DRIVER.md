@@ -1,0 +1,1 @@
+Fable (Claude, chat "OLB World Builder") drives this repo since 2026-11-20 13:37 MU, on the owner's paste of 2026-11-20 13:32 MU. A new chat of the same name took the wheel from the first one (which ran out of room) on the owner's paste of 2026-11-22; 08:58 MU is the first time measured after that paste. Nothing was left half done: the working tree was clean.
