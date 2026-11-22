@@ -6,3 +6,5 @@ candidates · 2026-11-22T06:17:46.169Z · main unknown · prices read 2026-11-08
 |---|---|---|---|---|---|---|---|---|---|---|
 | k1-schwinn-700ic | today | | | | 193 KB · 20884 | yes | 0.00 cm | 100×100 % | art law: head lands on the art's left side (score 1.00) with modelFront +z | PASS |
 | k1-schwinn-700ic | studio | $0.00 | null (?) | 64.2 MB · 1919497 | 320 KB · 20000 | 117 KB · 4999 | 0.00 cm | 100×100 % | art-weak: art law: no clear head (|head| 0.14 < 0.15), symmetric body; confirm on the sheet | PASS |
+| k1-proform-carbon-tl | today | | | | 136 KB · 24130 | yes | 0.00 cm | 100×100 % | art law: head lands on the art's right side (score 1.00) with modelFront -z, axes swapped | PASS |
+| k1-proform-carbon-tl | studio | $0.00 | null (?) | 63.7 MB · 1929830 | 258 KB · 18306 | 83 KB · 4759 | 0.00 cm | 100×100 % | art: art law: head lands on the art's right side (score 1.00) with modelFront +z | PASS |

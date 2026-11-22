@@ -426,6 +426,24 @@ async function rotatedView(body, yawRad) {
   return { ...body, prims: body.prims.map((p) => ({ ...p, world: mul(rot, p.world) })) };
 }
 
+/**
+ * A copy written a moment ago is not served at once: the dev server learns of a new file under public/ from its
+ * watcher, and until then it answers with the app's own page, which the measuring page cannot read as a model
+ * (seen 2026-11-22 on a busy laptop: a new product failed the gate with no body). Wait until the address gives a model.
+ */
+async function untilServed(url) {
+  if (!server || !url) return;
+  for (let attempt = 0; attempt < 60; attempt++) {
+    try {
+      const res = await fetch(`${server.base}${url}?served=${attempt}`);
+      const head = Buffer.from(await res.arrayBuffer()).subarray(0, 4).toString('latin1');
+      if (res.ok && head === 'glTF') return;
+    } catch { /* the server is not answering yet */ }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  log(`   ! ${url} is still not served as a model after 30 s; the measuring page will say so`);
+}
+
 /** Everything after the body exists: facing, the two copies, the measurement in the browser, the gate, the evidence, the manifest row. */
 async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, photoUrl, phoneBodyFile = null }) {
   const dims = row.dimensions_cm;
@@ -441,6 +459,8 @@ async function finishBody({ row, tool, bodyFile, prep, result, audit, adopt, b, 
   const copies = await makeCopies(bodyFile, servedPath, phonePath, { phoneRawPath: phoneBodyFile });
   const servedBody = await readBody(servedPath);
   const facing = facingFor({ id: row.id, body: servedBody, up, dims, frontEdge: row.front_edge, entry: model });
+  await untilServed(servedUrl);
+  await untilServed(phoneUrl);
   const measure = await serialMeasure(() => measureProduct(b.page, { product: { id: row.id, dimensions_cm: dims, front_edge: row.front_edge }, model, servedUrl, phoneUrl }));
   if (measure.errors?.length) log(`   ! the measuring page: ${measure.errors.join(' · ')}`);
   const gate = evaluateGate({ photo: audit, shape, measure, copies: { served: copies.served, phone: copies.phone }, facing, level: level ?? undefined });

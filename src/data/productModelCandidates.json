@@ -441,6 +441,51 @@
           "failed": []
         }
       }
+    },
+    "k1-proform-carbon-tl": {
+      "url": "/models/candidates/studio/k1-proform-carbon-tl.glb",
+      "phoneUrl": "/models/candidates/studio/k1-proform-carbon-tl-phone.glb",
+      "modelFront": "+z",
+      "lengthAxis": "auto",
+      "source": {
+        "engine": "scripts/product-engine",
+        "run": "2026-11-22-studio",
+        "tool": "studio",
+        "endpoint": "studio (a file brought in)",
+        "price_usd": 0,
+        "seconds": null,
+        "inference_s": null,
+        "request_id": "6d0d9cec-cf0e-4638-a33e-d8f037f519de",
+        "photo": "/products/photos/k1-proform-carbon-tl.webp",
+        "generated_at": "2026-11-22T06:46:49.567Z",
+        "raw_bytes": 66773156,
+        "raw_triangles": 1929830,
+        "bytes": 263916,
+        "triangles": 18306,
+        "phone_bytes": 85236,
+        "phone_triangles": 4759,
+        "orient": {
+          "modelFront": "+z",
+          "why": "art right: head (0.61, 0.00) → modelFront +z",
+          "head": {
+            "x": 0.612,
+            "z": 0.004
+          },
+          "swapped": false,
+          "up": "+y",
+          "bakeYaw": false,
+          "squaredDeg": -16.75,
+          "level": {
+            "pitchDeg": 0,
+            "rollDeg": 0.06
+          },
+          "upWhy": "the product is not flat; y stays up"
+        },
+        "gate": {
+          "pass": true,
+          "failed": []
+        }
+      }
     }
   }
 }
