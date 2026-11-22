@@ -37,13 +37,13 @@ export interface PlanImportShape {
   bulges?: number[];
 }
 export interface PlanImportSource {
-  format: 'dxf' | 'svg' | 'ifc';
+  format: 'dxf' | 'svg' | 'ifc' | 'model';
   name: string;
   shapes: PlanImportShape[];
   warnings: string[];
   suggestedUnit?: PlanUnit;
   metresPerUnit?: number;
-  /** A file that knows its own storeys (IFC) says what each of its layers is and on which floor. */
+  /** A file that knows its own storeys (IFC, a 3D file of this app) says what each layer is and on which floor. */
   suggestedLayers?: PlanImportLayer[];
 }
 export interface PlanImportLayer {

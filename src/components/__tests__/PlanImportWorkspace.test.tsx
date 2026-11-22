@@ -23,7 +23,12 @@ const click = (text: string) => {
 const open = () => act(() => window.dispatchEvent(new Event('ppw:open-plan-import')));
 const ack = () =>
   act(() => document.querySelector<HTMLInputElement>('.plan-import-ack input')!.click());
-async function file(value: { name: string; size: number; text: () => Promise<string> }) {
+async function file(value: {
+  name: string;
+  size: number;
+  text: () => Promise<string>;
+  arrayBuffer?: () => Promise<ArrayBuffer>;
+}) {
   const input = document.querySelector<HTMLInputElement>('input[type=file]')!;
   Object.defineProperty(input, 'files', { value: [value], configurable: true });
   await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })));
@@ -316,6 +321,77 @@ describe('review-and-apply plan import', () => {
     expect(property.members).toEqual([{ id: 'm1', role: 'owner' }]);
     expect(property.formatVersion).toBe(2);
   });
+  it('a building file keeps the floors it names itself, whatever its storeys are called', async () => {
+    // Two storeys whose names say nothing of a floor to a reader of English: the upper one holds one wall.
+    const ifc = `ISO-10303-21;
+HEADER;
+FILE_SCHEMA(('IFC2X3'));
+ENDSEC;
+DATA;
+#1=IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);
+#3=IFCUNITASSIGNMENT((#1));
+#10=IFCCARTESIANPOINT((0.,0.,0.));
+#13=IFCAXIS2PLACEMENT3D(#10,$,$);
+#14=IFCLOCALPLACEMENT($,#13);
+#20=IFCBUILDINGSTOREY('1',$,'EG',$,$,#14,$,$,.ELEMENT.,0.);
+#21=IFCBUILDINGSTOREY('2',$,'OG',$,$,#14,$,$,.ELEMENT.,3.);
+#30=IFCCARTESIANPOINT((0.,0.));
+#31=IFCCARTESIANPOINT((6.,0.));
+#32=IFCCARTESIANPOINT((6.,4.));
+#33=IFCCARTESIANPOINT((0.,4.));
+#34=IFCPOLYLINE((#30,#31,#32,#33));
+#35=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,$,#34);
+#36=IFCEXTRUDEDAREASOLID(#35,#13,$,2.7);
+#37=IFCSHAPEREPRESENTATION($,'Body','SweptSolid',(#36));
+#38=IFCPRODUCTDEFINITIONSHAPE($,$,(#37));
+#39=IFCSPACE('3',$,'Raum',$,$,#14,#38,$,.ELEMENT.,$,$);
+#40=IFCRELAGGREGATES('4',$,$,$,#20,(#39));
+#60=IFCCARTESIANPOINT((1.,1.));
+#61=IFCCARTESIANPOINT((5.,1.));
+#62=IFCPOLYLINE((#60,#61));
+#63=IFCSHAPEREPRESENTATION($,'Axis','Curve2D',(#62));
+#64=IFCPRODUCTDEFINITIONSHAPE($,$,(#63));
+#68=IFCWALLSTANDARDCASE('5',$,'Wand',$,$,#14,#64,$);
+#70=IFCRELCONTAINEDINSPATIALSTRUCTURE('6',$,$,$,(#68),#21);
+ENDSEC;
+END-ISO-10303-21;
+`;
+    open();
+    await file({ name: 'haus.ifc', size: ifc.length, text: async () => ifc });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    ack();
+    click('Add as a new plan →');
+    const property = usePropertyStore.getState().property;
+    expect(property.rooms.filter((r) => r.polygon.length >= 3 && !r.levelId)).toHaveLength(1);
+    expect(property.walls).toHaveLength(1);
+    expect(property.walls![0].levelId).toBe('import-floor-1');
+  });
+
+  it('a 3D model comes in as its outline seen from above', async () => {
+    const obj =
+      'v 0 0 0\nv 6 0 0\nv 6 0 4\nv 0 0 4\nv 0 3 0\nv 6 3 0\nv 6 3 4\nv 0 3 4\n' +
+      'f 1 2 3 4\nf 5 8 7 6\nf 1 5 6 2\nf 2 6 7 3\nf 3 7 8 4\nf 4 8 5 1\n';
+    const bytes = new TextEncoder().encode(obj);
+    open();
+    await file({
+      name: 'block.obj',
+      size: bytes.length,
+      text: async () => obj,
+      arrayBuffer: async () => bytes.buffer.slice(0) as ArrayBuffer,
+    });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+      'Its outline seen from above becomes one room',
+    );
+    ack();
+    click('Add as a new plan →');
+    const room = usePropertyStore.getState().property.rooms.find((r) => r.polygon.length >= 3)!;
+    const xs = room.polygon.map((p) => p.x);
+    const ys = room.polygon.map((p) => p.y);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(6, 1);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(4, 1);
+  });
+
   it('refuses a design file too large to open, in words', async () => {
     open();
     const room = (i: number) => ({ id: `r${i}`, polygon: [], placedItems: [] });

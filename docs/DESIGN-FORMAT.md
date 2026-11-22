@@ -975,13 +975,17 @@ The plan import of the web app takes, besides a design file (3.15):
 | SVG (a drawing) | Straight paths and shapes. | Curved paths: skipped and counted. |
 | IFC (a building) | The length unit; the storeys in the order of their levels; a space as a room when its shape is an upright extrusion of a rectangle or of a closed line of straight pieces; a wall by its axis line, or by the middle line of its rectangular body. | Doors, windows, slabs, roofs, stairs, furniture (counted and named); curved, tilted or cut shapes (skipped and counted); the heights of the storeys: one wall height applies to every floor. |
 
+| glTF binary (`.glb`), OBJ (`.obj`) (a 3D model) | The outline of the model seen from above: each separate part of it becomes one room. From a 3D file this app saved itself (3.16), the floors only, storey by storey: the rooms come back as they were drawn. | Inner walls, doors, windows, the roof, placed things; a model packed with Draco or meshopt, or kept in more than one file, is refused in words. An OBJ file is read in metres with y upward. |
+
 - An IFC file's frame is x east, y north, z up, in its own unit. On the way in everything becomes metres and the
   y is turned over, as for a drawing.
 - A storey of an IFC file that has spaces brings its rooms; its wall lines are offered and left off, because a
   room already brings a wall on each of its edges. A storey with no space brings its wall lines as free walls.
 - What comes in is opened as a NEW plan, after a review that says what was skipped. The plan on screen is kept.
 
-Source: `src/designer/planImport.ts`; `src/designer/planImportDxf.ts`; `src/designer/planImportSvg.ts`; `src/designer/planImportIfc.ts`. Tests: `src/designer/__tests__/planImport.test.ts`, `planImportArcs.test.ts`, `planImportIfc.test.ts`.
+- A model's outline is found on a grid of square cells (5 cm, or a 600th of the model's size when that is more): a side along the cells is kept to the point; a slanted side is made straight within a cell and a half; a part under 1 m2 is left out, and counted.
+
+Source: `src/designer/planImport.ts`; `src/designer/planImportDxf.ts`; `src/designer/planImportSvg.ts`; `src/designer/planImportIfc.ts`; `src/designer/planImportModel.ts`. Tests: `src/designer/__tests__/planImport.test.ts`, `planImportArcs.test.ts`, `planImportIfc.test.ts`, `planImportModel.test.ts`.
 
 ## 4. Not sure
 

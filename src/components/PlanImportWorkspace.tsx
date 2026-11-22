@@ -20,6 +20,7 @@ import {
   readDesignFile,
 } from '../designer/designFile';
 import { keptNotShown } from '../designer/formatV2';
+import { MODEL_IMPORT_LIMITS, parsePlanModel } from '../designer/planImportModel';
 import { getAllProducts } from '../data/products';
 import { useCatalogStore } from '../store/catalogStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
@@ -171,8 +172,8 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
     setAck(false);
     setError('');
   }
-  function receive(name: string, text: string) {
-    if (name.toLowerCase().endsWith('.json')) {
+  function receive(name: string, text: string, model?: Uint8Array) {
+    if (!model && name.toLowerCase().endsWith('.json')) {
       const value: unknown = JSON.parse(text);
       // A whole design (this app's own object, as the desktop game also saves it) or a project hand-over file:
       // cleaned as every opened design is, shown for review, and added as a new plan beside the one on screen.
@@ -218,18 +219,22 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
       setFloor(0);
       return;
     }
-    const parsed = parsePlanFile(name, text);
+    const parsed = model ? parsePlanModel(name, model) : parsePlanFile(name, text);
     const selectedUnit = parsed.suggestedUnit ?? (parsed.metresPerUnit ? 'custom' : 'mm');
     setSource(parsed);
     setJsonReview(null);
     setUnit(selectedUnit);
     setFloor(0);
-    const layers = suggestPlanLayers(parsed).map((l) => ({
-      ...l,
-      floor: /\bupper\b/i.test(l.name)
-        ? 1
-        : Math.min(11, Number(l.name.match(/\b(?:floor|level)[ _-]*(\d+)\b/i)?.[1] ?? 0)),
-    }));
+    // A drawing's layers say their floor only by their name, so it is guessed from the name. A file that knows
+    // its own storeys (IFC, a 3D file of this app) has said the floor of each layer: that is kept as it is.
+    const layers = parsed.suggestedLayers
+      ? suggestPlanLayers(parsed)
+      : suggestPlanLayers(parsed).map((l) => ({
+          ...l,
+          floor: /\bupper\b/i.test(l.name)
+            ? 1
+            : Math.min(11, Number(l.name.match(/\b(?:floor|level)[ _-]*(\d+)\b/i)?.[1] ?? 0)),
+        }));
     setOptions({
       name: parsed.name,
       metresPerUnit:
@@ -247,18 +252,28 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
     setJsonReview(null);
     setAck(false);
     setError('');
-    if (file.size > PLAN_IMPORT_LIMITS.bytes) {
-      setError('Use a plan export smaller than 2 MB.');
+    // A 3D model is a larger kind of file than a drawing, and is read as bytes.
+    const isModel = /\.(glb|obj)$/i.test(file.name);
+    if (file.size > (isModel ? MODEL_IMPORT_LIMITS.bytes : PLAN_IMPORT_LIMITS.bytes)) {
+      setError(
+        isModel ? 'Use a model file smaller than 25 MB.' : 'Use a plan export smaller than 2 MB.',
+      );
       return;
     }
-    if (!/\.(dxf|svg|ifc|json)$/i.test(file.name)) {
+    if (!isModel && !/\.(dxf|svg|ifc|json)$/i.test(file.name)) {
       setError(
-        'Export a 2D plan as ASCII DXF or SVG, or the building as IFC. Native DWG, RVT, SKP, PDF and photo conversion is not supported.',
+        'Export a 2D plan as ASCII DXF or SVG, the building as IFC, or a 3D model as GLB or OBJ. Native DWG, RVT, SKP, PDF and photo conversion is not supported.',
       );
       return;
     }
     setReading(true);
     try {
+      if (isModel) {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        if (current !== revision.current) return;
+        receive(file.name, '', bytes);
+        return;
+      }
       const text = await file.text();
       if (current !== revision.current) return;
       receive(file.name, text);
@@ -343,10 +358,10 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
               and floors, then build on the result in 2D and 3D.
             </p>
             <label className="plan-import-file">
-              Choose DXF, SVG, IFC, a design file or draft JSON
+              Choose DXF, SVG, IFC, GLB, OBJ, a design file or draft JSON
               <input
                 type="file"
-                accept=".dxf,.svg,.ifc,.json"
+                accept=".dxf,.svg,.ifc,.glb,.obj,.json"
                 aria-label="Choose plan file"
                 onChange={(e) => {
                   void readFile(e.target.files?.[0]);
