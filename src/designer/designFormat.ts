@@ -19,10 +19,12 @@
  */
 
 /**
- * The version of the design format this build writes and fully reads. A design carries its number in
- * `formatVersion`; a design without one is version 1 (every design made before the number existed).
+ * The newest version of the design format this build reads. A design carries its number in `formatVersion`; a
+ * design without one is version 1 (every design made before the number existed). The number 2 is written only
+ * into a design that holds a version 2 part: a curved wall, the table of products in use, cost lines, members
+ * (`./formatV2`).
  */
-export const DESIGN_FORMAT_VERSION = 1;
+export const DESIGN_FORMAT_VERSION = 2;
 
 const names = (...list: string[]): ReadonlySet<string> => new Set(list);
 
@@ -56,6 +58,10 @@ export const DESIGN_KEYS = names(
   'roof',
   'garden',
   'unread',
+  'formatVersion',
+  'products',
+  'costLines',
+  'members',
 );
 
 /**
@@ -90,6 +96,7 @@ export const ROOM_KEYS = names(
   'wallConstruction',
   'wallPaint',
   'wallCladding',
+  'wallArcs',
   'vertices',
   'lengthM',
   'widthM',
@@ -104,6 +111,7 @@ export const FREE_WALL_KEYS = names(
   'id',
   'a',
   'b',
+  'bulge',
   'thicknessM',
   'levelId',
   'paintId',

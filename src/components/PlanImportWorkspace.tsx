@@ -19,6 +19,7 @@ import {
   designFormatVersion,
   readDesignFile,
 } from '../designer/designFile';
+import { keptNotShown } from '../designer/formatV2';
 import { getAllProducts } from '../data/products';
 import { useCatalogStore } from '../store/catalogStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
@@ -190,6 +191,7 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
                   `This design was written in a newer format (version ${version}; this app reads version ${DESIGN_FORMAT_VERSION}). What this app does not know is kept in the design and not shown.`,
                 ]
               : []),
+            ...keptNotShown(property),
             ...(unknown
               ? [
                   `${unknown} placed ${unknown === 1 ? 'thing names' : 'things name'} a product this catalogue does not have now. They stay in the design and are drawn when the catalogue has them.`,

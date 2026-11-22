@@ -249,7 +249,7 @@ describe('review-and-apply plan import', () => {
           name: 'House in a newer format',
           activeRoomId: 'r1',
           formatVersion: 3,
-          costLines: [{ kind: 'labour', hours: 6 }],
+          futureDesignField: [{ kind: 'made up', hours: 6 }],
           rooms: [
             {
               id: 'r1',
@@ -267,14 +267,54 @@ describe('review-and-apply plan import', () => {
     });
     expect(document.querySelector('[role=alert]')).toBeNull();
     expect(document.querySelector('[role=dialog]')?.textContent).toContain(
-      'written in a newer format (version 3; this app reads version 1)',
+      'written in a newer format (version 3; this app reads version 2)',
     );
     ack();
     click('Add as a new plan →');
     const property = usePropertyStore.getState().property as unknown as Record<string, unknown>;
     expect(property.name).toBe('House in a newer format');
     expect(property.formatVersion).toBe(3);
-    expect(property.costLines).toEqual([{ kind: 'labour', hours: 6 }]);
+    expect(property.futureDesignField).toEqual([{ kind: 'made up', hours: 6 }]);
+  });
+  it('says in words what a design holds that this app keeps and does not show yet', async () => {
+    open();
+    await file({
+      name: 'curved.json',
+      size: 900,
+      text: async () =>
+        JSON.stringify({
+          id: 'with-a-curved-wall',
+          name: 'House with a curved wall',
+          activeRoomId: 'r1',
+          formatVersion: 2,
+          walls: [{ id: 'w1', a: { x: 1, y: 1 }, b: { x: 3, y: 1 }, thicknessM: 0.1, bulge: 0.5 }],
+          members: [{ id: 'm1', role: 'owner' }],
+          rooms: [
+            {
+              id: 'r1',
+              name: 'Room',
+              polygon: [
+                { x: 0, y: 0 },
+                { x: 4, y: 0 },
+                { x: 4, y: 3 },
+                { x: 0, y: 3 },
+              ],
+              placedItems: [],
+            },
+          ],
+        }),
+    });
+    expect(document.querySelector('[role=alert]')).toBeNull();
+    const review = document.querySelector('[role=dialog]')?.textContent ?? '';
+    expect(review).toContain('1 curved wall is kept');
+    expect(review).toContain('1 member is named');
+    expect(review).not.toContain('written in a newer format');
+    ack();
+    click('Add as a new plan →');
+    const property = usePropertyStore.getState().property as unknown as Record<string, unknown>;
+    expect((property.walls as Record<string, unknown>[])[0].bulge).toBe(0.5);
+    expect(property.members).toEqual([{ id: 'm1', role: 'owner' }]);
+    expect(property.formatVersion).toBe(2);
   });
   it('refuses a design file too large to open, in words', async () => {
     open();

@@ -39,7 +39,7 @@ const newerDesign = () => ({
   name: 'House from a newer build',
   activeRoomId: 'r1',
   formatVersion: 2,
-  costLines: [{ kind: 'labour', hours: 6 }],
+  futureDesignField: [{ kind: 'made up', hours: 6 }],
   levels: [
     { id: 'ground', name: 'Ground floor', index: 0, futureLevelField: { use: 'living' } },
     { id: 'first', name: 'First floor', index: 1 },
@@ -136,7 +136,7 @@ const open = (value: unknown) => normaliseLoadedProperty(value as Property) as u
 /** What must be in a design after this build opened it: every made-up field, where it was. */
 function expectEveryFieldKept(opened: Loose) {
   expect(opened.formatVersion).toBe(2);
-  expect(opened.costLines).toEqual([{ kind: 'labour', hours: 6 }]);
+  expect(opened.futureDesignField).toEqual([{ kind: 'made up', hours: 6 }]);
   const levels = opened.levels as Loose[];
   expect(levels.find((l) => l.id === 'ground')?.futureLevelField).toEqual({ use: 'living' });
   expect(levels.find((l) => l.id === 'roof')?.futureRoofLevelField).toBe(1);
@@ -251,7 +251,7 @@ describe('the one table of names', () => {
       for (const key of keys) expect(key, `${table}: ${key}`).toMatch(/^[A-Za-z][A-Za-z0-9]*$/);
     }
     expect(NO_KEYS.size).toBe(0);
-    expect(DESIGN_FORMAT_VERSION).toBe(1);
+    expect(DESIGN_FORMAT_VERSION).toBe(2);
   });
 
   it('every section is a key of the design, and so is the place where unread sections are kept', () => {
@@ -268,7 +268,7 @@ describe('the one table of names', () => {
       eco: { version: 1, trees: [], greenRoofs: [] },
       wallHeightM: 2.6,
     });
-    const made = new Set(['formatVersion', 'costLines']);
+    const made = new Set(['futureDesignField']);
     for (const key of Object.keys(opened))
       expect(DESIGN_KEYS.has(key) || made.has(key), `design key ${key}`).toBe(true);
     for (const room of opened.rooms as Loose[])

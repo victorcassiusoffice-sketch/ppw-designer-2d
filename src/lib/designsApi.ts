@@ -12,6 +12,7 @@
 
 import type { Property } from '../store/propertyStore';
 import { assertShowcaseWritable } from './showcaseSafety';
+import { exportedDesign } from './designExport';
 
 export interface ApiDesign {
   id: number;
@@ -62,7 +63,8 @@ export async function saveDesignToApi(input: SaveDesignInput): Promise<ApiDesign
   const response = await fetch('/api/designs', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(input),
+    // The design leaves the app: its products in use and its format version go with it.
+    body: JSON.stringify({ ...input, property: exportedDesign(input.property) }),
   });
   const body = await readBody(response);
   if (!response.ok) {
@@ -80,7 +82,8 @@ export async function updateDesignToApi(id: number, input: Omit<SaveDesignInput,
   const response = await fetch(`/api/designs/${id}`, {
     method: 'PUT',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(input),
+    // The design leaves the app: its products in use and its format version go with it.
+    body: JSON.stringify({ ...input, property: exportedDesign(input.property) }),
   });
   const body = await readBody(response);
   if (!response.ok) throw new Error(extractErrorMessage(body, `Update failed (${response.status})`));

@@ -83,7 +83,7 @@ describe('a design keeps the fields this build does not know', () => {
     name: 'House with new fields',
     activeRoomId: 'r1',
     formatVersion: 3,
-    costLines: [{ kind: 'labour', trade: 'painter', hours: 6 }],
+    futureDesignField: [{ kind: 'made up', trade: 'painter', hours: 6 }],
     wallHeightM: 9,
     rooms: [
       {
@@ -104,7 +104,7 @@ describe('a design keeps the fields this build does not know', () => {
       unknown
     > & { rooms: Array<Record<string, unknown>> };
     expect(opened.formatVersion).toBe(3);
-    expect(opened.costLines).toEqual([{ kind: 'labour', trade: 'painter', hours: 6 }]);
+    expect(opened.futureDesignField).toEqual([{ kind: 'made up', trade: 'painter', hours: 6 }]);
     expect(opened.rooms[0].ceilingFinish).toEqual({ materialId: 'new-thing' });
     // A key the build knows is still cleaned its own way: a wall height out of range is dropped.
     expect(opened.wallHeightM).toBeUndefined();
@@ -124,7 +124,7 @@ describe('a design keeps the fields this build does not know', () => {
     const again = normaliseLoadedProperty(file!.property as Property);
     expect(again).toEqual(opened);
     expect(designFileText(again)).toBe(designFileText(opened));
-    expect(designFileText(again)).toContain('"costLines"');
+    expect(designFileText(again)).toContain('"futureDesignField"');
     expect(designFileText(again)).toContain('"ceilingFinish"');
   });
 

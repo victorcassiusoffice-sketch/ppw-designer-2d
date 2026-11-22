@@ -38,6 +38,16 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
 import { keepUnknownKeys } from '../designer/unknownKeys';
+import { cleanBulge, cleanWallArcs, type WallArc } from '../designer/arcSegment';
+import {
+  cleanCostLines,
+  cleanDesignProducts,
+  cleanMembers,
+  versionToWrite,
+  type CostLine,
+  type DesignMember,
+  type DesignProduct,
+} from '../designer/formatV2';
 import {
   DESIGN_KEYS,
   FREE_WALL_KEYS,
@@ -342,6 +352,12 @@ export interface Room {
    * drawn room beneath; read through `isRoofRoom(room)`.
    */
   kind?: 'room' | 'outdoor' | 'roof';
+  /**
+   * Design format, version 2: the curved edges of the outline. Sparse: a straight edge is absent. The corners
+   * stay the ends of each arc (`../designer/arcSegment`). Carried and checked today, and kept on the same wall
+   * when the outline is cleaned; drawn and measured as straight edges until the curved-wall tool is built.
+   */
+  wallArcs?: WallArc[];
 }
 
 /** A roof outline edit must preserve the whole scaled object footprint. */
@@ -405,6 +421,17 @@ export interface Property {
    * every open, so a build that can read a section gets it back as the section.
    */
   unread?: Record<string, unknown>;
+  /**
+   * Design format, version 2 (`../designer/formatV2`). The number is written only into a design that holds a
+   * version 2 part; a design without one is version 1.
+   */
+  formatVersion?: number;
+  /** The products in use, each with its company, model number and true size. Made new when a design leaves the app. */
+  products?: DesignProduct[];
+  /** What a job needs, as products and as labour. No money: a rate is looked up on the server. */
+  costLines?: CostLine[];
+  /** Who works on the design and in which role. It names people; the server decides who may change a design. */
+  members?: DesignMember[];
 }
 
 const pageLocation = (globalThis as {location?: {pathname:string; search:string}}).location;
@@ -964,6 +991,7 @@ export const usePropertyStore = create<PropertyState>()(
               return inheritMasonryRoom({
                 ...r,
                 polygon: canon.polygon,
+                wallArcs: cleanWallArcs(r.wallArcs, canon.polygon.length, canon.edgeMap, canon.reversed),
                 removedWallEdges:remapRemovedEdges(r.removedWallEdges,canon.edgeMap),
                 openings: pruneOpenings(canon.openings, canon.polygon),
                 floorTiles: decodeFloorZones(r.floorTiles, canon.polygon),
@@ -2371,6 +2399,17 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   const garden = normaliseGarden(property.garden);
   if (garden) out.garden = garden;
   // What this build does not know is kept, not dropped.
+  // Format version 2: the products in use, the cost lines and the members, each checked entry by entry.
+  const stored = property as unknown as Record<string, unknown>;
+  const products = cleanDesignProducts(stored.products);
+  if (products) out.products = products;
+  const costLines = cleanCostLines(stored.costLines);
+  if (costLines) out.costLines = costLines;
+  const members = cleanMembers(stored.members);
+  if (members) out.members = members;
+  // The number: what the design needs, never less than what it said. A version 1 design carries none.
+  const version = versionToWrite({ ...out, formatVersion: stored.formatVersion });
+  if (version !== undefined) out.formatVersion = version;
   keepUnknownKeys(property, DESIGN_KEYS, out as unknown as Record<string, unknown>);
   return out;
 }
@@ -2442,6 +2481,9 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
       thicknessM: w.thicknessM,
     };
     if (w.levelId) clean.levelId = w.levelId;
+    // Format version 2: a curved wall. A bulge out of range leaves the wall straight; the wall is kept.
+    const bulge = cleanBulge((w as { bulge?: unknown }).bulge);
+    if (bulge !== undefined) clean.bulge = bulge;
     // Wall paint (2026-09-02): whitelist trap — carry the paint or it
     // vanishes on the first save/load round trip. The tint (2026-09-14)
     // rides with it under the same rule; a tint with no paint is dropped.
@@ -2498,6 +2540,7 @@ interface RawRoom {
   floorTiles?: FloorZone[];
   levelId?: unknown;
   kind?: unknown;
+  wallArcs?: unknown;
 }
 
 interface RawProperty {
@@ -2588,6 +2631,11 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     // calculator. Pruned against the CLEANED polygon.
     floorTiles: decodeFloorZones(r.floorTiles, clean),
     wallConstruction: remapConstruction(r.wallConstruction, canon.edgeMap, clean),
+    // Format version 2: the curved edges, checked, and carried across the clean-up of the outline above.
+    ...(() => {
+      const wallArcs = cleanWallArcs(r.wallArcs, clean.length, canon.edgeMap, canon.reversed);
+      return wallArcs ? { wallArcs } : {};
+    })(),
     // Wall paint (2026-09-02): whitelist + prune — entries must point at an
     // edge that still exists on the CLEANED polygon, exactly like openings.
     // The tint (2026-09-14) is whitelisted field by field too: a bad hex
@@ -2799,6 +2847,10 @@ export function canonicalisePropertyWinding(property: Property): Property {
     const wallCladding = remapCladEdges(room.wallCladding, canon.edgeMap, canon.polygon);
     if (wallCladding) next.wallCladding = wallCladding;
     else delete next.wallCladding;
+    // A curved edge stays on its wall, bowing to the same side.
+    const wallArcs = cleanWallArcs(room.wallArcs, canon.polygon.length, canon.edgeMap, canon.reversed);
+    if (wallArcs) next.wallArcs = wallArcs;
+    else delete next.wallArcs;
     return next;
   });
   return touched ? { ...property, rooms } : property;

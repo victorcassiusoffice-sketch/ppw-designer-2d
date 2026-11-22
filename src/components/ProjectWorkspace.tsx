@@ -20,6 +20,7 @@ import {
 } from '../designer/projectHub';
 import { reviewProject } from '../designer/projectReview';
 import { designFileName, designFileText } from '../designer/designFile';
+import { exportedDesign } from '../lib/designExport';
 import { localizeProjectReviewFinding } from '../i18n/projectReview';
 import { emptyEco, type EcoTree, type GreenRoof } from '../designer/eco';
 import { EcoTreeSchema, GreenRoofSchema, EngineeringInputsSchema } from '../designer/ecoContract';
@@ -218,7 +219,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
         projectId: property.id,
         fingerprint,
         register,
-        snapshot: property,
+        snapshot: exportedDesign(property),
         engineVersions: ENGINE_REGISTRY,
         review: report,
       };
@@ -237,7 +238,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
   /** The design by itself, as a file that the plan import and the desktop game open. */
   function saveDesign() {
     const url = URL.createObjectURL(
-      new Blob([designFileText(property)], { type: 'application/json' }),
+      new Blob([designFileText(exportedDesign(property))], { type: 'application/json' }),
     );
     const anchor = document.createElement('a');
     anchor.href = url;
