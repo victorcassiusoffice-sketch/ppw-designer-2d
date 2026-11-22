@@ -1004,16 +1004,18 @@ Source: `src/designer/planImport.ts`; `src/designer/planImportDxf.ts`; `src/desi
 
 ## 5. What each front does not do yet
 
-Written on 22 November 2026. Change this chapter when one of its lines stops being true.
+Written on 22 November 2026; the game's column was written anew the same day, when the game learnt to read version 2 (stage 2, step 7). Change this chapter when one of its lines stops being true.
 
 | Part | The web app | The desktop game |
 |---|---|---|
-| Curved walls | Kept, checked, and kept on their wall when an outline is cleaned. NOT drawn in 2D or 3D, and NOT measured as arcs: lengths, areas and paint quantities take the chord. The plan import says so when a design holds one. | Not read yet. Kept as stored when the game saves a design. |
-| The products in use | Written when a design leaves the app. Not used to draw a product the catalogue does not have. | Not read yet. Kept as stored. |
-| Cost lines | Kept and checked. No page shows them; nothing works out a cost. | Not read. Kept as stored. |
-| Members | Kept and checked. Nothing on the web acts on a role. | The game has the six roles for the people in one house at a time; it does not read or write `members` yet. |
+| Curved walls | Kept, checked, and kept on their wall when an outline is cleaned. NOT drawn in 2D or 3D, and NOT measured as arcs: lengths, areas and paint quantities take the chord. The plan import says so when a design holds one. | Read, and drawn from the same sums (2.22). A curved wall without an opening is a true arc, in short straight pieces that stand off it by at most 5 mm; its floor and its roof follow it, and its 2D plan writes the wall's length along the arc and the room's true area: for a room with a curved wall the game's figures differ from the web app's (which takes the chord) until stage 3. A curved wall with a door or a window in it is drawn STRAIGHT, and its floor and roof with it. The tools (paint, door and window, remove, a new room, where a thing may stand) still go by a wall's straight line, and no tool makes or changes a curve. Kept as stored when the game saves. |
+| The products in use | Written when a design leaves the app. Not used to draw a product the catalogue does not have. | Read. A product the game's catalogue does not have is drawn as a plain body of the size the design gives, standing on the floor; it is in no list a player picks from. When the game saves a FILE it makes the table new by the rule of 2.23. Its catalogue names no company: an entry it writes new has none, and an entry that came with one keeps it. |
+| Cost lines | Kept and checked. No page shows them; nothing works out a cost. | Not read. Kept as stored. In a shared house only the owner may change them. |
+| Members | Kept and checked. Nothing on the web acts on a role. | Read, with the six roles; a role it does not know is a viewer's. No screen shows the members and no tool changes them; the role of a guest is still the one its join address asks for. Kept as stored. In a shared house only the owner may change the list. |
 | `unread` | Never named on screen. | Kept as stored. |
-| A design in a newer format | The plan import says so in words. A design from the server or from the browser's storage opens with no word about it. | Says nothing. |
+| A design in a newer format | The plan import says so in words. A design from the server or from the browser's storage opens with no word about it. | Says so in words on the screen when the design is opened, and in its log. |
 
 The desktop game keeps the whole object it read and changes only the parts it edits, so every key it does not
-know goes back into the file as it was.
+know goes back into the file as it was. Two keys it makes new when it writes a FILE: the table of the products
+in use (2.23), and with it the number of the format, which is never less than the number the design came with.
+The design it holds, and passes to a guest in a shared house, stays as it was read.

@@ -22,7 +22,8 @@ The house has one owner: the player (or the account) that holds the design. Nobo
    - a difference under `services`: each run that was added, removed or changed must be of a system of the role (both what it was and what it is now), and each such fixture of a kind of the role; a run or a fixture without an `id` cannot be told apart, so the offer is refused;
    - a difference in `terrainCuts`: allowed to builder, plumber and electrician;
    - in `rooms`: a room more, a room less or another order is the builder's; inside a room the keys `wallPaint`, `floorFinish` and `floorTiles` are the painter's, every other key the builder's;
-   - a difference in any other key of the design is the builder's.
+   - a difference in `members` or in `costLines` (who works on the house, and what the job needs; design format, version 2) is the owner's alone;
+   - a difference in any other key of the design is the builder's. That takes in the other parts of version 2: a curved edge of a room (`wallArcs`) and the curve of a free wall (`bulge`), the table of the products in use (`products`), which follows from what stands in the house, and the number of the format.
    A refusal carries one plain line that says why ("paint and floor finishes are the painter's, not the builder's").
 
 ## Versions
@@ -35,9 +36,14 @@ Every edit that is taken makes a new version number of the design. An offer name
 - A guest edits its own copy with the ordinary tools and offers the whole result. The host checks version and role as above, makes the offer the house, saves it, and sends it to the other guests; the offering guest is only told the new number.
 - A guest asks for its role in the address it joins by; the host gives what is asked. There is no invitation, no approval and no password yet: that belongs to stage 8.
 
+## Changed
+
+- 2026-11-22, world stage 2, step 7 (Fable): `members` and `costLines` became the owner's alone. Until then they fell under "any other key", the builder's: a builder could have changed the list of members, and written itself into it as the owner. No right followed from that (neither front acts on the list: the game gives a guest the role its join address asks for, and nothing on the web acts on a role yet), but the list is the one place where the roles of a design are written down, so it is closed before anything reads it. The game holds this rule since that day.
+
 ## Open, for stage 8 to decide
 
-- Who gives a role, and how it is taken back.
+- Who gives a role, and how it is taken back. Today nobody but the owner may change the list of members, and the game gives a guest the role its join address asks for: the list is not looked at when a guest joins.
+- Who may write a cost line (today: the owner alone).
 - Whether a plumber may remove a builder's thing that stands in the way of a pipe (today: no).
 - Whether the builder may paint (today: no; the painter may not move furniture either).
 - Air conditioning as a trade of its own (today its line, `refrigerant`, is the electrician's, and `ventilation` the plumber's).
