@@ -955,14 +955,33 @@ from the same solids the 3D view draws from, so a wall stands where the 3D view 
 - A floor is a slab of 0.18 m under its level, with the hole of a stair cut out. A wall has its doors and
   windows cut out in their own shape. The roof is its covering, of even thickness. A stair is its steps. A placed
   thing is a box of its true size. A garden surface is a thin slab, a fence a thin wall.
-- A curved wall (2.22) is made curved, from short straight pieces that stand off the true arc by at most 5 mm. A
-  curved wall with a door or a window in it is exported straight, and the app says so.
+- A curved wall (2.22) is made curved, from short straight pieces that stand off the true arc by at most 5 mm.
+  The floor of its room and the roof over it follow the same curve. A curved wall with a door or a window in it
+  is exported straight, and the app says so.
 - NOT in the files: the model of a product (a thing is its box), textures, lamps, pipes and cables, the
   foundation, shade sails, the city.
 
 - The same solids are drawn as 3D view sheets in a PDF (a third button): the whole house from the south-west and from the north-east, then each storey by itself from above, without what is over it. A sheet is a parallel view, at one scale over the whole sheet, drawn by sums with no graphics card (`src/lib/view3dSheet.ts`). The PDF maker takes such sheets (`viewSheets`); the PDF that is made after an order does not carry them yet.
 
 Source: `src/components/three/exportModel.ts`; `src/lib/exportHouse3d.ts`; `src/lib/view3dSheet.ts`; `src/lib/planPdf.ts`. Tests: `src/components/three/__tests__/exportModel.test.ts`; `src/lib/__tests__/view3dSheet.test.ts`.
+
+### 3.17 What comes in from other programs
+
+The plan import of the web app takes, besides a design file (3.15):
+
+| File | What is read | What is not |
+|---|---|---|
+| ASCII DXF (a drawing) | Lines, polylines with their bulges, arcs and circles, in the plan of the drawing. The person says which layer is rooms and which is walls, and on which floor. | Blocks, splines, text, hatches, 3D and elevated entities: skipped and counted. |
+| SVG (a drawing) | Straight paths and shapes. | Curved paths: skipped and counted. |
+| IFC (a building) | The length unit; the storeys in the order of their levels; a space as a room when its shape is an upright extrusion of a rectangle or of a closed line of straight pieces; a wall by its axis line, or by the middle line of its rectangular body. | Doors, windows, slabs, roofs, stairs, furniture (counted and named); curved, tilted or cut shapes (skipped and counted); the heights of the storeys: one wall height applies to every floor. |
+
+- An IFC file's frame is x east, y north, z up, in its own unit. On the way in everything becomes metres and the
+  y is turned over, as for a drawing.
+- A storey of an IFC file that has spaces brings its rooms; its wall lines are offered and left off, because a
+  room already brings a wall on each of its edges. A storey with no space brings its wall lines as free walls.
+- What comes in is opened as a NEW plan, after a review that says what was skipped. The plan on screen is kept.
+
+Source: `src/designer/planImport.ts`; `src/designer/planImportDxf.ts`; `src/designer/planImportSvg.ts`; `src/designer/planImportIfc.ts`. Tests: `src/designer/__tests__/planImport.test.ts`, `planImportArcs.test.ts`, `planImportIfc.test.ts`.
 
 ## 4. Not sure
 

@@ -439,7 +439,13 @@ export function exportParts(solids: SceneSolids, curves: WallCurves = new Map())
       `${openingsLeftOut} ${openingsLeftOut === 1 ? 'opening lies' : 'openings lie'} over another or off the wall and ${openingsLeftOut === 1 ? 'is' : 'are'} not cut out.`,
     );
 
-  for (const roof of solids.roofs ?? [])
+  for (const roof of solids.roofs ?? []) {
+    // A roof slab lies over one room and has that room's outline, corner for corner: its id is `roof-` and the
+    // room's id. Where the room's edge is curved, the roof's edge is the same curve.
+    const under = (roof.roomId ?? '').replace(/^roof-/, '');
+    const curved = roof.polygon.some(
+      (_, i) => cleanBulge(curves.get(`wall-${under}-${i}`)) !== undefined,
+    );
     add(
       {
         name: `roof ${roof.roomId ?? ''}`.trim(),
@@ -447,8 +453,13 @@ export function exportParts(solids: SceneSolids, curves: WallCurves = new Map())
         levelId: roof.levelId,
         colourHex: roof.coolCoating ? '#e7e6d6' : (ROOF_HEX[roof.config.material] ?? '#7e9498'),
       },
-      roofSolid(roof.polygon, roof.elevationM, roof.config),
+      roofSolid(
+        curved ? curvedOutline(roof.polygon, under, curves) : roof.polygon,
+        roof.elevationM,
+        roof.config,
+      ),
     );
+  }
 
   for (const { stair, baseM, riseM } of solids.stairs ?? []) {
     if (

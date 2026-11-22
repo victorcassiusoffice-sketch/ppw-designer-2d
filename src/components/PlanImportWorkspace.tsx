@@ -251,9 +251,9 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
       setError('Use a plan export smaller than 2 MB.');
       return;
     }
-    if (!/\.(dxf|svg|json)$/i.test(file.name)) {
+    if (!/\.(dxf|svg|ifc|json)$/i.test(file.name)) {
       setError(
-        'Export a 2D plan as ASCII DXF or SVG. Native DWG, RVT, SKP, IFC, PDF and photo conversion is not supported.',
+        'Export a 2D plan as ASCII DXF or SVG, or the building as IFC. Native DWG, RVT, SKP, PDF and photo conversion is not supported.',
       );
       return;
     }
@@ -343,10 +343,10 @@ function ImportWorkbench({ onClose }: { onClose: () => void }) {
               and floors, then build on the result in 2D and 3D.
             </p>
             <label className="plan-import-file">
-              Choose DXF, SVG, a design file or draft JSON
+              Choose DXF, SVG, IFC, a design file or draft JSON
               <input
                 type="file"
-                accept=".dxf,.svg,.json"
+                accept=".dxf,.svg,.ifc,.json"
                 aria-label="Choose plan file"
                 onChange={(e) => {
                   void readFile(e.target.files?.[0]);

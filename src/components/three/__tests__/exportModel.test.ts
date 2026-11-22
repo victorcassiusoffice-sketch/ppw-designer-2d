@@ -293,6 +293,26 @@ describe('the house as solids: a curved wall of format version 2', () => {
     }
   });
 
+  it('the roof over a room with a curved edge follows the curve, as its floor does', () => {
+    const config = {
+      style: 'flat' as const,
+      material: 'felt' as const,
+      pitchDeg: 25,
+      overhangM: 0,
+    };
+    const roofs = [{ polygon: ROOM, elevationM: 2.88, config, roomId: 'roof-r1' }];
+    const straight = only(exportParts(solidsOf({ roofs })).parts);
+    const curved = only(exportParts(solidsOf({ roofs }), new Map([['wall-r1-0', 0.3]])).parts);
+    const arc = arcGeometry(ROOM[0], ROOM[1], 0.3)!;
+    const segment = (arc.radiusM ** 2 * (Math.abs(arc.sweep) - Math.sin(Math.abs(arc.sweep)))) / 2;
+    const thickness = partVolumeM3(straight.positions) / 24;
+    expect(partVolumeM3(curved.positions) / ((24 + segment) * thickness)).toBeCloseTo(1, 2);
+    // It reaches out as far as the arc bows: 0.9 m north of the room's straight edge.
+    expect(bounds(straight).max.y).toBeCloseTo(0, 5);
+    expect(bounds(curved).max.y).toBeGreaterThan(arc.sagittaM - 0.006);
+    expect(openEdges(curved.positions)).toBe(0);
+  });
+
   it('with a door in it, it is exported straight, and that is said', () => {
     const edge = wall(ROOM[0], ROOM[1], {
       openings: [{ kind: 'door', t0M: 1, t1M: 1.9, bottomM: 0, topM: 2.04 }],

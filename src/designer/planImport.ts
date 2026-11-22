@@ -5,6 +5,7 @@ import type { FreeWall } from './freeWalls';
 import { syncRoofRooms } from './roof';
 import { parsePlanDxf } from './planImportDxf';
 import { parsePlanSvg } from './planImportSvg';
+import { parsePlanIfc } from './planImportIfc';
 import { cleanBulge, type WallArc } from './arcSegment';
 
 export const PLAN_IMPORT_LIMITS = {
@@ -36,12 +37,14 @@ export interface PlanImportShape {
   bulges?: number[];
 }
 export interface PlanImportSource {
-  format: 'dxf' | 'svg';
+  format: 'dxf' | 'svg' | 'ifc';
   name: string;
   shapes: PlanImportShape[];
   warnings: string[];
   suggestedUnit?: PlanUnit;
   metresPerUnit?: number;
+  /** A file that knows its own storeys (IFC) says what each of its layers is and on which floor. */
+  suggestedLayers?: PlanImportLayer[];
 }
 export interface PlanImportLayer {
   name: string;
@@ -71,14 +74,22 @@ export function parsePlanFile(name: string, text: string): PlanImportSource {
     throw new Error('Use a plan export smaller than 2 MB.');
   const extension = name.split('.').pop()?.toLowerCase();
   const source =
-    extension === 'dxf' ? parsePlanDxf(text) : extension === 'svg' ? parsePlanSvg(text) : null;
+    extension === 'dxf'
+      ? parsePlanDxf(text)
+      : extension === 'svg'
+        ? parsePlanSvg(text)
+        : extension === 'ifc'
+          ? parsePlanIfc(text)
+          : null;
   if (!source)
     throw new Error(
-      'Export a 2D plan as ASCII DXF or SVG. Native DWG, RVT, SKP, IFC, PDFs and photos are not converted here.',
+      'Export a 2D plan as ASCII DXF or SVG, or the building as IFC. Native DWG, RVT, SKP, PDFs and photos are not converted here.',
     );
   if (!source.shapes.length)
     throw new Error(
-      'No supported plan geometry found. Export room outlines or straight wall centre lines, with blocks exploded.',
+      source.format === 'ifc'
+        ? 'No space and no wall could be read from this IFC file. Export the building with its spaces (rooms) and walls.'
+        : 'No supported plan geometry found. Export room outlines or straight wall centre lines, with blocks exploded.',
     );
   if (
     source.shapes.length > PLAN_IMPORT_LIMITS.shapes ||
@@ -105,6 +116,7 @@ export function parsePlanFile(name: string, text: string): PlanImportSource {
 
 /** Auto-suggestions are always exposed for review; annotation layers stay off. */
 export function suggestPlanLayers(source: PlanImportSource): PlanImportLayer[] {
+  if (source.suggestedLayers) return source.suggestedLayers.map((layer) => ({ ...layer }));
   return [...new Set(source.shapes.map((s) => s.layer))].map((name) => {
     const annotation =
       /furn|door|window|glaz|dim|annot|text|hatch|grid|symbol|sheet|border|title|elect|plumb|sanit/i.test(

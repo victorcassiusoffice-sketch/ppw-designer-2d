@@ -355,8 +355,10 @@ describe('reviewed property construction', () => {
     ).toThrow(/Assign a floor/);
   });
   it('fails honestly for unsupported native software formats and oversized exports', () => {
-    for (const extension of ['dwg', 'rvt', 'skp', 'ifc', 'pdf', 'png'])
+    for (const extension of ['dwg', 'rvt', 'skp', 'pdf', 'png'])
       expect(() => parsePlanFile(`plan.${extension}`, 'x')).toThrow(/Export a 2D plan/);
+    // World stage 2, step 6: an IFC building file is read now (`planImportIfc.test.ts`); what is no IFC is refused.
+    expect(() => parsePlanFile('plan.ifc', 'x')).toThrow(/not an IFC file/);
     expect(() => parsePlanFile('large.svg', 'x'.repeat(2_000_001))).toThrow(/2 MB/);
   });
 });

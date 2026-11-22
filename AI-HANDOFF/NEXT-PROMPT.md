@@ -1,6 +1,6 @@
 # Next prompt (rewritten at every commit)
 
-Written 2026-11-22 05:32 MU by Fable.
+Written 2026-11-22 05:45 MU by Fable.
 
 ## Where we are
 
@@ -14,7 +14,7 @@ Stage 2 (world format) is under way on the branch `world/s02-world-format`, made
 | 2.3 One schema, with a version | SEEN (22 Nov): a key this build does not know is kept in the design, a room and its inner lists, a storey, a free wall, the plot, a stair, the roof, the garden and its entries, and at the top level of the materials settings (`src/designer/unknownKeys.ts`, the names in `src/designer/designFormat.ts`). NOT inside a part with a version of its own that is read key by key (`services`, `foundation`, `shade`, `city`, a `site.world` that verifies, the groups of `materials`): the rule there is to raise that part's version; the format version is read and a newer file says so; a section this build cannot read is kept aside under `unread` by ONE reader that both load lists use (`readSections` in `src/store/propertyStore.ts`). The whole suite passes. MIND: what the loading of a design uses must be declared ABOVE the store in `src/store/propertyStore.ts` or be a `function`; three commits of this branch (`324147d`, `5c21deb`, `773e8a1`) did not load a stored design at page start for that reason, repaired since, and `src/store/__tests__/startUpLoad.test.ts` holds it. The rest is in "Continue", point 2 |
 | 2.4 The new fields of version 2 | SEEN (22 Nov): curved walls, the products in use, cost lines, members, the number 2; seen in a real browser; the format's document for both fronts is `docs/DESIGN-FORMAT.md`, held to the code by a test |
 | 2.5 3D out | SEEN (22 Nov): three buttons in the project workspace save the house as glTF, as STL and as 3D view sheets in a PDF; each file opened by another program. The PDF made after an order is not touched (a payment path): it can take the sheets, on the owner's word |
-| 2.6 Drawings and models in | FIRST PART BUILT AND TESTED (22 Nov): a DXF drawing's arcs come in as true arcs (`src/designer/planImportDxf.ts`). Left: IFC; glTF and OBJ; a browser run of the import dialog |
+| 2.6 Drawings and models in | TWO PARTS SEEN IN A BROWSER (22 Nov): a DXF drawing's arcs come in as true arcs (`src/designer/planImportDxf.ts`); an IFC building file comes in as storeys, rooms and wall lines (`src/designer/planImportIfc.ts`). Left: glTF and OBJ in. Neither was tried with a file written by a CAD or building program |
 | 2.7 The game reads version 2 | not started |
 | The stage's PR | #83, a draft against `main`, stacked on #82 |
 | Stages 0 and 1 | DONE: `INVENTORY.md` (147 tool rows, 845 inventory lines, 240 caps), `scan/` (six notes, `make-inventory.py`, `_inventory-head.md`), the rails in both repos; PR #82 |
