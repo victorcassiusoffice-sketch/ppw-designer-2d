@@ -395,5 +395,52 @@
         }
       }
     }
+  },
+  "studio": {
+    "k1-schwinn-700ic": {
+      "url": "/models/candidates/studio/k1-schwinn-700ic.glb",
+      "phoneUrl": "/models/candidates/studio/k1-schwinn-700ic-phone.glb",
+      "modelFront": "+z",
+      "lengthAxis": "auto",
+      "source": {
+        "engine": "scripts/product-engine",
+        "run": "2026-11-22-studio",
+        "tool": "studio",
+        "endpoint": "studio (a file brought in)",
+        "price_usd": 0,
+        "seconds": null,
+        "inference_s": null,
+        "request_id": "4e8851df-5d50-43fd-8dfd-a6c028b2c745",
+        "photo": "/products/photos/k1-schwinn-700ic.webp",
+        "generated_at": "2026-11-22T06:29:20.839Z",
+        "raw_bytes": 67333092,
+        "raw_triangles": 1919497,
+        "bytes": 327756,
+        "triangles": 20000,
+        "phone_bytes": 119656,
+        "phone_triangles": 4999,
+        "orient": {
+          "modelFront": "+z",
+          "why": "art left: weak head signal, default kept",
+          "head": {
+            "x": -0.146,
+            "z": -0.001
+          },
+          "swapped": false,
+          "up": "+y",
+          "bakeYaw": false,
+          "squaredDeg": 0,
+          "level": {
+            "pitchDeg": 0.12,
+            "rollDeg": -0.18
+          },
+          "upWhy": "the product is not flat; y stays up"
+        },
+        "gate": {
+          "pass": true,
+          "failed": []
+        }
+      }
+    }
   }
 }

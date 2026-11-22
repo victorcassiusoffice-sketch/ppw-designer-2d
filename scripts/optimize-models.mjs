@@ -49,6 +49,9 @@ async function getIO() {
 export async function optimizeGlb(inPath, outPath, opts = {}) {
   const base = opts.base ?? 1024;
   const mr = opts.mr ?? 512;
+  // The pictures' quality (WebP): the product engine steps it down when a copy is over its byte limit.
+  const quality = opts.quality ?? 82;
+  const mrQuality = opts.mrQuality ?? 70;
   const io = await getIO();
   const doc = await io.read(inPath);
   // Triangle budget per body (a phone draws twenty of these at once): the
@@ -74,8 +77,8 @@ export async function optimizeGlb(inPath, outPath, opts = {}) {
   }
   // 2. Textures: colour at `base`, metal/rough (near-flat) at `mr`, both WebP.
   await doc.transform(
-    textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [base, base], slots: /baseColor/i, quality: 82 }),
-    textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [mr, mr], slots: /metallicRoughness|normal|occlusion|emissive/i, quality: 70 }),
+    textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [base, base], slots: /baseColor/i, quality }),
+    textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [mr, mr], slots: /metallicRoughness|normal|occlusion|emissive/i, quality: mrQuality }),
   );
   // 3. Geometry: weld, simplify (bounded error), then Draco. The error bound wins over the
   // ratio: a very dense body (Hunyuan3D v3 hands back ~500k triangles) stops well above the

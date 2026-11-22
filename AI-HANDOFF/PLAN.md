@@ -101,3 +101,39 @@ Stage 2 is too big for one sitting, so it is built in steps, each proven before 
 | 2.5 3D out | Export glTF (3D) and STL (for a 3D printer) from the 3D view; 3D view sheets in the PDF. | A house is exported in 3D and opens in another program |
 | 2.6 Drawings and models in | DXF with arcs; IFC; glTF and OBJ. A new package is free and has a licence that allows it, or it waits for the owner's word. | A DXF and an IFC are imported |
 | 2.7 The game reads version 2 | The game repo: its reader and writer follow the one schema. | The game opens and saves a version 2 design |
+
+## Objects and builds, in steps (the owner's order of 2026-11-22; it comes before stage 3)
+
+The owner's words, short (typed in the builder chat on 22 November 2026; the stage numbers of the table above do not move):
+
+- The things in a house (furniture, machines, tanks, lamps) are to be 3D models made from their photos by the photo-to-3D service he pays for, not shapes made by an engine: "all these objects in the first person, third person, whatever, they all need to look very identical, and even in the 2D they need to look very identical to the images".
+- "There should be some kind of dashboard on there where you can drag and drop and then I could give a prompt to AI when I ever want these images to be merged."
+- "Unless certain things like walls or something is better on" the engine.
+- "If I had like a tank, water tank, I should be able to stack one on top of the other, but obviously that wouldn't work. So there needs to be some kind of build where you could put a platform of cement, just like we have with the cement and the rebar build coming out of the wall. So someone could build a shelf, and then it would need like a pillar at the bottom, so someone could build a pillar, and it should be able to calculate it all. Also, that we can do it out of wood, so we need a little timber build in there."
+- Later the same day: everything is to look "ultra realistic and identical", with a way of adding to the build that he can use himself and that does not cost many AI credits; the level of the buildings may be raised too; he took a higher plan of the service (8K pictures) and installed a 3D editing program and the service's bridge to it.
+
+Who makes what (the sort he asked for):
+
+| Made by the engine, from the design's numbers | Made from photos by the service |
+|---|---|
+| Walls, floors, ceilings, roofs, stairs, the holes of doors and windows; pipes and cables; the ground and what is dug; foundations; platforms, shelves, pillars, timber; fences; roads. They must be exact, they are edited, measured and counted | Every product: furniture, machines, tanks, lamps, panels, sanitary ware, kitchen units; later the fixtures of the services (taps, sockets, boxes) and door leaves and window units as products. They must look like the photo |
+| Their LOOK is raised with real surface materials (free, licensed sets of pictures: colour, relief, roughness), not with a model from photos | A model from photos is a frozen sculpture: it cannot be measured, cut, counted or priced, so a building is never one |
+
+The steps:
+
+| Step | What | Seen when |
+|---|---|---|
+| T1 Find out | What exists (`docs/product-engine/README.md`, `scripts/product-engine/`, `src/data/productModels.ts`, `public/models`), which products have a photo, the sort above | The sort, and the list of products with and without a photo |
+| T2 One product, end to end | The exercise bike: its catalogue photo to the service's own studio (the owner's plan there), the body back, through the product engine as a file (`products:engine -- studio`): fitted to the product's true size by the rule that exists (`src/designer/fitToSize.ts`), a laptop copy and a phone copy made from the studio's own light meshes, a high copy for a strong machine and for the desktop game, and the plan picture and the catalogue picture made FROM THE SAME BODY | The bike beside its photo: web 3D, the game on foot and in third person, the 2D plan |
+| T3 The rest | Every product that has a usable photo (21 of the 91 on 22 November), credits counted before and after each batch, none bought. A product with no photo keeps its measured stand-in: whether a look-alike made from words may stand in for a named product is the owner's decision (asked on 22 November), and no company's website is read for a photo without that company's written yes | The count: made, refused, credits left |
+| T4 The image desk | In the app, behind the sign-in door that exists (the door is not changed): drop photos or a model file, say in words how photos are to be merged, see the body beside the photo, accept or try again. The server stays at 12 functions | A dropped photo becomes a product's body |
+| T5 Platform, shelf, pillar in concrete | A new part of the design under its own key, after the pattern of the foundation build (boxes by centre, size and top height, the rebar object, the two sums that exist). Quantities for certain: concrete, cement, sand, aggregate, bars, and formwork (new). Whether it CARRIES a load is not judged: the screen says so in the words the foundation build uses. A thing may stand on a platform; a tank on a tank is refused with one plain line | A tank on a platform on a pillar, with its list of materials |
+| T6 Timber | The same three pieces in wood: sections, lengths, fixings counted | A timber shelf with its list |
+
+Rules for these steps:
+
+- Only photos that are already in the catalogue go to the service. No photo is taken from a company's website without that company's written yes.
+- The service's terms for commercial use are read before a body goes live; the plan the bodies are made under is written in the run's record.
+- One full body per product is kept as the service handed it over, outside git (`models-raw/`, with its size and hash in the run's record); the copies are made from it again by `reprocess`. Only the laptop copy, the phone copy and the two pictures go into git. A high copy is never served to a browser from this repo.
+- A body is a CANDIDATE (`?bodies=studio`) until the owner has seen it beside its photo; `adopt` puts it into the catalogue.
+- No price anywhere in these files. Pictures for the owner are sent privately.
