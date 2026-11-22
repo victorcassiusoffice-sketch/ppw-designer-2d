@@ -938,6 +938,26 @@ Proof: `src/store/propertyStore.ts`; `src/designer/building.ts`; `src/data/wallP
 - A file is not opened when it has more than 400 rooms, a room with more than 2000 points, or a room with more than 5000 things. Proof: `src/designer/designFile.ts`.
 - A design opened from a file is added as a new page. The page on screen is not replaced. Proof: `src/designer/designFile.ts`.
 
+### 3.16 The house as 3D files
+
+The web app saves the house of a design as two files (the project workspace, the hand-over card). They are made
+from the same solids the 3D view draws from, so a wall stands where the 3D view shows it.
+
+| File | Units and axes | What it holds |
+|---|---|---|
+| glTF binary (`.glb`) | Metres. x east, y up, z south: right-handed, as the format asks. | One node for each part, named, with a plain colour. Each node has `extras`: `kind` (`floor`, `wall`, `roof`, `stair`, `thing`, `garden`), `levelId` when the part belongs to a storey, `roomId` on a floor, `instanceId` and `productId` on a placed thing. Flat faces, no texture. |
+| STL binary (`.stl`) | Millimetres. x east, y north, z up: right-handed. The true size of the house; a printing program scales it. | One list of triangles: every part a closed solid with its faces outward. No colour, no names. |
+
+- A floor is a slab of 0.18 m under its level, with the hole of a stair cut out. A wall has its doors and
+  windows cut out in their own shape. The roof is its covering, of even thickness. A stair is its steps. A placed
+  thing is a box of its true size. A garden surface is a thin slab, a fence a thin wall.
+- A curved wall (2.22) is made curved, from short straight pieces that stand off the true arc by at most 5 mm. A
+  curved wall with a door or a window in it is exported straight, and the app says so.
+- NOT in the files: the model of a product (a thing is its box), textures, lamps, pipes and cables, the
+  foundation, shade sails, the city.
+
+Source: `src/components/three/exportModel.ts`; `src/lib/exportHouse3d.ts`. Tests: `src/components/three/__tests__/exportModel.test.ts`.
+
 ## 4. Not sure
 
 1. What point of the real world the plan origin is, when the design has no `site.world`. The code has no fixed origin.

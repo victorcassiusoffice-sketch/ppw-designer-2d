@@ -348,6 +348,36 @@ const copy = {
     '仅包含设计的单个文件。可通过“导入平面图”作为新方案重新打开，桌面游戏也可打开。分享前请检查项目名称和备注。',
     'Solo el diseño, en un archivo. La importación de planos lo abre de nuevo como plano nuevo, y también el juego de escritorio. Revise nombres y notas antes de compartirlo.',
   ],
+  saveModel: [
+    'Save the house in 3D (glTF)',
+    'Enregistrer la maison en 3D (glTF)',
+    '将房屋保存为三维模型 (glTF)',
+    'Guardar la casa en 3D (glTF)',
+  ],
+  savePrint: [
+    'Save the house for a 3D printer (STL)',
+    'Enregistrer la maison pour une imprimante 3D (STL)',
+    '保存房屋以供三维打印 (STL)',
+    'Guardar la casa para una impresora 3D (STL)',
+  ],
+  saveModelNote: [
+    'The house as solids at its true size: floors, walls with their doors and windows cut out, roof, stairs, garden, and each placed thing as a box of its size. The 3D file is in metres. The printer file is in millimetres: scale it down in the printing program.',
+    'La maison en volumes à sa taille réelle : sols, murs avec portes et fenêtres découpées, toit, escaliers, jardin, et chaque objet posé sous forme de boîte à sa taille. Le fichier 3D est en mètres. Le fichier d’impression est en millimètres : réduisez-le dans le logiciel d’impression.',
+    '按真实尺寸生成的房屋实体：楼板、已开门窗洞的墙体、屋顶、楼梯、花园，每件摆放的物品为其尺寸的方盒。三维文件以米为单位。打印文件以毫米为单位：请在打印软件中缩小。',
+    'La casa en sólidos a su tamaño real: suelos, muros con puertas y ventanas recortadas, tejado, escaleras, jardín, y cada objeto colocado como una caja de su tamaño. El archivo 3D está en metros. El archivo de impresión está en milímetros: redúzcalo en el programa de impresión.',
+  ],
+  modelSaved: [
+    'Saved: {parts} parts, {triangles} triangles, {x} by {y} by {z} metres.',
+    'Enregistré : {parts} éléments, {triangles} triangles, {x} sur {y} sur {z} mètres.',
+    '已保存：{parts} 个部件，{triangles} 个三角面，{x} × {y} × {z} 米。',
+    'Guardado: {parts} piezas, {triangles} triángulos, {x} por {y} por {z} metros.',
+  ],
+  modelFailed: [
+    'The 3D file could not be made.',
+    'Le fichier 3D n’a pas pu être créé.',
+    '无法生成三维文件。',
+    'No se pudo crear el archivo 3D.',
+  ],
   export: [
     'Export project review JSON',
     'Exporter la revue JSON',
