@@ -683,6 +683,10 @@ Rules:
   over comes in with the sign of every bulge changed.
 - A bulge whose size is below 0.000001 is a straight wall and is not stored. The largest kept is 20 (a turn of
   about 348 degrees). A whole circle is two half circles.
+- The plan import reads a drawing's arcs (ASCII DXF): the bulges of a polyline, an ARC (one curved segment from
+  its start angle to its end angle), a CIRCLE (a closed outline of four quarter arcs). On a room layer a closed
+  polyline becomes a room with `wallArcs`; on a wall layer each curved segment becomes a free wall with a
+  `bulge`. Open curved lines on a room layer are traced straight, and the import says so.
 - A reader that can only draw lines takes the arc as a run of straight pieces between points on the arc; the
   code gives them with a tolerance (5 mm unless asked otherwise, at most 256 pieces).
 
