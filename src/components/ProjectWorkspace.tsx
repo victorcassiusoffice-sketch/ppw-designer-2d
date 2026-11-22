@@ -21,7 +21,7 @@ import {
 import { reviewProject } from '../designer/projectReview';
 import { designFileName, designFileText } from '../designer/designFile';
 import { exportedDesign } from '../lib/designExport';
-import { houseModelFile } from '../lib/exportHouse3d';
+import { houseModelFile, houseViewsPdf } from '../lib/exportHouse3d';
 import { localizeProjectReviewFinding } from '../i18n/projectReview';
 import { emptyEco, type EcoTree, type GreenRoof } from '../designer/eco';
 import { EcoTreeSchema, GreenRoofSchema, EngineeringInputsSchema } from '../designer/ecoContract';
@@ -268,6 +268,25 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
           ...file.notes,
         ].join(' '),
       );
+    } catch {
+      setMessage(c('modelFailed'));
+    }
+  }
+  async function saveViews() {
+    try {
+      const file = await houseViewsPdf(property, {
+        fromSouthWest: c('viewsFromSouthWest'),
+        fromNorthEast: c('viewsFromNorthEast'),
+        storey: c('viewsStorey'),
+        note: c('viewsNote'),
+      });
+      const url = URL.createObjectURL(file.blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = file.fileName;
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setMessage(c('viewsSaved').replace('{sheets}', String(file.sheets)));
     } catch {
       setMessage(c('modelFailed'));
     }
@@ -675,6 +694,9 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
                   </button>
                   <button className="project-primary" type="button" onClick={() => void saveModel('stl')}>
                     {c('savePrint')}
+                  </button>
+                  <button className="project-primary" type="button" onClick={() => void saveViews()}>
+                    {c('saveViews')}
                   </button>
                 </div>
               </article>

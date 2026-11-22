@@ -372,6 +372,42 @@ const copy = {
     '已保存：{parts} 个部件，{triangles} 个三角面，{x} × {y} × {z} 米。',
     'Guardado: {parts} piezas, {triangles} triángulos, {x} por {y} por {z} metros.',
   ],
+  saveViews: [
+    'Save the 3D views as a PDF',
+    'Enregistrer les vues 3D en PDF',
+    '将三维视图保存为 PDF',
+    'Guardar las vistas 3D en PDF',
+  ],
+  viewsSaved: [
+    'Saved: {sheets} sheets.',
+    'Enregistré : {sheets} feuilles.',
+    '已保存：{sheets} 页。',
+    'Guardado: {sheets} hojas.',
+  ],
+  viewsFromSouthWest: [
+    'The whole house, seen from the south-west',
+    'La maison entière, vue du sud-ouest',
+    '整栋房屋，自西南方向观看',
+    'La casa entera, vista desde el suroeste',
+  ],
+  viewsFromNorthEast: [
+    'The whole house, seen from the north-east',
+    'La maison entière, vue du nord-est',
+    '整栋房屋，自东北方向观看',
+    'La casa entera, vista desde el noreste',
+  ],
+  viewsStorey: [
+    '{name}, seen from above',
+    '{name}, vue du dessus',
+    '{name}，俯视',
+    '{name}, vista desde arriba',
+  ],
+  viewsNote: [
+    'A parallel view of the solids of the design, at one scale over the whole sheet. Each placed thing is drawn as a box of its true size.',
+    'Vue parallèle des volumes du projet, à une seule échelle sur toute la feuille. Chaque objet posé est dessiné comme une boîte à sa taille réelle.',
+    '设计实体的平行投影视图，整页为同一比例。每件摆放的物品按其真实尺寸绘制为方盒。',
+    'Vista paralela de los sólidos del diseño, a una sola escala en toda la hoja. Cada objeto colocado se dibuja como una caja de su tamaño real.',
+  ],
   modelFailed: [
     'The 3D file could not be made.',
     'Le fichier 3D n’a pas pu être créé.',

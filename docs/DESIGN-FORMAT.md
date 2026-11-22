@@ -956,7 +956,9 @@ from the same solids the 3D view draws from, so a wall stands where the 3D view 
 - NOT in the files: the model of a product (a thing is its box), textures, lamps, pipes and cables, the
   foundation, shade sails, the city.
 
-Source: `src/components/three/exportModel.ts`; `src/lib/exportHouse3d.ts`. Tests: `src/components/three/__tests__/exportModel.test.ts`.
+- The same solids are drawn as 3D view sheets in a PDF (a third button): the whole house from the south-west and from the north-east, then each storey by itself from above, without what is over it. A sheet is a parallel view, at one scale over the whole sheet, drawn by sums with no graphics card (`src/lib/view3dSheet.ts`). The PDF maker takes such sheets (`viewSheets`); the PDF that is made after an order does not carry them yet.
+
+Source: `src/components/three/exportModel.ts`; `src/lib/exportHouse3d.ts`; `src/lib/view3dSheet.ts`; `src/lib/planPdf.ts`. Tests: `src/components/three/__tests__/exportModel.test.ts`; `src/lib/__tests__/view3dSheet.test.ts`.
 
 ## 4. Not sure
 
