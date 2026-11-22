@@ -6,6 +6,13 @@
  * (`keepUnknownKeys` in `./unknownKeys`), so a field written by a newer build, or by the desktop game, survives
  * being opened and saved by this one.
  *
+ * Where this does NOT hold: INSIDE a part that carries its own `version` (the sections below, the plot on the
+ * map). Such a part is read whole, key by key, or kept aside whole under `unread`. So whoever adds a field inside
+ * one of them raises that part's own version: an older build then keeps the part aside as it is, and shows none
+ * of it, in place of reading it and losing the new field. The materials settings are the one exception both
+ * ways: they are always read as their version 1, whatever number they say, so a new field goes at their top
+ * level (carried) or under a new key of the design, never inside one of their groups.
+ *
  * For whoever adds a field:
  * 1. Add its name to the table of its part here, and clean it in that part's loader. If the name is forgotten
  *    here, nothing is lost: the loader's own value wins, and without one the field is carried as it is.
@@ -81,6 +88,13 @@ export const SECTION_NAMES = [
 ] as const;
 export type SectionName = (typeof SECTION_NAMES)[number];
 
+/**
+ * Parts kept aside under `unread` by a reader that is not the loader. The loader does not read them: it carries
+ * them. `siteWorld` is the plot on the map (`site.world`) that could not be verified; it is checked after the
+ * first picture, by `src/site/hydration.ts`, which offers it to its reader again on every start.
+ */
+export const CARRIED_ASIDE_NAMES = ['siteWorld'] as const;
+
 /** A room. The last four are the rectangle fields of the first designs: read, migrated, never written. */
 export const ROOM_KEYS = names(
   'removedWallEdges',
@@ -102,6 +116,33 @@ export const ROOM_KEYS = names(
   'widthM',
   'roomDimensions',
 );
+
+/** The materials settings (`materials`): their top level. Their groups are read key by key. */
+export const MATERIALS_KEYS = names(
+  'version',
+  'scope',
+  'quotationTaxBasis',
+  'unitRates',
+  'wall',
+  'mortar',
+  'plaster',
+  'concrete',
+  'base',
+  'pillars',
+  'roof',
+);
+
+/** One entry of a room's lists that go by the edges of its outline, and of its floor. */
+export const WALL_PAINT_KEYS = names('edgeIndex', 'paintId', 'side', 'colourHex', 'colourName');
+export const WALL_CLADDING_KEYS = names('edgeIndex', 'productId');
+export const WALL_CONSTRUCTION_KEYS = names(
+  'edgeIndex',
+  'kind',
+  'thicknessMm',
+  'materialProductId',
+);
+export const FLOOR_ZONE_KEYS = names('materialId', 'tileWm', 'tileHm', 'originM', 'runs');
+export const FLOOR_FINISH_KEYS = names('materialId');
 
 /** A storey (`levels`). */
 export const LEVEL_KEYS = names('id', 'name', 'index', 'kind', 'heightM', 'elevationM');

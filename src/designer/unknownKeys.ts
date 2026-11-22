@@ -18,6 +18,8 @@ const NEVER_KEPT: ReadonlySet<string> = new Set(['constructor', 'prototype', 'se
 
 /** The most values (objects, lists, texts, numbers) one unknown key may hold, and how deep they may nest. */
 export const UNKNOWN_KEY_LIMITS = { values: 20000, depth: 12 } as const;
+/** A whole part that is kept aside (a section, the plot on the map) may hold more: it is a part, not a field. */
+export const ASIDE_VALUE_LIMIT = 400000;
 
 function isPlainJson(value: unknown, budget: { left: number }, depth: number): boolean {
   if (--budget.left < 0 || depth > UNKNOWN_KEY_LIMITS.depth) return false;
@@ -41,13 +43,14 @@ export function keepUnknownKeys(
   raw: unknown,
   known: ReadonlySet<string>,
   into: Record<string, unknown>,
+  maxValues: number = UNKNOWN_KEY_LIMITS.values,
 ): string[] {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return [];
   const kept: string[] = [];
   for (const [name, value] of Object.entries(raw as Record<string, unknown>)) {
     if (known.has(name) || NEVER_KEPT.has(name) || !PLAIN_NAME.test(name)) continue;
     if (value === undefined || Object.prototype.hasOwnProperty.call(into, name)) continue;
-    if (!isPlainJson(value, { left: UNKNOWN_KEY_LIMITS.values }, 0)) continue;
+    if (!isPlainJson(value, { left: maxValues }, 0)) continue;
     into[name] = JSON.parse(JSON.stringify(value)) as unknown;
     kept.push(name);
   }

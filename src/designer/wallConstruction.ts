@@ -4,6 +4,8 @@ import { findCladdingProduct } from '../data/claddingCatalog.js';
 import { roomEdges, collinearOverlap, splitEdgeSpans, type Span } from './wallEdges.js';
 import { roomLevelId } from './levels.js';
 import { findGlassMaterial } from '../data/mauritiusGlass.js';
+import { WALL_CONSTRUCTION_KEYS } from './designFormat.js';
+import { keepUnknownKeys } from './unknownKeys.js';
 
 export type WallSide = 'interior' | 'exterior';
 export type WallConstruction = 'plastered-brick' | 'brick' | 'concrete' | 'glass';
@@ -39,7 +41,10 @@ export function remapConstruction(edges: ConstructedEdge[] | undefined, edgeMap:
     const index = edgeMap[edge.edgeIndex];
     if (!isWallConstruction(edge.kind) || !Number.isInteger(index) || index < 0 || index >= polygon.length || seen.has(index)) return [];
     seen.add(index);
-    return [{ edgeIndex: index, kind: edge.kind, ...sanitizeWallMaterialSpec(edge.kind, edge) }];
+    const clean: ConstructedEdge = { edgeIndex: index, kind: edge.kind, ...sanitizeWallMaterialSpec(edge.kind, edge) };
+    // A field of the entry this build does not know is carried as it is.
+    keepUnknownKeys(edge, WALL_CONSTRUCTION_KEYS, clean as unknown as Record<string, unknown>);
+    return [clean];
   });
   return result.length ? result : undefined;
 }

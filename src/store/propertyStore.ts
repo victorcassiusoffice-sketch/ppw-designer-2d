@@ -37,7 +37,7 @@ import { withMasonryThickness, inheritMasonryRoom } from '../designer/masonryDim
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
-import { keepUnknownKeys } from '../designer/unknownKeys';
+import { ASIDE_VALUE_LIMIT, keepUnknownKeys } from '../designer/unknownKeys';
 import { cleanBulge, cleanWallArcs, type WallArc } from '../designer/arcSegment';
 import {
   cleanCostLines,
@@ -49,13 +49,18 @@ import {
   type DesignProduct,
 } from '../designer/formatV2';
 import {
+  CARRIED_ASIDE_NAMES,
   DESIGN_KEYS,
+  FLOOR_FINISH_KEYS,
+  FLOOR_ZONE_KEYS,
   FREE_WALL_KEYS,
   LEVEL_KEYS,
   NO_KEYS,
   ROOM_KEYS,
   SECTION_NAMES,
   SITE_KEYS,
+  WALL_CLADDING_KEYS,
+  WALL_PAINT_KEYS,
   type SectionName,
 } from '../designer/designFormat';
 import type { Polygon, RoomDims, Vertex } from '../lib/geometry';
@@ -170,6 +175,14 @@ function paintedEdge(edgeIndex: number, paintId: string, colour?: PaintColourCho
  * on the same world wall. Before this, a reshape or a CCW seed could leave
  * paint on the wrong wall.
  */
+/**
+ * Carries into a cleaned entry what this build does not know of the stored one. A `function`, not a `const`: it
+ * is used while the design in the browser's storage is loaded, as the store is being made.
+ */
+function carried<T extends object>(raw: unknown, known: ReadonlySet<string>, clean: T): T {
+  keepUnknownKeys(raw, known, clean as unknown as Record<string, unknown>);
+  return clean;
+}
 function remapRemovedEdges(raw:unknown,edgeMap:readonly number[]):number[]|undefined{
   if(!Array.isArray(raw)||!raw.length)return undefined;
   const result=[...new Set(raw.filter(i=>Number.isInteger(i)&&i>=0&&i<edgeMap.length).map(i=>edgeMap[i]).filter(i=>i>=0))];
@@ -2320,8 +2333,11 @@ function readSections(
     const result = readSection(name, value, levelIds);
     if (result !== undefined) read[name] = result;
     // Plain JSON of a bounded size, as a copy; anything else cannot have come from a stored design.
-    else keepUnknownKeys({ [name]: value }, NO_KEYS, unread);
+    else keepUnknownKeys({ [name]: value }, NO_KEYS, unread, ASIDE_VALUE_LIMIT);
   }
+  // What another reader keeps aside is carried: the loader does not read it.
+  for (const name of CARRIED_ASIDE_NAMES)
+    if (aside[name] !== undefined) keepUnknownKeys({ [name]: aside[name] }, NO_KEYS, unread, ASIDE_VALUE_LIMIT);
   return { read, unread };
 }
 
@@ -2360,11 +2376,11 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   };
   // Every field below is OPTIONAL and only written when it carries something,
   // so a property saved before the Sims world round-trips byte-identical.
+  if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   // The sections that are read whole or not at all. One that cannot be read is kept aside, not dropped.
   const sections = readSections(property as unknown as Record<string, unknown>, levelIds);
   Object.assign(out, sections.read);
   if (Object.keys(sections.unread).length > 0) out.unread = sections.unread;
-  if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
   const roomLevel = roomLevelId(activeRoom);
@@ -2622,7 +2638,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     // disappears on the first save/load round trip.
     floorFinish:
       r.floorFinish && typeof r.floorFinish.materialId === 'string'
-        ? { materialId: r.floorFinish.materialId }
+        ? carried(r.floorFinish, FLOOR_FINISH_KEYS, { materialId: r.floorFinish.materialId })
         : null,
     // Same whitelist trap again: omit this and a painted floor silently
     // vanishes on the first save/load round trip. Validated field by field
@@ -2654,13 +2670,13 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
                 e.paintId.length > 0,
             )
             .map((e) =>
-              sidePaint(paintedEdge(
+              carried(e, WALL_PAINT_KEYS, sidePaint(paintedEdge(
                 e.edgeIndex,
                 e.paintId,
                 typeof e.colourHex === 'string'
                   ? { hex: e.colourHex, name: typeof e.colourName === 'string' ? e.colourName : undefined }
                   : null,
-              ), paintSide(e)),
+              ), paintSide(e))),
             );
           // Remap against the RAW polygon (a CCW seed reverses), then prune
           // to the CLEANED one — the same order the openings take.
@@ -2680,7 +2696,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
                 typeof e.productId === 'string' &&
                 !!findCladdingProduct(e.productId),
             )
-            .map((e) => ({ edgeIndex: e.edgeIndex, productId: e.productId }));
+            .map((e) => carried(e, WALL_CLADDING_KEYS, { edgeIndex: e.edgeIndex, productId: e.productId }));
           const clad = remapCladEdges(typed, canon.edgeMap, clean);
           return clad ? { wallCladding: clad } : {};
         })()
@@ -2707,7 +2723,7 @@ function remapCladEdges(
     const idx = edgeMap[e.edgeIndex];
     if (idx < 0 || idx >= m || seen.has(idx)) continue;
     seen.add(idx);
-    out.push({ edgeIndex: idx, productId: e.productId });
+    out.push({ ...e, edgeIndex: idx, productId: e.productId });
   }
   return out.length > 0 ? out : undefined;
 }
@@ -2738,7 +2754,7 @@ export function decodeFloorZones(
       },
       polygon,
     );
-    if (pruned.runs.length > 0) out.push(pruned);
+    if (pruned.runs.length > 0) out.push(carried(z, FLOOR_ZONE_KEYS, pruned));
   }
   return out.length > 0 ? out : undefined;
 }
