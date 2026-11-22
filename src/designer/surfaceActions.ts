@@ -20,6 +20,7 @@ import {
 import { roomEdges } from './wallEdges';
 import { syncRoofRooms } from './roof';
 import { decodeFloorZones } from '../store/propertyStore';
+import { cleanBulge } from './arcSegment';
 export type SurfaceTarget =
   | RemoveBuildTarget
   | {
@@ -373,10 +374,44 @@ export const bendShape = (edge: Bend, at: Vertex) =>
       },
     ],
   });
+/** The number of the edge of `room` that is the wall `edge`, run either way, or -1. */
+function sharedEdgeIndex(room: { polygon: Vertex[] }, edge: Bend): number {
+  return room.polygon.findIndex((a, j) => {
+    const b = room.polygon[(j + 1) % room.polygon.length];
+    return (
+      (distance(a, edge.a) < 0.001 && distance(b, edge.b) < 0.001) ||
+      (distance(a, edge.b) < 0.001 && distance(b, edge.a) < 0.001)
+    );
+  });
+}
+/**
+ * Why "Pull curve" will not bend this wall, in one plain line, or nothing when it may be tried.
+ * A wall that is already a true arc (design format, version 2) is not pulled: this tool puts short straight
+ * pieces in a wall's place, and that would break the arc into pieces of another curve.
+ */
+export function bendRefusal(p: Property, edge: Bend): string | null {
+  const t = edge.target;
+  if (t.kind !== 'wall') return null;
+  const line = 'This wall is already curved. Pull curve bends a straight wall only.';
+  if (t.hit.kind === 'free')
+    return cleanBulge(p.walls?.find((w) => w.id === t.hit.wallId)?.bulge) === undefined
+      ? null
+      : line;
+  const owner = p.rooms.find((r) => r.id === t.hit.roomId);
+  if (!owner) return null;
+  const curved = p.rooms.some((r) => {
+    if (roomLevelId(r) !== roomLevelId(owner) || isRoofRoom(r) || r.kind === 'outdoor')
+      return false;
+    const index = sharedEdgeIndex(r, edge);
+    return index >= 0 && !!r.wallArcs?.some((arc) => arc.edgeIndex === index);
+  });
+  return curved ? line : null;
+}
 export function commitBend(edge: Bend, at: Vertex): boolean {
   const store = usePropertyStore.getState(),
     p = store.property,
     t = edge.target;
+  if (bendRefusal(p, edge)) return false;
   const mid = { x: (edge.a.x + edge.b.x) / 2, y: (edge.a.y + edge.b.y) / 2 },
     live = bendAt(p, t, mid);
   if (
@@ -448,13 +483,7 @@ export function commitBend(edge: Bend, at: Vertex): boolean {
     changed = new Set<string>();
   for (const [i, r] of rooms.entries()) {
     if (roomLevelId(r) !== roomLevelId(owner) || isRoofRoom(r) || r.kind === 'outdoor') continue;
-    const index = r.polygon.findIndex((a, j) => {
-      const b = r.polygon[(j + 1) % r.polygon.length];
-      return (
-        (distance(a, edge.a) < 0.001 && distance(b, edge.b) < 0.001) ||
-        (distance(a, edge.b) < 0.001 && distance(b, edge.a) < 0.001)
-      );
-    });
+    const index = sharedEdgeIndex(r, edge);
     if (index < 0) continue;
     if (r.openings?.some((o) => o.edgeIndex === index)) return false;
     const polygon = [...r.polygon];
@@ -494,6 +523,11 @@ export function commitBend(edge: Bend, at: Vertex): boolean {
       wallPaint: spans(r.wallPaint),
       wallCladding: spans(r.wallCladding),
       wallConstruction: spans(r.wallConstruction),
+      // A curved wall after the new corners keeps its curve under its new number. The pulled edge itself is
+      // never one (`bendRefusal`).
+      ...(r.wallArcs
+        ? { wallArcs: r.wallArcs.map((arc) => ({ ...arc, edgeIndex: shift(arc.edgeIndex) })) }
+        : {}),
       removedWallEdges: r.removedWallEdges?.map(shift),
       floorTiles: decodeFloorZones(r.floorTiles, polygon),
     };

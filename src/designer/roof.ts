@@ -77,6 +77,15 @@ export function roofSourceRooms(property: Property): Room[] {
  *     is dropped once real slabs exist.
  * Returns the same reference when nothing changed.
  */
+/** A slab that is given another outline: curved edges it held (design format, version 2) named the edges of the
+ * outline that is gone, so they go with it. A slab's edges run straight from corner to corner. */
+function slabWithOutline(slab: Room | undefined, changes: Partial<Room> & { polygon: Polygon }): Room {
+  // With no slab before it, `changes` is the whole slab (the first custom roof outline of a design).
+  const next = { ...slab, ...changes } as Room;
+  if (slab && !samePolygon(slab.polygon, changes.polygon)) delete next.wallArcs;
+  return next;
+}
+
 export function syncRoofRooms(property: Property): Property {
   const levels = levelsOf(property);
   if (!levels.some((l) => isRoofLevel(l))) return property;
@@ -86,10 +95,10 @@ export function syncRoofRooms(property: Property): Property {
     const first = previous.find(room => room.id === 'roof-custom-outline') ?? previous[0];
     const outline = property.roof.outline;
     if (previous.length === 1 && first.id === 'roof-custom-outline' && samePolygon(first.polygon, outline)) return property;
-    const custom: Room = {
-      ...first, id: 'roof-custom-outline', name: 'Custom roof', kind: 'roof', levelId: ROOF_LEVEL_ID,
+    const custom: Room = slabWithOutline(first, {
+      id: 'roof-custom-outline', name: 'Custom roof', kind: 'roof', levelId: ROOF_LEVEL_ID,
       polygon: outline.map(vertex => ({ ...vertex })), placedItems: previous.flatMap(room => room.placedItems),
-    };
+    });
     return { ...property, rooms: [...property.rooms.filter(room => !isRoofRoom(room)), custom] };
   }
 
@@ -108,7 +117,7 @@ export function syncRoofRooms(property: Property): Property {
       if (samePolygon(prev.polygon, src.polygon) && prev.name === src.name) {
         slabs.push(prev);
       } else {
-        slabs.push({ ...prev, name: src.name, polygon: src.polygon.map((v) => ({ x: v.x, y: v.y })) });
+        slabs.push(slabWithOutline(prev, { name: src.name, polygon: src.polygon.map((v) => ({ x: v.x, y: v.y })) }));
         changed = true;
       }
     } else {

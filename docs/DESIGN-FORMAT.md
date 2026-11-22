@@ -689,6 +689,8 @@ Rules:
   `bulge`. Open curved lines on a room layer are traced straight, and the import says so.
 - A reader that can only draw lines takes the arc as a run of straight pieces between points on the arc; the
   code gives them with a tolerance (5 mm unless asked otherwise, at most 256 pieces).
+- A curved wall is never cut by an edit of this build: it is kept whole, or taken out whole. What each edit
+  that rebuilds an outline does with one is in 3.7.
 
 Source: `src/designer/arcSegment.ts`; `src/designer/openings.ts` (the outline cleaner says `reversed`); `src/store/propertyStore.ts`. Tests: `src/designer/__tests__/arcSegment.test.ts`, `designFormatArcs.test.ts`.
 
@@ -862,9 +864,24 @@ What follows:
 - Floor tiles do not name an edge. Tiles that no longer touch the outline are removed.
 - An outline left with fewer than 3 points loses all its openings.
 
-The same is done when the editor changes an outline.
+The same is done when the editor changes an outline through the store (a corner moved, an outline redrawn).
 
-Proof: `src/designer/openings.ts`; `src/store/propertyStore.ts`; `src/designer/wallConstruction.ts`.
+Four edits rebuild an outline THEMSELVES, without the cleaner. Each puts corners into an outline or makes new
+outlines, so the edges after the new corners get new numbers. Paint, cladding, construction and openings are
+carried by each of them. For a curved wall (version 2) the rule is one: it is never cut. These edits work on
+the straight line between a wall's two ends, and a cut would land on that line, not on the arc.
+
+| Edit | What it does with a curved wall |
+|---|---|
+| A part of a wall removed | A curved edge keeps its curve under its new number. A curved wall is taken out as a whole, in every room that holds the same arc (the same two ends and the same curve, its sign turned where the edge runs the other way). Its outline keeps the curve, so the floor keeps its shape. A straight wall that lies on the line between a curved wall's ends is another wall: taking one out leaves the other. |
+| Rooms made from walls that close | A piece of a split room gets the curves of the parent's walls it holds whole, and no other. A curved free wall that becomes the whole edge of a room gives that edge its curve and leaves `walls`. A room built against a curved wall of another room takes that arc, run the other way. A room that would use only a PART of a curved wall is not made: the room is not split and the drawn walls stay free walls. A straight free wall on the line between a curved wall's ends stays a free wall. |
+| "Pull curve" | Refused on a wall that is already curved, in a room or free, with one line on screen. On a straight wall the curves after the new corners keep their walls, in every room that shares the pulled wall. |
+| A roof slab that takes the outline of the room under it | A slab whose outline changes loses curves of its own: they named the edges of the outline that is gone. A slab's edges run straight from corner to corner. |
+
+Not judged on the arc by any of them: which rooms share a wall, whether two rooms overlap, and where a drawn
+wall meets a curved one. Those go by the straight line between the ends (chapter 5).
+
+Proof: `src/designer/openings.ts`; `src/store/propertyStore.ts`; `src/designer/wallConstruction.ts`; `src/designer/removeBuildTarget.ts`; `src/designer/connectedWallRooms.ts`; `src/designer/surfaceActions.ts`; `src/designer/roof.ts`. Tests: `src/designer/__tests__/designFormatArcs.test.ts` (the cleaner), `src/designer/__tests__/arcsThroughEdits.test.ts` (the four edits).
 
 ### 3.8 Openings
 
@@ -907,7 +924,7 @@ Proof: `src/store/propertyStore.ts`; `src/lib/geometry.ts`; `src/components/Room
 ### 3.11 Free walls
 
 - A free wall is a line from `a` to `b` with a thickness. It has no direction that matters to the loader.
-- The app turns free walls that close a loop into a room. Those walls then leave `walls`. The same wall can so be a free wall in one save and an edge of a room in the next. Proof: `src/store/propertyStore.ts`; `src/designer/connectedWallRooms.ts`.
+- The app turns free walls that close a loop into a room. Those walls then leave `walls`. The same wall can so be a free wall in one save and an edge of a room in the next. A curved free wall (version 2) goes into a room only as a whole, and its `bulge` becomes that edge's entry in `wallArcs`; a loop that would use a part of it is not made a room (3.7). Proof: `src/store/propertyStore.ts`; `src/designer/connectedWallRooms.ts`.
 - A new free wall takes `materials.wall.thicknessM` when the design has `materials`, glass apart. Proof: `src/store/propertyStore.ts`.
 
 ### 3.12 The plot
@@ -1008,7 +1025,7 @@ Written on 22 November 2026; the game's column was written anew the same day, wh
 
 | Part | The web app | The desktop game |
 |---|---|---|
-| Curved walls | Kept, checked, and kept on their wall when an outline is cleaned. NOT drawn in 2D or 3D, and NOT measured as arcs: lengths, areas and paint quantities take the chord. The plan import says so when a design holds one. | Read, and drawn from the same sums (2.22). A curved wall without an opening is a true arc, in short straight pieces that stand off it by at most 5 mm; its floor and its roof follow it, and its 2D plan writes the wall's length along the arc and the room's true area: for a room with a curved wall the game's figures differ from the web app's (which takes the chord) until stage 3. A curved wall with a door or a window in it is drawn STRAIGHT, and its floor and roof with it. The tools (paint, door and window, remove, a new room, where a thing may stand) still go by a wall's straight line, and no tool makes or changes a curve. Kept as stored when the game saves. |
+| Curved walls | Kept, checked, and kept on their wall when an outline is cleaned and through the four edits that rebuild an outline themselves (3.7); none of them cuts a curved wall. NOT drawn in 2D or 3D, and NOT measured as arcs: lengths, areas and paint quantities take the chord. The plan import says so when a design holds one. Still judged on the straight line between a wall's ends: picking a wall, snapping to it, which rooms share it, whether rooms overlap. So a wall drawn onto a curved wall does not split a room, it stays a free wall; "Pull curve" refuses a curved wall; no tool makes or changes a true curve. A roof slab over a room with a curved wall runs straight from corner to corner. | Read, and drawn from the same sums (2.22). A curved wall without an opening is a true arc, in short straight pieces that stand off it by at most 5 mm; its floor and its roof follow it, and its 2D plan writes the wall's length along the arc and the room's true area: for a room with a curved wall the game's figures differ from the web app's (which takes the chord) until stage 3. A curved wall with a door or a window in it is drawn STRAIGHT, and its floor and roof with it. The tools (paint, door and window, remove, a new room, where a thing may stand) still go by a wall's straight line, and no tool makes or changes a curve. Kept as stored when the game saves. |
 | The products in use | Written when a design leaves the app. Not used to draw a product the catalogue does not have. | Read. A product the game's catalogue does not have is drawn as a plain body of the size the design gives, standing on the floor; it is in no list a player picks from. When the game saves a FILE it makes the table new by the rule of 2.23. Its catalogue names no company: an entry it writes new has none, and an entry that came with one keeps it. |
 | Cost lines | Kept and checked. No page shows them; nothing works out a cost. | Not read. Kept as stored. In a shared house only the owner may change them. |
 | Members | Kept and checked. Nothing on the web acts on a role. | Read, with the six roles; a role it does not know is a viewer's. No screen shows the members and no tool changes them; the role of a guest is still the one its join address asks for. Kept as stored. In a shared house only the owner may change the list. |

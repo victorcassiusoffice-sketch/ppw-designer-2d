@@ -8,6 +8,7 @@ import { roomEdges, pointAlongEdge, projectOntoEdge, perpDistanceToEdgeLine } fr
 import { nextRoomName } from './roomNaming';
 import { runToFreeWalls, type FreeWall } from './freeWalls';
 import { sanitizeWallMaterialSpec } from './wallConstruction';
+import { cleanBulge, type WallArc } from './arcSegment';
 
 const EPS = 1e-7;
 /** Join tolerance is 1 mm, matching physical shared-wall detection. */
@@ -22,6 +23,51 @@ const signedArea = (p: Polygon) => p.reduce((n, a, i) => n + cross(a, p[(i + 1) 
 function projection(p: Vertex, s: Segment): number {
   const d = subtract(s.b, s.a);
   return ((p.x - s.a.x) * d.x + (p.y - s.a.y) * d.y) / (d.x * d.x + d.y * d.y);
+}
+
+/** A curved wall of the storey (design format, version 2): its two ends and its bulge. Everything below works
+ * on the straight line between the ends; these helpers keep the curve with its wall while that is done. */
+type Curve = Segment & { bulge: number };
+/** 1 when `p` to `q` is the whole wall `s` run the same way, -1 when run the other way, 0 when it is not `s`. */
+const sameEnds = (p: Vertex, q: Vertex, s: Segment): 1 | -1 | 0 =>
+  distance(p, s.a) <= WALL_JOIN_TOLERANCE_M && distance(q, s.b) <= WALL_JOIN_TOLERANCE_M ? 1
+    : distance(p, s.b) <= WALL_JOIN_TOLERANCE_M && distance(q, s.a) <= WALL_JOIN_TOLERANCE_M ? -1 : 0;
+const onChord = (p: Vertex, s: Segment) => {
+  const t = projection(p, s);
+  return t >= -EPS && t <= 1 + EPS && distance(p, at(s, t)) <= WALL_JOIN_TOLERANCE_M;
+};
+function roomCurves(room: Room): Curve[] {
+  if (!room.wallArcs?.length) return [];
+  const edges = roomEdges(room);
+  return room.wallArcs.flatMap(arc => {
+    const edge = edges.find(e => e.index === arc.edgeIndex), bulge = cleanBulge(arc.bulge);
+    return edge && bulge !== undefined ? [{ a: edge.a, b: edge.b, bulge }] : [];
+  });
+}
+const wallCurves = (walls: readonly FreeWall[]): Curve[] => walls.flatMap(wall => {
+  const bulge = cleanBulge(wall.bulge);
+  return bulge === undefined ? [] : [{ a: wall.a, b: wall.b, bulge }];
+});
+/** A face with an edge that lies on the line between a curved wall's ends but is not that whole wall would cut
+ * the arc in two, at a point that is on the straight line and not on the arc. Such a face is not made a room:
+ * the walls stay as they were drawn. */
+function cutsCurve(polygon: Polygon, curves: readonly Curve[]): boolean {
+  return curves.length > 0 && polygon.some((p, i) => {
+    const q = polygon[(i + 1) % polygon.length];
+    return curves.some(curve => !sameEnds(p, q, curve) && onChord(p, curve) && onChord(q, curve));
+  });
+}
+/** The curved edges of an outline: each edge that is the WHOLE of one of the curves takes its bulge, with the
+ * sign turned when the edge runs the other way, so the arc stays the same arc. */
+function arcsOn(polygon: Polygon, curves: readonly Curve[]): WallArc[] {
+  if (!curves.length) return [];
+  return roomEdges({ id: '', polygon }).flatMap(edge => {
+    for (const curve of curves) {
+      const way = sameEnds(edge.a, edge.b, curve);
+      if (way) return [{ edgeIndex: edge.index, bulge: way * curve.bulge }];
+    }
+    return [];
+  });
 }
 
 /** Shared plan snapping excludes roofs, outdoors and other storeys, and includes
@@ -169,18 +215,34 @@ function remapRoom(source: Room, polygon: Polygon, id: string): Room {
       return [{ ...opening, edgeIndex, offsetM, ...(reversed ? { flipFacing: !opening.flipFacing, flipHand: !opening.flipHand } : {}) }];
     });
   });
-  return { ...source, id, polygon, placedItems: [], ...(source.openings ? { openings } : {}),
+  const next: Room = { ...source, id, polygon, placedItems: [], ...(source.openings ? { openings } : {}),
     ...(source.wallPaint ? { wallPaint: remap(source.wallPaint) } : {}),
     ...(source.wallCladding ? { wallCladding: remap(source.wallCladding) } : {}),
     ...(source.wallConstruction ? { wallConstruction: remap(source.wallConstruction) } : {}),
     ...(source.floorTiles ? { floorTiles: source.floorTiles.map(zone => pruneZone(zone, polygon)).filter(zone => zone.runs.length) } : {}) };
+  // A curved wall of the parent goes to the piece that holds that whole wall, and to no other piece.
+  const wallArcs = arcsOn(polygon, roomCurves(source));
+  if (wallArcs.length) next.wallArcs = wallArcs; else delete next.wallArcs;
+  return next;
 }
 
 /** Subtract just the boundary spans which became rooms. Any unclosed tail,
  * including its finish metadata, survives as a free wall. */
 function remainingWalls(walls: FreeWall[], rooms: Room[], id: () => string): FreeWall[] {
-  const boundaries = rooms.flatMap(room => roomEdges(room));
+  // A straight wall is used up by the straight edges it lies on. A curved edge is another wall, though the
+  // line between its ends is straight.
+  const boundaries = rooms.flatMap(room => {
+    const curved = new Set((room.wallArcs ?? []).map(arc => arc.edgeIndex));
+    return roomEdges(room).filter(edge => !curved.has(edge.index));
+  });
+  const curves = rooms.flatMap(roomCurves);
   return walls.flatMap(wall => {
+    const bulge = cleanBulge(wall.bulge);
+    if (bulge !== undefined) {
+      // A curved wall is never cut: it became the edge of a room as a whole, or it stays as it was drawn.
+      const used = curves.some(curve => { const way = sameEnds(wall.a, wall.b, curve); return way !== 0 && Math.abs(curve.bulge - way * bulge) < 1e-9; });
+      return used ? [] : [wall];
+    }
     const length = distance(wall.a, wall.b);
     const cuts: [number, number][] = [];
     for (const edge of boundaries) {
@@ -198,8 +260,12 @@ function remainingWalls(walls: FreeWall[], rooms: Room[], id: () => string): Fre
   });
 }
 
-function applyFreeWallFinishes(room: Room, walls: FreeWall[], allRooms: Room[]): Room {
+function applyFreeWallFinishes(room: Room, walls: FreeWall[], allRooms: Room[], curves: readonly Curve[]): Room {
   const result = { ...room, wallPaint: [...(room.wallPaint ?? [])], wallConstruction: [...(room.wallConstruction ?? [])], wallCladding: [...(room.wallCladding ?? [])] };
+  // An edge that is the whole of a curved wall takes that wall's curve; an edge that has one keeps its own.
+  const wallArcs = [...(room.wallArcs ?? [])];
+  for (const arc of arcsOn(room.polygon, curves)) if (!wallArcs.some(own => own.edgeIndex === arc.edgeIndex)) wallArcs.push(arc);
+  if (wallArcs.length) result.wallArcs = wallArcs; else delete result.wallArcs;
   for (const edge of roomEdges(room)) {
     const wall = walls.find(w => Math.abs(perpDistanceToEdgeLine(edge, w.a)) < WALL_JOIN_TOLERANCE_M && Math.abs(perpDistanceToEdgeLine(edge, w.b)) < WALL_JOIN_TOLERANCE_M
       && projection(edge.a, w) >= -EPS && projection(edge.b, w) >= -EPS && projection(edge.a, w) <= 1 + EPS && projection(edge.b, w) <= 1 + EPS);
@@ -226,7 +292,10 @@ function applyFreeWallFinishes(room: Room, walls: FreeWall[], allRooms: Room[]):
 export function inferConnectedRooms(property: Property, levelId: string, makeId: () => string): Property {
   const oldRooms = property.rooms.filter(room => roomLevelId(room) === levelId && !isOutdoorRoom(room) && !isRoofRoom(room) && room.polygon.length >= 3);
   const walls = (property.walls ?? []).filter(wall => roomLevelId(wall) === levelId);
-  const faces = closedWallFaces([...oldRooms.flatMap(room => roomEdges(room)), ...walls]);
+  // The faces are found on straight lines. A face that would cut a curved wall in two is left out, so a curved
+  // wall goes into a room as a whole or stays as it is.
+  const freeCurves = wallCurves(walls), curves = [...oldRooms.flatMap(roomCurves), ...freeCurves];
+  const faces = closedWallFaces([...oldRooms.flatMap(room => roomEdges(room)), ...walls]).filter(face => !cutsCurve(face, curves));
   const witnesses = new Map(faces.map(face => [face, interiorWitness(face)]));
   const replacements = new Map<string, Room[]>(), occupied = new Set<Polygon>();
   for (const room of oldRooms) {
@@ -259,7 +328,10 @@ export function inferConnectedRooms(property: Property, levelId: string, makeId:
   }
   const changedIds = new Set([...replacements.values()].flat().map(room => room.id));
   const finishRooms = rooms.filter(room => roomLevelId(room) === levelId && !isOutdoorRoom(room) && !isRoofRoom(room));
-  rooms = rooms.map(room => (changedIds.has(room.id) || additions.includes(room.polygon)) ? applyFreeWallFinishes(room, walls, finishRooms) : room);
+  // A piece of a split room has its parent's curves already and takes those of the new walls; a new room takes
+  // the curves of every wall it stands against, the old rooms' too.
+  rooms = rooms.map(room => changedIds.has(room.id) ? applyFreeWallFinishes(room, walls, finishRooms, freeCurves)
+    : additions.includes(room.polygon) ? applyFreeWallFinishes(room, walls, finishRooms, curves) : room);
   const levelRooms = rooms.filter(room => roomLevelId(room) === levelId && !isOutdoorRoom(room) && !isRoofRoom(room));
   const keptWalls = remainingWalls(walls, levelRooms, makeId);
   const activeRoomId = rooms.some(room => room.id === property.activeRoomId && room.polygon.length >= 3) ? property.activeRoomId : levelRooms.find(room => room.polygon.length >= 3)?.id ?? property.activeRoomId;
