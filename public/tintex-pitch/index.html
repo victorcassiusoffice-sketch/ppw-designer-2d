@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>TintEX × Peak Performance Wellness</title>
+<meta name="description" content="Room Designer pitch for TintEX — try the 3D demo, see pricing, next steps." />
+<style>
+  :root {
+    --bg: #f6f4ef;
+    --ink: #1a1a1a;
+    --muted: #5a5a5a;
+    --card: #ffffff;
+    --accent: #c45c26;
+    --accent-ink: #fff;
+    --line: #e5e0d6;
+    --low: #2f6b4f;
+    --mid: #2b5a8a;
+    --high: #7a3e8c;
+    --radius: 18px;
+    --pad: 1.1rem;
+    --max: 34rem;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.45;
+    font-size: 18px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 1.25rem 1rem 3.5rem;
+  }
+  header.hero-head {
+    text-align: center;
+    padding: 1.5rem 0.5rem 0.75rem;
+  }
+  header.hero-head .eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+  header.hero-head h1 {
+    margin: 0;
+    font-size: clamp(1.55rem, 5.5vw, 2rem);
+    line-height: 1.2;
+    font-weight: 800;
+  }
+  header.hero-head p {
+    margin: 0.65rem 0 0;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  section {
+    margin-top: 1.15rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--pad);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+  }
+  .card h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
+  .btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 800;
+    font-size: 1.15rem;
+    padding: 1.05rem 1.2rem;
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 4px 0 #8f3f14;
+  }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #8f3f14; }
+  .btn-sub {
+    display: block;
+    text-align: center;
+    margin-top: 0.55rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .price-grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .tier {
+    border-radius: 14px;
+    padding: 1rem;
+    color: #fff;
+  }
+  .tier.low { background: var(--low); }
+  .tier.mid { background: var(--mid); }
+  .tier.high { background: var(--high); }
+  .tier .label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+  .tier .name {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0.15rem 0 0.45rem;
+  }
+  .tier ul {
+    margin: 0;
+    padding: 0 0 0 1.1rem;
+    font-size: 0.98rem;
+  }
+  .tier li { margin: 0.2rem 0; }
+  .setup {
+    margin-bottom: 0.85rem;
+    padding: 0.85rem 1rem;
+    background: #fff7ef;
+    border: 1px dashed #e2b48a;
+    border-radius: 12px;
+    font-weight: 700;
+  }
+  .setup span { color: var(--accent); }
+  .note {
+    font-size: 0.98rem;
+    color: var(--muted);
+    margin: 0;
+  }
+  .steps {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .steps li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.7rem 0.8rem;
+    background: #faf8f4;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .steps .n {
+    flex: 0 0 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: grid;
+    place-items: center;
+  }
+  .steps .t { font-weight: 700; }
+  .steps .d { display: block; font-weight: 500; color: var(--muted); font-size: 0.92rem; margin-top: 0.15rem; }
+  .facts {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .facts li {
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 1rem;
+  }
+  .facts li:last-child { border-bottom: none; }
+  .facts strong { display: block; font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.15rem; }
+  .contact a {
+    color: var(--accent);
+    font-weight: 700;
+    word-break: break-word;
+  }
+  footer {
+    text-align: center;
+    margin-top: 1.75rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero-head">
+      <div class="eyebrow">Meeting pack · 23 Sep 2026</div>
+      <h1>TintEX × Peak Performance Wellness</h1>
+      <p>Room Designer for paint shops — draw a room, try colours in 3D, order the right tins.</p>
+    </header>
+
+    <section class="card" aria-label="Try the demo">
+      <h2>Try the 3D demo</h2>
+      <a class="btn" id="demo-link" href="https://ppw-designer-2d-git-tintex-paint-pbr-fallback-victor-ppw.vercel.app/designer?demo=tintex">Open live demo</a>
+      <span class="btn-sub">Works on phone · no login</span>
+    </section>
+
+    <section class="card" aria-label="Pricing">
+      <h2>Pricing (ex-VAT)</h2>
+      <div class="setup">Setup once: <span>MUR 50,000</span></div>
+      <p class="note" style="margin-bottom:0.85rem">Plus a few hundred MUR per product line (SKU). Each colour or product shown in 3D uses API credits.</p>
+      <div class="price-grid">
+        <div class="tier low">
+          <div class="label">Start</div>
+          <div class="name">Low</div>
+          <ul>
+            <li>~5 wall paint lines</li>
+            <li>~MUR 400 / SKU</li>
+            <li>Monthly retainer ~MUR 6,000</li>
+          </ul>
+        </div>
+        <div class="tier mid">
+          <div class="label">Shop floor</div>
+          <div class="name">Mid</div>
+          <ul>
+            <li>~10 store products</li>
+            <li>~MUR 400 / SKU</li>
+            <li>Monthly retainer ~MUR 6,500</li>
+          </ul>
+        </div>
+        <div class="tier high">
+          <div class="label">Phase 2</div>
+          <div class="name">High</div>
+          <ul>
+            <li>More SKUs</li>
+            <li>Website embed</li>
+            <li>Admin tools</li>
+            <li>Monthly retainer grows with scope</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Why per item costs">
+      <h2>Why each product costs a little</h2>
+      <p class="note">Rendering each paint or product in 3D uses API credits. A bigger catalogue costs a bit more. You only pay for lines you put in the tool.</p>
+    </section>
+
+    <section class="card" aria-label="How it works">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li>
+          <span class="n">1</span>
+          <div><span class="t">AI drafts</span><span class="d">Messages, emails, reminders — prepared for you.</span></div>
+        </li>
+        <li>
+          <span class="n">2</span>
+          <div><span class="t">You approve</span><span class="d">A named person taps yes before anything goes out.</span></div>
+        </li>
+        <li>
+          <span class="n">3</span>
+          <div><span class="t">Then send</span><span class="d">Only after approval. AI never sends alone.</span></div>
+        </li>
+      </ol>
+      <p class="note" style="margin-top:0.9rem"><strong>Money:</strong> AI never moves money. “Payment confirm” means a ledger / receipt with approval — not a payment rail.</p>
+    </section>
+
+    <section class="card" aria-label="About TintEX">
+      <h2>TintEX Co. Ltd.</h2>
+      <ul class="facts">
+        <li><strong>BRN</strong> C10093089</li>
+        <li><strong>What</strong> Paint maker + contractor since 2017</li>
+        <li><strong>Web</strong> tintexpaint.com</li>
+        <li><strong>Where</strong> Eau-Coulée, Mauritius</li>
+      </ul>
+    </section>
+
+    <section class="card contact" aria-label="Next step">
+      <h2>Next step</h2>
+      <p class="note" style="margin-bottom:0.75rem">Like the demo? We load your real TintEX colours next, then lock Low or Mid.</p>
+      <ul class="facts">
+        <li><strong>PP Wellness</strong> <a href="mailto:victor@ppwellness.co">victor@ppwellness.co</a></li>
+        <li><strong>Site</strong> <a href="https://ppwellness.co">ppwellness.co</a></li>
+        <li><strong>Safe demo (production)</strong> <a href="https://designer.ppwellness.co/designer?demo=tintex">designer.ppwellness.co</a></li>
+      </ul>
+    </section>
+
+    <footer>Peak Performance Wellness Ltd · Mauritius</footer>
+  </div>
+</body>
+</html>
